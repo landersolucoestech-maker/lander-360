@@ -248,7 +248,7 @@ function CreateTenantDialog({ onCreate }: { onCreate: (t: Tenant) => void }) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Assentos (usuários)</Label>
+              <Label>Usuários</Label>
               <Input type="number" value={seats} onChange={(e) => setSeats(parseInt(e.target.value || "0", 10))} />
             </div>
           </div>
@@ -323,7 +323,7 @@ function EditTenantDialog({ tenant, onSave }: { tenant: Tenant; onSave: (t: Tena
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Assentos</Label>
+                <Label>Usuários</Label>
                 <Input type="number" value={local.seats} onChange={(e) => setLocal({ ...local, seats: parseInt(e.target.value || "0", 10) })} />
               </div>
             </div>
@@ -410,7 +410,7 @@ function TenantsTable({ data, onUpdate, onDelete }: { data: Tenant[]; onUpdate: 
             <TableHead>Cliente</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Plano</TableHead>
-            <TableHead>Assentos</TableHead>
+            <TableHead>Usuários</TableHead>
             <TableHead>Uso</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
