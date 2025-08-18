@@ -60,14 +60,19 @@ interface Plan {
 }
 
 const DEFAULT_MODULES = [
-  { key: "artists", label: "Gestão de Artistas" },
-  { key: "catalog", label: "Catálogo (Obras & Fonogramas)" },
-  { key: "releases", label: "Lançamentos & Distribuição" },
-  { key: "contracts", label: "Contratos & Royalties" },
-  { key: "finance", label: "Financeiro & NF-e" },
-  { key: "agenda", label: "Agenda/Calendário" },
-  { key: "crm", label: "CRM & Marketing" },
-  { key: "reports", label: "Relatórios & BI" },
+  { key: "artists", label: "Artistas" },
+  { key: "projects", label: "Projetos (Músicas)" },
+  { key: "music-registry", label: "Registro de Músicas" },
+  { key: "releases", label: "Lançamentos" },
+  { key: "contracts", label: "Contratos" },
+  { key: "financial", label: "Financeiro" },
+  { key: "agenda", label: "Agenda" },
+  { key: "invoice", label: "Nota Fiscal" },
+  { key: "inventory", label: "Inventário" },
+  { key: "users", label: "Usuários" },
+  { key: "crm", label: "CRM" },
+  { key: "marketing", label: "Marketing" },
+  { key: "reports", label: "Relatórios" },
 ];
 
 // Mock: planos e clientes (substituir por chamadas de API)
