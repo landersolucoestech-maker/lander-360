@@ -1,0 +1,563 @@
+import React from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { ProjectInsert, ProjectUpdate } from '@/types/database';
+import { useCreateProject, useUpdateProject } from '@/hooks/useProjects';
+import { PlusIcon, Trash2Icon } from 'lucide-react';
+
+const songSchema = z.object({
+  song_name: z.string().min(1, 'Nome da música é obrigatório'),
+  collaboration_type: z.enum(['solo', 'feat']),
+  track_type: z.enum(['original', 'remix']),
+  instrumental: z.enum(['sim', 'nao']),
+  genre: z.string().min(1, 'Gênero é obrigatório'),
+  composers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um compositor é obrigatório'),
+  performers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um intérprete é obrigatório'),
+  producers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um produtor é obrigatório'),
+  lyrics: z.string().optional(),
+  audio_files: z.array(z.string()).optional(),
+});
+
+const projectSchema = z.object({
+  release_type: z.enum(['single', 'ep', 'album']),
+  songs: z.array(songSchema).min(1, 'Pelo menos uma música é obrigatória'),
+  observations: z.string().optional(),
+  // Campos originais para compatibilidade
+  name: z.string().min(1, 'Nome é obrigatório'),
+  description: z.string().optional(),
+  status: z.enum(['draft', 'in_progress', 'completed', 'cancelled']).default('draft'),
+  created_by: z.string().min(1, 'Criador é obrigatório'),
+});
+
+type ProjectFormData = z.infer<typeof projectSchema>;
+
+interface ProjectFormProps {
+  project?: any;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) {
+  const createProject = useCreateProject();
+  const updateProject = useUpdateProject();
+
+  const form = useForm<ProjectFormData>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      release_type: project?.release_type || 'single',
+      songs: project?.songs || [{
+        song_name: '',
+        collaboration_type: 'solo',
+        track_type: 'original',
+        instrumental: 'nao',
+        genre: '',
+        composers: [{ name: '' }],
+        performers: [{ name: '' }],
+        producers: [{ name: '' }],
+        lyrics: '',
+        audio_files: [],
+      }],
+      observations: project?.observations || '',
+      // Campos originais para compatibilidade
+      name: project?.name || '',
+      description: project?.description || '',
+      status: project?.status || 'draft',
+      created_by: project?.created_by || '00000000-0000-0000-0000-000000000000',
+    },
+  });
+
+  const releaseType = form.watch('release_type');
+
+  const {
+    fields: songFields,
+    append: appendSong,
+    remove: removeSong,
+  } = useFieldArray({
+    control: form.control,
+    name: 'songs',
+  });
+
+  const onSubmit = async (data: ProjectFormData) => {
+    try {
+      // Atualizar nome do projeto baseado no primeiro nome da música
+      const firstSong = data.songs[0];
+      const projectData = {
+        ...data,
+        name: firstSong.song_name,
+        description: `${data.release_type} - ${firstSong.song_name} (${firstSong.genre})`,
+      };
+
+      if (project) {
+        await updateProject.mutateAsync({
+          id: project.id,
+          data: projectData as ProjectUpdate,
+        });
+      } else {
+        await createProject.mutateAsync(projectData as ProjectInsert);
+      }
+      
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error saving project:', error);
+    }
+  };
+
+  const isLoading = createProject.isPending || updateProject.isPending;
+
+  const addNewSong = () => {
+    appendSong({
+      song_name: '',
+      collaboration_type: 'solo',
+      track_type: 'original',
+      instrumental: 'nao',
+      genre: '',
+      composers: [{ name: '' }],
+      performers: [{ name: '' }],
+      producers: [{ name: '' }],
+      lyrics: '',
+      audio_files: [],
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="release_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo de Lançamento *</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="single">Single</SelectItem>
+                  <SelectItem value="ep">EP</SelectItem>
+                  <SelectItem value="album">Álbum</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Seção de Músicas */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">
+              {releaseType === 'single' ? 'Música' : 'Músicas'}
+            </h3>
+            {(releaseType === 'ep' || releaseType === 'album') && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addNewSong}
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Adicionar Música
+              </Button>
+            )}
+          </div>
+
+          {songFields.map((songField, songIndex) => (
+            <div key={songField.id} className="border rounded-lg p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">
+                  {songFields.length > 1 ? `Música ${songIndex + 1}` : 'Detalhes da Música'}
+                </h4>
+                {songFields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeSong(songIndex)}
+                  >
+                    <Trash2Icon className="h-4 w-4 mr-2" />
+                    Remover
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name={`songs.${songIndex}.song_name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome da Música *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o nome da música" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`songs.${songIndex}.collaboration_type`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Solo/Feat *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="solo">Solo</SelectItem>
+                          <SelectItem value="feat">Feat</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`songs.${songIndex}.track_type`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Original/Remix *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="original">Original</SelectItem>
+                          <SelectItem value="remix">Remix</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`songs.${songIndex}.instrumental`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instrumental *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="sim">Sim</SelectItem>
+                          <SelectItem value="nao">Não</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`songs.${songIndex}.genre`}
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Gênero Musical *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o gênero" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="pop">Pop</SelectItem>
+                          <SelectItem value="rock">Rock</SelectItem>
+                          <SelectItem value="hip_hop">Hip Hop</SelectItem>
+                          <SelectItem value="eletronica">Eletrônica</SelectItem>
+                          <SelectItem value="sertanejo">Sertanejo</SelectItem>
+                          <SelectItem value="funk">Funk</SelectItem>
+                          <SelectItem value="mpb">MPB</SelectItem>
+                          <SelectItem value="samba">Samba</SelectItem>
+                          <SelectItem value="reggae">Reggae</SelectItem>
+                          <SelectItem value="jazz">Jazz</SelectItem>
+                          <SelectItem value="blues">Blues</SelectItem>
+                          <SelectItem value="country">Country</SelectItem>
+                          <SelectItem value="reggaeton">Reggaeton</SelectItem>
+                          <SelectItem value="trap">Trap</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <SongCreditsSection songIndex={songIndex} form={form} />
+
+              <FormField
+                control={form.control}
+                name={`songs.${songIndex}.lyrics`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Letra</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Digite a letra da música..."
+                        className="min-h-[150px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-4">
+                <FormLabel>Arquivos de Áudio (MP3/WAV)</FormLabel>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Clique para selecionar arquivos ou arraste e solte aqui
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Formatos aceitos: MP3, WAV
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <FormField
+          control={form.control}
+          name="observations"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observações</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Observações adicionais sobre o projeto..."
+                  className="min-h-[100px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="draft">Rascunho</SelectItem>
+                  <SelectItem value="in_progress">Em Progresso</SelectItem>
+                  <SelectItem value="completed">Concluído</SelectItem>
+                  <SelectItem value="cancelled">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Salvando...' : (project ? 'Atualizar' : 'Criar Projeto')}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+// Componente separado para os créditos da música
+function SongCreditsSection({ songIndex, form }: { songIndex: number; form: any }) {
+  const {
+    fields: composerFields,
+    append: appendComposer,
+    remove: removeComposer,
+  } = useFieldArray({
+    control: form.control,
+    name: `songs.${songIndex}.composers`,
+  });
+
+  const {
+    fields: performerFields,
+    append: appendPerformer,
+    remove: removePerformer,
+  } = useFieldArray({
+    control: form.control,
+    name: `songs.${songIndex}.performers`,
+  });
+
+  const {
+    fields: producerFields,
+    append: appendProducer,
+    remove: removeProducer,
+  } = useFieldArray({
+    control: form.control,
+    name: `songs.${songIndex}.producers`,
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Compositores */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <FormLabel>Compositores *</FormLabel>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => appendComposer({ name: '' })}
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Adicionar Compositor
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {composerFields.map((field, index) => (
+            <div key={field.id} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name={`songs.${songIndex}.composers.${index}.name`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input placeholder="Nome do compositor" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {composerFields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => removeComposer(index)}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Intérpretes */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <FormLabel>Intérpretes *</FormLabel>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => appendPerformer({ name: '' })}
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Adicionar Intérprete
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {performerFields.map((field, index) => (
+            <div key={field.id} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name={`songs.${songIndex}.performers.${index}.name`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input placeholder="Nome do intérprete" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {performerFields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => removePerformer(index)}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Produtores */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <FormLabel>Produtores *</FormLabel>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => appendProducer({ name: '' })}
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Adicionar Produtor
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {producerFields.map((field, index) => (
+            <div key={field.id} className="flex gap-2">
+              <FormField
+                control={form.control}
+                name={`songs.${songIndex}.producers.${index}.name`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input placeholder="Nome do produtor" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {producerFields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => removeProducer(index)}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

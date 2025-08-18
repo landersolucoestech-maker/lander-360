@@ -1,0 +1,335 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+const inventorySchema = z.object({
+  // Basic Information
+  sector: z.string().min(1, "Setor é obrigatório"),
+  category: z.string().min(1, "Categoria é obrigatória"),
+  name: z.string().min(1, "Nome do item é obrigatório"),
+  quantity: z.string().min(1, "Quantidade é obrigatória"),
+  location: z.string().min(1, "Localização é obrigatória"),
+  responsible: z.string().min(1, "Responsável é obrigatório"),
+  status: z.string().min(1, "Status é obrigatório"),
+  
+  // Purchase Information
+  purchaseLocation: z.string().min(1, "Local de compra é obrigatório"),
+  invoiceNumber: z.string().min(1, "Número da nota é obrigatório"),
+  entryDate: z.date({ required_error: "Data de entrada é obrigatória" }),
+  unitValue: z.string().min(1, "Valor unitário é obrigatório"),
+  
+  // Additional Information
+  observations: z.string().optional(),
+});
+
+type InventoryFormData = z.infer<typeof inventorySchema>;
+
+interface InventoryFormProps {
+  onSubmit: (data: InventoryFormData) => void;
+  onCancel: () => void;
+}
+
+export function InventoryForm({ onSubmit, onCancel }: InventoryFormProps) {
+  const form = useForm<InventoryFormData>({
+    resolver: zodResolver(inventorySchema),
+    defaultValues: {
+      entryDate: new Date(),
+      status: "Disponível",
+    },
+  });
+
+  const watchedQuantity = form.watch("quantity");
+  const watchedUnitValue = form.watch("unitValue");
+
+  // Calculate total value automatically
+  const calculateTotalValue = () => {
+    const quantity = parseFloat(watchedQuantity || "0");
+    const unitValue = parseFloat(watchedUnitValue?.replace(/[^\d.,]/g, "")?.replace(",", ".") || "0");
+    return (quantity * unitValue).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-h-[80vh] overflow-y-auto">
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Informações Básicas</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="sector"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Setor</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Estúdio, Escritório, Marketing" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="audio">Áudio</SelectItem>
+                        <SelectItem value="video">Vídeo</SelectItem>
+                        <SelectItem value="estrutura">Estrutura</SelectItem>
+                        <SelectItem value="computador">Computador</SelectItem>
+                        <SelectItem value="software">Software</SelectItem>
+                        <SelectItem value="mobilia">Mobilia</SelectItem>
+                        <SelectItem value="iluminacao">Iluminação</SelectItem>
+                        <SelectItem value="escritorio">Escritório</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Item</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Microfone Condensador AKG C414" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantidade</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="1" placeholder="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Localização</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Estúdio A, Sala 201, Depósito" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="responsible"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Responsável</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nome do responsável" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Disponível">Disponível</SelectItem>
+                      <SelectItem value="Em Uso">Em Uso</SelectItem>
+                      <SelectItem value="Manutenção">Em Manutenção</SelectItem>
+                      <SelectItem value="Danificado">Danificado</SelectItem>
+                      <SelectItem value="Emprestado">Emprestado</SelectItem>
+                      <SelectItem value="Descartado">Descartado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Purchase Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Informações de Compra</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="purchaseLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Local de Compra</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Loja de Música ABC" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="invoiceNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Número da Nota Fiscal</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: NF-123456" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="entryDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de Entrada</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "dd/MM/yyyy")
+                          ) : (
+                            <span>Selecionar data</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="unitValue"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valor Unitário (R$)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0,00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Valor Total (Calculado)</label>
+              <div className="h-10 px-3 py-2 border border-input bg-muted/50 rounded-md text-sm font-medium text-foreground flex items-center">
+                {calculateTotalValue()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Informações Adicionais</h3>
+          
+          <FormField
+            control={form.control}
+            name="observations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observações</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Observações adicionais sobre o item (garantia, especificações técnicas, etc.)" 
+                    className="min-h-[80px]"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button type="submit" className="flex-1">
+            Cadastrar Item
+          </Button>
+          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+            Cancelar
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
