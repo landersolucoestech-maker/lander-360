@@ -28,6 +28,7 @@ import MarketingBriefing from "./pages/marketing/Briefing";
 import Auth from "./pages/Auth";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Suporte from "./pages/Suporte";
+import PortalAdmin from "./pages/PortalAdmin";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -61,6 +62,7 @@ const App = () => (
           <Route path="/marketing/briefing" element={<MarketingBriefing />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/suporte" element={<Suporte />} />
+          <Route path="/portal-admin" element={<PortalAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
