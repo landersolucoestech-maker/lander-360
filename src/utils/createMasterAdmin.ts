@@ -7,8 +7,8 @@ export async function createMasterAdmin() {
     
     const { data, error } = await supabase.functions.invoke('create-admin-user', {
       body: JSON.stringify({
-        email: 'deyvisson.lander@gmail.com',
-        full_name: 'Deyvisson Lander Andrade',
+        email: 'deyvisson.gestao360@gmail.com',
+        full_name: 'Deyvisson Gestão 360 Andrade',
         phone: '(33)99917-9552'
       })
     });

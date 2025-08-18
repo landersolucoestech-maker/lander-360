@@ -169,12 +169,12 @@ export function AppSidebar({
           <div className="flex h-12 w-12 items-center justify-center">
             <img 
               src="/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" 
-              alt="Lander Records Logo" 
+              alt="Gestão 360 Logo" 
               className="h-10 w-auto object-contain"
             />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">LANDER RECORDS</h1>
+            <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">GESTÃO 360</h1>
           </div>
         </div>
       </SidebarHeader>

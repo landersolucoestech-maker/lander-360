@@ -130,7 +130,7 @@ const Auth = () => {
             
             {/* Logo */}
             <div className="text-center">
-              <img src="/lovable-uploads/689c827e-2c73-45d3-aa81-618d147389c5.png" alt="LANDER RECORDS Logo" className="w-80 h-80 mx-auto object-contain" />
+              <img src="/lovable-uploads/689c827e-2c73-45d3-aa81-618d147389c5.png" alt="GESTÃO 360 Logo" className="w-80 h-80 mx-auto object-contain" />
             </div>
           </div>
           
@@ -190,7 +190,7 @@ const Auth = () => {
 
           {/* Copyright */}
           <div className="text-center text-white text-sm opacity-80">
-            Copyright © LANDER RECORDS. Todos os direitos reservados.
+            Copyright © GESTÃO 360. Todos os direitos reservados.
           </div>
         </div>
       </section>

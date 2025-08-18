@@ -27,8 +27,8 @@ Deno.serve(async (req) => {
     console.log('Creating admin user...')
 
     // Use provided data for Deyvisson as default admin
-    const email = 'deyvisson.lander@gmail.com';
-    const full_name = 'Deyvisson Lander Andrade';
+    const email = 'deyvisson.gestao360@gmail.com';
+    const full_name = 'Deyvisson Gestão 360 Andrade';
     const phone = '(33)99917-9552';
 
     // Check if user already exists

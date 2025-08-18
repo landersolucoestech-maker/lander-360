@@ -85,7 +85,7 @@ const formatValue = (value: any, field: ReportField): string => {
 const replaceVariables = (text: string, data: any[]): string => {
   const now = new Date();
   return text
-    .replace(/\{\{companyName\}\}/g, 'LANDER RECORDS')
+    .replace(/\{\{companyName\}\}/g, 'GESTÃO 360')
     .replace(/\{\{reportTitle\}\}/g, 'Relatório Personalizado')
     .replace(/\{\{date\}\}/g, now.toLocaleDateString('pt-BR'))
     .replace(/\{\{time\}\}/g, now.toLocaleTimeString('pt-BR'))

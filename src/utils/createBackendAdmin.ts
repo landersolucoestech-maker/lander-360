@@ -20,7 +20,7 @@ async function createBackendAdmin() {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('full_name', 'Deyvisson Lander Andrade')
+      .eq('full_name', 'Deyvisson Gestão 360 Andrade')
       .single();
 
     if (!profileError && profile) {

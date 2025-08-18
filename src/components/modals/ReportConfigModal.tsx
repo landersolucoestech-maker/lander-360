@@ -1954,7 +1954,7 @@ export function ReportConfigModal({
                             fontWeight: config.styling.fonts.title.weight,
                             color: config.styling.colors.primary
                           }}>
-                                {config.layout.header.content.replace('{{companyName}}', 'LANDER RECORDS').replace('{{reportTitle}}', config.name).replace('{{date}}', new Date().toLocaleDateString('pt-BR'))}
+                                {config.layout.header.content.replace('{{companyName}}', 'GESTÃO 360').replace('{{reportTitle}}', config.name).replace('{{date}}', new Date().toLocaleDateString('pt-BR'))}
                               </div>
                               {config.layout.logo.show && config.layout.logo.position === 'right' && config.layout.logo.url && <img src={config.layout.logo.url} alt="Logo" style={{
                             height: `${config.layout.logo.size}px`

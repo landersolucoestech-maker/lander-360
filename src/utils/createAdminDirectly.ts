@@ -27,7 +27,7 @@ if (import.meta.env.DEV) {
   createAdminDirectly().then(result => {
     if (result.success) {
       console.log('✅ Admin criado/atualizado com sucesso!');
-      console.log('📧 Email: deyvisson.lander@gmail.com');
+      console.log('📧 Email: deyvisson.gestao360@gmail.com');
       console.log('🔐 Senha: Admin@123456');
     } else {
       console.error('❌ Falha ao criar admin:', result.error);

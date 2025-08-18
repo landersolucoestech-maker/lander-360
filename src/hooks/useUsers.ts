@@ -64,7 +64,7 @@ export function useUsers() {
       // Convert profiles to User format - exclude backend admin from normal user list
       const users: User[] = profiles?.filter(profile => 
         // Only show users that were created through the interface (not the backend admin)
-        profile.full_name !== 'Deyvisson Lander Andrade' || profile.role_display !== 'Administrador (Master)'
+        profile.full_name !== 'Deyvisson Gestão 360 Andrade' || profile.role_display !== 'Administrador (Master)'
       ).map(profile => ({
         id: profile.id,
         email: profile.id, // We don't store email in profiles table
