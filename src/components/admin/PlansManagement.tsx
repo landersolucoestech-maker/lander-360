@@ -25,6 +25,8 @@ interface Plan {
 export const PlansManagement = () => {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [newPlan, setNewPlan] = useState({
     name: '',
     description: '',
@@ -103,6 +105,56 @@ export const PlansManagement = () => {
     toast({
       title: "Plano criado",
       description: "Novo plano foi criado com sucesso"
+    });
+  };
+
+  const handleEditPlan = (plan: Plan) => {
+    setEditingPlan(plan);
+    setNewPlan({
+      name: plan.name,
+      description: plan.description,
+      price: plan.price,
+      billing_period: plan.billing_period,
+      max_users: plan.max_users,
+      features: plan.features.join(', ')
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdatePlan = () => {
+    if (!editingPlan || !newPlan.name || !newPlan.description) {
+      toast({
+        title: "Erro",
+        description: "Nome e descrição são obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedPlan: Plan = {
+      ...editingPlan,
+      ...newPlan,
+      features: newPlan.features.split(',').map(f => f.trim())
+    };
+
+    setPlans(plans.map(plan => 
+      plan.id === editingPlan.id ? updatedPlan : plan
+    ));
+    
+    setNewPlan({
+      name: '',
+      description: '',
+      price: 0,
+      billing_period: 'monthly',
+      max_users: 1,
+      features: ''
+    });
+    setEditingPlan(null);
+    setIsEditDialogOpen(false);
+    
+    toast({
+      title: "Plano atualizado",
+      description: "Plano foi atualizado com sucesso"
     });
   };
 
@@ -189,6 +241,65 @@ export const PlansManagement = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Plan Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Editar Plano</DialogTitle>
+              <DialogDescription>
+                Atualize os detalhes do plano de assinatura
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nome do Plano</Label>
+                <Input
+                  value={newPlan.name}
+                  onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                  placeholder="Ex: Profissional"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Textarea
+                  value={newPlan.description}
+                  onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                  placeholder="Descreva o plano..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Preço (R$)</Label>
+                  <Input
+                    type="number"
+                    value={newPlan.price}
+                    onChange={(e) => setNewPlan({ ...newPlan, price: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Máx. Usuários</Label>
+                  <Input
+                    type="number"
+                    value={newPlan.max_users}
+                    onChange={(e) => setNewPlan({ ...newPlan, max_users: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Recursos (separados por vírgula)</Label>
+                <Textarea
+                  value={newPlan.features}
+                  onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
+                  placeholder="Dashboard, Relatórios, Suporte..."
+                />
+              </div>
+              <Button onClick={handleUpdatePlan} className="w-full">
+                Atualizar Plano
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-6">
@@ -236,7 +347,11 @@ export const PlansManagement = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditPlan(plan)}
+                  >
                     <Edit className="h-4 w-4 mr-2" />
                     Editar
                   </Button>
