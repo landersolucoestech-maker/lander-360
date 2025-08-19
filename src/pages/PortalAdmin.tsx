@@ -21,7 +21,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Check, EllipsisVertical, Plus, Save, Shield, Upload, Users, FileWarning, PlayCircle, PauseCircle, RotateCcw, Building2, Coins, PackageSearch, BarChart3, FlagTriangleRight, Layers, Receipt, BadgeDollarSign } from "lucide-react";
+import { Check, EllipsisVertical, Plus, Save, Shield, Upload, Users, FileWarning, PlayCircle, PauseCircle, RotateCcw, Building2, Coins, PackageSearch, BarChart3, FlagTriangleRight, Layers, Receipt, BadgeDollarSign, CreditCard, MessageSquare, FileText, Settings, Database, Download } from "lucide-react";
+import { PlansManagement } from "@/components/admin/PlansManagement";
+import { BillingManagement } from "@/components/admin/BillingManagement";
+import { SupportTickets } from "@/components/admin/SupportTickets";
+import { AuditLog } from "@/components/admin/AuditLog";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
+import { SystemSettings } from "@/components/admin/SystemSettings";
+import { BackupRestore } from "@/components/admin/BackupRestore";
 
 // Types
 interface Tenant {
@@ -488,6 +495,7 @@ function Kpi({ title, value, icon: Icon }: { title: string; value: string; icon:
 
 export default function PortalAdmin() {
   const [tenants, setTenants] = useState<Tenant[]>(INITIAL_TENANTS);
+  const [activeTab, setActiveTab] = useState("clientes");
 
   const totals = useMemo(() => {
     const active = tenants.filter(t => t.status === "active").length;
@@ -532,31 +540,82 @@ export default function PortalAdmin() {
           <Kpi title="Suspensos" value={String(totals.suspended)} icon={PackageSearch} />
         </div>
 
-        {/* Guia principal */}
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Layers className="w-4 h-4"/>Clientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TenantsTable data={tenants} onUpdate={updateTenant} onDelete={deleteTenant} />
-          </CardContent>
-        </Card>
+        {/* Navegação por Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-8 gap-2">
+            <TabsTrigger value="clientes" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Clientes
+            </TabsTrigger>
+            <TabsTrigger value="planos" className="flex items-center gap-2">
+              <Layers className="w-4 h-4" />
+              Planos
+            </TabsTrigger>
+            <TabsTrigger value="faturamento" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Faturamento
+            </TabsTrigger>
+            <TabsTrigger value="tickets" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Suporte
+            </TabsTrigger>
+            <TabsTrigger value="auditoria" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Auditoria
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="configuracoes" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Config
+            </TabsTrigger>
+            <TabsTrigger value="backup" className="flex items-center gap-2">
+              <Database className="w-4 h-4" />
+              Backup
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Futuras sessões (placeholders) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Planos & Assinaturas</CardTitle></CardHeader>
-            <CardContent className="text-sm text-muted-foreground">Gerencie planos, billing cycle, cupons e preços regionais.</CardContent>
-          </Card>
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Faturamento</CardTitle></CardHeader>
-            <CardContent className="text-sm text-muted-foreground">Integre com Stripe, Pagar.me, Asaas, Mercado Pago ou QuickBooks.</CardContent>
-          </Card>
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Auditoria & Relatórios</CardTitle></CardHeader>
-            <CardContent className="text-sm text-muted-foreground">Logs de segurança, uso e relatórios de receita (MRR, churn, LTV).</CardContent>
-          </Card>
-        </div>
+          <TabsContent value="clientes" className="mt-6">
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Users className="w-4 h-4"/>Gestão de Clientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TenantsTable data={tenants} onUpdate={updateTenant} onDelete={deleteTenant} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="planos" className="mt-6">
+            <PlansManagement />
+          </TabsContent>
+
+          <TabsContent value="faturamento" className="mt-6">
+            <BillingManagement />
+          </TabsContent>
+
+          <TabsContent value="tickets" className="mt-6">
+            <SupportTickets />
+          </TabsContent>
+
+          <TabsContent value="auditoria" className="mt-6">
+            <AuditLog />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <AnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="configuracoes" className="mt-6">
+            <SystemSettings />
+          </TabsContent>
+
+          <TabsContent value="backup" className="mt-6">
+            <BackupRestore />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
