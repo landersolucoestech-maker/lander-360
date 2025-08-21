@@ -11,9 +11,9 @@ if (import.meta.env.DEV) {
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider
     attribute="class"
-    defaultTheme="system"
+    defaultTheme="light"
     enableSystem
-    disableTransitionOnChange
+    storageKey="vite-ui-theme"
   >
     <App />
   </ThemeProvider>
