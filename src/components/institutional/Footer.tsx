@@ -29,8 +29,8 @@ export function InstitutionalFooter() {
             <h3 className="font-semibold">Navegação</h3>
             <ul className="space-y-2 text-sm">
               <li><Link to="/institutional" className="text-muted-foreground hover:text-primary">Início</Link></li>
-              <li><Link to="/institutional/about" className="text-muted-foreground hover:text-primary">Sobre</Link></li>
-              <li><Link to="/institutional/services" className="text-muted-foreground hover:text-primary">Serviços</Link></li>
+              <li><Link to="/institutional/services" className="text-muted-foreground hover:text-primary">Funcionalidades</Link></li>
+              <li><Link to="/institutional/about" className="text-muted-foreground hover:text-primary">Preços</Link></li>
               <li><Link to="/institutional/contact" className="text-muted-foreground hover:text-primary">Contato</Link></li>
             </ul>
           </div>
