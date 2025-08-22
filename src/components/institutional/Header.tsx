@@ -9,9 +9,8 @@ export function InstitutionalHeader() {
 
   const navigation = [
     { name: "Início", href: "/institutional" },
-    { name: "Funcionalidades", href: "/institutional/services" },
-    { name: "Preços", href: "/institutional/about" },
-    { name: "Base de Conhecimento", href: "/institutional/services" },
+    { name: "Sobre", href: "/institutional/about" },
+    { name: "Serviços", href: "/institutional/services" },
     { name: "Contato", href: "/institutional/contact" }
   ];
 
@@ -43,11 +42,11 @@ export function InstitutionalHeader() {
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" asChild>
-            <Link to="/auth">Entrar</Link>
+          <Button variant="outline" asChild>
+            <Link to="/auth">Login</Link>
           </Button>
-          <Button className="bg-slate-900 hover:bg-slate-800 text-white" asChild>
-            <Link to="/auth">Assine Agora</Link>
+          <Button asChild>
+            <Link to="/auth">Começar agora</Link>
           </Button>
         </div>
 
@@ -80,10 +79,10 @@ export function InstitutionalHeader() {
             ))}
             <div className="pt-4 border-t space-y-2">
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/auth">Entrar</Link>
+                <Link to="/auth">Login</Link>
               </Button>
-              <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white" asChild>
-                <Link to="/auth">Assine Agora</Link>
+              <Button className="w-full" asChild>
+                <Link to="/auth">Começar agora</Link>
               </Button>
             </div>
           </nav>
