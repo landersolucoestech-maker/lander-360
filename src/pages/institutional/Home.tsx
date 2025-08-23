@@ -48,32 +48,32 @@ export default function InstitutionalHome() {
   return (
     <InstitutionalLayout>
       {/* Hero Section */}
-      <section className="relative min-h-screen bg-black text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-black"></div>
+      <section className="relative min-h-screen bg-background text-foreground overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-background"></div>
         <div className="relative z-10 container mx-auto px-4 py-20 lg:py-32">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
             <div className="space-y-8">
               <div className="space-y-4">
-                <Badge variant="secondary" className="bg-red-600 text-white border-red-600 hover:bg-red-700">
+                <Badge variant="secondary" className="bg-primary text-primary-foreground border-primary hover:bg-primary/90">
                   Sistema #1 em Gestão Musical
                 </Badge>
                 <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
                   Gestão Musical
-                  <span className="block text-red-500">Inteligente</span>
+                  <span className="block text-primary">Inteligente</span>
                 </h1>
-                <p className="text-xl lg:text-2xl text-gray-300 leading-relaxed">
+                <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed">
                   A plataforma completa para gravadoras, produtoras e artistas. 
                   Gerencie contratos, lançamentos, finanças e marketing em um só lugar.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white border-0 px-8 py-6 text-lg" asChild>
+                <Button size="lg" className="px-8 py-6 text-lg" asChild>
                   <Link to="/institutional/contact">
                     Solicitar Demonstração
                     <ArrowRight className="ml-2 h-6 w-6" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black px-8 py-6 text-lg" asChild>
+                <Button size="lg" variant="outline" className="px-8 py-6 text-lg border-foreground text-foreground hover:bg-foreground hover:text-background" asChild>
                   <Link to="/institutional/services">
                     Conhecer Recursos
                   </Link>
@@ -81,49 +81,49 @@ export default function InstitutionalHome() {
               </div>
               <div className="grid grid-cols-3 gap-8 pt-8">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-red-500">500+</p>
-                  <p className="text-sm text-gray-400">Empresas</p>
+                  <p className="text-3xl font-bold text-primary">500+</p>
+                  <p className="text-sm text-muted-foreground">Empresas</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-red-500">10k+</p>
-                  <p className="text-sm text-gray-400">Artistas</p>
+                  <p className="text-3xl font-bold text-primary">10k+</p>
+                  <p className="text-sm text-muted-foreground">Artistas</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-red-500">99.9%</p>
-                  <p className="text-sm text-gray-400">Uptime</p>
+                  <p className="text-3xl font-bold text-primary">99.9%</p>
+                  <p className="text-sm text-muted-foreground">Uptime</p>
                 </div>
               </div>
             </div>
             <div className="relative lg:pl-12">
               <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-red-600 to-red-800 rounded-2xl blur opacity-30"></div>
-                <div className="relative bg-gray-900 rounded-2xl p-8 border border-gray-800">
+                <div className="absolute -inset-4 bg-gradient-to-r from-primary to-primary/80 rounded-2xl blur opacity-30"></div>
+                <div className="relative bg-card rounded-2xl p-8 border">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold text-white">Dashboard Gestão 360</h3>
-                      <Badge className="bg-green-600 text-white">Online</Badge>
+                      <h3 className="text-xl font-semibold">Dashboard Gestão 360</h3>
+                      <Badge className="bg-success text-success-foreground">Online</Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-800 rounded-lg p-4">
-                        <p className="text-sm text-gray-400">Receita Mensal</p>
-                        <p className="text-2xl font-bold text-green-400">R$ 2.1M</p>
-                        <p className="text-xs text-green-400">+15% vs mês anterior</p>
+                      <div className="bg-muted rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground">Receita Mensal</p>
+                        <p className="text-2xl font-bold text-success">R$ 2.1M</p>
+                        <p className="text-xs text-success">+15% vs mês anterior</p>
                       </div>
-                      <div className="bg-gray-800 rounded-lg p-4">
-                        <p className="text-sm text-gray-400">Artistas Ativos</p>
-                        <p className="text-2xl font-bold text-blue-400">347</p>
-                        <p className="text-xs text-blue-400">+23 novos</p>
+                      <div className="bg-muted rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground">Artistas Ativos</p>
+                        <p className="text-2xl font-bold text-info">347</p>
+                        <p className="text-xs text-info">+23 novos</p>
                       </div>
                     </div>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-sm text-gray-400 mb-3">Lançamentos Programados</p>
+                    <div className="bg-muted rounded-lg p-4">
+                      <p className="text-sm text-muted-foreground mb-3">Lançamentos Programados</p>
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-white">Single "Verão 2024"</span>
-                          <span className="text-xs text-red-400">Em 5 dias</span>
+                          <span className="text-sm">Single "Verão 2024"</span>
+                          <span className="text-xs text-primary">Em 5 dias</span>
                         </div>
-                        <div className="w-full bg-gray-700 rounded-full h-2">
-                          <div className="bg-red-600 h-2 rounded-full w-4/5"></div>
+                        <div className="w-full bg-accent rounded-full h-2">
+                          <div className="bg-primary h-2 rounded-full w-4/5"></div>
                         </div>
                       </div>
                     </div>
@@ -134,8 +134,8 @@ export default function InstitutionalHome() {
           </div>
         </div>
         {/* Elementos decorativos */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-red-600/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-red-800/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
       </section>
 
       {/* Stats Section */}
@@ -143,7 +143,7 @@ export default function InstitutionalHome() {
         <div className="container mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center text-white">
+              <div key={index} className="text-center text-primary-foreground">
                 <p className="text-3xl lg:text-4xl font-bold">{stat.number}</p>
                 <p className="text-primary-foreground/80">{stat.label}</p>
               </div>
@@ -185,7 +185,7 @@ export default function InstitutionalHome() {
       </section>
 
       {/* Testimonial Section */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-accent">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
@@ -202,7 +202,7 @@ export default function InstitutionalHome() {
                 </blockquote>
                 <div className="flex items-center justify-center space-x-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
                   ))}
                 </div>
                 <div>
@@ -216,9 +216,9 @@ export default function InstitutionalHome() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-primary to-secondary">
+      <section className="py-20 px-4 elegant-gradient">
         <div className="container mx-auto text-center">
-          <div className="max-w-3xl mx-auto text-white">
+          <div className="max-w-3xl mx-auto text-primary-foreground">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
               Pronto para transformar sua gestão musical?
             </h2>
@@ -233,7 +233,7 @@ export default function InstitutionalHome() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" asChild>
+              <Button size="lg" variant="outline" className="border-foreground text-foreground hover:bg-foreground hover:text-background" asChild>
                 <Link to="/institutional/about">
                   Saiba mais sobre nós
                 </Link>
