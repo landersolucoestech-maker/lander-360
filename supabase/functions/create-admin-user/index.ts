@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   try {
     // Create Supabase admin client
     const supabaseAdmin = createClient(
-      'https://drftrdectyobzritmugt.supabase.co',
+      Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
@@ -45,9 +45,7 @@ Deno.serve(async (req) => {
         .upsert({
           id: userId,
           full_name: full_name,
-          phone: phone,
-          role_display: 'Administrador (Master)',
-          is_active: true
+          phone: phone
         });
 
       if (profileError) {
@@ -119,9 +117,7 @@ Deno.serve(async (req) => {
       .upsert({
         id: userId,
         full_name: full_name,
-        phone: phone,
-        role_display: 'Administrador (Master)',
-        is_active: true
+        phone: phone
       })
 
     if (profileError) {
@@ -159,12 +155,13 @@ Deno.serve(async (req) => {
       }
     )
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Unexpected error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
-        details: error.message 
+        details: errorMessage 
       }),
       { 
         status: 500,

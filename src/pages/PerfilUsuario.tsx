@@ -51,21 +51,16 @@ const PerfilUsuario = () => {
     enabled: !!user?.id
   });
 
-  // Get user org membership for role
-  const { data: userOrgMembership } = useQuery({
-    queryKey: ['org-membership', user?.id],
+  // Get user roles
+  const { data: userRoles } = useQuery({
+    queryKey: ['user-roles', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const { data, error } = await supabase
-        .from('org_members')
+      const { data } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
+        .eq('user_id', user.id);
       
       return data;
     },
@@ -78,7 +73,7 @@ const PerfilUsuario = () => {
     values: {
       full_name: profile?.full_name || user?.user_metadata?.full_name || "",
       email: user?.email || "",
-      phone: "",
+      phone: profile?.phone || "",
     },
   });
 
@@ -89,6 +84,7 @@ const PerfilUsuario = () => {
 
       const profileData = {
         full_name: data.full_name,
+        phone: data.phone || null,
       };
 
       const { data: existingProfile } = await supabase
@@ -98,7 +94,6 @@ const PerfilUsuario = () => {
         .maybeSingle();
 
       if (existingProfile) {
-        // Atualizar perfil existente
         const { data: updatedData, error } = await supabase
           .from('profiles')
           .update(profileData)
@@ -106,56 +101,35 @@ const PerfilUsuario = () => {
           .select()
           .single();
         
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
         return updatedData;
       } else {
-        // Criar novo perfil
         const { data: newData, error } = await supabase
           .from('profiles')
-          .insert({
-            id: user.id,
-            ...profileData,
-          })
+          .insert({ id: user.id, ...profileData })
           .select()
           .single();
         
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
         return newData;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       setIsEditing(false);
-      toast({
-        title: "Sucesso",
-        description: "Perfil atualizado com sucesso!",
-      });
+      toast({ title: "Sucesso", description: "Perfil atualizado com sucesso!" });
     },
     onError: (error) => {
       console.error('Error updating profile:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao atualizar perfil. Tente novamente.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro", description: "Falha ao atualizar perfil.", variant: "destructive" });
     },
   });
 
-  const onSubmit = (data: ProfileFormData) => {
-    updateProfileMutation.mutate(data);
-  };
+  const onSubmit = (data: ProfileFormData) => updateProfileMutation.mutate(data);
 
   const handleCancel = () => {
     setIsEditing(false);
-    form.reset({
-      full_name: profile?.full_name || user?.user_metadata?.full_name || "",
-      email: user?.email || "",
-      phone: "",
-    });
+    form.reset();
   };
 
   if (isLoading) {
@@ -167,11 +141,7 @@ const PerfilUsuario = () => {
             <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6">
               <div className="animate-pulse">
                 <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
-                <div className="h-4 bg-muted rounded w-1/2 mb-8"></div>
-                <div className="space-y-4">
-                  <div className="h-32 bg-muted rounded"></div>
-                  <div className="h-64 bg-muted rounded"></div>
-                </div>
+                <div className="h-64 bg-muted rounded"></div>
               </div>
             </div>
           </SidebarInset>
@@ -181,18 +151,11 @@ const PerfilUsuario = () => {
   }
 
   const userInitials = (profile?.full_name || user?.user_metadata?.full_name || "U")
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+    .split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-  const userRole = userOrgMembership?.role || 'member';
-  const userRoleLabel = {
-    admin: 'Administrador',
-    member: 'Membro',
-    manager: 'Gerente'
-  }[userRole] || 'Usuário';
+  const hasAdminRole = userRoles?.some(r => r.role === 'admin');
+  const userRole = hasAdminRole ? 'admin' : 'user';
+  const userRoleLabel = { admin: 'Administrador', manager: 'Gerente', user: 'Usuário' }[userRole] || 'Usuário';
 
   return (
     <SidebarProvider>
@@ -200,191 +163,91 @@ const PerfilUsuario = () => {
         <AppSidebar />
         <SidebarInset className="flex-1">
           <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 space-y-6">
-            {/* Header */}
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
-              <p className="text-muted-foreground">
-                Gerencie suas informações pessoais e configurações da conta
-              </p>
+              <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Profile Overview Card */}
               <Card className="lg:col-span-1">
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="relative">
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage src={profile?.avatar_url || ""} alt="Avatar" />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-medium">
-                          {userInitials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
-                        onClick={() => toast({ title: "Em breve", description: "Funcionalidade de upload de avatar será implementada em breve!" })}
-                      >
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={profile?.avatar_url || ""} alt="Avatar" />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-2xl">{userInitials}</AvatarFallback>
+                    </Avatar>
                   </div>
-                  <CardTitle className="text-xl">
-                    {profile?.full_name || user?.user_metadata?.full_name || "Usuário"}
-                  </CardTitle>
+                  <CardTitle>{profile?.full_name || user?.user_metadata?.full_name || "Usuário"}</CardTitle>
                   <CardDescription className="flex items-center justify-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    {user?.email}
+                    <Mail className="h-4 w-4" />{user?.email}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Função:</span>
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Shield className="h-3 w-3" />
-                        {userRoleLabel}
-                      </Badge>
+                      <Badge variant="outline"><Shield className="h-3 w-3 mr-1" />{userRoleLabel}</Badge>
                     </div>
-                    
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Telefone:</span>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        Não informado
-                      </span>
+                      <span className="text-sm text-muted-foreground">{profile?.phone || "Não informado"}</span>
                     </div>
-                    
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Membro desde:</span>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(user?.created_at || '').toLocaleDateString('pt-BR', {
-                          month: 'short',
-                          year: 'numeric'
-                        })}
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(user?.created_at || '').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Profile Form Card */}
               <Card className="lg:col-span-2">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
-                      Informações Pessoais
-                    </CardTitle>
-                    <CardDescription>
-                      Atualize suas informações básicas de perfil
-                    </CardDescription>
+                    <CardTitle className="flex items-center gap-2"><User className="h-5 w-5" />Informações Pessoais</CardTitle>
+                    <CardDescription>Atualize suas informações básicas</CardDescription>
                   </div>
-                  {!isEditing && (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Editar Perfil
-                    </Button>
-                  )}
+                  {!isEditing && <Button variant="outline" onClick={() => setIsEditing(true)}>Editar Perfil</Button>}
                 </CardHeader>
                 <CardContent>
                   {isEditing ? (
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                          control={form.control}
-                          name="full_name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nome Completo</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Seu nome completo" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="email" 
-                                  placeholder="email@exemplo.com" 
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Telefone</FormLabel>
-                              <FormControl>
-                                <Input placeholder="(11) 99999-9999" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
+                        <FormField control={form.control} name="full_name" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome Completo</FormLabel>
+                            <FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="email" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl><Input type="email" disabled {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="phone" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Telefone</FormLabel>
+                            <FormControl><Input placeholder="(11) 99999-9999" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                         <div className="flex justify-end gap-3">
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={handleCancel}
-                            disabled={updateProfileMutation.isPending}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button 
-                            type="submit" 
-                            disabled={updateProfileMutation.isPending}
-                            className="flex items-center gap-2"
-                          >
-                            <Save className="h-4 w-4" />
-                            {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                          <Button type="button" variant="outline" onClick={handleCancel}>Cancelar</Button>
+                          <Button type="submit" disabled={updateProfileMutation.isPending}>
+                            <Save className="h-4 w-4 mr-2" />{updateProfileMutation.isPending ? 'Salvando...' : 'Salvar'}
                           </Button>
                         </div>
                       </form>
                     </Form>
                   ) : (
-                    <div className="space-y-6">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Nome Completo</label>
-                          <p className="text-base">
-                            {profile?.full_name || user?.user_metadata?.full_name || "Não informado"}
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Email</label>
-                          <p className="text-base">
-                            {user?.email || "Não informado"}
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <label className="text-sm font-medium text-muted-foreground">Telefone</label>
-                          <p className="text-base">
-                            Não informado
-                          </p>
-                        </div>
-                      </div>
+                    <div className="space-y-4">
+                      <div><label className="text-sm font-medium text-muted-foreground">Nome Completo</label><p>{profile?.full_name || "Não informado"}</p></div>
+                      <div><label className="text-sm font-medium text-muted-foreground">Email</label><p>{user?.email}</p></div>
+                      <div><label className="text-sm font-medium text-muted-foreground">Telefone</label><p>{profile?.phone || "Não informado"}</p></div>
                     </div>
                   )}
                 </CardContent>

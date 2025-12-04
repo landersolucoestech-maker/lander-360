@@ -21,60 +21,42 @@ export const useBackupData = () => {
 
     setIsExporting(true);
     try {
-      // Get user's organization
-      const { data: orgMember } = await supabase
-        .from('org_members')
-        .select('org_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!orgMember) {
-        throw new Error('Organização não encontrada');
-      }
-
-      const orgId = orgMember.org_id;
-
       // Export main data tables
-      const exportData: Record<string, any> = {
+      const exportData: Record<string, unknown> = {
         export_date: new Date().toISOString(),
-        org_id: orgId,
+        user_id: user.id,
         data: {}
       };
 
       // Export artists
       const { data: artistsData } = await supabase
         .from('artists')
-        .select('*')
-        .eq('org_id', orgId);
-      exportData.data.artists = artistsData || [];
+        .select('*');
+      (exportData.data as Record<string, unknown>).artists = artistsData || [];
 
       // Export projects
       const { data: projectsData } = await supabase
         .from('projects')
-        .select('*')
-        .eq('org_id', orgId);
-      exportData.data.projects = projectsData || [];
+        .select('*');
+      (exportData.data as Record<string, unknown>).projects = projectsData || [];
 
       // Export contracts
       const { data: contractsData } = await supabase
         .from('contracts')
-        .select('*')
-        .eq('org_id', orgId);
-      exportData.data.contracts = contractsData || [];
+        .select('*');
+      (exportData.data as Record<string, unknown>).contracts = contractsData || [];
 
       // Export releases
       const { data: releasesData } = await supabase
         .from('releases')
-        .select('*')
-        .eq('org_id', orgId);
-      exportData.data.releases = releasesData || [];
+        .select('*');
+      (exportData.data as Record<string, unknown>).releases = releasesData || [];
 
       // Export tracks
       const { data: tracksData } = await supabase
         .from('tracks')
-        .select('*')
-        .eq('org_id', orgId);
-      exportData.data.tracks = tracksData || [];
+        .select('*');
+      (exportData.data as Record<string, unknown>).tracks = tracksData || [];
 
       // Create downloadable file
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -118,89 +100,69 @@ export const useBackupData = () => {
 
     setIsBackingUp(true);
     try {
-      // Get user's organization
-      const { data: orgMember } = await supabase
-        .from('org_members')
-        .select('org_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!orgMember) {
-        throw new Error('Organização não encontrada');
-      }
-
-      const orgId = orgMember.org_id;
-
       // Create comprehensive backup
-      const backupData: Record<string, any> = {
+      const backupData: Record<string, unknown> = {
         backup_date: new Date().toISOString(),
-        org_id: orgId,
+        user_id: user.id,
         version: '1.0',
         tables: {}
       };
 
+      const tables = backupData.tables as Record<string, unknown>;
+
       // Backup artists
       const { data: artistsData } = await supabase
         .from('artists')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.artists = artistsData || [];
+        .select('*');
+      tables.artists = artistsData || [];
 
       // Backup projects
       const { data: projectsData } = await supabase
         .from('projects')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.projects = projectsData || [];
+        .select('*');
+      tables.projects = projectsData || [];
 
       // Backup contracts
       const { data: contractsData } = await supabase
         .from('contracts')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.contracts = contractsData || [];
+        .select('*');
+      tables.contracts = contractsData || [];
 
       // Backup releases
       const { data: releasesData } = await supabase
         .from('releases')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.releases = releasesData || [];
+        .select('*');
+      tables.releases = releasesData || [];
 
       // Backup tracks
       const { data: tracksData } = await supabase
         .from('tracks')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.tracks = tracksData || [];
+        .select('*');
+      tables.tracks = tracksData || [];
 
       // Backup contributors
       const { data: contributorsData } = await supabase
         .from('contributors')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.contributors = contributorsData || [];
+        .select('*');
+      tables.contributors = contributorsData || [];
 
       // Backup compositions
       const { data: compositionsData } = await supabase
         .from('compositions')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.compositions = compositionsData || [];
+        .select('*');
+      tables.compositions = compositionsData || [];
 
       // Backup tasks
       const { data: tasksData } = await supabase
         .from('tasks')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.tasks = tasksData || [];
+        .select('*');
+      tables.tasks = tasksData || [];
 
       // Backup distributions
       const { data: distributionsData } = await supabase
         .from('distributions')
-        .select('*')
-        .eq('org_id', orgId);
-      backupData.tables.distributions = distributionsData || [];
+        .select('*');
+      tables.distributions = distributionsData || [];
 
       // Store backup info locally
       const backups = JSON.parse(localStorage.getItem('systemBackups') || '[]');
@@ -208,7 +170,7 @@ export const useBackupData = () => {
         id: Date.now(),
         date: new Date().toISOString(),
         size: JSON.stringify(backupData).length,
-        tables: Object.keys(backupData.tables).length
+        tables: Object.keys(tables).length
       };
       
       backups.unshift(newBackup);

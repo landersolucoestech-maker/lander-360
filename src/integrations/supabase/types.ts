@@ -14,16 +14,1166 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agenda_events: {
+        Row: {
+          artist_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          event_type: string | null
+          id: string
+          location: string | null
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_events_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artists: {
+        Row: {
+          bio: string | null
+          contract_status: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          genre: string | null
+          id: string
+          image_url: string | null
+          instagram: string | null
+          instagram_url: string | null
+          legal_name: string | null
+          name: string
+          phone: string | null
+          spotify_id: string | null
+          spotify_url: string | null
+          stage_name: string | null
+          updated_at: string
+          youtube_channel_id: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          bio?: string | null
+          contract_status?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          genre?: string | null
+          id?: string
+          image_url?: string | null
+          instagram?: string | null
+          instagram_url?: string | null
+          legal_name?: string | null
+          name: string
+          phone?: string | null
+          spotify_id?: string | null
+          spotify_url?: string | null
+          stage_name?: string | null
+          updated_at?: string
+          youtube_channel_id?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          bio?: string | null
+          contract_status?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          genre?: string | null
+          id?: string
+          image_url?: string | null
+          instagram?: string | null
+          instagram_url?: string | null
+          legal_name?: string | null
+          name?: string
+          phone?: string | null
+          spotify_id?: string | null
+          spotify_url?: string | null
+          stage_name?: string | null
+          updated_at?: string
+          youtube_channel_id?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      compositions: {
+        Row: {
+          created_at: string
+          id: string
+          iswc: string | null
+          publishers: string[] | null
+          title: string
+          track_id: string | null
+          writers: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          iswc?: string | null
+          publishers?: string[] | null
+          title: string
+          track_id?: string | null
+          writers?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          iswc?: string | null
+          publishers?: string[] | null
+          title?: string
+          track_id?: string | null
+          writers?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compositions_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          advance_amount: number | null
+          artist_id: string | null
+          contract_type: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_url: string | null
+          effective_from: string | null
+          effective_to: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          royalty_rate: number | null
+          start_date: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          advance_amount?: number | null
+          artist_id?: string | null
+          contract_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_url?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          royalty_rate?: number | null
+          start_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          advance_amount?: number | null
+          artist_id?: string | null
+          contract_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_url?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          royalty_rate?: number | null
+          start_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contributors: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          role: string | null
+          track_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          role?: string | null
+          track_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          role?: string | null
+          track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contributors_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          company: string | null
+          contact_type: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          contact_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          contact_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      distributions: {
+        Row: {
+          created_at: string
+          distributed_at: string | null
+          id: string
+          platform: string
+          release_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          distributed_at?: string | null
+          id?: string
+          platform: string
+          release_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          distributed_at?: string | null
+          id?: string
+          platform?: string
+          release_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "distributions_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          artist_id: string | null
+          category: string | null
+          created_at: string
+          created_by: string | null
+          date: string
+          description: string
+          id: string
+          payment_method: string | null
+          project_id: string | null
+          status: string | null
+          transaction_date: string | null
+          transaction_type: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          artist_id?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          date: string
+          description: string
+          id?: string
+          payment_method?: string | null
+          project_id?: string | null
+          status?: string | null
+          transaction_date?: string | null
+          transaction_type?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          artist_id?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          description?: string
+          id?: string
+          payment_method?: string | null
+          project_id?: string | null
+          status?: string | null
+          transaction_date?: string | null
+          transaction_type?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          quantity: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          quantity?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          quantity?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_document: string | null
+          client_email: string | null
+          client_name: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string
+          paid_date: string | null
+          project_id: string | null
+          status: string | null
+          tax_amount: number | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_document?: string | null
+          client_email?: string | null
+          client_name: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issue_date: string
+          paid_date?: string | null
+          project_id?: string | null
+          status?: string | null
+          tax_amount?: number | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_document?: string | null
+          client_email?: string | null
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          paid_date?: string | null
+          project_id?: string | null
+          status?: string | null
+          tax_amount?: number | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_briefings: {
+        Row: {
+          budget: number | null
+          campaign: string | null
+          campaign_id: string | null
+          content: string | null
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          deadline: string | null
+          deliverables: string[] | null
+          description: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          target_audience: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          campaign?: string | null
+          campaign_id?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          deadline?: string | null
+          deliverables?: string[] | null
+          description?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          target_audience?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          campaign?: string | null
+          campaign_id?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          deadline?: string | null
+          deliverables?: string[] | null
+          description?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          target_audience?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_briefings_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_campaigns: {
+        Row: {
+          artist_id: string | null
+          budget: number | null
+          clicks: number | null
+          conversions: number | null
+          cpc: number | null
+          created_at: string
+          created_by: string | null
+          ctr: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          impressions: number | null
+          name: string
+          reach: number | null
+          roas: number | null
+          spent: number | null
+          start_date: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_id?: string | null
+          budget?: number | null
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          created_at?: string
+          created_by?: string | null
+          ctr?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          impressions?: number | null
+          name: string
+          reach?: number | null
+          roas?: number | null
+          spent?: number | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string | null
+          budget?: number | null
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          created_at?: string
+          created_by?: string | null
+          ctr?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          impressions?: number | null
+          name?: string
+          reach?: number | null
+          roas?: number | null
+          spent?: number | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_content: {
+        Row: {
+          campaign_id: string | null
+          content_type: string | null
+          content_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          content_type?: string | null
+          content_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string | null
+          content_type?: string | null
+          content_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_content_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_tasks: {
+        Row: {
+          assigned_to: string | null
+          assignee_name: string | null
+          campaign: string | null
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          progress: number | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          assignee_name?: string | null
+          campaign?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          progress?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          assignee_name?: string | null
+          campaign?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          progress?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_registry: {
+        Row: {
+          artist_id: string | null
+          bpm: number | null
+          created_at: string
+          created_by: string | null
+          duration: number | null
+          genre: string | null
+          id: string
+          isrc: string | null
+          iswc: string | null
+          key: string | null
+          publishers: string[] | null
+          release_date: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          writers: string[] | null
+        }
+        Insert: {
+          artist_id?: string | null
+          bpm?: number | null
+          created_at?: string
+          created_by?: string | null
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          isrc?: string | null
+          iswc?: string | null
+          key?: string | null
+          publishers?: string[] | null
+          release_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          writers?: string[] | null
+        }
+        Update: {
+          artist_id?: string | null
+          bpm?: number | null
+          created_at?: string
+          created_by?: string | null
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          isrc?: string | null
+          iswc?: string | null
+          key?: string | null
+          publishers?: string[] | null
+          release_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          writers?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_registry_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_active: boolean | null
+          permissions: string[] | null
+          phone: string | null
+          role_display: string | null
+          roles: string[] | null
+          sector: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          is_active?: boolean | null
+          permissions?: string[] | null
+          phone?: string | null
+          role_display?: string | null
+          roles?: string[] | null
+          sector?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          permissions?: string[] | null
+          phone?: string | null
+          role_display?: string | null
+          roles?: string[] | null
+          sector?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          artist_id: string | null
+          budget: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_id?: string | null
+          budget?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string | null
+          budget?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      releases: {
+        Row: {
+          artist_id: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          release_date: string | null
+          release_type: string | null
+          status: string | null
+          title: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_id?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          release_date?: string | null
+          release_type?: string | null
+          status?: string | null
+          title: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          release_date?: string | null
+          release_type?: string | null
+          status?: string | null
+          title?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "releases_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_media_metrics: {
+        Row: {
+          artist_id: string | null
+          campaign_id: string | null
+          created_at: string
+          date: string
+          engagement_growth: number | null
+          engagement_rate: number | null
+          followers: number | null
+          followers_growth: number | null
+          id: string
+          metric_type: string
+          platform: string
+          posts_count: number | null
+          reach: number | null
+          reach_growth: number | null
+          stories_count: number | null
+          value: number | null
+        }
+        Insert: {
+          artist_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          date: string
+          engagement_growth?: number | null
+          engagement_rate?: number | null
+          followers?: number | null
+          followers_growth?: number | null
+          id?: string
+          metric_type: string
+          platform: string
+          posts_count?: number | null
+          reach?: number | null
+          reach_growth?: number | null
+          stories_count?: number | null
+          value?: number | null
+        }
+        Update: {
+          artist_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          date?: string
+          engagement_growth?: number | null
+          engagement_rate?: number | null
+          followers?: number | null
+          followers_growth?: number | null
+          id?: string
+          metric_type?: string
+          platform?: string
+          posts_count?: number | null
+          reach?: number | null
+          reach_growth?: number | null
+          stories_count?: number | null
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_media_metrics_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_media_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          project_id: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          project_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          project_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracks: {
+        Row: {
+          artist_id: string | null
+          created_at: string
+          duration: number | null
+          id: string
+          isrc: string | null
+          primary_genre: string | null
+          release_id: string | null
+          title: string
+          track_number: number | null
+        }
+        Insert: {
+          artist_id?: string | null
+          created_at?: string
+          duration?: number | null
+          id?: string
+          isrc?: string | null
+          primary_genre?: string | null
+          release_id?: string | null
+          title: string
+          track_number?: number | null
+        }
+        Update: {
+          artist_id?: string | null
+          created_at?: string
+          duration?: number | null
+          id?: string
+          isrc?: string | null
+          primary_genre?: string | null
+          release_id?: string | null
+          title?: string
+          track_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracks_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tracks_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +1300,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "user"],
+    },
   },
 } as const

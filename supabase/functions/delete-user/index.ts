@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     // Create Supabase admin client
     const supabaseAdmin = createClient(
-      'https://drftrdectyobzritmugt.supabase.co',
+      Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
@@ -49,18 +49,8 @@ Deno.serve(async (req) => {
       console.error('Error deleting user roles:', roleError);
     }
 
-    // Remove user from org_members table
-    const { error: orgError } = await supabaseAdmin
-      .from('org_members')
-      .delete()
-      .eq('user_id', userId);
-
-    if (orgError) {
-      console.error('Error deleting organization memberships:', orgError);
-    }
-
     // Delete user from auth.users (this will cascade to profiles due to foreign key)
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (authError) {
       console.error('Auth deletion error:', authError)
@@ -87,12 +77,13 @@ Deno.serve(async (req) => {
       }
     )
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Unexpected error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
-        details: error.message 
+        details: errorMessage 
       }),
       { 
         status: 500,
