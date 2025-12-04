@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
 
   try {
     // Parse request body
-    const { email, password, full_name, phone, role, permissions } = await req.json();
+    const { email, password, full_name, phone, role } = await req.json();
 
     if (!email || !password || !full_name) {
       return new Response(
@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     // Create Supabase admin client
     const supabaseAdmin = createClient(
-      'https://drftrdectyobzritmugt.supabase.co',
+      Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
@@ -46,9 +46,7 @@ Deno.serve(async (req) => {
       email_confirm: true,
       user_metadata: {
         full_name: full_name,
-        phone: phone || '',
-        role: role || 'member',
-        permissions: permissions || []
+        phone: phone || ''
       }
     })
 
@@ -70,29 +68,12 @@ Deno.serve(async (req) => {
 
     console.log('User created with ID:', userId)
 
-    // Convert role to proper role display
-    const roleMapping: { [key: string]: string } = {
-      'Master': 'Administrador (Master)',
-      'Administrador': 'Administrador',
-      'Gerente': 'Gerente',
-      'Produtor Musical': 'Produtor Musical',
-      'Artista': 'Artista',
-      'Editor': 'Editor',
-      'Analista Financeiro': 'Analista Financeiro',
-      'Especialista em Marketing': 'Especialista em Marketing',
-    };
-
-    const roleDisplay = roleMapping[role] || role || 'Membro';
-
     // Update profile with additional info (the trigger should have created the basic profile)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
         full_name: full_name,
-        phone: phone || null,
-        role_display: roleDisplay,
-        is_active: true,
-        permissions: permissions || []
+        phone: phone || null
       })
       .eq('id', userId)
 
@@ -105,21 +86,22 @@ Deno.serve(async (req) => {
       'Master': 'admin',
       'Administrador': 'admin', 
       'Gerente': 'manager',
-      'Produtor Musical': 'producer',
-      'Artista': 'artist'
+      'Produtor Musical': 'user',
+      'Artista': 'user'
     };
 
-    const systemRole = roleMap[role] || 'member';
+    const systemRole = roleMap[role] || 'user';
 
-    const { error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .insert({
-        user_id: userId,
-        role: systemRole
-      })
+    // The trigger already creates a default 'user' role, so update if different
+    if (systemRole !== 'user') {
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .update({ role: systemRole })
+        .eq('user_id', userId)
 
-    if (roleError) {
-      console.error('Role assignment error:', roleError)
+      if (roleError) {
+        console.error('Role assignment error:', roleError)
+      }
     }
 
     console.log('User setup completed successfully')
@@ -132,7 +114,7 @@ Deno.serve(async (req) => {
           id: userId,
           email: email,
           full_name: full_name,
-          role: roleDisplay
+          role: role || 'user'
         }
       }),
       {
@@ -141,12 +123,13 @@ Deno.serve(async (req) => {
       }
     )
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Unexpected error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
-        details: error.message 
+        details: errorMessage 
       }),
       { 
         status: 500,

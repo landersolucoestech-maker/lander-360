@@ -1,142 +1,58 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, Music4, ChevronDown, HelpCircle, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, HelpCircle, Building2 } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/components/ui/user-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+
 const navigationItems = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: LayoutDashboard
-  },
-  {
-    title: "Artistas",
-    url: "/artistas",
-    icon: Users
-  },
-  {
-    title: "Projetos",
-    url: "/projetos",
-    icon: FolderOpen
-  },
-  {
-    title: "Registro de Músicas",
-    url: "/registro-musicas",
-    icon: Music
-  },
-  {
-    title: "Lançamentos",
-    url: "/lancamentos",
-    icon: Upload
-  },
-  {
-    title: "Contratos",
-    url: "/contratos",
-    icon: FileText
-  },
-  {
-    title: "Financeiro",
-    url: "/financeiro",
-    icon: DollarSign
-  },
-  {
-    title: "Agenda",
-    url: "/agenda",
-    icon: Calendar
-  },
-  {
-    title: "Nota Fiscal",
-    url: "/nota-fiscal",
-    icon: Receipt
-  },
-  {
-    title: "Inventário",
-    url: "/inventario",
-    icon: Package
-  },
-  {
-    title: "Usuários",
-    url: "/usuarios",
-    icon: UserCog
-  },
-  {
-    title: "CRM",
-    url: "/crm",
-    icon: UserCheck
-  },
-  {
-    title: "Relatórios",
-    url: "/relatorios",
-    icon: BarChart3
-  }
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Artistas", url: "/artistas", icon: Users },
+  { title: "Projetos", url: "/projetos", icon: FolderOpen },
+  { title: "Registro de Músicas", url: "/registro-musicas", icon: Music },
+  { title: "Lançamentos", url: "/lancamentos", icon: Upload },
+  { title: "Contratos", url: "/contratos", icon: FileText },
+  { title: "Financeiro", url: "/financeiro", icon: DollarSign },
+  { title: "Agenda", url: "/agenda", icon: Calendar },
+  { title: "Nota Fiscal", url: "/nota-fiscal", icon: Receipt },
+  { title: "Inventário", url: "/inventario", icon: Package },
+  { title: "Usuários", url: "/usuarios", icon: UserCog },
+  { title: "CRM", url: "/crm", icon: UserCheck },
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3 }
 ];
 
 const marketingItems = [
-  {
-    title: "Visão Geral",
-    url: "/marketing/visao-geral"
-  },
-  {
-    title: "Planejamento de Campanhas",
-    url: "/marketing/campanhas"
-  },
-  {
-    title: "Gestão de Tarefas",
-    url: "/marketing/tarefas"
-  },
-  {
-    title: "Calendário de Conteúdo",
-    url: "/marketing/calendario"
-  },
-  {
-    title: "Métricas e Resultados",
-    url: "/marketing/metricas"
-  },
-  {
-    title: "Central de Briefing",
-    url: "/marketing/briefing"
-  }
+  { title: "Visão Geral", url: "/marketing/visao-geral" },
+  { title: "Planejamento de Campanhas", url: "/marketing/campanhas" },
+  { title: "Gestão de Tarefas", url: "/marketing/tarefas" },
+  { title: "Calendário de Conteúdo", url: "/marketing/calendario" },
+  { title: "Métricas e Resultados", url: "/marketing/metricas" },
+  { title: "Central de Briefing", url: "/marketing/briefing" }
 ];
+
 interface AppSidebarProps {
   className?: string;
 }
-export function AppSidebar({
-  className
-}: AppSidebarProps) {
+
+export function AppSidebar({ className }: AppSidebarProps) {
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
   const { user } = useAuth();
-  // Get user organization membership and roles
-  const { data: userOrgMembership } = useQuery({
-    queryKey: ['org-membership', user?.id],
+
+  // Get user roles from user_roles table
+  const { data: userRoles } = useQuery({
+    queryKey: ['user-roles', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       
-      // Check both org_members table and user_roles table
-      const [orgResult, rolesResult] = await Promise.all([
-        supabase
-          .from('org_members')
-          .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-      ]);
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
 
-      // If user has admin role in user_roles, they're admin
-      const hasAdminRole = rolesResult.data?.some(role => role.role === 'admin');
-      
-      // Return admin if found in either table
-      if (hasAdminRole || orgResult.data?.role === 'admin') {
-        return { role: 'admin' };
-      }
-      
-      return orgResult.data || { role: 'member' };
+      return data;
     },
     enabled: !!user?.id
   });
@@ -152,7 +68,8 @@ export function AppSidebar({
     }
   });
 
-  const userRole = userOrgMembership?.role || 'member';
+  const hasAdminRole = userRoles?.some(r => r.role === 'admin');
+  const userRole = hasAdminRole ? 'admin' : 'user';
   const isSystemEmpty = profileCount === 0;
 
   // Show Usuários only for admins OR if system is empty (for initial setup)
@@ -163,7 +80,8 @@ export function AppSidebar({
     return true;
   });
 
-  return <Sidebar className={cn("border-r border-sidebar-border", className)}>
+  return (
+    <Sidebar className={cn("border-r border-sidebar-border", className)}>
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center">
@@ -183,8 +101,7 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {filteredItems
-                .map(item => (
+              {filteredItems.map(item => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                     <a href={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
@@ -195,7 +112,7 @@ export function AppSidebar({
                 </SidebarMenuItem>
               ))}
 
-              {/* Marketing dropdown - before CRM and Relatórios */}
+              {/* Marketing dropdown */}
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={() => setIsMarketingOpen(!isMarketingOpen)}
@@ -219,7 +136,6 @@ export function AppSidebar({
                   </SidebarMenuSub>
                 )}
               </SidebarMenuItem>
-
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -264,5 +180,6 @@ export function AppSidebar({
       <SidebarFooter className="border-t border-sidebar-border p-2">
         <UserMenu />
       </SidebarFooter>
-    </Sidebar>;
+    </Sidebar>
+  );
 }
