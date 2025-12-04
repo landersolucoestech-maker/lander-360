@@ -1,16 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CrmService } from '@/services/crm';
-import { Database } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
-
-type CrmContactInsert = Database['public']['Tables']['crm_contacts']['Insert'];
-type CrmContactUpdate = Database['public']['Tables']['crm_contacts']['Update'];
 
 // Query keys
 export const crmQueryKeys = {
   all: ['crm'] as const,
   lists: () => [...crmQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...crmQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...crmQueryKeys.lists(), { filters }] as const,
   details: () => [...crmQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...crmQueryKeys.details(), id] as const,
   search: (query: string) => [...crmQueryKeys.all, 'search', query] as const,
@@ -42,15 +38,6 @@ export const useCrmContactsByType = (contactType: string) => {
   });
 };
 
-// Get contacts by status
-export const useCrmContactsByStatus = (status: string) => {
-  return useQuery({
-    queryKey: crmQueryKeys.list({ status }),
-    queryFn: () => CrmService.getByStatus(status),
-    enabled: !!status,
-  });
-};
-
 // Search contacts
 export const useSearchCrmContacts = (query: string) => {
   return useQuery({
@@ -66,7 +53,7 @@ export const useCreateCrmContact = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: CrmContactInsert) => CrmService.create(data),
+    mutationFn: (data: { name: string; email?: string; phone?: string; company?: string; contact_type?: string }) => CrmService.create(data),
     onSuccess: (newContact) => {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists() });
       toast({
@@ -91,7 +78,7 @@ export const useUpdateCrmContact = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CrmContactUpdate }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ name: string; email?: string; phone?: string; company?: string; contact_type?: string }> }) =>
       CrmService.update(id, data),
     onSuccess: (updatedContact) => {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists() });

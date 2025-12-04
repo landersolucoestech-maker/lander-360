@@ -1,12 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
-
-type Inventory = Database['public']['Tables']['inventory']['Row'];
-type InventoryInsert = Database['public']['Tables']['inventory']['Insert'];
-type InventoryUpdate = Database['public']['Tables']['inventory']['Update'];
 
 export class InventoryService {
-  static async getAll(): Promise<Inventory[]> {
+  static async getAll() {
     const { data, error } = await supabase
       .from('inventory')
       .select('*')
@@ -16,7 +11,7 @@ export class InventoryService {
     return data || [];
   }
 
-  static async getById(id: string): Promise<Inventory | null> {
+  static async getById(id: string) {
     const { data, error } = await supabase
       .from('inventory')
       .select('*')
@@ -27,7 +22,7 @@ export class InventoryService {
     return data;
   }
 
-  static async create(inventory: InventoryInsert): Promise<Inventory> {
+  static async create(inventory: { name: string; description?: string; quantity?: number; category?: string; location?: string }) {
     const { data, error } = await supabase
       .from('inventory')
       .insert(inventory)
@@ -38,7 +33,7 @@ export class InventoryService {
     return data;
   }
 
-  static async update(id: string, updates: InventoryUpdate): Promise<Inventory> {
+  static async update(id: string, updates: Partial<{ name: string; description?: string; quantity?: number; category?: string; location?: string }>) {
     const { data, error } = await supabase
       .from('inventory')
       .update(updates)
@@ -50,7 +45,7 @@ export class InventoryService {
     return data;
   }
 
-  static async delete(id: string): Promise<void> {
+  static async delete(id: string) {
     const { error } = await supabase
       .from('inventory')
       .delete()
@@ -59,7 +54,7 @@ export class InventoryService {
     if (error) throw error;
   }
 
-  static async getByCategory(category: string): Promise<Inventory[]> {
+  static async getByCategory(category: string) {
     const { data, error } = await supabase
       .from('inventory')
       .select('*')
@@ -70,18 +65,7 @@ export class InventoryService {
     return data || [];
   }
 
-  static async getBySector(sector: string): Promise<Inventory[]> {
-    const { data, error } = await supabase
-      .from('inventory')
-      .select('*')
-      .eq('sector', sector)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  static async getByStatus(status: string): Promise<Inventory[]> {
+  static async getByStatus(status: string) {
     const { data, error } = await supabase
       .from('inventory')
       .select('*')

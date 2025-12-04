@@ -1,16 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { InventoryService } from '@/services/inventory';
-import { Database } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
-
-type InventoryInsert = Database['public']['Tables']['inventory']['Insert'];
-type InventoryUpdate = Database['public']['Tables']['inventory']['Update'];
 
 // Query keys
 export const inventoryQueryKeys = {
   all: ['inventory'] as const,
   lists: () => [...inventoryQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...inventoryQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...inventoryQueryKeys.lists(), { filters }] as const,
   details: () => [...inventoryQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...inventoryQueryKeys.details(), id] as const,
 };
@@ -41,15 +37,6 @@ export const useInventoryByCategory = (category: string) => {
   });
 };
 
-// Get inventory by sector
-export const useInventoryBySector = (sector: string) => {
-  return useQuery({
-    queryKey: inventoryQueryKeys.list({ sector }),
-    queryFn: () => InventoryService.getBySector(sector),
-    enabled: !!sector,
-  });
-};
-
 // Get inventory by status
 export const useInventoryByStatus = (status: string) => {
   return useQuery({
@@ -65,7 +52,7 @@ export const useCreateInventory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: InventoryInsert) => InventoryService.create(data),
+    mutationFn: (data: { name: string; description?: string; quantity?: number; category?: string; location?: string }) => InventoryService.create(data),
     onSuccess: (newItem) => {
       queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.lists() });
       toast({
@@ -90,7 +77,7 @@ export const useUpdateInventory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: InventoryUpdate }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ name: string; description?: string; quantity?: number; category?: string; location?: string }> }) =>
       InventoryService.update(id, data),
     onSuccess: (updatedItem) => {
       queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.lists() });

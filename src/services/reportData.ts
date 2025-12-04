@@ -535,7 +535,7 @@ export const getSystemReportData = async (): Promise<SystemReportData[]> => {
                 music_title: track.title,
                 music_isrc: track.isrc,
                 music_genre: track.primary_genre,
-                music_duration: track.duration_ms ? `${Math.floor((track.duration_ms || 0) / 60000)}:${Math.floor(((track.duration_ms || 0) % 60000) / 1000).toString().padStart(2, '0')}` : undefined,
+                music_duration: track.duration ? `${Math.floor((track.duration || 0) / 60)}:${((track.duration || 0) % 60).toString().padStart(2, '0')}` : undefined,
               });
             });
           }
@@ -649,16 +649,16 @@ export const getArtistsReportData = async () => {
     .select('*');
 
   return artists?.map(artist => ({
-    name: artist.legal_name,
-    stage_name: artist.name,
-    email: 'contato@exemplo.com', // Campo não existe na tabela atual
-    phone: '(11) 99999-9999', // Campo não existe na tabela atual
-    genre: 'Pop', // Campo padrão já que primary_genre não existe na tabela
-    bio: 'Biografia do artista', // Campo não existe na tabela atual
-    instagram: artist.instagram,
-    youtube: artist.youtube_channel_id,
-    spotify: artist.spotify_id,
-    website: artist.website,
+    name: artist.legal_name || artist.name,
+    stage_name: artist.stage_name || artist.name,
+    email: artist.email || 'contato@exemplo.com',
+    phone: artist.phone || '(11) 99999-9999',
+    genre: artist.genre || 'Pop',
+    bio: artist.bio || 'Biografia do artista',
+    instagram: artist.instagram || artist.instagram_url,
+    youtube: artist.youtube_channel_id || artist.youtube_url,
+    spotify: artist.spotify_id || artist.spotify_url,
+    website: artist.instagram_url || '',
   })) || [];
 };
 
@@ -687,7 +687,7 @@ export const getMarketingReportData = async () => {
 
   return campaigns?.map(campaign => ({
     name: campaign.name,
-    platform: campaign.platform,
+    platform: 'Digital',
     status: campaign.status,
     budget: campaign.budget,
     spent: campaign.spent,

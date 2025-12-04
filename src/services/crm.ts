@@ -1,12 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
-
-type CrmContact = Database['public']['Tables']['crm_contacts']['Row'];
-type CrmContactInsert = Database['public']['Tables']['crm_contacts']['Insert'];
-type CrmContactUpdate = Database['public']['Tables']['crm_contacts']['Update'];
 
 export class CrmService {
-  static async getAll(): Promise<CrmContact[]> {
+  static async getAll() {
     const { data, error } = await supabase
       .from('crm_contacts')
       .select('*')
@@ -16,7 +11,7 @@ export class CrmService {
     return data || [];
   }
 
-  static async getById(id: string): Promise<CrmContact | null> {
+  static async getById(id: string) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .select('*')
@@ -27,7 +22,7 @@ export class CrmService {
     return data;
   }
 
-  static async create(contact: CrmContactInsert): Promise<CrmContact> {
+  static async create(contact: { name: string; email?: string; phone?: string; company?: string; contact_type?: string }) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .insert(contact)
@@ -38,7 +33,7 @@ export class CrmService {
     return data;
   }
 
-  static async update(id: string, updates: CrmContactUpdate): Promise<CrmContact> {
+  static async update(id: string, updates: Partial<{ name: string; email?: string; phone?: string; company?: string; contact_type?: string }>) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .update(updates)
@@ -50,7 +45,7 @@ export class CrmService {
     return data;
   }
 
-  static async delete(id: string): Promise<void> {
+  static async delete(id: string) {
     const { error } = await supabase
       .from('crm_contacts')
       .delete()
@@ -59,7 +54,7 @@ export class CrmService {
     if (error) throw error;
   }
 
-  static async getByType(contactType: string): Promise<CrmContact[]> {
+  static async getByType(contactType: string) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .select('*')
@@ -70,18 +65,7 @@ export class CrmService {
     return data || [];
   }
 
-  static async getByStatus(status: string): Promise<CrmContact[]> {
-    const { data, error } = await supabase
-      .from('crm_contacts')
-      .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  static async search(query: string): Promise<CrmContact[]> {
+  static async search(query: string) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .select('*')
