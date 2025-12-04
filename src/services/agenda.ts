@@ -1,12 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
-
-type AgendaEvent = Database['public']['Tables']['agenda_events']['Row'];
-type AgendaEventInsert = Database['public']['Tables']['agenda_events']['Insert'];
-type AgendaEventUpdate = Database['public']['Tables']['agenda_events']['Update'];
 
 export class AgendaService {
-  static async getAll(): Promise<AgendaEvent[]> {
+  static async getAll() {
     const { data, error } = await supabase
       .from('agenda_events')
       .select('*')
@@ -16,7 +11,7 @@ export class AgendaService {
     return data || [];
   }
 
-  static async getById(id: string): Promise<AgendaEvent | null> {
+  static async getById(id: string) {
     const { data, error } = await supabase
       .from('agenda_events')
       .select('*')
@@ -27,7 +22,7 @@ export class AgendaService {
     return data;
   }
 
-  static async create(event: AgendaEventInsert): Promise<AgendaEvent> {
+  static async create(event: { title: string; start_date: string; description?: string; location?: string; event_type?: string; artist_id?: string }) {
     const { data, error } = await supabase
       .from('agenda_events')
       .insert(event)
@@ -38,7 +33,7 @@ export class AgendaService {
     return data;
   }
 
-  static async update(id: string, updates: AgendaEventUpdate): Promise<AgendaEvent> {
+  static async update(id: string, updates: Partial<{ title: string; start_date: string; description?: string; location?: string; event_type?: string; artist_id?: string }>) {
     const { data, error } = await supabase
       .from('agenda_events')
       .update(updates)
@@ -50,7 +45,7 @@ export class AgendaService {
     return data;
   }
 
-  static async delete(id: string): Promise<void> {
+  static async delete(id: string) {
     const { error } = await supabase
       .from('agenda_events')
       .delete()
@@ -59,7 +54,7 @@ export class AgendaService {
     if (error) throw error;
   }
 
-  static async getByDateRange(startDate: string, endDate: string): Promise<AgendaEvent[]> {
+  static async getByDateRange(startDate: string, endDate: string) {
     const { data, error } = await supabase
       .from('agenda_events')
       .select('*')
@@ -71,7 +66,7 @@ export class AgendaService {
     return data || [];
   }
 
-  static async getByArtist(artistId: string): Promise<AgendaEvent[]> {
+  static async getByArtist(artistId: string) {
     const { data, error } = await supabase
       .from('agenda_events')
       .select('*')
@@ -82,18 +77,7 @@ export class AgendaService {
     return data || [];
   }
 
-  static async getByProject(projectId: string): Promise<AgendaEvent[]> {
-    const { data, error } = await supabase
-      .from('agenda_events')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('start_date', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  static async getUpcoming(): Promise<AgendaEvent[]> {
+  static async getUpcoming() {
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('agenda_events')

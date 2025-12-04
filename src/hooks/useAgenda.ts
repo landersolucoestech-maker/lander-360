@@ -1,16 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgendaService } from '@/services/agenda';
-import { Database } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
-
-type AgendaEventInsert = Database['public']['Tables']['agenda_events']['Insert'];
-type AgendaEventUpdate = Database['public']['Tables']['agenda_events']['Update'];
 
 // Query keys
 export const agendaQueryKeys = {
   all: ['agenda'] as const,
   lists: () => [...agendaQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...agendaQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...agendaQueryKeys.lists(), { filters }] as const,
   details: () => [...agendaQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...agendaQueryKeys.details(), id] as const,
   upcoming: () => [...agendaQueryKeys.all, 'upcoming'] as const,
@@ -59,22 +55,13 @@ export const useEventsByArtist = (artistId: string) => {
   });
 };
 
-// Get events by project
-export const useEventsByProject = (projectId: string) => {
-  return useQuery({
-    queryKey: agendaQueryKeys.list({ projectId }),
-    queryFn: () => AgendaService.getByProject(projectId),
-    enabled: !!projectId,
-  });
-};
-
 // Create agenda event mutation
 export const useCreateAgendaEvent = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: AgendaEventInsert) => AgendaService.create(data),
+    mutationFn: (data: { title: string; start_date: string; description?: string; location?: string; event_type?: string; artist_id?: string }) => AgendaService.create(data),
     onSuccess: (newEvent) => {
       queryClient.invalidateQueries({ queryKey: agendaQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: agendaQueryKeys.upcoming() });
@@ -100,7 +87,7 @@ export const useUpdateAgendaEvent = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AgendaEventUpdate }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ title: string; start_date: string; description?: string; location?: string; event_type?: string; artist_id?: string }> }) =>
       AgendaService.update(id, data),
     onSuccess: (updatedEvent) => {
       queryClient.invalidateQueries({ queryKey: agendaQueryKeys.lists() });
