@@ -207,9 +207,17 @@ const Projetos = () => {
                             <div className="text-muted-foreground">Gênero</div>
                             <div className="font-medium">{project.genre}</div>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
-                            Editar
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm">
+                              Ver
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
+                              Editar
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                              Excluir
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
