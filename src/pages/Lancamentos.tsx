@@ -172,7 +172,7 @@ const Lancamentos = () => {
               onClear={handleClear}
             />
 
-            {/* Releases List */}
+            {/* Releases List - Active */}
             <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Lista de Lançamentos</CardTitle>
@@ -181,7 +181,7 @@ const Lancamentos = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {allReleases.length === 0 ? (
+                {allReleases.filter(r => !r.takedown).length === 0 ? (
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">Nenhum lançamento cadastrado</h3>
@@ -195,7 +195,7 @@ const Lancamentos = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredReleases.map((release) => (
+                    {filteredReleases.filter(r => !r.takedown).map((release) => (
                       <ReleaseCard
                         key={release.id}
                         release={release}
@@ -208,6 +208,31 @@ const Lancamentos = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Takedowns List */}
+            {filteredReleases.filter(r => r.takedown).length > 0 && (
+              <Card className="flex-1 border-orange-500/30">
+                <CardHeader>
+                  <CardTitle className="text-orange-500">Lançamentos com Takedown</CardTitle>
+                  <CardDescription>
+                    Lançamentos que sofreram takedown nas plataformas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredReleases.filter(r => r.takedown).map((release) => (
+                      <ReleaseCard
+                        key={release.id}
+                        release={release}
+                        onViewDetails={handleViewDetails}
+                        onEdit={handleEditRelease}
+                        onDelete={handleDeleteRelease}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* New Release Modal */}
             <Dialog open={isNewReleaseModalOpen} onOpenChange={setIsNewReleaseModalOpen}>

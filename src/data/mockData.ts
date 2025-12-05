@@ -218,7 +218,7 @@ export const mockReleases = [
     platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer", "Tidal"],
     streams: "5.8M",
     cover: "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=500&fit=crop",
-    approvalStatus: "aceita" as const,
+    approvalStatus: "recusada" as const,
     priority: "baixa" as const,
     takedown: true
   },
@@ -246,7 +246,7 @@ export const mockReleases = [
     platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer"],
     streams: "2.5M",
     cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=500&fit=crop",
-    approvalStatus: "aceita" as const,
+    approvalStatus: "recusada" as const,
     priority: "baixa" as const,
     takedown: true
   },
