@@ -172,7 +172,9 @@ export type Database = {
         Row: {
           advance_amount: number | null
           artist_id: string | null
+          client_type: string | null
           contract_type: string | null
+          contractor_contact: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -180,11 +182,21 @@ export type Database = {
           effective_from: string | null
           effective_to: string | null
           end_date: string | null
+          fixed_value: number | null
           id: string
           notes: string | null
+          observations: string | null
+          payment_type: string | null
+          project_id: string | null
+          registry_date: string | null
+          registry_office: boolean | null
+          responsible_person: string | null
+          royalties_percentage: number | null
           royalty_rate: number | null
+          service_type: string | null
           start_date: string | null
           status: string | null
+          terms: string | null
           title: string
           updated_at: string
           value: number | null
@@ -192,7 +204,9 @@ export type Database = {
         Insert: {
           advance_amount?: number | null
           artist_id?: string | null
+          client_type?: string | null
           contract_type?: string | null
+          contractor_contact?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -200,11 +214,21 @@ export type Database = {
           effective_from?: string | null
           effective_to?: string | null
           end_date?: string | null
+          fixed_value?: number | null
           id?: string
           notes?: string | null
+          observations?: string | null
+          payment_type?: string | null
+          project_id?: string | null
+          registry_date?: string | null
+          registry_office?: boolean | null
+          responsible_person?: string | null
+          royalties_percentage?: number | null
           royalty_rate?: number | null
+          service_type?: string | null
           start_date?: string | null
           status?: string | null
+          terms?: string | null
           title: string
           updated_at?: string
           value?: number | null
@@ -212,7 +236,9 @@ export type Database = {
         Update: {
           advance_amount?: number | null
           artist_id?: string | null
+          client_type?: string | null
           contract_type?: string | null
+          contractor_contact?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -220,11 +246,21 @@ export type Database = {
           effective_from?: string | null
           effective_to?: string | null
           end_date?: string | null
+          fixed_value?: number | null
           id?: string
           notes?: string | null
+          observations?: string | null
+          payment_type?: string | null
+          project_id?: string | null
+          registry_date?: string | null
+          registry_office?: boolean | null
+          responsible_person?: string | null
+          royalties_percentage?: number | null
           royalty_rate?: number | null
+          service_type?: string | null
           start_date?: string | null
           status?: string | null
+          terms?: string | null
           title?: string
           updated_at?: string
           value?: number | null
@@ -235,6 +271,13 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

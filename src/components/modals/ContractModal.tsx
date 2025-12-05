@@ -38,21 +38,38 @@ export const ContractModal: React.FC<ContractModalProps> = ({
 
   const handleSubmit = async (data: any) => {
     try {
+      // Map form data to database columns
+      const contractData = {
+        title: data.title,
+        client_type: data.client_type,
+        service_type: data.service_type,
+        artist_id: data.artist_id || null,
+        project_id: data.project_id || null,
+        contractor_contact: data.contractor_contact || null,
+        responsible_person: data.responsible_person,
+        status: data.status,
+        effective_from: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
+        effective_to: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+        registry_office: data.registry_office || false,
+        registry_date: data.registry_date ? data.registry_date.toISOString().split('T')[0] : null,
+        payment_type: data.payment_type || null,
+        fixed_value: data.fixed_value || null,
+        value: data.fixed_value || null,
+        royalty_rate: data.royalties_percentage || null,
+        royalties_percentage: data.royalties_percentage || null,
+        advance_amount: data.advance_payment || null,
+        notes: data.observations || null,
+        observations: data.observations || null,
+        terms: data.terms || null,
+      };
+
       if (isEditing) {
         await updateContract.mutateAsync({
           id: contract.id,
-          data: {
-            ...data,
-            involved_parties: data.involved_parties,
-            attachments: data.attachments || null,
-          },
+          data: contractData,
         });
       } else {
-        await createContract.mutateAsync({
-          ...data,
-          involved_parties: data.involved_parties,
-          attachments: data.attachments || null,
-        });
+        await createContract.mutateAsync(contractData);
       }
       onClose();
     } catch (error) {
@@ -66,18 +83,19 @@ export const ContractModal: React.FC<ContractModalProps> = ({
     service_type: (contract as any).service_type as any,
     artist_id: contract.artist_id || undefined,
     project_id: (contract as any).project_id || undefined,
+    contractor_contact: (contract as any).contractor_contact || undefined,
     responsible_person: (contract as any).responsible_person || '',
-    status: (contract as any).status as 'pendente' | 'assinado' | 'expirado' | 'rescindido' | 'rascunho',
+    status: ((contract as any).status || 'rascunho') as 'pendente' | 'assinado' | 'expirado' | 'rescindido' | 'rascunho',
     start_date: contract.effective_from ? new Date(contract.effective_from) : undefined,
     end_date: contract.effective_to ? new Date(contract.effective_to) : undefined,
     registry_office: (contract as any).registry_office || false,
     registry_date: (contract as any).registry_date ? new Date((contract as any).registry_date) : undefined,
-    fixed_value: (contract as any).fixed_value || undefined,
-    royalties_percentage: contract.royalty_rate || undefined,
-    advance_payment: contract.advance_amount || undefined,
-    observations: contract.notes || undefined,
+    payment_type: (contract as any).payment_type as 'valor_fixo' | 'royalties' | undefined,
+    fixed_value: (contract as any).fixed_value || (contract as any).value || undefined,
+    royalties_percentage: (contract as any).royalties_percentage || contract.royalty_rate || undefined,
+    advance_payment: (contract as any).advance_amount || contract.advance_amount || undefined,
+    observations: (contract as any).observations || contract.notes || undefined,
     terms: (contract as any).terms || undefined,
-    involved_parties: (contract as any).involved_parties as any || [],
   } : undefined;
 
   return (
