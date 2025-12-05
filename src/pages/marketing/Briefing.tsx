@@ -10,9 +10,132 @@ import { MarketingBriefingModal } from "@/components/modals/MarketingBriefingMod
 import { FileText, Plus, Clock, CheckCircle, AlertTriangle, User } from "lucide-react";
 import { useMarketingBriefings, useMarketingStats } from "@/hooks/useMarketing";
 
+// Mock briefings data
+const mockBriefings = [
+  {
+    id: "1",
+    title: "Lançamento Single 'Novo Amanhecer'",
+    description: "Briefing completo para campanha de lançamento do novo single do artista principal",
+    campaign: "Campanha Novo Amanhecer",
+    status: "Aprovado",
+    priority: "Alta",
+    deliverables: ["Vídeo Teaser", "Posts Instagram", "Stories", "Press Release"],
+    target_audience: "Jovens 18-35, fãs de pop brasileiro",
+    created_by_name: "Ana Silva",
+    deadline: "2024-02-15",
+    budget: 25000
+  },
+  {
+    id: "2",
+    title: "Campanha Verão 2024",
+    description: "Estratégia de marketing para turnê de verão com foco em festivais",
+    campaign: "Verão Total 2024",
+    status: "Em Revisão",
+    priority: "Alta",
+    deliverables: ["Banner Digital", "Flyer Impresso", "Vídeo Promocional", "Kit Imprensa"],
+    target_audience: "Público geral, frequentadores de festivais",
+    created_by_name: "Carlos Mendes",
+    deadline: "2024-01-30",
+    budget: 50000
+  },
+  {
+    id: "3",
+    title: "Parceria com Marca de Moda",
+    description: "Briefing para colaboração com marca de streetwear para coleção especial",
+    campaign: "Collab Fashion",
+    status: "Pendente",
+    priority: "Média",
+    deliverables: ["Fotos Campanha", "Behind the Scenes", "Conteúdo TikTok"],
+    target_audience: "Público jovem, interessados em moda urbana",
+    created_by_name: "Marina Costa",
+    deadline: "2024-02-28",
+    budget: 35000
+  },
+  {
+    id: "4",
+    title: "Lançamento Álbum 'Ecos'",
+    description: "Campanha completa para lançamento do novo álbum de estúdio",
+    campaign: "Álbum Ecos",
+    status: "Aprovado",
+    priority: "Alta",
+    deliverables: ["Videoclipe", "EPK", "Entrevistas", "Listening Party", "Outdoor"],
+    target_audience: "Fãs dedicados e novos ouvintes",
+    created_by_name: "Ana Silva",
+    deadline: "2024-03-20",
+    budget: 120000
+  },
+  {
+    id: "5",
+    title: "Ação Social #MúsicaParaTodos",
+    description: "Projeto social de música em comunidades carentes",
+    campaign: "Música Para Todos",
+    status: "Em Revisão",
+    priority: "Média",
+    deliverables: ["Documentário Curto", "Posts Sociais", "Cobertura Eventos"],
+    target_audience: "Público geral, foco em responsabilidade social",
+    created_by_name: "Roberto Alves",
+    deadline: "2024-04-10",
+    budget: 15000
+  },
+  {
+    id: "6",
+    title: "Rebranding Visual Artista",
+    description: "Atualização completa da identidade visual do artista para nova fase",
+    campaign: "Nova Era",
+    status: "Pendente",
+    priority: "Baixa",
+    deliverables: ["Logo", "Paleta de Cores", "Guidelines", "Templates"],
+    target_audience: "Equipe interna e parceiros",
+    created_by_name: "Marina Costa",
+    deadline: "2024-05-01",
+    budget: 18000
+  },
+  {
+    id: "7",
+    title: "Campanha Dia das Mães",
+    description: "Ação especial de marketing para o Dia das Mães com mensagem emotiva",
+    campaign: "Especial Mães",
+    status: "Rejeitado",
+    priority: "Média",
+    deliverables: ["Vídeo Emotivo", "Posts Temáticos", "Playlist Especial"],
+    target_audience: "Público familiar, mulheres 30-55",
+    created_by_name: "Carlos Mendes",
+    deadline: "2024-05-12",
+    budget: 8000
+  },
+  {
+    id: "8",
+    title: "Live Acústica YouTube",
+    description: "Briefing para transmissão ao vivo especial no canal do artista",
+    campaign: "Acústico Live",
+    status: "Aprovado",
+    priority: "Alta",
+    deliverables: ["Arte Thumbnail", "Roteiro", "Divulgação Prévia", "Edição VOD"],
+    target_audience: "Inscritos do canal e fãs engajados",
+    created_by_name: "Ana Silva",
+    deadline: "2024-02-05",
+    budget: 12000
+  }
+];
+
+// Mock stats data
+const mockStats = {
+  briefings: {
+    active: 5,
+    pending: 2,
+    approved: 4,
+    total: 8
+  }
+};
+
 const MarketingBriefing = () => {
-  const { data: briefings = [], isLoading: briefingsLoading } = useMarketingBriefings();
-  const { data: stats, isLoading: statsLoading } = useMarketingStats();
+  const { data: briefingsData = [], isLoading: briefingsLoading } = useMarketingBriefings();
+  const { data: statsData, isLoading: statsLoading } = useMarketingStats();
+  
+  // Use mock data as fallback
+  const briefings = briefingsData.length > 0 ? briefingsData : mockBriefings;
+  const stats = statsData?.briefings?.total ? statsData : mockStats;
+  
   const [filteredBriefings, setFilteredBriefings] = useState(briefings);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBriefing, setSelectedBriefing] = useState(null);
