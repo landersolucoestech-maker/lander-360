@@ -316,6 +316,12 @@ const Agenda = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
+                                >
+                                  Ver
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
                                   onClick={() => handleEditEvent(event)}
                                 >
                                   Editar
