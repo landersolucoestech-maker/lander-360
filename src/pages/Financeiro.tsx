@@ -84,7 +84,7 @@ const Financeiro = () => {
   };
 
   // Categories for filtering
-  const receitasCategories = ['venda_musicas', 'streaming', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
+  const receitasCategories = ['venda_musicas', 'onerpm', 'distrokid', '30por1', 'believe', 'tunecore', 'cd_baby', 'outras_distribuidoras', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
   const despesasCategories = ['produtores', 'caches', 'marketing', 'equipe', 'infraestrutura', 'registros', 'juridicos', 'salarios', 'aluguel', 'manutencao', 'viagens', 'licencas', 'contabilidade', 'estudio', 'equipamentos', 'servicos'];
 
   const filterOptions = [
@@ -145,9 +145,16 @@ const Financeiro = () => {
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   const categoryLabels: Record<string, string> = {
-    // Receitas
+    // Receitas - Distribuidoras
     venda_musicas: 'Venda de Músicas',
-    streaming: 'Streaming',
+    onerpm: 'ONErpm',
+    distrokid: 'DistroKid',
+    '30por1': '30por1',
+    believe: 'Believe',
+    tunecore: 'TuneCore',
+    cd_baby: 'CD Baby',
+    outras_distribuidoras: 'Outras Distribuidoras',
+    // Receitas - Outros
     shows: 'Shows',
     licenciamento: 'Licenciamento',
     merchandising: 'Merchandising',
