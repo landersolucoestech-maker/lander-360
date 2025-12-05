@@ -3,10 +3,6 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { UserMenu } from "@/components/ui/user-menu";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 
 const navigationItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -39,46 +35,6 @@ interface AppSidebarProps {
 
 export function AppSidebar({ className }: AppSidebarProps) {
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
-  const { user } = useAuth();
-
-  // Get user roles from user_roles table
-  const { data: userRoles } = useQuery({
-    queryKey: ['user-roles', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-
-      return data;
-    },
-    enabled: !!user?.id
-  });
-
-  // Check if there are any profiles in the system (to allow initial setup)
-  const { data: profileCount } = useQuery({
-    queryKey: ['profile-count'],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true });
-      return count || 0;
-    }
-  });
-
-  const hasAdminRole = userRoles?.some(r => r.role === 'admin');
-  const userRole = hasAdminRole ? 'admin' : 'user';
-  const isSystemEmpty = profileCount === 0;
-
-  // Show Usuários only for admins OR if system is empty (for initial setup)
-  const filteredItems = navigationItems.filter(item => {
-    if (item.url === '/usuarios') {
-      return userRole === 'admin' || isSystemEmpty;
-    }
-    return true;
-  });
 
   return (
     <Sidebar className={cn("border-r border-sidebar-border", className)}>
@@ -101,7 +57,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {filteredItems.map(item => (
+              {navigationItems.map(item => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                     <a href={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
@@ -159,16 +115,14 @@ export function AppSidebar({ className }: AppSidebarProps) {
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {userRole === 'admin' && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                    <a href="/portal-admin" className="flex items-center gap-3 px-3 py-2">
-                      <Building2 className="h-4 w-4" />
-                      <span className="font-medium">Portal Admin</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                  <a href="/portal-admin" className="flex items-center gap-3 px-3 py-2">
+                    <Building2 className="h-4 w-4" />
+                    <span className="font-medium">Portal Admin</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <ThemeToggle />
               </SidebarMenuItem>
@@ -177,8 +131,10 @@ export function AppSidebar({ className }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2">
-        <UserMenu />
+      <SidebarFooter className="border-t border-sidebar-border p-4">
+        <div className="text-sm text-muted-foreground text-center">
+          Gestão 360
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
