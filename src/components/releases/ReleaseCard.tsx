@@ -57,7 +57,7 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
       onClick={() => onViewDetails(release)}
     >
       {/* Background Image */}
-      <div className="relative aspect-[3/4] w-full min-h-[320px] sm:min-h-[380px] lg:min-h-[420px]">
+      <div className="relative aspect-[3/4] w-full min-h-[350px] sm:min-h-[400px] lg:min-h-[450px]">
         {release.cover ? (
           <img 
             src={release.cover} 
