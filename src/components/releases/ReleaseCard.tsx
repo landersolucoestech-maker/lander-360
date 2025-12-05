@@ -168,18 +168,38 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
             </div>
           )}
 
-          {/* Ver Detalhes Button - Always visible */}
+          {/* Action Buttons - Always visible */}
           <div className={!timeRemaining.isPast ? "pt-2" : "pt-2 border-t border-white/20"}>
-            <Button 
-              size="sm" 
-              className="w-full bg-white/20 hover:bg-white/30 text-white text-xs h-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetails(release);
-              }}
-            >
-              Ver Detalhes
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(release);
+                }}
+              >
+                Ver
+              </Button>
+              <Button 
+                size="sm" 
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                Editar
+              </Button>
+              <Button 
+                size="sm" 
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                Excluir
+              </Button>
+            </div>
           </div>
 
         </div>

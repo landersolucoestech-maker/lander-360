@@ -276,7 +276,19 @@ const MarketingTarefas = () => {
                                 setIsModalOpen(true);
                               }}
                             >
-                              Ver Detalhes
+                              Ver
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              Editar
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              Excluir
                             </Button>
                           </div>
                         </div>
