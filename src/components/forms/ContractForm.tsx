@@ -180,17 +180,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               )}
             </div>
 
-            {form.watch('client_type') === 'empresa' && (
-              <div className="space-y-2">
-                <Label htmlFor="contractor_contact">Contratante/Contato</Label>
-                <Input
-                  id="contractor_contact"
-                  {...form.register('contractor_contact')}
-                  placeholder="Nome do contratante ou contato"
-                />
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label>Status</Label>
               <Select
@@ -207,6 +196,17 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                 </SelectContent>
               </Select>
             </div>
+
+            {form.watch('client_type') === 'empresa' && (
+              <div className="space-y-2">
+                <Label htmlFor="contractor_contact">Contratante/Contato</Label>
+                <Input
+                  id="contractor_contact"
+                  {...form.register('contractor_contact')}
+                  placeholder="Nome do contratante ou contato"
+                />
+              </div>
+            )}
 
             {form.watch('client_type') === 'artista' && (
               <div className="space-y-2">
