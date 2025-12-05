@@ -589,7 +589,7 @@ export function ArtistForm({
                   <FormField control={form.control} name="manager_name" render={({
                 field
               }) => <FormItem>
-                        <FormLabel>Nome do Responsável</FormLabel>
+                        <FormLabel>Nome do Empresário</FormLabel>
                         <FormControl>
                           <Input placeholder="Nome completo" {...field} />
                         </FormControl>
