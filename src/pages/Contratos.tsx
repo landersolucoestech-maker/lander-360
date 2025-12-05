@@ -306,6 +306,12 @@ const Contratos = () => {
                               <Button 
                                 variant="outline" 
                                 size="sm"
+                              >
+                                Ver
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
                                 onClick={() => handleEditContract(contract)}
                               >
                                 Editar
