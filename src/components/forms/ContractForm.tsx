@@ -29,6 +29,7 @@ const contractSchema = z.object({
   end_date: z.date().optional(),
   registry_office: z.boolean().default(false),
   registry_date: z.date().optional(),
+  payment_type: z.enum(['valor_fixo', 'royalties']).optional(),
   fixed_value: z.number().optional(),
   royalties_percentage: z.number().min(0).max(100).optional(),
   advance_payment: z.number().optional(),
@@ -350,6 +351,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Empresa: Valor do Contrato */}
             {form.watch('client_type') === 'empresa' && (
               <div className="space-y-2">
                 <Label htmlFor="fixed_value">Valor do Contrato (R$)</Label>
@@ -363,8 +365,9 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               </div>
             )}
 
+            {/* Artista + Agenciamento/Gestão/Empresariamento: Royalties e Adiantamento */}
             {form.watch('client_type') === 'artista' && 
-             ['agenciamento', 'gestao', 'empresariamento', 'producao_musical'].includes(form.watch('service_type')) && (
+             ['agenciamento', 'gestao', 'empresariamento'].includes(form.watch('service_type')) && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="royalties_percentage">Royalties (%)</Label>
@@ -390,6 +393,71 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                   />
                 </div>
               </>
+            )}
+
+            {/* Artista + Produção Musical/Edição/Distribuição: Tipo de Pagamento */}
+            {form.watch('client_type') === 'artista' && 
+             ['producao_musical', 'edicao', 'distribuicao'].includes(form.watch('service_type')) && (
+              <>
+                <div className="space-y-2">
+                  <Label>Tipo de Pagamento</Label>
+                  <Select
+                    value={form.watch('payment_type')}
+                    onValueChange={(value) => form.setValue('payment_type', value as 'valor_fixo' | 'royalties')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de pagamento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="valor_fixo">Valor Fixo</SelectItem>
+                      <SelectItem value="royalties">Royalties</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {form.watch('payment_type') === 'valor_fixo' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="fixed_value">Valor do Serviço (R$)</Label>
+                    <Input
+                      id="fixed_value"
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
+                      {...form.register('fixed_value', { valueAsNumber: true })}
+                    />
+                  </div>
+                )}
+
+                {form.watch('payment_type') === 'royalties' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="royalties_percentage">Royalties (%)</Label>
+                    <Input
+                      id="royalties_percentage"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      placeholder="0,00"
+                      {...form.register('royalties_percentage', { valueAsNumber: true })}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Artista + Produção Audiovisual/Marketing: Valor Fixo do Serviço */}
+            {form.watch('client_type') === 'artista' && 
+             ['producao_audiovisual', 'marketing'].includes(form.watch('service_type')) && (
+              <div className="space-y-2">
+                <Label htmlFor="fixed_value">Valor Fixo do Serviço (R$)</Label>
+                <Input
+                  id="fixed_value"
+                  type="number"
+                  step="0.01"
+                  placeholder="0,00"
+                  {...form.register('fixed_value', { valueAsNumber: true })}
+                />
+              </div>
             )}
           </div>
         </CardContent>
