@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Music, Calendar, User, Clock, Hash } from "lucide-react";
+import { Music, Calendar, User, Clock, Users, Mic, Headphones } from "lucide-react";
 
 interface MusicViewModalProps {
   open: boolean;
@@ -66,6 +66,72 @@ export function MusicViewModal({ open, onOpenChange, song }: MusicViewModalProps
               <div className="p-3 bg-muted/30 rounded-lg">
                 <label className="text-sm font-medium text-muted-foreground">Código ECAD</label>
                 <p className="font-mono text-lg">{song.ecad}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Compositores, Intérpretes e Produtores */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2">Créditos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Compositores */}
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 mb-2">
+                  <Users className="h-4 w-4" />
+                  Compositores
+                </label>
+                {song.composers && song.composers.length > 0 ? (
+                  <ul className="space-y-1">
+                    {song.composers.map((composer: any, index: number) => (
+                      <li key={index} className="text-sm">
+                        {composer.name || composer}
+                        {composer.percentage && <span className="text-muted-foreground ml-1">({composer.percentage}%)</span>}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Não informado</p>
+                )}
+              </div>
+
+              {/* Intérpretes */}
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 mb-2">
+                  <Mic className="h-4 w-4" />
+                  Intérpretes
+                </label>
+                {song.performers && song.performers.length > 0 ? (
+                  <ul className="space-y-1">
+                    {song.performers.map((performer: any, index: number) => (
+                      <li key={index} className="text-sm">
+                        {performer.name || performer}
+                        {performer.percentage && <span className="text-muted-foreground ml-1">({performer.percentage}%)</span>}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Não informado</p>
+                )}
+              </div>
+
+              {/* Produtores */}
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 mb-2">
+                  <Headphones className="h-4 w-4" />
+                  Produtores
+                </label>
+                {song.producers && song.producers.length > 0 ? (
+                  <ul className="space-y-1">
+                    {song.producers.map((producer: any, index: number) => (
+                      <li key={index} className="text-sm">
+                        {producer.name || producer}
+                        {producer.percentage && <span className="text-muted-foreground ml-1">({producer.percentage}%)</span>}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Não informado</p>
+                )}
               </div>
             </div>
           </div>
