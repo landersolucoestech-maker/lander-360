@@ -82,7 +82,11 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
             <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">
               LANÇADO
             </Badge>
-          ) : null}
+          ) : (
+            <Badge className="bg-primary text-primary-foreground font-bold text-xs px-3 py-1">
+              EM BREVE
+            </Badge>
+          )}
         </div>
 
         {/* Content */}
