@@ -9,7 +9,7 @@ import { ArtistHistoryModal } from "@/components/modals/ArtistHistoryModal";
 import { ArtistContractModal } from "@/components/modals/ArtistContractModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useDeleteArtist } from "@/hooks/useArtists";
-import { Mail, Instagram } from "lucide-react";
+import { Mail, Instagram, Phone } from "lucide-react";
 
 interface ArtistCardProps {
   artist: {
@@ -69,9 +69,17 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                 >
                   {artist.status}
                 </Badge>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
-                  <Mail className="h-4 w-4" />
-                  <span>{artist.email}</span>
+                <div className="flex flex-col gap-1 text-sm text-muted-foreground mt-3">
+                  {artist.profile?.telefone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      <span className="truncate">{artist.profile.telefone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span className="truncate">{artist.email}</span>
+                  </div>
                 </div>
               </div>
             </div>
