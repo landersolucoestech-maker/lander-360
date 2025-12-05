@@ -4,12 +4,20 @@ import { Plus, Upload, Calendar, FileText } from "lucide-react";
 
 const quickActions = [
   {
+    title: "Cadastrar Artista",
+    description: "Adicionar novo artista",
+    icon: Plus,
+    href: "/artistas",
+    variant: "default" as const,
+    flow: "Primeiro passo: cadastrar artista"
+  },
+  {
     title: "Iniciar Projeto",
     description: "Começar novo projeto musical",
     icon: Plus,
     href: "/projetos",
-    variant: "default" as const,
-    flow: "Ponto de entrada principal do fluxo"
+    variant: "secondary" as const,
+    flow: "Segundo passo do fluxo"
   },
   {
     title: "Registrar Obra",
@@ -44,7 +52,7 @@ export function QuickActions() {
         <CardTitle className="text-lg font-semibold">Fluxo Principal</CardTitle>
         <p className="text-sm text-muted-foreground">Siga o fluxo de trabalho completo: Projeto → Registro → Lançamento → Marketing</p>
       </CardHeader>
-      <CardContent className="grid grid-cols-4 gap-3">
+      <CardContent className="grid grid-cols-5 gap-3">
         {quickActions.map((action) => (
           <Button
             key={action.title}
