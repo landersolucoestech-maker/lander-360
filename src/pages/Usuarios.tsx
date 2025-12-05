@@ -229,44 +229,25 @@ const Usuarios = () => {
                         
                         <div className="flex gap-2 ml-4">
                           <Button
-                            variant="ghost"
+                            variant="outline"
+                            size="sm"
+                          >
+                            Ver
+                          </Button>
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleEditUser(userData)}
                           >
                             Editar
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleToggleUserStatus(userData)}
-                                className={userData.isActive ? "text-yellow-600" : "text-green-600"}
-                              >
-                                {userData.isActive ? (
-                                  <>
-                                    <Shield className="h-4 w-4 mr-2" />
-                                    Desativar
-                                  </>
-                                ) : (
-                                  <>
-                                    <Shield className="h-4 w-4 mr-2" />
-                                    Ativar
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteUser(userData)}
-                                className="text-destructive"
-                              >
-                                <UserX className="h-4 w-4 mr-2" />
-                                Excluir Permanentemente
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteUser(userData)}
+                          >
+                            Excluir
+                          </Button>
                         </div>
                       </div>
                     </div>
