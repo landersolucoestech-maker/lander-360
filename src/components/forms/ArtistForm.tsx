@@ -30,6 +30,7 @@ const artistSchema = z.object({
   // Informações Básicas
   artistic_name: z.string().min(1, 'Nome artístico é obrigatório'),
   genre: z.string().min(1, 'Gênero musical é obrigatório'),
+  music_language: z.string().optional(),
   artist_image: z.any().optional(),
   documents: z.any().optional(),
   biography: z.string().optional(),
@@ -71,6 +72,7 @@ interface ArtistFormProps {
   onCancel?: () => void;
 }
 const distributorOptions = ['CD Baby', 'DistroKid', 'TuneCore', 'Ditto Music', 'ONErpm', 'iMusics', 'Symphonic Distribution'];
+const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Coreano', 'Mandarim', 'Instrumental', 'Multilíngue', 'Outro'];
 const genreOptions = ['Pop', 'Rock', 'Alternative Rock', 'Indie Rock', 'Classic Rock', 'Hard Rock', 'Metal', 'Heavy Metal', 'Punk', 'Punk Rock', 'Grunge', 'Rap/Hip-Hop', 'Trap', 'Drill', 'R&B', 'Soul', 'Funk', 'Funk Carioca', 'Brega Funk', 'Reggae', 'Ska', 'Dancehall', 'Eletrônica', 'EDM', 'House', 'Deep House', 'Tech House', 'Progressive House', 'Techno', 'Minimal Techno', 'Trance', 'Psytrance', 'Hardstyle', 'Drum and Bass', 'Dubstep', 'Future Bass', 'Sertanejo', 'Sertanejo Universitário', 'MPB', 'Bossa Nova', 'Samba', 'Pagode', 'Choro', 'Forró', 'Xote', 'Baião', 'Piseiro', 'Pisadinha', 'Axé', 'Arrocha', 'Lambada', 'Zouk', 'Carimbó', 'Funk Melody', 'Country', 'Country Pop', 'Folk', 'Bluegrass', 'Gospel', 'Música Religiosa', 'Clássico', 'Ópera', 'New Age', 'Ambient', 'Lo-fi', 'Experimental', 'Instrumental', 'World Music', 'Latin Pop', 'Reggaeton', 'Bachata', 'Salsa', 'Merengue', 'Cumbia', 'Flamenco', 'Tango', 'Afrobeat', 'Afrobeats', 'K-pop', 'J-pop', 'City Pop', 'Bolero', 'Forró Eletrônico', 'Indie', 'Emo', 'Britpop', 'Shoegaze', 'Post-Rock', 'Post-Punk', 'Synthpop', 'Electropop', 'Chillwave', 'Trip Hop', 'Downtempo', 'IDM', 'Blues', 'Jazz', 'Smooth Jazz', 'Latin Jazz', 'Fusion', 'Swing', 'BeBop', 'Hard Bop'];
 export function ArtistForm({
   artist,
@@ -90,6 +92,7 @@ export function ArtistForm({
     defaultValues: {
       artistic_name: artist?.name || '',
       genre: '',
+      music_language: '',
       artist_image: undefined,
       biography: '',
       full_name: '',
@@ -276,6 +279,23 @@ export function ArtistForm({
                       </FormControl>
                         <SelectContent className="max-h-64 overflow-auto">
                           {genreOptions.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>} />
+
+              <FormField control={form.control} name="music_language" render={({
+              field
+            }) => <FormItem>
+                    <FormLabel>Idioma da Música</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o idioma" />
+                        </SelectTrigger>
+                      </FormControl>
+                        <SelectContent className="max-h-64 overflow-auto">
+                          {languageOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <FormMessage />
