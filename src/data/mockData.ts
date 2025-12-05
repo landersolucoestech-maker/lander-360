@@ -9,7 +9,7 @@ export const mockArtists = [
     email: "joao@email.com",
     avatar: null,
     socialMedia: { instagram: "@joaosilva", spotify: "joaosilva" },
-    stats: { obras: 24, lancamentos: 8 },
+    stats: { projetos: 3, obras: 24, lancamentos: 8 },
     profile: { nome: "João da Silva Santos", email: "joao@email.com", telefone: "(11) 99999-1111" },
     gravadora: "Gravadora 360"
   },
@@ -21,7 +21,7 @@ export const mockArtists = [
     email: "maria@email.com",
     avatar: null,
     socialMedia: { instagram: "@mariasantos", spotify: "mariasantos" },
-    stats: { obras: 18, lancamentos: 5 },
+    stats: { projetos: 2, obras: 18, lancamentos: 5 },
     profile: { nome: "Maria Santos Oliveira", email: "maria@email.com", telefone: "(11) 99999-2222" },
     gravadora: "Indie Records"
   },
@@ -33,7 +33,7 @@ export const mockArtists = [
     email: "pedro@email.com",
     avatar: null,
     socialMedia: { instagram: "@pedrocosta", spotify: "pedrocosta" },
-    stats: { obras: 32, lancamentos: 12 },
+    stats: { projetos: 5, obras: 32, lancamentos: 12 },
     profile: { nome: "Pedro Costa Lima", email: "pedro@email.com", telefone: "(11) 99999-3333" },
     gravadora: "Gravadora 360"
   },
@@ -45,7 +45,7 @@ export const mockArtists = [
     email: "ana@email.com",
     avatar: null,
     socialMedia: { instagram: "@anabeatriz", spotify: "anabeatriz" },
-    stats: { obras: 15, lancamentos: 4 },
+    stats: { projetos: 1, obras: 15, lancamentos: 4 },
     profile: { nome: "Ana Beatriz Ferreira", email: "ana@email.com", telefone: "(11) 99999-4444" },
     gravadora: "Pop Music Label"
   },
@@ -57,7 +57,7 @@ export const mockArtists = [
     email: "lucas@email.com",
     avatar: null,
     socialMedia: { instagram: "@lucasferreira", spotify: "lucasferreira" },
-    stats: { obras: 45, lancamentos: 20 },
+    stats: { projetos: 4, obras: 45, lancamentos: 20 },
     profile: { nome: "Lucas Ferreira da Silva", email: "lucas@email.com", telefone: "(11) 99999-5555" },
     gravadora: "Gravadora 360"
   }
