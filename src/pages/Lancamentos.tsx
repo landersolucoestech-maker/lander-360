@@ -250,6 +250,51 @@ const Lancamentos = () => {
               title="Excluir Lançamento"
               description={`Tem certeza que deseja excluir o lançamento "${releaseToDelete?.title}"? Esta ação não pode ser desfeita.`}
             />
+
+            {/* View Details Modal */}
+            <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Detalhes do Lançamento</DialogTitle>
+                </DialogHeader>
+                {selectedRelease && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Título</label>
+                        <p className="text-lg font-semibold">{selectedRelease.title}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Artista</label>
+                        <p>{selectedRelease.artist}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Tipo</label>
+                        <p>{selectedRelease.type}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Status</label>
+                        <p>{selectedRelease.status}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Data de Lançamento</label>
+                        <p>{new Date(selectedRelease.releaseDate).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Streams</label>
+                        <p>{selectedRelease.streams}</p>
+                      </div>
+                    </div>
+                    {selectedRelease.platforms && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Plataformas</label>
+                        <p>{selectedRelease.platforms.join(', ')}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </SidebarInset>
       </div>
