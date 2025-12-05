@@ -108,31 +108,31 @@ const RegistroMusicas = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard
                 title="Total de Músicas"
-                value={0}
+                value={allSongs.length}
                 description="registradas no sistema"
                 icon={Music}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 15, isPositive: true }}
               />
               <DashboardCard
                 title="Pendentes de Registro"
-                value={0}
+                value={allSongs.filter(s => s.status === "Pendente").length}
                 description="aguardando aprovação"
                 icon={FileText}
-                trend={{ value: 0, isPositive: false }}
+                trend={{ value: 3, isPositive: false }}
               />
               <DashboardCard
                 title="Taxa de Aprovação"
-                value="0%"
+                value={allSongs.length > 0 ? `${Math.round((allSongs.filter(s => s.status === "Registrado" || s.status === "Aprovado").length / allSongs.length) * 100)}%` : "0%"}
                 description="músicas aprovadas"
                 icon={CheckCircle}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 8, isPositive: true }}
               />
               <DashboardCard
                 title="Receita Estimada"
-                value="R$ 0"
+                value={`R$ ${(allSongs.length * 1250).toLocaleString('pt-BR')}`}
                 description="projeção de direitos"
                 icon={DollarSign}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 12, isPositive: true }}
               />
             </div>
 
