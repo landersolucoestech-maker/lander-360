@@ -11,8 +11,121 @@ import { CheckSquare, Plus, Clock, Users, AlertTriangle, CheckCircle, Calendar }
 import { useMarketingTasks, useMarketingStats } from "@/hooks/useMarketing";
 
 const MarketingTarefas = () => {
-  const { data: tasks = [], isLoading: tasksLoading } = useMarketingTasks();
+  const { data: dbTasks = [], isLoading: tasksLoading } = useMarketingTasks();
   const { data: stats, isLoading: statsLoading } = useMarketingStats();
+
+  // Mock data para exibição
+  const mockTasks = [
+    {
+      id: "1",
+      title: "Criar artes para Stories do Instagram",
+      description: "Desenvolver 10 artes para stories da campanha de fim de ano",
+      campaign: "Campanha de Fim de Ano",
+      status: "Em Andamento",
+      priority: "Alta",
+      category: "Design",
+      assignee_name: "Design Team",
+      due_date: "2024-12-10",
+      progress: 60
+    },
+    {
+      id: "2",
+      title: "Editar vídeo do clipe oficial",
+      description: "Finalizar edição e correção de cor do novo clipe",
+      campaign: "Lançamento Clipe Oficial",
+      status: "Pendente",
+      priority: "Alta",
+      category: "Vídeo",
+      assignee_name: "Video Team",
+      due_date: "2024-12-08",
+      progress: 0
+    },
+    {
+      id: "3",
+      title: "Copywriting para anúncios",
+      description: "Escrever textos persuasivos para Meta Ads",
+      campaign: "Turnê Nacional 2025",
+      status: "Concluída",
+      priority: "Média",
+      category: "Copywriting",
+      assignee_name: "Marketing Team",
+      due_date: "2024-12-05",
+      progress: 100
+    },
+    {
+      id: "4",
+      title: "Agendar posts do TikTok",
+      description: "Programar 15 vídeos para a próxima semana",
+      campaign: "Promoção Álbum Completo",
+      status: "Em Andamento",
+      priority: "Média",
+      category: "Social Media",
+      assignee_name: "Social Media",
+      due_date: "2024-12-07",
+      progress: 40
+    },
+    {
+      id: "5",
+      title: "Criar banner para Spotify",
+      description: "Design do banner promocional para playlist",
+      campaign: "Lançamento Single 'Noite Estrelada'",
+      status: "Atrasada",
+      priority: "Alta",
+      category: "Design",
+      assignee_name: "Design Team",
+      due_date: "2024-12-03",
+      progress: 20
+    },
+    {
+      id: "6",
+      title: "Configurar pixel do Facebook",
+      description: "Implementar tracking para conversões",
+      campaign: "Campanha de Fim de Ano",
+      status: "Pendente",
+      priority: "Baixa",
+      category: "Publicidade",
+      assignee_name: "Marketing Team",
+      due_date: "2024-12-15",
+      progress: 0
+    },
+    {
+      id: "7",
+      title: "Revisar métricas semanais",
+      description: "Análise de performance das campanhas ativas",
+      campaign: null,
+      status: "Concluída",
+      priority: "Média",
+      category: "Social Media",
+      assignee_name: "Marketing Team",
+      due_date: "2024-12-04",
+      progress: 100
+    },
+    {
+      id: "8",
+      title: "Produzir conteúdo para YouTube Shorts",
+      description: "Gravar e editar 5 shorts para o canal",
+      campaign: "Promoção Álbum Completo",
+      status: "Em Andamento",
+      priority: "Alta",
+      category: "Vídeo",
+      assignee_name: "Video Team",
+      due_date: "2024-12-12",
+      progress: 30
+    }
+  ];
+
+  const tasks = dbTasks.length > 0 ? dbTasks : mockTasks;
+  
+  const mockStats = {
+    tasks: {
+      pending: tasks.filter(t => t.status === "Pendente").length,
+      inProgress: tasks.filter(t => t.status === "Em Andamento").length,
+      completed: tasks.filter(t => t.status === "Concluída").length,
+      total: tasks.length
+    }
+  };
+
+  const displayStats = stats || mockStats;
 
   const [filteredTasks, setFilteredTasks] = useState(tasks);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,28 +221,28 @@ const MarketingTarefas = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard
                 title="Tarefas Pendentes"
-                value={statsLoading ? "..." : stats?.tasks.pending || 0}
+                value={displayStats.tasks.pending}
                 description="aguardando execução"
                 icon={Clock}
                 trend={{ value: 5.2, isPositive: false }}
               />
               <DashboardCard
                 title="Em Andamento"
-                value={statsLoading ? "..." : stats?.tasks.inProgress || 0}
+                value={displayStats.tasks.inProgress}
                 description="sendo executadas"
                 icon={CheckSquare}
                 trend={{ value: 25.0, isPositive: true }}
               />
               <DashboardCard
                 title="Concluídas"
-                value={statsLoading ? "..." : stats?.tasks.completed || 0}
+                value={displayStats.tasks.completed}
                 description="este mês"
                 icon={CheckCircle}
                 trend={{ value: 18.7, isPositive: true }}
               />
               <DashboardCard
                 title="Taxa de Conclusão"
-                value={statsLoading ? "..." : stats?.tasks.total > 0 ? `${Math.round((stats.tasks.completed / stats.tasks.total) * 100)}%` : "0%"}
+                value={displayStats.tasks.total > 0 ? `${Math.round((displayStats.tasks.completed / displayStats.tasks.total) * 100)}%` : "0%"}
                 description="no prazo"
                 icon={Users}
                 trend={{ value: 12.1, isPositive: true }}
