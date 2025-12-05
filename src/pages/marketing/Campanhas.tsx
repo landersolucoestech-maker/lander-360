@@ -9,7 +9,86 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingCampaignModal } from "@/components/modals/MarketingCampaignModal";
 import { Target, Plus, Calendar, Users, DollarSign, TrendingUp, BarChart3, Megaphone } from "lucide-react";
 const MarketingCampanhas = () => {
-  const allCampaigns: any[] = [];
+  const allCampaigns = [
+    {
+      id: "1",
+      name: "Lançamento Single 'Noite Estrelada'",
+      objective: "Awareness",
+      status: "Ativa",
+      targetAudience: "Jovens 18-35, fãs de MPB e Pop",
+      budget: "R$ 25.000",
+      spent: "R$ 18.500",
+      platforms: ["Instagram", "TikTok", "Spotify"],
+      startDate: "01/12/2024",
+      endDate: "31/12/2024",
+      kpis: { reach: "1.2M", ctr: "4.5%", cpc: "R$ 0,15" }
+    },
+    {
+      id: "2",
+      name: "Turnê Nacional 2025",
+      objective: "Conversão",
+      status: "Planejada",
+      targetAudience: "Fãs existentes, 25-45 anos",
+      budget: "R$ 50.000",
+      spent: "R$ 0",
+      platforms: ["Instagram", "Facebook", "YouTube"],
+      startDate: "15/01/2025",
+      endDate: "28/02/2025",
+      kpis: { reach: "-", ctr: "-", cpc: "-" }
+    },
+    {
+      id: "3",
+      name: "Promoção Álbum Completo",
+      objective: "Engajamento",
+      status: "Ativa",
+      targetAudience: "Ouvintes de streaming, todas as idades",
+      budget: "R$ 15.000",
+      spent: "R$ 12.300",
+      platforms: ["Spotify", "YouTube", "TikTok"],
+      startDate: "15/11/2024",
+      endDate: "15/12/2024",
+      kpis: { reach: "850K", ctr: "3.8%", cpc: "R$ 0,18" }
+    },
+    {
+      id: "4",
+      name: "Parceria com Influenciadores",
+      objective: "Awareness",
+      status: "Finalizada",
+      targetAudience: "Público Gen Z, 16-24 anos",
+      budget: "R$ 30.000",
+      spent: "R$ 29.800",
+      platforms: ["TikTok", "Instagram"],
+      startDate: "01/10/2024",
+      endDate: "31/10/2024",
+      kpis: { reach: "2.5M", ctr: "5.2%", cpc: "R$ 0,12" }
+    },
+    {
+      id: "5",
+      name: "Campanha de Fim de Ano",
+      objective: "Tráfego",
+      status: "Pausada",
+      targetAudience: "Público geral, compradores de ingressos",
+      budget: "R$ 20.000",
+      spent: "R$ 8.500",
+      platforms: ["Facebook", "Instagram", "YouTube"],
+      startDate: "20/11/2024",
+      endDate: "25/12/2024",
+      kpis: { reach: "420K", ctr: "2.9%", cpc: "R$ 0,22" }
+    },
+    {
+      id: "6",
+      name: "Lançamento Clipe Oficial",
+      objective: "Engajamento",
+      status: "Ativa",
+      targetAudience: "Fãs de música, 18-40 anos",
+      budget: "R$ 35.000",
+      spent: "R$ 22.000",
+      platforms: ["YouTube", "Instagram", "TikTok"],
+      startDate: "05/12/2024",
+      endDate: "05/01/2025",
+      kpis: { reach: "980K", ctr: "4.1%", cpc: "R$ 0,16" }
+    }
+  ];
   const [filteredCampaigns, setFilteredCampaigns] = useState(allCampaigns);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -73,20 +152,20 @@ const MarketingCampanhas = () => {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <DashboardCard title="Campanhas Ativas" value={0} description="em execução" icon={Target} trend={{
-              value: 0,
+              <DashboardCard title="Campanhas Ativas" value={3} description="em execução" icon={Target} trend={{
+              value: 12,
               isPositive: true
             }} />
-              <DashboardCard title="Budget Total" value="R$ 0" description="investimento mensal" icon={DollarSign} trend={{
-              value: 0,
+              <DashboardCard title="Budget Total" value="R$ 175.000" description="investimento mensal" icon={DollarSign} trend={{
+              value: 8,
               isPositive: true
             }} />
-              <DashboardCard title="ROI Médio" value="0%" description="retorno sobre investimento" icon={TrendingUp} trend={{
-              value: 0,
+              <DashboardCard title="ROI Médio" value="245%" description="retorno sobre investimento" icon={TrendingUp} trend={{
+              value: 18,
               isPositive: true
             }} />
-              <DashboardCard title="Taxa de Conversão" value="0%" description="média geral" icon={BarChart3} trend={{
-              value: 0,
+              <DashboardCard title="Taxa de Conversão" value="4.1%" description="média geral" icon={BarChart3} trend={{
+              value: 5,
               isPositive: true
             }} />
             </div>
