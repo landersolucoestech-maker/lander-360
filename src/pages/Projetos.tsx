@@ -200,6 +200,10 @@ const Projetos = () => {
                             <div className="font-medium">{project.interpreters}</div>
                           </div>
                           <div className="text-center">
+                            <div className="text-muted-foreground">Produtores</div>
+                            <div className="font-medium">{project.djProducer}</div>
+                          </div>
+                          <div className="text-center">
                             <div className="text-muted-foreground">Gênero</div>
                             <div className="font-medium">{project.genre}</div>
                           </div>
