@@ -191,7 +191,8 @@ export const mockReleases = [
     streams: "0",
     cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop",
     approvalStatus: "pendente" as const,
-    priority: "alta" as const
+    priority: "alta" as const,
+    takedown: false
   },
   {
     id: "2",
@@ -204,20 +205,22 @@ export const mockReleases = [
     streams: "0",
     cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop",
     approvalStatus: "aceita" as const,
-    priority: "media" as const
+    priority: "media" as const,
+    takedown: false
   },
   {
     id: "3",
     title: "Rock Sessions",
     artist: "Pedro Costa",
     type: "Álbum",
-    status: "Lançado",
+    status: "Takedown",
     releaseDate: "2024-12-20",
     platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer", "Tidal"],
     streams: "5.8M",
     cover: "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=500&fit=crop",
     approvalStatus: "aceita" as const,
-    priority: "baixa" as const
+    priority: "baixa" as const,
+    takedown: true
   },
   {
     id: "4",
@@ -230,20 +233,22 @@ export const mockReleases = [
     streams: "0",
     cover: "https://images.unsplash.com/photo-1571266028243-e4733b0f0bb0?w=400&h=500&fit=crop",
     approvalStatus: "recusada" as const,
-    priority: "alta" as const
+    priority: "alta" as const,
+    takedown: false
   },
   {
     id: "5",
     title: "EP Verão Total",
     artist: "João Silva",
     type: "EP",
-    status: "Lançado",
+    status: "Takedown",
     releaseDate: "2024-01-15",
     platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer"],
     streams: "2.5M",
     cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=500&fit=crop",
     approvalStatus: "aceita" as const,
-    priority: "baixa" as const
+    priority: "baixa" as const,
+    takedown: true
   },
   {
     id: "6",
@@ -256,7 +261,8 @@ export const mockReleases = [
     streams: "0",
     cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop",
     approvalStatus: "em_espera" as const,
-    priority: "media" as const
+    priority: "media" as const,
+    takedown: false
   },
   {
     id: "7",
@@ -269,7 +275,8 @@ export const mockReleases = [
     streams: "0",
     cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=500&fit=crop",
     approvalStatus: "pendente" as const,
-    priority: "media" as const
+    priority: "media" as const,
+    takedown: false
   },
   {
     id: "8",
@@ -282,7 +289,8 @@ export const mockReleases = [
     streams: "0",
     cover: "https://images.unsplash.com/photo-1446057032654-9d8885db76c6?w=400&h=500&fit=crop",
     approvalStatus: "em_espera" as const,
-    priority: "alta" as const
+    priority: "alta" as const,
+    takedown: false
   }
 ];
 
