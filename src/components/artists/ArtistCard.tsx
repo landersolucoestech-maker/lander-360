@@ -55,9 +55,9 @@ export function ArtistCard({ artist }: ArtistCardProps) {
 
   return (
     <>
-      <Card className="p-2">
+      <Card className="py-3 px-4">
         <CardContent className="p-0">
-          <div className="grid grid-cols-12 gap-3 items-start">
+          <div className="grid grid-cols-12 gap-4 items-start">
             {/* Left Section - Artist Info */}
             <div className="col-span-3">
               <div className="space-y-1">
