@@ -214,6 +214,12 @@ const RegistroMusicas = () => {
                             <Button variant="outline" size="sm" onClick={() => handleEditSong(song)}>
                               Editar
                             </Button>
+                            <Button variant="outline" size="sm" onClick={() => {
+                              setSelectedSong(song);
+                              setDeleteModalOpen(true);
+                            }}>
+                              Excluir
+                            </Button>
                           </div>
                         </div>
                       </div>
