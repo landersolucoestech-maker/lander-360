@@ -9,15 +9,7 @@ import { ArtistHistoryModal } from "@/components/modals/ArtistHistoryModal";
 import { ArtistContractModal } from "@/components/modals/ArtistContractModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useDeleteArtist } from "@/hooks/useArtists";
-import { 
-  Eye, 
-  History, 
-  FileText, 
-  Edit, 
-  Trash2, 
-  Mail, 
-  Instagram 
-} from "lucide-react";
+import { Mail, Instagram } from "lucide-react";
 
 interface ArtistCardProps {
   artist: {
@@ -131,46 +123,41 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="gap-1 text-xs h-7 px-2"
+                    className="text-xs h-7 px-2"
                     onClick={() => setProfileModalOpen(true)}
                   >
-                    <Eye className="h-3 w-3" />
                     Ver Perfil
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="gap-1 text-xs h-7 px-2"
+                    className="text-xs h-7 px-2"
                     onClick={() => setHistoryModalOpen(true)}
                   >
-                    <History className="h-3 w-3" />
                     Histórico
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="gap-1 text-xs h-7 px-2"
+                    className="text-xs h-7 px-2"
                     onClick={() => setContractModalOpen(true)}
                   >
-                    <FileText className="h-3 w-3" />
                     Contrato
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="gap-1 text-xs h-7 px-2"
+                    className="text-xs h-7 px-2"
                     onClick={() => setEditModalOpen(true)}
                   >
-                    <Edit className="h-3 w-3" />
                     Editar
                   </Button>
                   <Button 
                     variant="destructive" 
                     size="sm" 
-                    className="gap-1 text-xs h-7 px-2"
+                    className="text-xs h-7 px-2"
                     onClick={() => setDeleteModalOpen(true)}
                   >
-                    <Trash2 className="h-3 w-3" />
                     Excluir
                   </Button>
                 </div>

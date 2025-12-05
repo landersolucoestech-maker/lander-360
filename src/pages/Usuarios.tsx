@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Search, Users, Shield, Trash2, Edit3, UserX, MoreVertical } from "lucide-react";
+import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical } from "lucide-react";
 import { UserModal } from "@/components/modals/UserModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -233,7 +233,7 @@ const Usuarios = () => {
                             size="sm"
                             onClick={() => handleEditUser(userData)}
                           >
-                            <Edit3 className="h-4 w-4" />
+                            Editar
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
