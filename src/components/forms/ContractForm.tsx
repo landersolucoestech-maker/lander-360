@@ -73,7 +73,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     onSubmit(data);
   };
 
-  const allServiceTypeLabels = {
+  const artistaServiceTypeLabels = {
     empresariamento: 'Empresariamento',
     gestao: 'Gestão',
     agenciamento: 'Agenciamento',
@@ -81,17 +81,29 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     distribuicao: 'Distribuição',
     marketing: 'Marketing',
     producao_musical: 'Produção Musical',
-    producao_audiovisual: 'Produção Audiovisual'
+    producao_audiovisual: 'Produção Audiovisual',
+    licenciamento: 'Licenciamento'
   };
 
-  const empresaServiceTypes = ['producao_musical', 'marketing', 'producao_audiovisual'];
+  const empresaServiceTypeLabels = {
+    producao_musical: 'Produção Musical',
+    marketing: 'Marketing',
+    producao_audiovisual: 'Produção Audiovisual',
+    publicidade: 'Publicidade',
+    parceria: 'Parceria',
+    shows: 'Shows',
+    licenciamento: 'Licenciamento',
+    outros: 'Outros'
+  };
+
+  const empresaServiceTypes = Object.keys(empresaServiceTypeLabels);
   
   const getFilteredServiceTypes = () => {
     const clientType = form.watch('client_type');
     if (clientType === 'empresa') {
-      return Object.entries(allServiceTypeLabels).filter(([key]) => empresaServiceTypes.includes(key));
+      return Object.entries(empresaServiceTypeLabels);
     }
-    return Object.entries(allServiceTypeLabels);
+    return Object.entries(artistaServiceTypeLabels);
   };
 
   const statusLabels = {
