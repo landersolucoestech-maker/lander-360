@@ -198,7 +198,13 @@ const MarketingCampanhas = () => {
                               {campaign.status}
                             </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground">Público: {campaign.targetAudience}</p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>Público: {campaign.targetAudience}</span>
+                            <span className="flex items-center">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              {campaign.startDate} - {campaign.endDate}
+                            </span>
+                          </div>
                         </div>
 
                         {/* KPIs */}
@@ -232,17 +238,11 @@ const MarketingCampanhas = () => {
                         </div>
                       </div>
 
-                      {/* Rodapé com plataformas e período */}
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                        <div className="flex gap-1">
-                          {campaign.platforms.map((platform, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">{platform}</Badge>
-                          ))}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          <Calendar className="inline-block h-3 w-3 mr-1" />
-                          {campaign.startDate} - {campaign.endDate}
-                        </div>
+                      {/* Plataformas */}
+                      <div className="flex gap-1 mt-3 pt-3 border-t border-border">
+                        {campaign.platforms.map((platform, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">{platform}</Badge>
+                        ))}
                       </div>
                     </div>
                   ))}
