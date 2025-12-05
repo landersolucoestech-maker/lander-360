@@ -21,8 +21,14 @@ import { mockDashboardStats, mockEvents } from "@/data/mockData";
 const Index = () => {
   const { data: stats, isLoading, error } = useDashboardStats();
 
-  // Use mock data when no database data exists
-  const displayStats = stats || mockDashboardStats;
+  // Use mock data when no database data exists or all values are zero
+  const hasNoData = !stats || (
+    stats.totalWorks === 0 && 
+    stats.activeArtists === 0 && 
+    stats.activeContracts === 0 && 
+    stats.monthlyRevenue === 0
+  );
+  const displayStats = hasNoData ? mockDashboardStats : stats;
 
   // Filter today's events
   const today = new Date().toISOString().split('T')[0];
