@@ -26,12 +26,6 @@ import MarketingCalendario from "./pages/marketing/Calendario";
 import MarketingMetricas from "./pages/marketing/Metricas";
 import MarketingBriefing from "./pages/marketing/Briefing";
 import PerfilUsuario from "./pages/PerfilUsuario";
-import Suporte from "./pages/Suporte";
-import PortalAdmin from "./pages/PortalAdmin";
-import InstitutionalHome from "./pages/institutional/Home";
-import InstitutionalAbout from "./pages/institutional/About";
-import InstitutionalServices from "./pages/institutional/Services";
-import InstitutionalContact from "./pages/institutional/Contact";
 
 const queryClient = new QueryClient();
 
@@ -64,12 +58,6 @@ const App = () => (
           <Route path="/marketing/metricas" element={<MarketingMetricas />} />
           <Route path="/marketing/briefing" element={<MarketingBriefing />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/suporte" element={<Suporte />} />
-          <Route path="/institutional" element={<InstitutionalHome />} />
-          <Route path="/institutional/about" element={<InstitutionalAbout />} />
-          <Route path="/institutional/services" element={<InstitutionalServices />} />
-          <Route path="/institutional/contact" element={<InstitutionalContact />} />
-          <Route path="/portal-admin" element={<PortalAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

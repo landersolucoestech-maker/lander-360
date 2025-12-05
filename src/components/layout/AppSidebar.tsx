@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, HelpCircle, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -104,22 +104,6 @@ export function AppSidebar({ className }: AppSidebarProps) {
                   <a href="/configuracoes" className="flex items-center gap-3 px-3 py-2">
                     <Settings className="h-4 w-4" />
                     <span className="font-medium">Configurações</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                  <a href="/suporte" className="flex items-center gap-3 px-3 py-2">
-                    <HelpCircle className="h-4 w-4" />
-                    <span className="font-medium">Suporte</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                  <a href="/portal-admin" className="flex items-center gap-3 px-3 py-2">
-                    <Building2 className="h-4 w-4" />
-                    <span className="font-medium">Portal Admin</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
