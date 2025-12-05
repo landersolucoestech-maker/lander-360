@@ -160,6 +160,26 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               )}
             </div>
 
+            <div className="space-y-2">
+              <Label>Tipo de Serviço</Label>
+              <Select
+                value={form.watch('service_type')}
+                onValueChange={(value) => form.setValue('service_type', value as any)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de serviço" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getFilteredServiceTypes().map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.service_type && (
+                <p className="text-sm text-destructive">{form.formState.errors.service_type.message}</p>
+              )}
+            </div>
+
             {form.watch('client_type') === 'empresa' && (
               <div className="space-y-2">
                 <Label htmlFor="contractor_contact">Contratante/Contato</Label>
@@ -186,26 +206,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tipo de Serviço</Label>
-              <Select
-                value={form.watch('service_type')}
-                onValueChange={(value) => form.setValue('service_type', value as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo de serviço" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getFilteredServiceTypes().map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.service_type && (
-                <p className="text-sm text-destructive">{form.formState.errors.service_type.message}</p>
-              )}
             </div>
 
             {form.watch('client_type') === 'artista' && (
