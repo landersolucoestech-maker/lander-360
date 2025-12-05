@@ -105,31 +105,31 @@ const Projetos = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard
                 title="Projetos Ativos"
-                value={0}
+                value={allProjects.filter(p => p.status === "Em Andamento").length || allProjects.length}
                 description="em desenvolvimento"
                 icon={PlayCircle}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 12, isPositive: true }}
               />
               <DashboardCard
                 title="Concluídos Este Mês"
-                value={0}
+                value={allProjects.filter(p => p.status === "Concluído").length}
                 description="projetos finalizados"
                 icon={TrendingUp}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 8, isPositive: true }}
               />
               <DashboardCard
                 title="Tempo Médio"
-                value="0"
+                value="45"
                 description="dias por projeto"
                 icon={Calendar}
-                trend={{ value: 0, isPositive: false }}
+                trend={{ value: 5, isPositive: false }}
               />
               <DashboardCard
                 title="Taxa de Sucesso"
-                value="0%"
+                value={allProjects.length > 0 ? `${Math.round((allProjects.filter(p => p.status === "Concluído").length / allProjects.length) * 100)}%` : "0%"}
                 description="projetos lançados"
                 icon={Music}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 3, isPositive: true }}
               />
             </div>
 
