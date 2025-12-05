@@ -30,7 +30,9 @@ const artistSchema = z.object({
   // Informações Básicas
   artistic_name: z.string().min(1, 'Nome artístico é obrigatório'),
   genre: z.string().min(1, 'Gênero musical é obrigatório'),
+  artist_image: z.any().optional(),
   documents: z.any().optional(),
+  biography: z.string().optional(),
   // Dados Pessoais
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
   birth_date: z.date().optional(),
@@ -82,11 +84,14 @@ export function ArtistForm({
   const updateArtist = useUpdateArtist();
   const [showManagerFields, setShowManagerFields] = useState(false);
   const [selectedDistributors, setSelectedDistributors] = useState<string[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(artist?.image_url || null);
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
     defaultValues: {
       artistic_name: artist?.name || '',
       genre: '',
+      artist_image: undefined,
+      biography: '',
       full_name: '',
       birth_date: undefined,
       cpf_cnpj: '',
@@ -113,6 +118,23 @@ export function ArtistForm({
       observations: ''
     }
   });
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onChange(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = (onChange: (value: any) => void) => {
+    onChange(undefined);
+    setImagePreview(null);
+  };
 
   // Watch profile_type to show/hide manager fields
   const profileType = form.watch('profile_type');
@@ -170,6 +192,68 @@ export function ArtistForm({
               1. Informações Básicas
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Imagem do Artista */}
+              <div className="md:col-span-2">
+                <FormField control={form.control} name="artist_image" render={({
+                field
+              }) => <FormItem>
+                      <FormLabel>Imagem do Artista</FormLabel>
+                      <FormControl>
+                        <div className="flex items-start gap-6">
+                          {imagePreview ? (
+                            <div className="relative">
+                              <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="w-32 h-32 rounded-full object-cover border-2 border-primary"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                                onClick={() => removeImage(field.onChange)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="relative w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-full flex items-center justify-center hover:border-muted-foreground/50 transition-colors cursor-pointer">
+                              <Upload className="h-8 w-8 text-muted-foreground" />
+                              <input 
+                                type="file" 
+                                accept="image/*" 
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                onChange={e => handleImageChange(e, field.onChange)} 
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 pt-2">
+                            <p className="text-sm text-muted-foreground">
+                              Clique para adicionar a foto do artista
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Formatos aceitos: JPG, PNG, WEBP (máx. 5MB)
+                            </p>
+                            {!imagePreview && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mt-2"
+                                onClick={() => document.querySelector<HTMLInputElement>('input[accept="image/*"]')?.click()}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Escolher Imagem
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>} />
+              </div>
+
               <FormField control={form.control} name="artistic_name" render={({
               field
             }) => <FormItem>
@@ -213,6 +297,23 @@ export function ArtistForm({
                           </p>
                           <input type="file" accept=".pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={e => field.onChange(e.target.files?.[0])} />
                         </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>} />
+              </div>
+
+              {/* Biografia */}
+              <div className="md:col-span-2">
+                <FormField control={form.control} name="biography" render={({
+                field
+              }) => <FormItem>
+                      <FormLabel>Biografia</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Escreva uma breve biografia do artista, incluindo sua trajetória, conquistas e estilo musical..."
+                          className="min-h-[120px] resize-y"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>} />
