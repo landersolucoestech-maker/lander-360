@@ -15,8 +15,8 @@ import {
   MapPin, 
   Calendar, 
   Music, 
-  Trophy, 
-  Users,
+  Disc3,
+  FolderKanban,
   Instagram,
   Facebook,
   Youtube,
@@ -93,19 +93,19 @@ export function ArtistProfileModal({
             <h3 className="text-lg font-semibold mb-4">Estatísticas</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
+                <FolderKanban className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <div className="text-2xl font-bold">{artist.stats.projetos || 0}</div>
+                <div className="text-sm text-muted-foreground">Projetos</div>
+              </div>
+              <div className="text-center p-4 bg-muted rounded-lg">
                 <Music className="h-6 w-6 mx-auto mb-2 text-primary" />
                 <div className="text-2xl font-bold">{artist.stats.obras}</div>
                 <div className="text-sm text-muted-foreground">Obras</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
-                <Trophy className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">{artist.stats.lancamentos}</div>
-                <div className="text-sm text-muted-foreground">Lançamentos</div>
-              </div>
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">152K</div>
-                <div className="text-sm text-muted-foreground">Seguidores</div>
+                <Disc3 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <div className="text-2xl font-bold">{artist.stats.fonogramas || 0}</div>
+                <div className="text-sm text-muted-foreground">Fonogramas</div>
               </div>
             </div>
           </div>
