@@ -14,6 +14,7 @@ interface ReleaseCardProps {
     cover?: string;
     approvalStatus?: 'pendente' | 'aceita' | 'recusada' | 'em_espera';
     priority?: 'alta' | 'media' | 'baixa';
+    takedown?: boolean;
   };
   onViewDetails: (release: any) => void;
   onEdit?: (release: any) => void;
@@ -74,6 +75,15 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
         
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+        {/* Top Left Badge - Takedown Status */}
+        {release.takedown && (
+          <div className="absolute top-3 left-3">
+            <Badge className="bg-orange-600 text-white font-bold text-xs px-3 py-1 animate-pulse">
+              TAKEDOWN
+            </Badge>
+          </div>
+        )}
 
         {/* Top Right Badge - Approval Status */}
         <div className="absolute top-3 right-3">
