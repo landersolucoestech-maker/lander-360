@@ -29,7 +29,9 @@ const Artistas = () => {
     stats: {
       projetos: 0,
       obras: 0,
-      fonogramas: 0
+      fonogramas: 0,
+      lancamentos: 0,
+      streams: '0'
     },
     profile: {
       nome: dbArtist.name || 'Não informado',
