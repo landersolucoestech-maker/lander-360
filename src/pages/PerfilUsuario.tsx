@@ -25,7 +25,7 @@ const PerfilUsuario = () => {
                       <AvatarFallback className="bg-primary text-primary-foreground text-2xl">G3</AvatarFallback>
                     </Avatar>
                   </div>
-                  <CardTitle>Gestão 360</CardTitle>
+                  <CardTitle>Lander 360º</CardTitle>
                   <CardDescription className="flex items-center justify-center gap-2">
                     <Mail className="h-4 w-4" />Sistema de Gestão
                   </CardDescription>
@@ -49,7 +49,7 @@ const PerfilUsuario = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Nome do Sistema</label>
-                      <p>Gestão 360</p>
+                      <p>Lander 360º</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Versão</label>
