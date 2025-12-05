@@ -201,9 +201,17 @@ const NotaFiscal = () => {
                             <div className="text-muted-foreground">Valor</div>
                             <div className="font-semibold text-foreground">{invoice.amount}</div>
                           </div>
-                          <Button variant="outline" size="sm">
-                            Ver NF
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm">
+                              Ver
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              Editar
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              Excluir
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
