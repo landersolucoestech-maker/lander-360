@@ -182,79 +182,67 @@ const MarketingCampanhas = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="space-y-4">
                   {filteredCampaigns.map(campaign => (
-                    <div key={campaign.id} className="p-5 border border-border rounded-lg hover:bg-accent/50 transition-colors flex flex-col">
-                      {/* Header com nome e status */}
-                      <div className="flex items-start justify-between mb-3">
+                    <div key={campaign.id} className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                        {/* Info principal */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-base font-semibold text-foreground truncate">{campaign.name}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">{campaign.objective}</Badge>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-base font-semibold text-foreground truncate">{campaign.name}</h3>
+                            <Badge variant="secondary" className="text-xs shrink-0">{campaign.objective}</Badge>
                             <Badge 
                               variant={campaign.status === "Ativa" ? "success" : campaign.status === "Planejada" ? "info" : campaign.status === "Finalizada" ? "outline" : "warning"}
-                              className="text-xs"
+                              className="text-xs shrink-0"
                             >
                               {campaign.status}
                             </Badge>
                           </div>
+                          <p className="text-xs text-muted-foreground">Público: {campaign.targetAudience}</p>
+                        </div>
+
+                        {/* KPIs */}
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="text-center">
+                            <div className="text-xs text-muted-foreground">Budget</div>
+                            <div className="font-medium">{campaign.budget}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-muted-foreground">Gasto</div>
+                            <div className="font-medium">{campaign.spent}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-muted-foreground">Alcance</div>
+                            <div className="font-medium">{campaign.kpis.reach}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-muted-foreground">CTR</div>
+                            <div className="font-medium">{campaign.kpis.ctr}</div>
+                          </div>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button variant="outline" size="sm">Ver</Button>
+                          <Button variant="outline" size="sm" onClick={() => {
+                            setSelectedCampaign(campaign);
+                            setIsModalOpen(true);
+                          }}>Editar</Button>
+                          <Button variant="outline" size="sm">Excluir</Button>
                         </div>
                       </div>
 
-                      {/* Público alvo */}
-                      <p className="text-xs text-muted-foreground mb-3">
-                        <span className="font-medium">Público:</span> {campaign.targetAudience}
-                      </p>
-
-                      {/* KPIs em grid compacto */}
-                      <div className="grid grid-cols-2 gap-3 mb-3 p-3 bg-accent/30 rounded-md">
-                        <div>
-                          <div className="text-xs text-muted-foreground">Budget</div>
-                          <div className="text-sm font-medium">{campaign.budget}</div>
+                      {/* Rodapé com plataformas e período */}
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                        <div className="flex gap-1">
+                          {campaign.platforms.map((platform, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">{platform}</Badge>
+                          ))}
                         </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Gasto</div>
-                          <div className="text-sm font-medium">{campaign.spent}</div>
+                        <div className="text-xs text-muted-foreground">
+                          <Calendar className="inline-block h-3 w-3 mr-1" />
+                          {campaign.startDate} - {campaign.endDate}
                         </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Alcance</div>
-                          <div className="text-sm font-medium">{campaign.kpis.reach}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">CTR</div>
-                          <div className="text-sm font-medium">{campaign.kpis.ctr}</div>
-                        </div>
-                      </div>
-
-                      {/* Plataformas */}
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {campaign.platforms.map((platform, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {platform}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      {/* Período */}
-                      <div className="text-xs text-muted-foreground mb-4">
-                        <Calendar className="inline-block h-3 w-3 mr-1" />
-                        {campaign.startDate} - {campaign.endDate}
-                      </div>
-
-                      {/* Botões de ação */}
-                      <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border">
-                        <Button variant="outline" size="sm" className="flex-1">
-                          Ver
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex-1" onClick={() => {
-                          setSelectedCampaign(campaign);
-                          setIsModalOpen(true);
-                        }}>
-                          Editar
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex-1">
-                          Excluir
-                        </Button>
                       </div>
                     </div>
                   ))}
