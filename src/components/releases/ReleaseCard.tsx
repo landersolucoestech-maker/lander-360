@@ -72,14 +72,18 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {/* Urgent Badge */}
-        {release.isUrgent && (
-          <div className="absolute top-3 right-3">
+        {/* Top Right Badge */}
+        <div className="absolute top-3 right-3">
+          {release.isUrgent ? (
             <Badge className="bg-destructive text-destructive-foreground font-bold text-xs px-3 py-1">
               URGENTE
             </Badge>
-          </div>
-        )}
+          ) : timeRemaining.isPast ? (
+            <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">
+              LANÇADO
+            </Badge>
+          ) : null}
+        </div>
 
         {/* Content */}
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
@@ -150,14 +154,6 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
             </div>
           )}
 
-          {/* Released Badge */}
-          {timeRemaining.isPast && (
-            <div className="pt-2 border-t border-white/20">
-              <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
-                Lançado
-              </Badge>
-            </div>
-          )}
         </div>
       </div>
     </div>
