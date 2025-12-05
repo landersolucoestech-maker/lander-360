@@ -192,9 +192,17 @@ const Inventario = () => {
                           <div className="text-muted-foreground">Última Manutenção</div>
                           <div className="font-medium">{item.lastMaintenance}</div>
                         </div>
-                        <Button variant="outline" size="sm">
-                          Detalhes
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            Ver
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Editar
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Excluir
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
