@@ -9,7 +9,7 @@ import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, Calendar, TrendingUp, Eye } from "lucide-react";
+import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle } from "lucide-react";
 import { mockReleases } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
@@ -132,7 +132,7 @@ const Lancamentos = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <DashboardCard
                 title="Lançamentos Ativos"
                 value={0}
@@ -161,6 +161,13 @@ const Lancamentos = () => {
                 icon={Eye}
                 trend={{ value: 0, isPositive: true }}
               />
+              <DashboardCard
+                title="Takedowns"
+                value={allReleases.filter(r => r.takedown).length}
+                description="lançamentos removidos"
+                icon={AlertTriangle}
+                className="border-orange-500/30"
+              />
             </div>
 
             {/* Search and Filters */}
@@ -172,7 +179,7 @@ const Lancamentos = () => {
               onClear={handleClear}
             />
 
-            {/* Releases List - Active */}
+            {/* Releases List */}
             <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Lista de Lançamentos</CardTitle>
@@ -181,7 +188,7 @@ const Lancamentos = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {allReleases.filter(r => !r.takedown).length === 0 ? (
+                {allReleases.length === 0 ? (
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">Nenhum lançamento cadastrado</h3>
@@ -195,7 +202,7 @@ const Lancamentos = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredReleases.filter(r => !r.takedown).map((release) => (
+                    {filteredReleases.map((release) => (
                       <ReleaseCard
                         key={release.id}
                         release={release}
@@ -209,30 +216,6 @@ const Lancamentos = () => {
               </CardContent>
             </Card>
 
-            {/* Takedowns List */}
-            {filteredReleases.filter(r => r.takedown).length > 0 && (
-              <Card className="flex-1 border-orange-500/30">
-                <CardHeader>
-                  <CardTitle className="text-orange-500">Lançamentos com Takedown</CardTitle>
-                  <CardDescription>
-                    Lançamentos que sofreram takedown nas plataformas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredReleases.filter(r => r.takedown).map((release) => (
-                      <ReleaseCard
-                        key={release.id}
-                        release={release}
-                        onViewDetails={handleViewDetails}
-                        onEdit={handleEditRelease}
-                        onDelete={handleDeleteRelease}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* New Release Modal */}
             <Dialog open={isNewReleaseModalOpen} onOpenChange={setIsNewReleaseModalOpen}>
