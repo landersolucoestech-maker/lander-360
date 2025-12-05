@@ -118,12 +118,20 @@ const MarketingCampanhas = () => {
                             Público: {campaign.targetAudience}
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => {
-                      setSelectedCampaign(campaign);
-                      setIsModalOpen(true);
-                    }}>
-                          Editar Campanha
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            Ver
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => {
+                            setSelectedCampaign(campaign);
+                            setIsModalOpen(true);
+                          }}>
+                            Editar
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Excluir
+                          </Button>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
