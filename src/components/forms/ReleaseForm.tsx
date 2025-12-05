@@ -14,7 +14,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
-import { useArtists } from '@/hooks/useArtists';
 
 const trackSchema = z.object({
   title: z.string().min(1, 'Título da faixa é obrigatório'),
@@ -30,7 +29,6 @@ const trackSchema = z.object({
 const releaseSchema = z.object({
   // Project linkage
   project_id: z.string().optional(),
-  artist_id: z.string().optional(),
   
   // Basic info
   release_title: z.string().min(1, 'Título é obrigatório'),
@@ -43,6 +41,7 @@ const releaseSchema = z.object({
   
   // Metadados
   genre: z.string().min(1, 'Gênero é obrigatório'),
+  language: z.string().min(1, 'Idioma é obrigatório'),
   label: z.string().optional(),
   copyright: z.string().optional(),
   
@@ -137,14 +136,12 @@ function MultiStringField({ label, placeholder, values, onChange }: MultiStringF
 export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) {
   const { toast } = useToast();
   const { data: projects = [], isLoading: loadingProjects } = useProjects();
-  const { data: artists = [], isLoading: loadingArtists } = useArtists();
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   
   const form = useForm<ReleaseFormData>({
     resolver: zodResolver(releaseSchema),
     defaultValues: {
       project_id: release?.project_id || '',
-      artist_id: release?.artist_id || '',
       release_title: release?.release_title || '',
       artist_name: release?.artist_name || '',
       release_type: release?.release_type || undefined,
@@ -153,6 +150,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
       platforms: release?.platforms || ['spotify', 'apple_music', 'youtube_music', 'deezer'],
       distribution_notes: release?.distribution_notes || '',
       genre: release?.genre || '',
+      language: release?.language || '',
       label: release?.label || '',
       copyright: release?.copyright || '',
       cover_art: release?.cover_art || '',
@@ -171,11 +169,9 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   });
 
   const selectedProjectId = form.watch('project_id');
-  const selectedArtistId = form.watch('artist_id');
   const selectedProject = projects.find(p => p.id === selectedProjectId);
-  const selectedArtist = artists.find(a => a.id === selectedArtistId);
 
-  // Auto-fill data when project or artist is selected
+  // Auto-fill data when project is selected
   useEffect(() => {
     if (selectedProject) {
       toast({
@@ -184,20 +180,6 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
       });
     }
   }, [selectedProject, toast]);
-
-  useEffect(() => {
-    if (selectedArtist) {
-      // Auto-fill artist name and related info
-      if (!form.getValues('artist_name')) {
-        form.setValue('artist_name', selectedArtist.name);
-      }
-      
-      toast({
-        title: "Artista selecionado", 
-        description: `Informações de "${selectedArtist.name}" foram preenchidas automaticamente.`,
-      });
-    }
-  }, [selectedArtist, form, toast]);
 
   const releaseType = form.watch('release_type');
 
@@ -291,86 +273,49 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Project and Artist Selection */}
+        {/* Project Selection */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderOpen className="h-5 w-5" />
-              Projeto e Artista Base
+              Projeto Base
             </CardTitle>
             <CardDescription>
-              Selecione um projeto e/ou artista para pré-carregar informações
+              Selecione um projeto para pré-carregar informações
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="project_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Projeto (Opcional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um projeto" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name} {project.description && `- ${project.description}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="artist_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Artista (Opcional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um artista" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {artists.map((artist) => (
-                          <SelectItem key={artist.id} value={artist.id}>
-                            {artist.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="project_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Projeto (Opcional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um projeto" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name} {project.description && `- ${project.description}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
-            {(selectedProject || selectedArtist) && (
+            {selectedProject && (
               <Alert className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  {selectedProject && (
-                    <>
-                      <strong>Projeto:</strong> {selectedProject.name}
-                      {selectedProject.description && ` - ${selectedProject.description}`}
-                      <br />
-                    </>
-                  )}
-                  {selectedArtist && (
-                    <>
-                      <strong>Artista:</strong> {selectedArtist.name}
-                    </>
-                  )}
+                  <strong>Projeto:</strong> {selectedProject.name}
+                  {selectedProject.description && ` - ${selectedProject.description}`}
                 </AlertDescription>
               </Alert>
             )}
@@ -411,7 +356,6 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                       <Input 
                         placeholder="Nome do artista principal" 
                         {...field} 
-                        value={field.value || selectedArtist?.name || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -470,6 +414,38 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                         <SelectItem value="reggaeton">Reggaeton</SelectItem>
                         <SelectItem value="trap">Trap</SelectItem>
                         <SelectItem value="indie">Indie</SelectItem>
+                        <SelectItem value="outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="language"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Idioma da Música *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o idioma" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="portugues">Português</SelectItem>
+                        <SelectItem value="ingles">Inglês</SelectItem>
+                        <SelectItem value="espanhol">Espanhol</SelectItem>
+                        <SelectItem value="frances">Francês</SelectItem>
+                        <SelectItem value="italiano">Italiano</SelectItem>
+                        <SelectItem value="alemao">Alemão</SelectItem>
+                        <SelectItem value="japones">Japonês</SelectItem>
+                        <SelectItem value="coreano">Coreano</SelectItem>
+                        <SelectItem value="mandarim">Mandarim</SelectItem>
+                        <SelectItem value="instrumental">Instrumental</SelectItem>
+                        <SelectItem value="multilingue">Multilíngue</SelectItem>
                         <SelectItem value="outro">Outro</SelectItem>
                       </SelectContent>
                     </Select>
