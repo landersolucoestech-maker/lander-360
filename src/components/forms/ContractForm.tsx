@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, CalendarIcon, Upload, X, Plus } from 'lucide-react';
+import { CalendarIcon, Upload } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
@@ -23,11 +23,6 @@ const contractSchema = z.object({
   artist_id: z.string().optional(),
   company_id: z.string().optional(),
   project_id: z.string().optional(),
-  involved_parties: z.array(z.object({
-    name: z.string(),
-    role: z.string(),
-    contact: z.string().optional()
-  })).optional(),
   responsible_person: z.string().min(1, 'Responsável é obrigatório'),
   status: z.enum(['pendente', 'assinado', 'expirado', 'rescindido', 'rascunho']).default('rascunho'),
   start_date: z.date().optional(),
@@ -62,7 +57,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   companies = [],
   projects = []
 }) => {
-  const [involvedParties, setInvolvedParties] = React.useState(initialData?.involved_parties || []);
   const [attachments, setAttachments] = React.useState<File[]>([]);
 
   const form = useForm<ContractFormData>({
@@ -74,26 +68,8 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     },
   });
 
-  const addInvolvedParty = () => {
-    setInvolvedParties([...involvedParties, { name: '', role: '', contact: '' }]);
-  };
-
-  const removeInvolvedParty = (index: number) => {
-    const updated = involvedParties.filter((_, i) => i !== index);
-    setInvolvedParties(updated);
-  };
-
-  const updateInvolvedParty = (index: number, field: string, value: string) => {
-    const updated = [...involvedParties];
-    updated[index] = { ...updated[index], [field]: value };
-    setInvolvedParties(updated);
-  };
-
   const handleSubmit = (data: ContractFormData) => {
-    onSubmit({
-      ...data,
-      involved_parties: involvedParties,
-    });
+    onSubmit(data);
   };
 
   const serviceTypeLabels = {
@@ -269,44 +245,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Partes Envolvidas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {involvedParties.map((party, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-              <Input
-                placeholder="Nome"
-                value={party.name}
-                onChange={(e) => updateInvolvedParty(index, 'name', e.target.value)}
-              />
-              <Input
-                placeholder="Função"
-                value={party.role}
-                onChange={(e) => updateInvolvedParty(index, 'role', e.target.value)}
-              />
-              <Input
-                placeholder="Contato"
-                value={party.contact}
-                onChange={(e) => updateInvolvedParty(index, 'contact', e.target.value)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => removeInvolvedParty(index)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-          <Button type="button" variant="outline" onClick={addInvolvedParty}>
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar Parte
-          </Button>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
