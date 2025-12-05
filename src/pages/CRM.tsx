@@ -192,16 +192,30 @@ const CRM = () => {
                             <div className="text-muted-foreground">Próxima Ação</div>
                             <div className="font-medium max-w-32 truncate">{contact.nextAction}</div>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => {
-                              setSelectedContact(contact);
-                              setIsProfileModalOpen(true);
-                            }}
-                          >
-                            Ver Perfil
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedContact(contact);
+                                setIsProfileModalOpen(true);
+                              }}
+                            >
+                              Ver
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              Editar
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              Excluir
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
