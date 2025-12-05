@@ -176,9 +176,17 @@ const MarketingVisaoGeral = () => {
                           <div className="text-muted-foreground">Clicks</div>
                           <div className="font-medium">{campaign.clicks}</div>
                         </div>
-                        <Button variant="outline" size="sm">
-                          Ver Detalhes
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            Ver
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Editar
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Excluir
+                          </Button>
+                        </div>
                       </div>
                     </div>)}
                 </div>
