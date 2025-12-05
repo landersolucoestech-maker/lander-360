@@ -142,8 +142,15 @@ export function ArtistForm({
   // Watch profile_type to show/hide manager fields
   const profileType = form.watch('profile_type');
   React.useEffect(() => {
-    setShowManagerFields(profileType === 'Com Empresário');
+    setShowManagerFields(profileType === 'Com Empresário' || profileType === 'Gravadora' || profileType === 'Editora');
   }, [profileType]);
+  
+  const getManagerLabel = (field: 'name' | 'phone' | 'email') => {
+    if (profileType === 'Com Empresário') {
+      return field === 'name' ? 'Nome do Empresário' : field === 'phone' ? 'Telefone do Empresário' : 'E-mail do Empresário';
+    }
+    return field === 'name' ? 'Nome do Responsável' : field === 'phone' ? 'Telefone do Responsável' : 'E-mail do Responsável';
+  };
   const onSubmit = async (data: ArtistFormData) => {
     try {
       console.log('Dados do artista:', data);
@@ -589,7 +596,7 @@ export function ArtistForm({
                   <FormField control={form.control} name="manager_name" render={({
                 field
               }) => <FormItem>
-                        <FormLabel>Nome do Empresário</FormLabel>
+                        <FormLabel>{getManagerLabel('name')}</FormLabel>
                         <FormControl>
                           <Input placeholder="Nome completo" {...field} />
                         </FormControl>
@@ -599,7 +606,7 @@ export function ArtistForm({
                   <FormField control={form.control} name="manager_phone" render={({
                 field
               }) => <FormItem>
-                        <FormLabel>Telefone do Empresário</FormLabel>
+                        <FormLabel>{getManagerLabel('phone')}</FormLabel>
                         <FormControl>
                           <Input placeholder="(11) 99999-9999" {...field} />
                         </FormControl>
@@ -609,7 +616,7 @@ export function ArtistForm({
                   <FormField control={form.control} name="manager_email" render={({
                 field
               }) => <FormItem>
-                        <FormLabel>E-mail do Empresário</FormLabel>
+                        <FormLabel>{getManagerLabel('email')}</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="email@exemplo.com" {...field} />
                         </FormControl>
