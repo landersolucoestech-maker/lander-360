@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Edit, Trash2, Building2 } from "lucide-react";
+import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2 } from "lucide-react";
 import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
@@ -351,14 +351,14 @@ const Financeiro = () => {
                               size="sm"
                               onClick={() => handleEditTransaction(transaction)}
                             >
-                              <Edit className="h-4 w-4" />
+                              Editar
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm"
                               onClick={() => handleDeleteTransaction(transaction)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              Excluir
                             </Button>
                           </div>
                         </div>

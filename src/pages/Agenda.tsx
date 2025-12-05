@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, Edit, Trash2, CheckSquare, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CheckSquare, FileText } from "lucide-react";
 import { AgendaEventModal } from "@/components/modals/AgendaEventModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
@@ -318,14 +318,14 @@ const Agenda = () => {
                                   size="sm"
                                   onClick={() => handleEditEvent(event)}
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  Editar
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="sm"
                                   onClick={() => handleDeleteEvent(event)}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  Excluir
                                 </Button>
                               </div>
                             </div>

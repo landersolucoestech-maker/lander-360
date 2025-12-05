@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Edit, Trash2 } from "lucide-react";
+import { FileText, Plus, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
 import { ContractModal } from "@/components/modals/ContractModal";
 import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract } from "@/hooks/useContracts";
 import { mockContracts } from "@/data/mockData";
@@ -308,14 +308,14 @@ const Contratos = () => {
                                 size="sm"
                                 onClick={() => handleEditContract(contract)}
                               >
-                                <Edit className="h-4 w-4" />
+                                Editar
                               </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => handleDeleteContract(contract)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                Excluir
                               </Button>
                             </div>
                           </div>
