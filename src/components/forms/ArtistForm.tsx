@@ -599,7 +599,7 @@ export function ArtistForm({
                   <FormField control={form.control} name="manager_phone" render={({
                 field
               }) => <FormItem>
-                        <FormLabel>Telefone do Responsável</FormLabel>
+                        <FormLabel>Telefone do Empresário</FormLabel>
                         <FormControl>
                           <Input placeholder="(11) 99999-9999" {...field} />
                         </FormControl>
