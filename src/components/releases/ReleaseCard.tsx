@@ -12,7 +12,7 @@ interface ReleaseCardProps {
     status: string;
     type: string;
     cover?: string;
-    isUrgent?: boolean;
+    approvalStatus?: 'pendente' | 'aceita' | 'recusada';
     priority?: 'alta' | 'media' | 'baixa';
   };
   onViewDetails: (release: any) => void;
@@ -73,11 +73,19 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {/* Top Right Badge */}
+        {/* Top Right Badge - Approval Status or Release Status */}
         <div className="absolute top-3 right-3">
-          {release.isUrgent ? (
+          {release.approvalStatus === 'pendente' ? (
+            <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">
+              PENDENTE
+            </Badge>
+          ) : release.approvalStatus === 'aceita' ? (
+            <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">
+              ACEITA
+            </Badge>
+          ) : release.approvalStatus === 'recusada' ? (
             <Badge className="bg-destructive text-destructive-foreground font-bold text-xs px-3 py-1">
-              URGENTE
+              RECUSADA
             </Badge>
           ) : timeRemaining.isPast ? (
             <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">
