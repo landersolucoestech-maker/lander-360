@@ -204,6 +204,18 @@ const RegistroMusicas = () => {
                             <div className="font-medium text-foreground">{song.isrc}</div>
                           </div>
                           <div className="text-center">
+                            <div className="text-muted-foreground">Compositores</div>
+                            <div className="font-medium text-foreground">{song.composers?.join(", ") || "-"}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-muted-foreground">Intérpretes</div>
+                            <div className="font-medium text-foreground">{song.performers?.join(", ") || "-"}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-muted-foreground">Produtores</div>
+                            <div className="font-medium text-foreground">{song.producers?.join(", ") || "-"}</div>
+                          </div>
+                          <div className="text-center">
                             <div className="text-muted-foreground">Duração</div>
                             <div className="font-medium">{song.duration}</div>
                           </div>

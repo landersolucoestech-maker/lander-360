@@ -121,7 +121,10 @@ export const mockSongs = [
     duration: "3:45",
     registrationDate: "15/01/2024",
     bpm: 128,
-    key: "C Major"
+    key: "C Major",
+    composers: ["Carlos Mendes", "Roberto Lima"],
+    performers: ["João Silva"],
+    producers: ["DJ Wilton"]
   },
   {
     id: "2",
@@ -135,7 +138,10 @@ export const mockSongs = [
     duration: "4:12",
     registrationDate: "20/01/2024",
     bpm: 120,
-    key: "G Major"
+    key: "G Major",
+    composers: ["Maria Santos", "Ana Paula"],
+    performers: ["Maria Santos", "Pedro Costa"],
+    producers: ["Lucas Produções"]
   },
   {
     id: "3",
@@ -149,7 +155,10 @@ export const mockSongs = [
     duration: "5:30",
     registrationDate: "10/01/2024",
     bpm: 140,
-    key: "E Minor"
+    key: "E Minor",
+    composers: ["Pedro Costa"],
+    performers: ["Pedro Costa", "Banda Noturna"],
+    producers: ["Rock Studio", "Fernando Beats"]
   },
   {
     id: "4",
@@ -163,7 +172,10 @@ export const mockSongs = [
     duration: "4:45",
     registrationDate: "25/01/2024",
     bpm: 95,
-    key: "A Minor"
+    key: "A Minor",
+    composers: ["Ana Beatriz", "Tom Veloso"],
+    performers: ["Ana Beatriz"],
+    producers: ["MPB Records"]
   }
 ];
 
