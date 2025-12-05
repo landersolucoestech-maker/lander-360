@@ -253,42 +253,97 @@ const Lancamentos = () => {
 
             {/* View Details Modal */}
             <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Detalhes do Lançamento</DialogTitle>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Music className="h-5 w-5" />
+                    Detalhes do Lançamento
+                  </DialogTitle>
                 </DialogHeader>
                 {selectedRelease && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Título</label>
-                        <p className="text-lg font-semibold">{selectedRelease.title}</p>
+                  <div className="space-y-6">
+                    {/* Capa e Informações Principais */}
+                    <div className="flex gap-6">
+                      {selectedRelease.cover && (
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={selectedRelease.cover} 
+                            alt={selectedRelease.title}
+                            className="w-40 h-40 object-cover rounded-lg shadow-md"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <h3 className="text-2xl font-bold">{selectedRelease.title}</h3>
+                          <p className="text-lg text-muted-foreground">{selectedRelease.artist}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                            {selectedRelease.type}
+                          </span>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            selectedRelease.approvalStatus === 'aceita' ? 'bg-green-500/10 text-green-500' :
+                            selectedRelease.approvalStatus === 'pendente' ? 'bg-yellow-500/10 text-yellow-500' :
+                            selectedRelease.approvalStatus === 'recusada' ? 'bg-red-500/10 text-red-500' :
+                            'bg-blue-500/10 text-blue-500'
+                          }`}>
+                            {selectedRelease.approvalStatus === 'aceita' ? 'Aceita' :
+                             selectedRelease.approvalStatus === 'pendente' ? 'Pendente' :
+                             selectedRelease.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
+                          </span>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            selectedRelease.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
+                            selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' :
+                            'bg-green-500/10 text-green-500'
+                          }`}>
+                            Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : 
+                                         selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
+                          </span>
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Informações Detalhadas */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Artista</label>
-                        <p>{selectedRelease.artist}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Tipo</label>
-                        <p>{selectedRelease.type}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Status</label>
-                        <p>{selectedRelease.status}</p>
+                        <label className="text-sm font-medium text-muted-foreground">Status do Lançamento</label>
+                        <p className="font-medium">{selectedRelease.status}</p>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Data de Lançamento</label>
-                        <p>{new Date(selectedRelease.releaseDate).toLocaleDateString('pt-BR')}</p>
+                        <p className="font-medium flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(selectedRelease.releaseDate).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Streams</label>
-                        <p>{selectedRelease.streams}</p>
+                        <label className="text-sm font-medium text-muted-foreground">Total de Streams</label>
+                        <p className="font-medium flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4" />
+                          {selectedRelease.streams}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">ID do Lançamento</label>
+                        <p className="font-mono text-sm">{selectedRelease.id}</p>
                       </div>
                     </div>
-                    {selectedRelease.platforms && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Plataformas</label>
-                        <p>{selectedRelease.platforms.join(', ')}</p>
+
+                    {/* Plataformas */}
+                    {selectedRelease.platforms && selectedRelease.platforms.length > 0 && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Plataformas de Distribuição</label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedRelease.platforms.map((platform: string, index: number) => (
+                            <span 
+                              key={index}
+                              className="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-secondary text-secondary-foreground"
+                            >
+                              {platform}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
