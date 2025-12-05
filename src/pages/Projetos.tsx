@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ProjectModal } from "@/components/modals/ProjectModal";
+import { ProjectViewModal } from "@/components/modals/ProjectViewModal";
 import { PlayCircle, Plus, TrendingUp, Calendar, Music } from "lucide-react";
 import { mockProjects } from "@/data/mockData";
 
@@ -16,6 +17,7 @@ const Projetos = () => {
   const [filteredProjects, setFilteredProjects] = useState(allProjects);
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
   const filterOptions = [
@@ -51,6 +53,11 @@ const Projetos = () => {
   const handleEditProject = (project) => {
     setSelectedProject(project);
     setEditModalOpen(true);
+  };
+
+  const handleViewProject = (project) => {
+    setSelectedProject(project);
+    setViewModalOpen(true);
   };
 
   const filterProjects = (searchTerm: string, filters: Record<string, string>) => {
@@ -208,7 +215,7 @@ const Projetos = () => {
                             <div className="font-medium">{project.genre}</div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => handleViewProject(project)}>
                               Ver
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
@@ -238,6 +245,12 @@ const Projetos = () => {
               onOpenChange={setEditModalOpen}
               project={selectedProject}
               mode="edit"
+            />
+
+            <ProjectViewModal
+              open={viewModalOpen}
+              onOpenChange={setViewModalOpen}
+              project={selectedProject}
             />
           </div>
         </SidebarInset>
