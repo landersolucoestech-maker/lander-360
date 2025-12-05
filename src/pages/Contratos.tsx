@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { FileText, Plus, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
 import { ContractModal } from "@/components/modals/ContractModal";
+import { ContractViewModal } from "@/components/modals/ContractViewModal";
 import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract } from "@/hooks/useContracts";
 import { mockContracts } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +19,9 @@ import { ptBR } from "date-fns/locale";
 
 const Contratos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
+  const [contractToView, setContractToView] = useState<Contract | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -113,6 +116,11 @@ const Contratos = () => {
   const handleNewContract = () => {
     setSelectedContract(undefined);
     setIsModalOpen(true);
+  };
+
+  const handleViewContract = (contract: Contract) => {
+    setContractToView(contract);
+    setIsViewModalOpen(true);
   };
 
   const handleEditContract = (contract: Contract) => {
@@ -306,6 +314,7 @@ const Contratos = () => {
                               <Button 
                                 variant="outline" 
                                 size="sm"
+                                onClick={() => handleViewContract(contract)}
                               >
                                 Ver
                               </Button>
@@ -337,6 +346,12 @@ const Contratos = () => {
       </div>
 
       {/* Modals */}
+      <ContractViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        contract={contractToView}
+      />
+
       <ContractModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
