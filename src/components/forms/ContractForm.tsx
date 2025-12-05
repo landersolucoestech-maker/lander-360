@@ -172,6 +172,23 @@ export const ContractForm: React.FC<ContractFormProps> = ({
             )}
 
             <div className="space-y-2">
+              <Label>Status</Label>
+              <Select
+                value={form.watch('status')}
+                onValueChange={(value) => form.setValue('status', value as any)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label>Tipo de Serviço</Label>
               <Select
                 value={form.watch('service_type')}
@@ -189,23 +206,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               {form.formState.errors.service_type && (
                 <p className="text-sm text-destructive">{form.formState.errors.service_type.message}</p>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={form.watch('status')}
-                onValueChange={(value) => form.setValue('status', value as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(statusLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {form.watch('client_type') === 'artista' && (
