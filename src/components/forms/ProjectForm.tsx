@@ -17,12 +17,15 @@ const songSchema = z.object({
   track_type: z.enum(['original', 'remix']),
   instrumental: z.enum(['sim', 'nao']),
   genre: z.string().min(1, 'Gênero é obrigatório'),
+  language: z.string().min(1, 'Idioma é obrigatório'),
   composers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um compositor é obrigatório'),
   performers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um intérprete é obrigatório'),
   producers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um produtor é obrigatório'),
   lyrics: z.string().optional(),
   audio_files: z.array(z.string()).optional(),
 });
+
+const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Coreano', 'Mandarim', 'Instrumental', 'Multilíngue', 'Outro'];
 
 const projectSchema = z.object({
   release_type: z.enum(['single', 'ep', 'album']),
@@ -57,6 +60,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
         track_type: 'original',
         instrumental: 'nao',
         genre: '',
+        language: '',
         composers: [{ name: '' }],
         performers: [{ name: '' }],
         producers: [{ name: '' }],
@@ -117,6 +121,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
       track_type: 'original',
       instrumental: 'nao',
       genre: '',
+      language: '',
       composers: [{ name: '' }],
       performers: [{ name: '' }],
       producers: [{ name: '' }],
@@ -274,7 +279,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                   control={form.control}
                   name={`songs.${songIndex}.genre`}
                   render={({ field }) => (
-                    <FormItem className="md:col-span-2">
+                    <FormItem>
                       <FormLabel>Gênero Musical *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
@@ -298,6 +303,27 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                           <SelectItem value="reggaeton">Reggaeton</SelectItem>
                           <SelectItem value="trap">Trap</SelectItem>
                           <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`songs.${songIndex}.language`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Idioma da Música *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o idioma" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {languageOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />
