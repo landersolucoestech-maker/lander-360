@@ -27,8 +27,9 @@ const Artistas = () => {
     avatar: dbArtist.avatar_url,
     socialMedia: dbArtist.social_media || {},
     stats: {
+      projetos: 0,
       obras: 0,
-      lancamentos: 0
+      fonogramas: 0
     },
     profile: {
       nome: dbArtist.name || 'Não informado',
