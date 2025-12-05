@@ -123,8 +123,8 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
             </Button>
           </div>
 
-          {/* Countdown Timer */}
-          {!timeRemaining.isPast && (
+          {/* Countdown Timer or View Details Button */}
+          {!timeRemaining.isPast ? (
             <div className="pt-2 border-t border-white/20">
               <p className="text-[10px] text-white/50 uppercase tracking-wider mb-2">
                 Tempo restante
@@ -155,6 +155,19 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
                   <div className="text-[8px] text-white/50 uppercase mt-0.5">seg</div>
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="pt-2 border-t border-white/20">
+              <Button 
+                size="sm" 
+                className="w-full bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(release);
+                }}
+              >
+                Ver Detalhes
+              </Button>
             </div>
           )}
 
