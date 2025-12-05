@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { MusicViewModal } from "@/components/modals/MusicViewModal";
-import { Music, Plus, FileText, CheckCircle, DollarSign } from "lucide-react";
+import { Music, Plus, FileText, CheckCircle, DollarSign, Clock } from "lucide-react";
 import { mockSongs } from "@/data/mockData";
 
 const RegistroMusicas = () => {
@@ -105,7 +105,7 @@ const RegistroMusicas = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <DashboardCard
                 title="Total de Músicas"
                 value={allSongs.length}
@@ -119,6 +119,13 @@ const RegistroMusicas = () => {
                 description="aguardando aprovação"
                 icon={FileText}
                 trend={{ value: 3, isPositive: false }}
+              />
+              <DashboardCard
+                title="Em Revisão"
+                value={allSongs.filter(s => s.status === "Revisão").length}
+                description="em análise"
+                icon={Clock}
+                trend={{ value: 2, isPositive: true }}
               />
               <DashboardCard
                 title="Taxa de Aprovação"
