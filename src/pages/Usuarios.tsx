@@ -12,10 +12,12 @@ import { Plus, Search, Users, Shield, Trash2, Edit3, UserX, MoreVertical } from 
 import { UserModal } from "@/components/modals/UserModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { mockUsers } from "@/data/mockData";
 
 const Usuarios = () => {
   const { toast } = useToast();
-  const { users, loading, toggleUserStatus, deleteUser } = useUsers();
+  const { users: dbUsers, loading, toggleUserStatus, deleteUser } = useUsers();
+  const users = dbUsers.length > 0 ? dbUsers : mockUsers;
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);

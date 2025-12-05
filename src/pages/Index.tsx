@@ -13,9 +13,13 @@ import {
   Calendar,
   FileText,
 } from "lucide-react";
+import { mockDashboardStats, mockEvents } from "@/data/mockData";
 
 const Index = () => {
   const { data: stats, isLoading, error } = useDashboardStats();
+
+  // Use mock data when no database data exists
+  const displayStats = stats || mockDashboardStats;
 
   if (error) {
     console.error('Dashboard error:', error);
@@ -46,31 +50,31 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard
                 title="Obras e Fonogramas"
-                value={isLoading ? '...' : stats?.totalWorks || 0}
+                value={isLoading ? '...' : displayStats.totalWorks || 0}
                 description="Cadastrados no sistema"
                 icon={Music}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 12.5, isPositive: true }}
               />
               <DashboardCard
                 title="Artistas Ativos"
-                value={isLoading ? '...' : stats?.activeArtists || 0}
+                value={isLoading ? '...' : displayStats.activeArtists || 0}
                 description="Artistas ativos no sistema"
                 icon={Users}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 8.3, isPositive: true }}
               />
               <DashboardCard
                 title="Contratos Vigentes"
-                value={isLoading ? '...' : stats?.activeContracts || 0}
+                value={isLoading ? '...' : displayStats.activeContracts || 0}
                 description="Contratos ativos no sistema"
                 icon={FileText}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 5.2, isPositive: true }}
               />
               <DashboardCard
                 title="Receita Mensal"
-                value={isLoading ? '...' : formatCurrency(stats?.monthlyRevenue || 0)}
+                value={isLoading ? '...' : formatCurrency(displayStats.monthlyRevenue || 0)}
                 description="Receita do mês atual"
                 icon={DollarSign}
-                trend={{ value: 0, isPositive: true }}
+                trend={{ value: 18.7, isPositive: true }}
               />
             </div>
 

@@ -9,9 +9,10 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Music, Plus, Calendar, TrendingUp, Eye } from "lucide-react";
+import { mockReleases } from "@/data/mockData";
 
 const Lancamentos = () => {
-  const allReleases: any[] = [];
+  const allReleases = mockReleases;
 
   const [filteredReleases, setFilteredReleases] = useState(allReleases);
   const [isNewReleaseModalOpen, setIsNewReleaseModalOpen] = useState(false);

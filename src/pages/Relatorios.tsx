@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { FileText, Download, DollarSign, Users, Music, Palette, BarChart3, Plus, TrendingUp, Search, Filter, Calendar as CalendarIcon, Package, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { mockReports } from "@/data/mockData";
+
 const Relatorios = () => {
   const [reportConfigOpen, setReportConfigOpen] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState("");
@@ -227,17 +229,17 @@ const Relatorios = () => {
     }
   };
 
-  // Array vazia - relatórios serão gerados baseados em dados reais
-  const reports: any[] = [];
+  // Use mock reports
+  const reports = mockReports;
   
-  // Calcular estatísticas para o resumo (com array vazia)
+  // Calcular estatísticas para o resumo
   const totalReports = reports.length;
-  const completedReports = 0;
-  const inProgressReports = 0;
+  const completedReports = reports.filter(r => r.status === "Concluído").length;
+  const inProgressReports = reports.filter(r => r.status === "Em andamento").length;
   const reportsByType = {};
-  const mostUsedType = "N/A";
-  const totalSize = "0";
-  const filteredReports = reports; // Array vazia, sem filtros necessários
+  const mostUsedType = "Financeiro";
+  const totalSize = "7.4 MB";
+  const filteredReports = reports;
   return <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />

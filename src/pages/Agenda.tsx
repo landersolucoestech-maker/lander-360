@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { mockEvents } from "@/data/mockData";
 
 interface AgendaEvent {
   id: string;
@@ -39,7 +40,7 @@ const Agenda = () => {
   
   const { toast } = useToast();
 
-  const events: AgendaEvent[] = [];
+  const events: any[] = mockEvents;
 
   const isLoading = false;
 

@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { Package, Plus, Headphones, Mic, Speaker } from "lucide-react";
+import { mockEquipment } from "@/data/mockData";
 
 const Inventario = () => {
-  const allEquipment: any[] = [];
+  const allEquipment = mockEquipment;
 
   const [filteredEquipment, setFilteredEquipment] = useState(allEquipment);
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);

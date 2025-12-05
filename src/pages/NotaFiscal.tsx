@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InvoiceModal } from "@/components/modals/InvoiceModal";
 import { Receipt, Plus, FileText, DollarSign, Calendar } from "lucide-react";
+import { mockInvoices } from "@/data/mockData";
 
 const NotaFiscal = () => {
-  const allInvoices: any[] = [];
+  const allInvoices = mockInvoices;
 
   const [filteredInvoices, setFilteredInvoices] = useState(allInvoices);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);

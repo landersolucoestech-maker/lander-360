@@ -14,6 +14,7 @@ import { FinancialTransaction } from "@/types/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { mockTransactions } from "@/data/mockData";
 
 const Financeiro = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,8 +27,8 @@ const Financeiro = () => {
   
   const { toast } = useToast();
 
-  // Real data will be populated when financial transactions are created
-  const transactions: FinancialTransaction[] = [];
+  // Use mock data
+  const transactions: any[] = mockTransactions;
   const isLoading = false;
 
   const handleNewTransaction = () => {

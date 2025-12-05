@@ -9,6 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Edit, Trash2 } from "lucide-react";
 import { ContractModal } from "@/components/modals/ContractModal";
 import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract } from "@/hooks/useContracts";
+import { mockContracts } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Contract } from "@/types/database";
@@ -23,7 +24,8 @@ const Contratos = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const { data: contracts = [], isLoading } = useContracts();
+  const { data: dbContracts = [], isLoading } = useContracts();
+  const contracts: any[] = dbContracts.length > 0 ? dbContracts : mockContracts;
   const { data: activeContracts = [] } = useActiveContracts();
   const { data: expiringSoon = [] } = useContractsExpiringSoon(30);
   const deleteContract = useDeleteContract();
