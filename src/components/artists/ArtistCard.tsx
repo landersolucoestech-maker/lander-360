@@ -119,10 +119,10 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                     <span className="text-xs font-medium text-foreground">Perfil:</span>
                     <span className="text-xs font-medium text-foreground ml-1">{artist.gravadora}</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-x-2 text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground space-y-0.5">
                     <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
-                    <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
                     <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.profile.telefone}</div>
+                    <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
                   </div>
                 </div>
 
