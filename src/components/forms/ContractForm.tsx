@@ -48,6 +48,7 @@ interface ContractFormProps {
   artists?: Array<{ id: string; name: string }>;
   companies?: Array<{ id: string; name: string }>;
   projects?: Array<{ id: string; name: string }>;
+  contacts?: Array<{ id: string; name: string; company?: string | null }>;
 }
 
 export const ContractForm: React.FC<ContractFormProps> = ({
@@ -57,7 +58,8 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   isLoading = false,
   artists = [],
   companies = [],
-  projects = []
+  projects = [],
+  contacts = []
 }) => {
   const [attachments, setAttachments] = React.useState<File[]>([]);
 
@@ -199,12 +201,28 @@ export const ContractForm: React.FC<ContractFormProps> = ({
 
             {form.watch('client_type') === 'empresa' && (
               <div className="space-y-2">
-                <Label htmlFor="contractor_contact">Contratante/Contato</Label>
-                <Input
-                  id="contractor_contact"
-                  {...form.register('contractor_contact')}
-                  placeholder="Nome do contratante ou contato"
-                />
+                <Label>Contratante/Contato</Label>
+                <Select
+                  value={form.watch('contractor_contact')}
+                  onValueChange={(value) => form.setValue('contractor_contact', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={contacts.length > 0 ? "Selecione um contato" : "Nenhum contato cadastrado"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {contacts.length > 0 ? (
+                      contacts.map((contact) => (
+                        <SelectItem key={contact.id} value={contact.id}>
+                          {contact.name}{contact.company ? ` - ${contact.company}` : ''}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-2 py-1 text-sm text-muted-foreground">
+                        Nenhum contato cadastrado
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
