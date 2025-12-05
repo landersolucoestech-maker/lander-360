@@ -16,6 +16,8 @@ interface ReleaseCardProps {
     priority?: 'alta' | 'media' | 'baixa';
   };
   onViewDetails: (release: any) => void;
+  onEdit?: (release: any) => void;
+  onDelete?: (release: any) => void;
 }
 
 const calculateTimeRemaining = (releaseDate: string) => {
@@ -36,7 +38,7 @@ const calculateTimeRemaining = (releaseDate: string) => {
   };
 };
 
-export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
+export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: ReleaseCardProps) => {
   const [timeRemaining, setTimeRemaining] = useState(() => 
     calculateTimeRemaining(release.releaseDate)
   );
@@ -186,6 +188,7 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
                 className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
                 onClick={(e) => {
                   e.stopPropagation();
+                  onEdit?.(release);
                 }}
               >
                 Editar
@@ -195,6 +198,7 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
                 className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
                 onClick={(e) => {
                   e.stopPropagation();
+                  onDelete?.(release);
                 }}
               >
                 Excluir

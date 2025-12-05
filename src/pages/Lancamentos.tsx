@@ -8,16 +8,22 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Music, Plus, Calendar, TrendingUp, Eye } from "lucide-react";
 import { mockReleases } from "@/data/mockData";
+import { useToast } from "@/hooks/use-toast";
 
 const Lancamentos = () => {
+  const { toast } = useToast();
   const allReleases = mockReleases;
 
   const [filteredReleases, setFilteredReleases] = useState(allReleases);
   const [isNewReleaseModalOpen, setIsNewReleaseModalOpen] = useState(false);
   const [selectedRelease, setSelectedRelease] = useState<any>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
 
   const filterOptions = [
     {
@@ -82,6 +88,27 @@ const Lancamentos = () => {
   const handleViewDetails = (release: any) => {
     setSelectedRelease(release);
     setIsDetailsModalOpen(true);
+  };
+
+  const handleEditRelease = (release: any) => {
+    setSelectedRelease(release);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteRelease = (release: any) => {
+    setReleaseToDelete(release);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteRelease = () => {
+    if (releaseToDelete) {
+      toast({
+        title: "Lançamento excluído",
+        description: `O lançamento "${releaseToDelete.title}" foi excluído com sucesso.`,
+      });
+      setIsDeleteModalOpen(false);
+      setReleaseToDelete(null);
+    }
   };
 
   return (
@@ -173,6 +200,8 @@ const Lancamentos = () => {
                         key={release.id}
                         release={release}
                         onViewDetails={handleViewDetails}
+                        onEdit={handleEditRelease}
+                        onDelete={handleDeleteRelease}
                       />
                     ))}
                   </div>
@@ -192,6 +221,35 @@ const Lancamentos = () => {
                 />
               </DialogContent>
             </Dialog>
+
+            {/* Edit Release Modal */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Editar Lançamento</DialogTitle>
+                </DialogHeader>
+                <ReleaseForm
+                  release={selectedRelease}
+                  onSuccess={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedRelease(null);
+                  }}
+                  onCancel={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedRelease(null);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmationModal
+              open={isDeleteModalOpen}
+              onOpenChange={setIsDeleteModalOpen}
+              onConfirm={confirmDeleteRelease}
+              title="Excluir Lançamento"
+              description={`Tem certeza que deseja excluir o lançamento "${releaseToDelete?.title}"? Esta ação não pode ser desfeita.`}
+            />
           </div>
         </SidebarInset>
       </div>
