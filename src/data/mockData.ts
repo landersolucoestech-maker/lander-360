@@ -170,14 +170,15 @@ export const mockSongs = [
 export const mockReleases = [
   {
     id: "1",
-    title: "EP Verão Total",
-    artist: "João Silva",
-    type: "EP",
-    status: "Lançado",
-    releaseDate: "15/01/2024",
+    title: "Preferida",
+    artist: "DJ Wilton",
+    type: "Single",
+    status: "Programado",
+    releaseDate: "2025-12-10",
     platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer"],
-    streams: "2.5M",
-    coverUrl: null
+    streams: "0",
+    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop",
+    isUrgent: true
   },
   {
     id: "2",
@@ -185,32 +186,59 @@ export const mockReleases = [
     artist: "Maria Santos",
     type: "Single",
     status: "Programado",
-    releaseDate: "01/03/2024",
+    releaseDate: "2025-12-20",
     platforms: ["Spotify", "Apple Music", "Deezer"],
     streams: "0",
-    coverUrl: null
+    cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop",
+    isUrgent: false
   },
   {
     id: "3",
-    title: "Rock Sessions Vol. 1",
+    title: "Rock Sessions",
     artist: "Pedro Costa",
     type: "Álbum",
     status: "Lançado",
-    releaseDate: "20/12/2023",
+    releaseDate: "2024-12-20",
     platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer", "Tidal"],
     streams: "5.8M",
-    coverUrl: null
+    cover: "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=500&fit=crop",
+    isUrgent: false
   },
   {
     id: "4",
     title: "Funk das Antigas",
     artist: "Lucas Ferreira",
     type: "Single",
-    status: "Em Produção",
-    releaseDate: "15/04/2024",
+    status: "Programado",
+    releaseDate: "2025-12-25",
     platforms: ["Spotify", "Apple Music"],
     streams: "0",
-    coverUrl: null
+    cover: "https://images.unsplash.com/photo-1571266028243-e4733b0f0bb0?w=400&h=500&fit=crop",
+    isUrgent: true
+  },
+  {
+    id: "5",
+    title: "EP Verão Total",
+    artist: "João Silva",
+    type: "EP",
+    status: "Lançado",
+    releaseDate: "2024-01-15",
+    platforms: ["Spotify", "Apple Music", "YouTube Music", "Deezer"],
+    streams: "2.5M",
+    cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=500&fit=crop",
+    isUrgent: false
+  },
+  {
+    id: "6",
+    title: "Infinito",
+    artist: "Ana Beatriz",
+    type: "Álbum",
+    status: "Programado",
+    releaseDate: "2025-12-15",
+    platforms: ["Spotify", "Apple Music", "Deezer"],
+    streams: "0",
+    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop",
+    isUrgent: false
   }
 ];
 

@@ -4,9 +4,9 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ReleaseForm } from "@/components/forms/ReleaseForm";
+import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Music, Plus, Calendar, TrendingUp, Eye } from "lucide-react";
 import { mockReleases } from "@/data/mockData";
@@ -167,51 +167,13 @@ const Lancamentos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                     {filteredReleases.map((release) => (
-                      <div
+                      <ReleaseCard
                         key={release.id}
-                        className="flex flex-col p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors group"
-                      >
-                        <div className="w-full aspect-square bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                          <Music className="h-12 w-12 text-primary" />
-                        </div>
-                        <div className="space-y-2 flex-1">
-                          <h3 className="font-medium text-foreground truncate">{release.title}</h3>
-                          <div className="text-sm text-muted-foreground truncate">{release.artist}</div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge 
-                              variant={
-                                release.status === "Lançado" ? "default" :
-                                release.status === "Programado" ? "secondary" : "outline"
-                              }
-                            >
-                              {release.status}
-                            </Badge>
-                            <Badge variant="secondary">{release.type}</Badge>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 pt-4 border-t border-border space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Lançamento</span>
-                            <span className="font-medium">{release.releaseDate}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Streams</span>
-                            <span className="font-medium">{release.streams}</span>
-                          </div>
-                        </div>
-                        
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full mt-4"
-                          onClick={() => handleViewDetails(release)}
-                        >
-                          Ver Detalhes
-                        </Button>
-                      </div>
+                        release={release}
+                        onViewDetails={handleViewDetails}
+                      />
                     ))}
                   </div>
                 )}
