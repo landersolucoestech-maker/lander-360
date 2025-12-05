@@ -8,7 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Contract } from "@/types/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileText, Calendar, DollarSign, User, Building } from "lucide-react";
+import { FileText, Calendar, DollarSign, User, Building, Briefcase, Percent, FileCheck, ClipboardList } from "lucide-react";
+import { useArtists } from "@/hooks/useArtists";
+import { useProjects } from "@/hooks/useProjects";
+import { useCrmContacts } from "@/hooks/useCrm";
 
 interface ContractViewModalProps {
   isOpen: boolean;
@@ -24,7 +27,12 @@ const serviceTypeLabels: Record<string, string> = {
   distribuicao: 'Distribuição',
   marketing: 'Marketing',
   producao_musical: 'Produção Musical',
-  producao_audiovisual: 'Produção Audiovisual'
+  producao_audiovisual: 'Produção Audiovisual',
+  licenciamento: 'Licenciamento',
+  publicidade: 'Publicidade',
+  parceria: 'Parceria',
+  shows: 'Shows',
+  outros: 'Outros'
 };
 
 const statusLabels: Record<string, string> = {
@@ -35,15 +43,29 @@ const statusLabels: Record<string, string> = {
   rascunho: 'Rascunho'
 };
 
+const paymentTypeLabels: Record<string, string> = {
+  valor_fixo: 'Valor Fixo',
+  royalties: 'Royalties'
+};
+
 export function ContractViewModal({ isOpen, onClose, contract }: ContractViewModalProps) {
+  const { data: artists = [] } = useArtists();
+  const { data: projects = [] } = useProjects();
+  const { data: crmContacts = [] } = useCrmContacts();
+
   if (!contract) return null;
 
   const contractData = contract as any;
-  const totalValue = contractData.fixed_value || contract.advance_amount || 0;
+  const totalValue = contractData.fixed_value || contract.advance_amount || contractData.value || 0;
+  
+  // Find related data
+  const artist = contract.artist_id ? artists.find(a => a.id === contract.artist_id) : null;
+  const project = contractData.project_id ? projects.find(p => p.id === contractData.project_id) : null;
+  const contact = contractData.contractor_contact ? crmContacts.find(c => c.id === contractData.contractor_contact) : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -73,47 +95,47 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
                 {contractData.client_type === 'artista' ? 'Artista' : 'Empresa'}
               </Badge>
             )}
+            {contractData.registry_office && (
+              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                Registrado em Cartório
+              </Badge>
+            )}
           </div>
 
           {/* Contract Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Período */}
-            {(contractData.start_date || contractData.end_date || contract.effective_from || contract.effective_to) && (
+            {/* Tipo de Cliente e Cliente */}
+            {contractData.client_type === 'artista' && artist && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm font-medium">Período</span>
+                  <User className="h-4 w-4" />
+                  <span className="text-sm font-medium">Artista</span>
                 </div>
-                <div className="font-medium">
-                  {(contractData.start_date || contract.effective_from) 
-                    ? format(new Date(contractData.start_date || contract.effective_from), "dd/MM/yyyy", { locale: ptBR }) 
-                    : "N/A"} 
-                  {" - "} 
-                  {(contractData.end_date || contract.effective_to) 
-                    ? format(new Date(contractData.end_date || contract.effective_to), "dd/MM/yyyy", { locale: ptBR }) 
-                    : "N/A"}
-                </div>
+                <div className="font-medium">{artist.name}</div>
               </div>
             )}
 
-            {/* Valor */}
-            {totalValue > 0 && (
+            {contractData.client_type === 'empresa' && contact && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="text-sm font-medium">Valor</span>
+                  <Building className="h-4 w-4" />
+                  <span className="text-sm font-medium">Contratante/Contato</span>
                 </div>
-                <div className="font-medium text-lg">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(totalValue)}
-                </div>
-                {(contract.royalty_rate || contractData.royalties_percentage) && (
-                  <div className="text-sm text-muted-foreground">
-                    + {contract.royalty_rate || contractData.royalties_percentage}% royalties
-                  </div>
+                <div className="font-medium">{contact.name}</div>
+                {contact.company && (
+                  <div className="text-sm text-muted-foreground">{contact.company}</div>
                 )}
+              </div>
+            )}
+
+            {/* Projeto */}
+            {project && (
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span className="text-sm font-medium">Projeto</span>
+                </div>
+                <div className="font-medium">{project.name}</div>
               </div>
             )}
 
@@ -128,19 +150,111 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
               </div>
             )}
 
-            {/* Tipo de Cliente */}
-            {contractData.client_type && (
+            {/* Período */}
+            {(contractData.start_date || contractData.end_date || contract.effective_from || contract.effective_to) && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Building className="h-4 w-4" />
-                  <span className="text-sm font-medium">Tipo de Cliente</span>
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-sm font-medium">Período de Vigência</span>
                 </div>
                 <div className="font-medium">
-                  {contractData.client_type === 'artista' ? 'Artista' : 'Empresa'}
+                  {(contractData.start_date || contract.effective_from) 
+                    ? format(new Date(contractData.start_date || contract.effective_from), "dd/MM/yyyy", { locale: ptBR }) 
+                    : "N/A"} 
+                  {" até "} 
+                  {(contractData.end_date || contract.effective_to) 
+                    ? format(new Date(contractData.end_date || contract.effective_to), "dd/MM/yyyy", { locale: ptBR }) 
+                    : "N/A"}
+                </div>
+              </div>
+            )}
+
+            {/* Registro em Cartório */}
+            {contractData.registry_office && contractData.registry_date && (
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <FileCheck className="h-4 w-4" />
+                  <span className="text-sm font-medium">Data de Registro</span>
+                </div>
+                <div className="font-medium">
+                  {format(new Date(contractData.registry_date), "dd/MM/yyyy", { locale: ptBR })}
                 </div>
               </div>
             )}
           </div>
+
+          {/* Valores Section */}
+          <div className="border-t border-border pt-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Valores
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Tipo de Pagamento */}
+              {contractData.payment_type && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="text-muted-foreground text-sm mb-1">Tipo de Pagamento</div>
+                  <div className="font-medium">
+                    {paymentTypeLabels[contractData.payment_type] || contractData.payment_type}
+                  </div>
+                </div>
+              )}
+
+              {/* Valor Principal */}
+              {totalValue > 0 && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="text-muted-foreground text-sm mb-1">
+                    {contractData.payment_type === 'valor_fixo' ? 'Valor do Serviço' : 'Valor do Contrato'}
+                  </div>
+                  <div className="font-medium text-lg text-primary">
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }).format(totalValue)}
+                  </div>
+                </div>
+              )}
+
+              {/* Royalties */}
+              {(contract.royalty_rate || contractData.royalties_percentage) && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Percent className="h-3 w-3" />
+                    <span className="text-sm">Royalties</span>
+                  </div>
+                  <div className="font-medium text-lg">
+                    {contract.royalty_rate || contractData.royalties_percentage}%
+                  </div>
+                </div>
+              )}
+
+              {/* Adiantamento */}
+              {contractData.advance_payment && contractData.advance_payment > 0 && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="text-muted-foreground text-sm mb-1">Adiantamento</div>
+                  <div className="font-medium text-lg">
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }).format(contractData.advance_payment)}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Termos e Condições */}
+          {contractData.terms && (
+            <div className="border-t border-border pt-4">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                Termos e Condições
+              </h3>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-foreground whitespace-pre-wrap">{contractData.terms}</p>
+              </div>
+            </div>
+          )}
 
           {/* Descrição */}
           {contract.description && (
@@ -150,11 +264,11 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
             </div>
           )}
 
-          {/* Notas */}
-          {contract.notes && (
+          {/* Observações */}
+          {(contract.notes || contractData.observations) && (
             <div className="p-4 bg-muted/50 rounded-lg">
-              <div className="text-muted-foreground text-sm font-medium mb-2">Notas</div>
-              <p className="text-foreground">{contract.notes}</p>
+              <div className="text-muted-foreground text-sm font-medium mb-2">Observações</div>
+              <p className="text-foreground">{contract.notes || contractData.observations}</p>
             </div>
           )}
 
