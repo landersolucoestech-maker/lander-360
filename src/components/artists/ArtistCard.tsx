@@ -55,29 +55,29 @@ export function ArtistCard({ artist }: ArtistCardProps) {
 
   return (
     <>
-      <Card className="p-3">
+      <Card className="p-2">
         <CardContent className="p-0">
-          <div className="grid grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-12 gap-3 items-start">
             {/* Left Section - Artist Info */}
             <div className="col-span-3">
-              <div className="space-y-3">
-                <h3 className="text-lg font-bold text-foreground">{artist.name}</h3>
-                <p className="text-sm text-muted-foreground">{artist.genre}</p>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-foreground truncate">{artist.name}</h3>
+                <p className="text-xs text-muted-foreground">{artist.genre}</p>
                 <Badge 
                   variant="default"
                   className="bg-green-500 text-white hover:bg-green-600 text-xs"
                 >
                   {artist.status}
                 </Badge>
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground mt-3">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 flex-wrap">
                   {artist.profile?.telefone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      <Phone className="h-3 w-3 flex-shrink-0" />
                       <span className="truncate">{artist.profile.telefone}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-3 w-3 flex-shrink-0" />
                     <span className="truncate">{artist.email}</span>
                   </div>
                 </div>
@@ -86,26 +86,26 @@ export function ArtistCard({ artist }: ArtistCardProps) {
 
             {/* Middle Section - Social Media & Stats */}
             <div className="col-span-3">
-              <div className="space-y-6">
+              <div className="space-y-3">
                 <div>
-                  <h4 className="font-medium text-foreground mb-3">Redes Sociais</h4>
+                  <h4 className="text-xs font-medium text-foreground mb-1">Redes Sociais</h4>
                   <div className="flex items-center gap-2">
-                    <Instagram className="h-4 w-4 text-muted-foreground" />
+                    <Instagram className="h-3 w-3 text-muted-foreground" />
                   </div>
                 </div>
 
-                <div className="flex justify-between text-center gap-4">
+                <div className="flex justify-between text-center gap-2">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{artist.stats.projetos ?? 0}</div>
-                    <div className="text-xs text-muted-foreground">Projetos</div>
+                    <div className="text-lg font-bold text-foreground">{artist.stats.projetos ?? 0}</div>
+                    <div className="text-[10px] text-muted-foreground">Projetos</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{artist.stats.obras}</div>
-                    <div className="text-xs text-muted-foreground">Obras/Fonogramas</div>
+                    <div className="text-lg font-bold text-foreground">{artist.stats.obras}</div>
+                    <div className="text-[10px] text-muted-foreground">Obras</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{artist.stats.lancamentos}</div>
-                    <div className="text-xs text-muted-foreground">Lançamentos</div>
+                    <div className="text-lg font-bold text-foreground">{artist.stats.lancamentos}</div>
+                    <div className="text-[10px] text-muted-foreground">Lançamentos</div>
                   </div>
                 </div>
               </div>
@@ -113,25 +113,25 @@ export function ArtistCard({ artist }: ArtistCardProps) {
 
             {/* Right Section - Profile & Actions */}
             <div className="col-span-6">
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div>
-                  <div className="mb-2">
-                    <span className="font-medium text-foreground">Perfil:</span>
-                    <span className="font-medium text-foreground ml-1">{artist.gravadora}</span>
+                  <div className="mb-1">
+                    <span className="text-xs font-medium text-foreground">Perfil:</span>
+                    <span className="text-xs font-medium text-foreground ml-1">{artist.gravadora}</span>
                   </div>
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <div><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
-                    <div><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
-                    <div><span className="font-medium text-foreground">Telefone:</span> {artist.profile.telefone}</div>
+                  <div className="grid grid-cols-3 gap-x-2 text-xs text-muted-foreground">
+                    <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
+                    <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
+                    <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.profile.telefone}</div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-1 pt-2">
+                <div className="flex gap-1 flex-wrap">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-xs h-7 px-2"
+                    className="text-[10px] h-6 px-2"
                     onClick={() => setProfileModalOpen(true)}
                   >
                     Ver Perfil
@@ -139,7 +139,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-xs h-7 px-2"
+                    className="text-[10px] h-6 px-2"
                     onClick={() => setHistoryModalOpen(true)}
                   >
                     Histórico
@@ -147,7 +147,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-xs h-7 px-2"
+                    className="text-[10px] h-6 px-2"
                     onClick={() => setContractModalOpen(true)}
                   >
                     Contrato
@@ -155,7 +155,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-xs h-7 px-2"
+                    className="text-[10px] h-6 px-2"
                     onClick={() => setEditModalOpen(true)}
                   >
                     Editar
@@ -163,7 +163,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                   <Button 
                     variant="destructive" 
                     size="sm" 
-                    className="text-xs h-7 px-2"
+                    className="text-[10px] h-6 px-2"
                     onClick={() => setDeleteModalOpen(true)}
                   >
                     Excluir
