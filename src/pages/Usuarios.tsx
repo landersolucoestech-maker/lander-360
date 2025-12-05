@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -15,7 +14,6 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Usuarios = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const { users, loading, toggleUserStatus, deleteUser } = useUsers();
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);

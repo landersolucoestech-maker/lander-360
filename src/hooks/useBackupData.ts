@@ -1,30 +1,18 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 export const useBackupData = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
 
   const exportData = async () => {
-    if (!user) {
-      toast({
-        title: "Erro",
-        description: "Usuário não autenticado.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsExporting(true);
     try {
       // Export main data tables
       const exportData: Record<string, unknown> = {
         export_date: new Date().toISOString(),
-        user_id: user.id,
         data: {}
       };
 
@@ -89,21 +77,11 @@ export const useBackupData = () => {
   };
 
   const createBackup = async () => {
-    if (!user) {
-      toast({
-        title: "Erro",
-        description: "Usuário não autenticado.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsBackingUp(true);
     try {
       // Create comprehensive backup
       const backupData: Record<string, unknown> = {
         backup_date: new Date().toISOString(),
-        user_id: user.id,
         version: '1.0',
         tables: {}
       };

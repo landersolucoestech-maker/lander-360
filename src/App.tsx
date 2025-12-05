@@ -25,11 +25,9 @@ import MarketingTarefas from "./pages/marketing/Tarefas";
 import MarketingCalendario from "./pages/marketing/Calendario";
 import MarketingMetricas from "./pages/marketing/Metricas";
 import MarketingBriefing from "./pages/marketing/Briefing";
-import Auth from "./pages/Auth";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Suporte from "./pages/Suporte";
 import PortalAdmin from "./pages/PortalAdmin";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import InstitutionalHome from "./pages/institutional/Home";
 import InstitutionalAbout from "./pages/institutional/About";
 import InstitutionalServices from "./pages/institutional/Services";
@@ -44,7 +42,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-          <Route path="/auth" element={<Auth />} />
           <Route path="/perfil" element={<PerfilUsuario />} />
           <Route path="/" element={<Index />} />
           <Route path="/artistas" element={<Artistas />} />
@@ -72,7 +69,7 @@ const App = () => (
           <Route path="/institutional/about" element={<InstitutionalAbout />} />
           <Route path="/institutional/services" element={<InstitutionalServices />} />
           <Route path="/institutional/contact" element={<InstitutionalContact />} />
-          <Route path="/portal-admin" element={<ProtectedRoute><PortalAdmin /></ProtectedRoute>} />
+          <Route path="/portal-admin" element={<PortalAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
