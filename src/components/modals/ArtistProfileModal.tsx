@@ -17,6 +17,8 @@ import {
   Music, 
   Disc3,
   FolderKanban,
+  Rocket,
+  BarChart3,
   Instagram,
   Facebook,
   Youtube,
@@ -91,7 +93,7 @@ export function ArtistProfileModal({
           {/* Estatísticas */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Estatísticas</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
                 <FolderKanban className="h-6 w-6 mx-auto mb-2 text-primary" />
                 <div className="text-2xl font-bold">{artist.stats.projetos || 0}</div>
@@ -106,6 +108,16 @@ export function ArtistProfileModal({
                 <Disc3 className="h-6 w-6 mx-auto mb-2 text-primary" />
                 <div className="text-2xl font-bold">{artist.stats.fonogramas || 0}</div>
                 <div className="text-sm text-muted-foreground">Fonogramas</div>
+              </div>
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <Rocket className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <div className="text-2xl font-bold">{artist.stats.lancamentos || 0}</div>
+                <div className="text-sm text-muted-foreground">Lançamentos</div>
+              </div>
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <BarChart3 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <div className="text-2xl font-bold">{artist.stats.streams || '0'}</div>
+                <div className="text-sm text-muted-foreground">Streams</div>
               </div>
             </div>
           </div>
