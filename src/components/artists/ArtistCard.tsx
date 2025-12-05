@@ -31,6 +31,7 @@ interface ArtistCardProps {
       instagram?: string;
     };
     stats: {
+      projetos?: number;
       obras: number;
       lancamentos: number;
     };
@@ -93,7 +94,11 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                   </div>
                 </div>
 
-                <div className="flex justify-between text-center">
+                <div className="flex justify-between text-center gap-4">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">{artist.stats.projetos ?? 0}</div>
+                    <div className="text-xs text-muted-foreground">Projetos</div>
+                  </div>
                   <div>
                     <div className="text-2xl font-bold text-foreground">{artist.stats.obras}</div>
                     <div className="text-xs text-muted-foreground">Obras/Fonogramas</div>
