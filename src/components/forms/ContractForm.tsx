@@ -73,7 +73,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     onSubmit(data);
   };
 
-  const serviceTypeLabels = {
+  const allServiceTypeLabels = {
     empresariamento: 'Empresariamento',
     gestao: 'Gestão',
     agenciamento: 'Agenciamento',
@@ -82,6 +82,16 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     marketing: 'Marketing',
     producao_musical: 'Produção Musical',
     producao_audiovisual: 'Produção Audiovisual'
+  };
+
+  const empresaServiceTypes = ['producao_musical', 'marketing', 'producao_audiovisual'];
+  
+  const getFilteredServiceTypes = () => {
+    const clientType = form.watch('client_type');
+    if (clientType === 'empresa') {
+      return Object.entries(allServiceTypeLabels).filter(([key]) => empresaServiceTypes.includes(key));
+    }
+    return Object.entries(allServiceTypeLabels);
   };
 
   const statusLabels = {
@@ -116,7 +126,13 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               <Label>Tipo de Cliente</Label>
               <Select
                 value={form.watch('client_type')}
-                onValueChange={(value) => form.setValue('client_type', value as any)}
+                onValueChange={(value) => {
+                  form.setValue('client_type', value as any);
+                  const currentServiceType = form.watch('service_type');
+                  if (value === 'empresa' && currentServiceType && !empresaServiceTypes.includes(currentServiceType)) {
+                    form.setValue('service_type', undefined as any);
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo de cliente" />
@@ -141,7 +157,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                   <SelectValue placeholder="Selecione o tipo de serviço" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(serviceTypeLabels).map(([value, label]) => (
+                  {getFilteredServiceTypes().map(([value, label]) => (
                     <SelectItem key={value} value={value}>{label}</SelectItem>
                   ))}
                 </SelectContent>
