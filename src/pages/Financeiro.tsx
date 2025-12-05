@@ -349,6 +349,12 @@ const Financeiro = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
+                            >
+                              Ver
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
                               onClick={() => handleEditTransaction(transaction)}
                             >
                               Editar
