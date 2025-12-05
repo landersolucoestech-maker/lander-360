@@ -13,6 +13,7 @@ interface ReleaseCardProps {
     type: string;
     cover?: string;
     isUrgent?: boolean;
+    priority?: 'alta' | 'media' | 'baixa';
   };
   onViewDetails: (release: any) => void;
 }
@@ -111,16 +112,17 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
             >
               Planejamento
             </Button>
-            <Button 
-              size="sm" 
-              variant="secondary"
-              className="flex-1 bg-muted/80 hover:bg-muted text-muted-foreground text-xs h-7"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
+            <Badge 
+              className={`flex-1 flex items-center justify-center text-xs h-7 ${
+                release.priority === 'alta' 
+                  ? 'bg-destructive text-destructive-foreground' 
+                  : release.priority === 'media' 
+                    ? 'bg-yellow-500 text-black' 
+                    : 'bg-green-500 text-white'
+              }`}
             >
-              Mídia
-            </Button>
+              {release.priority === 'alta' ? 'Alta' : release.priority === 'media' ? 'Média' : 'Baixa'}
+            </Badge>
           </div>
 
           {/* Countdown Timer */}
