@@ -43,7 +43,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
           <div className="flex h-12 w-12 items-center justify-center">
             <img 
               src="/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" 
-              alt="Gestão 360 Logo" 
+              alt="Lander 360º Logo" 
               className="h-10 w-auto object-contain"
             />
           </div>
@@ -117,7 +117,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="text-sm text-muted-foreground text-center">
-          Gestão 360
+          Lander 360º
         </div>
       </SidebarFooter>
     </Sidebar>

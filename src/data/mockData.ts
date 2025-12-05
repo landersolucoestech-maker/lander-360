@@ -1,4 +1,4 @@
-// Mock data for the entire Gestão 360 system
+// Mock data for the entire Lander 360º system
 
 export const mockArtists = [
   {
