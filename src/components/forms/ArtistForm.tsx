@@ -142,7 +142,7 @@ export function ArtistForm({
   // Watch profile_type to show/hide manager fields
   const profileType = form.watch('profile_type');
   React.useEffect(() => {
-    setShowManagerFields(profileType && profileType !== 'Independente');
+    setShowManagerFields(profileType === 'Com Empresário');
   }, [profileType]);
   const onSubmit = async (data: ArtistFormData) => {
     try {
@@ -609,7 +609,7 @@ export function ArtistForm({
                   <FormField control={form.control} name="manager_email" render={({
                 field
               }) => <FormItem>
-                        <FormLabel>E-mail do Responsável</FormLabel>
+                        <FormLabel>E-mail do Empresário</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="email@exemplo.com" {...field} />
                         </FormControl>
