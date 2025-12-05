@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useDashboardStats } from "@/hooks/useDashboard";
 import {
   Users,
@@ -12,6 +13,8 @@ import {
   DollarSign,
   Calendar,
   FileText,
+  MapPin,
+  Clock,
 } from "lucide-react";
 import { mockDashboardStats, mockEvents } from "@/data/mockData";
 
@@ -20,6 +23,10 @@ const Index = () => {
 
   // Use mock data when no database data exists
   const displayStats = stats || mockDashboardStats;
+
+  // Filter today's events
+  const today = new Date().toISOString().split('T')[0];
+  const todayEvents = mockEvents.filter(event => event.start_date === today);
 
   if (error) {
     console.error('Dashboard error:', error);
@@ -30,6 +37,31 @@ const Index = () => {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  };
+
+  const getEventTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      sessoes_estudio: "Estúdio",
+      shows: "Show",
+      sessoes_fotos: "Fotos",
+      podcasts: "Podcast",
+      reunioes: "Reunião",
+      viagens: "Viagem"
+    };
+    return labels[type] || type;
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "confirmado":
+        return <Badge variant="default">Confirmado</Badge>;
+      case "pendente":
+        return <Badge variant="secondary">Pendente</Badge>;
+      case "agendado":
+        return <Badge variant="outline">Agendado</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
   return (
@@ -92,16 +124,47 @@ const Index = () => {
                   <CardDescription>Compromissos agendados</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground mb-4">
-                      Nenhum evento agendado para hoje
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Eventos aparecerão aqui quando forem criados
-                    </p>
-                    <Button variant="outline" onClick={() => window.location.href = '/agenda'}>Ver Agenda Completa</Button>
-                  </div>
+                  {todayEvents.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground mb-4">
+                        Nenhum evento agendado para hoje
+                      </p>
+                      <Button variant="outline" onClick={() => window.location.href = '/agenda'}>Ver Agenda Completa</Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {todayEvents.map((event) => (
+                        <div
+                          key={event.id}
+                          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-foreground">{event.event_name}</span>
+                              {getStatusBadge(event.status)}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {event.start_time} - {event.end_time}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {event.location}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {getEventTypeLabel(event.event_type)}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                      <Button variant="outline" className="w-full" onClick={() => window.location.href = '/agenda'}>
+                        Ver Agenda Completa
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

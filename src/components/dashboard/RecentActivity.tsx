@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Music, Upload, FileText, Calendar, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRecentActivities } from "@/hooks/useDashboard";
+import { mockActivities } from "@/data/mockData";
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -56,7 +57,10 @@ const getStatusColor = (type: string) => {
 };
 
 export function RecentActivity() {
-  const { data: activities = [], isLoading, error } = useRecentActivities(5);
+  const { data: dbActivities = [], isLoading, error } = useRecentActivities(5);
+  
+  // Use mock data when no database data exists
+  const activities = dbActivities.length > 0 ? dbActivities : mockActivities;
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);

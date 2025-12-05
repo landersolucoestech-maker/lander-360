@@ -782,3 +782,42 @@ export const mockDashboardStats = {
   activeContracts: 4,
   monthlyRevenue: 142730
 };
+
+// Recent activities
+export const mockActivities = [
+  {
+    id: "1",
+    type: "artist",
+    title: "Novo artista cadastrado",
+    description: "João Silva foi adicionado ao sistema",
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "2",
+    type: "contract",
+    title: "Contrato assinado",
+    description: "Contrato de gravação com Maria Santos",
+    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "3",
+    type: "release",
+    title: "Lançamento programado",
+    description: "Single 'Preferida' agendado para 10/12",
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "4",
+    type: "transaction",
+    title: "Pagamento recebido",
+    description: "Royalties Spotify - R$ 15.230,00",
+    timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "5",
+    type: "project",
+    title: "Projeto criado",
+    description: "EP 'Novos Horizontes' iniciado",
+    timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+  }
+];
