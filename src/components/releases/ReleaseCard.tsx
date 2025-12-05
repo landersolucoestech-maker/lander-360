@@ -12,7 +12,7 @@ interface ReleaseCardProps {
     status: string;
     type: string;
     cover?: string;
-    approvalStatus?: 'pendente' | 'aceita' | 'recusada';
+    approvalStatus?: 'pendente' | 'aceita' | 'recusada' | 'em_espera';
     priority?: 'alta' | 'media' | 'baixa';
   };
   onViewDetails: (release: any) => void;
@@ -73,7 +73,7 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {/* Top Right Badge - Approval Status or Release Status */}
+        {/* Top Right Badge - Approval Status */}
         <div className="absolute top-3 right-3">
           {release.approvalStatus === 'pendente' ? (
             <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">
@@ -87,13 +87,13 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
             <Badge className="bg-destructive text-destructive-foreground font-bold text-xs px-3 py-1">
               RECUSADA
             </Badge>
-          ) : timeRemaining.isPast ? (
-            <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">
-              LANÇADO
+          ) : release.approvalStatus === 'em_espera' ? (
+            <Badge className="bg-blue-500 text-white font-bold text-xs px-3 py-1">
+              EM ESPERA
             </Badge>
           ) : (
-            <Badge className="bg-primary text-primary-foreground font-bold text-xs px-3 py-1">
-              EM BREVE
+            <Badge className="bg-muted text-muted-foreground font-bold text-xs px-3 py-1">
+              SEM STATUS
             </Badge>
           )}
         </div>
