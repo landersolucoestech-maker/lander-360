@@ -60,9 +60,9 @@ const Artistas = () => {
       options: ["Ativo", "Inativo"]
     },
     {
-      key: "gravadora",
-      label: "Gravadora",
-      options: ["Gravadora", "Indie Records", "Pop Music Label"]
+      key: "perfil",
+      label: "Perfil",
+      options: ["Independente", "Gravadora", "Produtor", "Compositor"]
     }
   ];
 
@@ -96,7 +96,7 @@ const Artistas = () => {
         filtered = filtered.filter((artist: any) => {
           if (key === "genre") return artist.genre === value;
           if (key === "status") return artist.status === value;
-          if (key === "gravadora") return artist.gravadora === value;
+          if (key === "perfil") return artist.perfil === value;
           return true;
         });
       }
