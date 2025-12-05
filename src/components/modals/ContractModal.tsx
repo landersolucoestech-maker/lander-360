@@ -9,6 +9,7 @@ import { ContractForm } from '@/components/forms/ContractForm';
 import { useCreateContract, useUpdateContract } from '@/hooks/useContracts';
 import { useArtists } from '@/hooks/useArtists';
 import { useProjects } from '@/hooks/useProjects';
+import { useCrmContacts } from '@/hooks/useCrm';
 import { Contract } from '@/types/database';
 
 interface ContractModalProps {
@@ -26,6 +27,7 @@ export const ContractModal: React.FC<ContractModalProps> = ({
   const updateContract = useUpdateContract();
   const { data: artists = [] } = useArtists();
   const { data: projects = [] } = useProjects();
+  const { data: crmContacts = [] } = useCrmContacts();
   
   const companies = [
     // Companies will be loaded from database
@@ -100,6 +102,11 @@ export const ContractModal: React.FC<ContractModalProps> = ({
           projects={projects.map(project => ({
             id: project.id,
             name: project.name
+          }))}
+          contacts={crmContacts.map(contact => ({
+            id: contact.id,
+            name: contact.name,
+            company: contact.company
           }))}
         />
       </DialogContent>
