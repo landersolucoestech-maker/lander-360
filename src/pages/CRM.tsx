@@ -10,6 +10,7 @@ import { ContactModal } from "@/components/modals/ContactModal";
 import { ContactProfileModal } from "@/components/modals/ContactProfileModal";
 import { useToast } from "@/hooks/use-toast";
 import { UserCheck, Plus, Phone, Mail, Calendar, Star } from "lucide-react";
+import { mockContacts } from "@/data/mockData";
 
 const CRM = () => {
   const { toast } = useToast();
@@ -17,7 +18,7 @@ const CRM = () => {
   const [selectedContact, setSelectedContact] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
-  const contacts: any[] = [];
+  const contacts = mockContacts;
 
   return (
     <SidebarProvider>

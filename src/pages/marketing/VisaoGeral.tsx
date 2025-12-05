@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingCampaignModal } from "@/components/modals/MarketingCampaignModal";
 import { Megaphone, Plus, TrendingUp, Target, Eye, Users, BarChart3, Calendar } from "lucide-react";
+import { mockCampaigns } from "@/data/mockData";
+
 const MarketingVisaoGeral = () => {
-  const allCampaigns: any[] = [];
+  const allCampaigns = mockCampaigns;
   const [filteredCampaigns, setFilteredCampaigns] = useState(allCampaigns);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const filterOptions = [{

@@ -9,9 +9,10 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { MusicViewModal } from "@/components/modals/MusicViewModal";
 import { Music, Plus, FileText, CheckCircle, DollarSign } from "lucide-react";
+import { mockSongs } from "@/data/mockData";
 
 const RegistroMusicas = () => {
-  const allSongs: any[] = [];
+  const allSongs = mockSongs;
 
   const [filteredSongs, setFilteredSongs] = useState(allSongs);
   const [newMusicModalOpen, setNewMusicModalOpen] = useState(false);

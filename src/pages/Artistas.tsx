@@ -9,6 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ArtistModal } from "@/components/modals/ArtistModal";
 import { useArtists, useArtistsCount } from "@/hooks/useArtists";
 import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
+import { mockArtists } from "@/data/mockData";
 
 const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -26,8 +27,8 @@ const Artistas = () => {
     avatar: dbArtist.avatar_url,
     socialMedia: dbArtist.social_media || {},
     stats: {
-      obras: 0, // Will be populated from music registrations
-      lancamentos: 0 // Will be populated from releases
+      obras: 0,
+      lancamentos: 0
     },
     profile: {
       nome: dbArtist.name || 'Não informado',
@@ -37,9 +38,10 @@ const Artistas = () => {
     gravadora: dbArtist.professional_profile?.company_name || 'Independente'
   });
 
+  // Use mock data when no database artists exist
   const displayArtists = artists?.length 
     ? artists.map(transformDatabaseArtist)
-    : [];
+    : mockArtists;
   
   const currentArtists = filteredArtists.length ? filteredArtists : displayArtists;
 

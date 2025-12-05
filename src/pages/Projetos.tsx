@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ProjectModal } from "@/components/modals/ProjectModal";
 import { PlayCircle, Plus, TrendingUp, Calendar, Music } from "lucide-react";
+import { mockProjects } from "@/data/mockData";
 
 const Projetos = () => {
-  const allProjects: any[] = [];
+  const allProjects = mockProjects;
 
   const [filteredProjects, setFilteredProjects] = useState(allProjects);
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false);
