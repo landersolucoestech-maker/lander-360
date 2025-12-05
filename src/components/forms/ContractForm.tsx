@@ -19,10 +19,11 @@ import { cn } from '@/lib/utils';
 const contractSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
   client_type: z.enum(['artista', 'empresa'], { required_error: 'Selecione o tipo de cliente' }),
-  service_type: z.enum(['empresariamento', 'gestao', 'agenciamento', 'edicao', 'distribuicao', 'marketing', 'producao_musical', 'producao_audiovisual'], { required_error: 'Selecione o tipo de serviço' }),
+  service_type: z.enum(['empresariamento', 'gestao', 'agenciamento', 'edicao', 'distribuicao', 'marketing', 'producao_musical', 'producao_audiovisual', 'licenciamento', 'publicidade', 'parceria', 'shows', 'outros'], { required_error: 'Selecione o tipo de serviço' }),
   artist_id: z.string().optional(),
   company_id: z.string().optional(),
   project_id: z.string().optional(),
+  contractor_contact: z.string().optional(),
   responsible_person: z.string().min(1, 'Responsável é obrigatório'),
   status: z.enum(['pendente', 'assinado', 'expirado', 'rescindido', 'rascunho']).default('rascunho'),
   start_date: z.date().optional(),
@@ -158,6 +159,17 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                 <p className="text-sm text-destructive">{form.formState.errors.client_type.message}</p>
               )}
             </div>
+
+            {form.watch('client_type') === 'empresa' && (
+              <div className="space-y-2">
+                <Label htmlFor="contractor_contact">Contratante/Contato</Label>
+                <Input
+                  id="contractor_contact"
+                  {...form.register('contractor_contact')}
+                  placeholder="Nome do contratante ou contato"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Tipo de Serviço</Label>
