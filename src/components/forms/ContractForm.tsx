@@ -425,7 +425,8 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               </div>
             )}
 
-            {form.watch('client_type') === 'artista' && (
+            {form.watch('client_type') === 'artista' && 
+             ['agenciamento', 'gestao', 'empresariamento', 'producao_musical'].includes(form.watch('service_type')) && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="royalties_percentage">Royalties (%)</Label>
