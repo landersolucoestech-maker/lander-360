@@ -167,50 +167,50 @@ const Lancamentos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredReleases.map((release) => (
                       <div
                         key={release.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        className="flex flex-col p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors group"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <Music className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="space-y-1">
-                            <h3 className="font-medium text-foreground">{release.title}</h3>
-                            <div className="text-sm text-muted-foreground">{release.artist}</div>
-                            <div className="flex items-center gap-2">
-                              <Badge 
-                                variant={
-                                  release.status === "Lançado" ? "default" :
-                                  release.status === "Programado" ? "secondary" : "outline"
-                                }
-                              >
-                                {release.status}
-                              </Badge>
-                              <Badge variant="secondary">{release.type}</Badge>
-                            </div>
+                        <div className="w-full aspect-square bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                          <Music className="h-12 w-12 text-primary" />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                          <h3 className="font-medium text-foreground truncate">{release.title}</h3>
+                          <div className="text-sm text-muted-foreground truncate">{release.artist}</div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge 
+                              variant={
+                                release.status === "Lançado" ? "default" :
+                                release.status === "Programado" ? "secondary" : "outline"
+                              }
+                            >
+                              {release.status}
+                            </Badge>
+                            <Badge variant="secondary">{release.type}</Badge>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="text-center">
-                            <div className="text-muted-foreground">Data de Lançamento</div>
-                            <div className="font-medium">{release.releaseDate}</div>
+                        <div className="mt-4 pt-4 border-t border-border space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Lançamento</span>
+                            <span className="font-medium">{release.releaseDate}</span>
                           </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground">Plataformas</div>
-                            <div className="font-medium">{release.platforms?.length || 0}</div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Streams</span>
+                            <span className="font-medium">{release.streams}</span>
                           </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground">Streams</div>
-                            <div className="font-medium">{release.streams}</div>
-                          </div>
-                          <Button variant="outline" size="sm" onClick={() => handleViewDetails(release)}>
-                            Detalhes
-                          </Button>
                         </div>
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-4"
+                          onClick={() => handleViewDetails(release)}
+                        >
+                          Ver Detalhes
+                        </Button>
                       </div>
                     ))}
                   </div>
