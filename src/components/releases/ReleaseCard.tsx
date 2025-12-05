@@ -134,10 +134,10 @@ export const ReleaseCard = ({ release, onViewDetails }: ReleaseCardProps) => {
           </div>
 
           {/* Countdown Timer */}
-          {!timeRemaining.isPast && (
+          {!timeRemaining.isPast && (release.approvalStatus === 'aceita' || !release.approvalStatus) && (
             <div className="pt-2 border-t border-white/20">
               <p className="text-[10px] text-white/50 uppercase tracking-wider mb-2">
-                Tempo restante
+                Tempo restante pra lançamento
               </p>
               <div className="grid grid-cols-4 gap-1 text-center">
                 <div className="bg-black/50 rounded px-1 py-1.5">
