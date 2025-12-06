@@ -27,9 +27,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 const participantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  cpf: z.string().min(1, 'CPF é obrigatório'),
+  role: z.string().min(1, 'Classe/Função é obrigatória'),
+  link: z.string().optional(),
+  contract_start_date: z.string().optional(),
   percentage: z.number().min(0, 'Percentual deve ser maior que 0').max(100, 'Percentual não pode ser maior que 100'),
-  role: z.string().optional(),
 });
 
 const otherTitleSchema = z.object({
@@ -420,8 +421,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const handleAddParticipantFromSearch = (participant: any) => {
     appendParticipant({
       name: participant.nome,
-      cpf: participant.cpf,
       role: participant.funcoes?.[0] || 'compositor',
+      link: '',
+      contract_start_date: '',
       percentage: 0,
     });
     setShowParticipantDialog(false);
@@ -960,7 +962,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                     type="button" 
                     variant="outline" 
                     size="sm"
-                    onClick={() => appendParticipant({ name: '', cpf: '', percentage: 0, role: '' })}
+                    onClick={() => appendParticipant({ name: '', role: '', link: '', contract_start_date: '', percentage: 0 })}
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Adicionar participante
@@ -970,7 +972,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                 {participantFields.length > 0 && (
                   <div className="space-y-3">
                     {participantFields.map((field, index) => (
-                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg items-end">
+                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border rounded-lg items-end">
                         <FormField
                           control={form.control}
                           name={`participants.${index}.name`}
@@ -986,23 +988,10 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                         />
                         <FormField
                           control={form.control}
-                          name={`participants.${index}.cpf`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>CPF *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="000.000.000-00" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
                           name={`participants.${index}.role`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Função</FormLabel>
+                              <FormLabel>Classe/Função *</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -1012,13 +1001,39 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                                 <SelectContent>
                                   <SelectItem value="compositor">Compositor</SelectItem>
                                   <SelectItem value="autor">Autor</SelectItem>
-                                  <SelectItem value="interprete">Intérprete</SelectItem>
-                                  <SelectItem value="produtor">Produtor</SelectItem>
-                                  <SelectItem value="adaptador">Adaptador</SelectItem>
                                   <SelectItem value="tradutor">Tradutor</SelectItem>
-                                  <SelectItem value="versionista">Versionista</SelectItem>
                                 </SelectContent>
                               </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.link`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Link</FormLabel>
+                              <FormControl>
+                                <Input placeholder="URL ou link" {...field} value={field.value || ''} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.contract_start_date`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Data Início Contrato</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="date" 
+                                  {...field} 
+                                  value={field.value || ''} 
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
