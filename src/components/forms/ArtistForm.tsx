@@ -291,23 +291,6 @@ export function ArtistForm({
                     <FormMessage />
                   </FormItem>} />
 
-              <FormField control={form.control} name="music_language" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>Idioma da Música</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o idioma" />
-                        </SelectTrigger>
-                      </FormControl>
-                        <SelectContent className="max-h-64 overflow-auto">
-                          {languageOptions.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>} />
-
               <div className="md:col-span-2">
                 <FormField control={form.control} name="documents" render={({
                 field
