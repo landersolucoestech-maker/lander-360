@@ -227,7 +227,7 @@ export function ArtistCard({
                   <Button variant="outline" size="sm" className="text-xs md:text-sm h-8 px-3" onClick={() => setEditModalOpen(true)}>
                     Editar
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => setDeleteModalOpen(true)} className="text-xs md:text-sm h-8 px-3 text-primary-foreground">
+                  <Button variant="outline" size="sm" onClick={() => setDeleteModalOpen(true)} className="text-xs md:text-sm h-8 px-3">
                     Excluir
                   </Button>
                 </div>
