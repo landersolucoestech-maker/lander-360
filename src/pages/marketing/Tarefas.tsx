@@ -192,10 +192,11 @@ const MarketingTarefas = () => {
     setFilteredTasks(filtered);
   };
 
-  // Update filtered tasks when tasks change
+  // Update filtered tasks when dbTasks change
   useEffect(() => {
-    setFilteredTasks(tasks);
-  }, [tasks]);
+    const currentTasks = dbTasks.length > 0 ? dbTasks : mockTasks;
+    setFilteredTasks(currentTasks);
+  }, [dbTasks]);
 
   return (
     <SidebarProvider>
