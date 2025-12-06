@@ -156,43 +156,61 @@ const Lancamentos = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-              <DashboardCard
-                title="Lançamentos Ativos"
-                value={0}
-                description="disponíveis nas plataformas"
-                icon={Music}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Programados"
-                value={0}
-                description="próximos 30 dias"
-                icon={Calendar}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Performance"
-                value="0%"
-                description="taxa de crescimento"
-                icon={TrendingUp}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Total de Streams"
-                value="0"
-                description="reproduções acumuladas"
-                icon={Eye}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Takedowns"
-                value={allReleases.filter(r => r.takedown).length}
-                description="lançamentos removidos"
-                icon={AlertTriangle}
-                className="border-orange-500/30"
-              />
-            </div>
+            {(() => {
+              const activeReleases = allReleases.filter(r => r.status === 'released' || r.approvalStatus === 'aceita').length;
+              const scheduledReleases = allReleases.filter(r => {
+                if (!r.releaseDate) return false;
+                const releaseDate = new Date(r.releaseDate);
+                const now = new Date();
+                const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                return releaseDate > now && releaseDate <= thirtyDaysFromNow;
+              }).length;
+              const totalStreams = allReleases.reduce((sum, r) => sum + (r.streams || 0), 0);
+              const takedowns = allReleases.filter(r => r.takedown).length;
+              const performanceRate = allReleases.length > 0 
+                ? Math.round((activeReleases / allReleases.length) * 100) 
+                : 0;
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                  <DashboardCard
+                    title="Lançamentos Ativos"
+                    value={activeReleases}
+                    description="disponíveis nas plataformas"
+                    icon={Music}
+                    trend={{ value: activeReleases, isPositive: true }}
+                  />
+                  <DashboardCard
+                    title="Programados"
+                    value={scheduledReleases}
+                    description="próximos 30 dias"
+                    icon={Calendar}
+                    trend={{ value: scheduledReleases, isPositive: true }}
+                  />
+                  <DashboardCard
+                    title="Performance"
+                    value={`${performanceRate}%`}
+                    description="taxa de crescimento"
+                    icon={TrendingUp}
+                    trend={{ value: performanceRate, isPositive: performanceRate > 0 }}
+                  />
+                  <DashboardCard
+                    title="Total de Streams"
+                    value={totalStreams.toLocaleString('pt-BR')}
+                    description="reproduções acumuladas"
+                    icon={Eye}
+                    trend={{ value: totalStreams, isPositive: true }}
+                  />
+                  <DashboardCard
+                    title="Takedowns"
+                    value={takedowns}
+                    description="lançamentos removidos"
+                    icon={AlertTriangle}
+                    className="border-orange-500/30"
+                  />
+                </div>
+              );
+            })()}
 
             {/* Search and Filters */}
             <SearchFilter
