@@ -7,125 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingTaskModal } from "@/components/modals/MarketingTaskModal";
-import { CheckSquare, Plus, Clock, Users, AlertTriangle, CheckCircle, Calendar } from "lucide-react";
-import { useMarketingTasks, useMarketingStats } from "@/hooks/useMarketing";
+import { CheckSquare, Plus, Clock, Users, CheckCircle, Calendar } from "lucide-react";
+import { useMarketingTasks } from "@/hooks/useMarketing";
 
 const MarketingTarefas = () => {
   const { data: dbTasks = [], isLoading: tasksLoading } = useMarketingTasks();
-  const { data: stats, isLoading: statsLoading } = useMarketingStats();
 
-  // Mock data para exibição
-  const mockTasks = [
-    {
-      id: "1",
-      title: "Criar artes para Stories do Instagram",
-      description: "Desenvolver 10 artes para stories da campanha de fim de ano",
-      campaign: "Campanha de Fim de Ano",
-      status: "Em Andamento",
-      priority: "Alta",
-      category: "Design",
-      assignee_name: "Design Team",
-      due_date: "2024-12-10",
-      progress: 60
-    },
-    {
-      id: "2",
-      title: "Editar vídeo do clipe oficial",
-      description: "Finalizar edição e correção de cor do novo clipe",
-      campaign: "Lançamento Clipe Oficial",
-      status: "Pendente",
-      priority: "Alta",
-      category: "Vídeo",
-      assignee_name: "Video Team",
-      due_date: "2024-12-08",
-      progress: 0
-    },
-    {
-      id: "3",
-      title: "Copywriting para anúncios",
-      description: "Escrever textos persuasivos para Meta Ads",
-      campaign: "Turnê Nacional 2025",
-      status: "Concluída",
-      priority: "Média",
-      category: "Copywriting",
-      assignee_name: "Marketing Team",
-      due_date: "2024-12-05",
-      progress: 100
-    },
-    {
-      id: "4",
-      title: "Agendar posts do TikTok",
-      description: "Programar 15 vídeos para a próxima semana",
-      campaign: "Promoção Álbum Completo",
-      status: "Em Andamento",
-      priority: "Média",
-      category: "Social Media",
-      assignee_name: "Social Media",
-      due_date: "2024-12-07",
-      progress: 40
-    },
-    {
-      id: "5",
-      title: "Criar banner para Spotify",
-      description: "Design do banner promocional para playlist",
-      campaign: "Lançamento Single 'Noite Estrelada'",
-      status: "Atrasada",
-      priority: "Alta",
-      category: "Design",
-      assignee_name: "Design Team",
-      due_date: "2024-12-03",
-      progress: 20
-    },
-    {
-      id: "6",
-      title: "Configurar pixel do Facebook",
-      description: "Implementar tracking para conversões",
-      campaign: "Campanha de Fim de Ano",
-      status: "Pendente",
-      priority: "Baixa",
-      category: "Publicidade",
-      assignee_name: "Marketing Team",
-      due_date: "2024-12-15",
-      progress: 0
-    },
-    {
-      id: "7",
-      title: "Revisar métricas semanais",
-      description: "Análise de performance das campanhas ativas",
-      campaign: null,
-      status: "Concluída",
-      priority: "Média",
-      category: "Social Media",
-      assignee_name: "Marketing Team",
-      due_date: "2024-12-04",
-      progress: 100
-    },
-    {
-      id: "8",
-      title: "Produzir conteúdo para YouTube Shorts",
-      description: "Gravar e editar 5 shorts para o canal",
-      campaign: "Promoção Álbum Completo",
-      status: "Em Andamento",
-      priority: "Alta",
-      category: "Vídeo",
-      assignee_name: "Video Team",
-      due_date: "2024-12-12",
-      progress: 30
-    }
-  ];
-
-  const tasks = dbTasks.length > 0 ? dbTasks : mockTasks;
+  const tasks = dbTasks;
   
-  const mockStats = {
-    tasks: {
-      pending: tasks.filter(t => t.status === "Pendente").length,
-      inProgress: tasks.filter(t => t.status === "Em Andamento").length,
-      completed: tasks.filter(t => t.status === "Concluída").length,
-      total: tasks.length
-    }
+  const taskStats = {
+    pending: tasks.filter(t => t.status === "Pendente" || t.status === "pending").length,
+    inProgress: tasks.filter(t => t.status === "Em Andamento" || t.status === "in_progress").length,
+    completed: tasks.filter(t => t.status === "Concluída" || t.status === "completed").length,
+    total: tasks.length
   };
-
-  const displayStats = stats || mockStats;
 
   const [filteredTasks, setFilteredTasks] = useState(tasks);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -146,11 +41,6 @@ const MarketingTarefas = () => {
       key: "category",
       label: "Categoria",
       options: ["Design", "Publicidade", "Vídeo", "Social Media", "Copywriting"]
-    },
-    {
-      key: "assignee",
-      label: "Responsável",
-      options: ["Design Team", "Marketing Team", "Video Team", "Social Media"]
     }
   ];
 
@@ -183,7 +73,6 @@ const MarketingTarefas = () => {
           if (key === "status") return task.status === value;
           if (key === "priority") return task.priority === value;
           if (key === "category") return task.category === value;
-          if (key === "assignee") return task.assignee_name === value;
           return true;
         });
       }
@@ -192,10 +81,8 @@ const MarketingTarefas = () => {
     setFilteredTasks(filtered);
   };
 
-  // Update filtered tasks when dbTasks change
   useEffect(() => {
-    const currentTasks = dbTasks.length > 0 ? dbTasks : mockTasks;
-    setFilteredTasks(currentTasks);
+    setFilteredTasks(dbTasks);
   }, [dbTasks]);
 
   return (
@@ -222,31 +109,27 @@ const MarketingTarefas = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard
                 title="Tarefas Pendentes"
-                value={displayStats.tasks.pending}
+                value={taskStats.pending}
                 description="aguardando execução"
                 icon={Clock}
-                trend={{ value: 5.2, isPositive: false }}
               />
               <DashboardCard
                 title="Em Andamento"
-                value={displayStats.tasks.inProgress}
+                value={taskStats.inProgress}
                 description="sendo executadas"
                 icon={CheckSquare}
-                trend={{ value: 25.0, isPositive: true }}
               />
               <DashboardCard
                 title="Concluídas"
-                value={displayStats.tasks.completed}
+                value={taskStats.completed}
                 description="este mês"
                 icon={CheckCircle}
-                trend={{ value: 18.7, isPositive: true }}
               />
               <DashboardCard
                 title="Taxa de Conclusão"
-                value={displayStats.tasks.total > 0 ? `${Math.round((displayStats.tasks.completed / displayStats.tasks.total) * 100)}%` : "0%"}
+                value={taskStats.total > 0 ? `${Math.round((taskStats.completed / taskStats.total) * 100)}%` : "0%"}
                 description="no prazo"
                 icon={Users}
-                trend={{ value: 12.1, isPositive: true }}
               />
             </div>
 
@@ -287,7 +170,7 @@ const MarketingTarefas = () => {
                   <CardTitle className="text-sm font-medium">Produtividade</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{Math.round((filteredTasks.filter(t => t.status === 'Concluída').length / Math.max(filteredTasks.length, 1)) * 100)}%</div>
+                  <div className="text-2xl font-bold">{Math.round((filteredTasks.filter(t => t.status === 'Concluída' || t.status === 'completed').length / Math.max(filteredTasks.length, 1)) * 100)}%</div>
                   <p className="text-xs text-muted-foreground">vs semana passada</p>
                 </CardContent>
               </Card>
@@ -311,17 +194,27 @@ const MarketingTarefas = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {tasksLoading ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Carregando tarefas...
-                    </div>
-                  ) : filteredTasks.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Nenhuma tarefa encontrada
-                    </div>
-                  ) : (
-                    filteredTasks.map((task) => (
+                {tasksLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Carregando tarefas...
+                  </div>
+                ) : filteredTasks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <CheckSquare className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      Nenhuma tarefa cadastrada
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Comece a organizar suas tarefas de marketing
+                    </p>
+                    <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Adicionar Tarefa
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredTasks.map((task) => (
                       <div
                         key={task.id}
                         className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
@@ -339,8 +232,8 @@ const MarketingTarefas = () => {
                           <div className="flex items-center gap-2 ml-4">
                             <Badge 
                               variant={
-                                task.status === "Concluída" ? "default" :
-                                task.status === "Em Andamento" ? "secondary" :
+                                task.status === "Concluída" || task.status === "completed" ? "default" :
+                                task.status === "Em Andamento" || task.status === "in_progress" ? "secondary" :
                                 task.status === "Atrasada" ? "destructive" : "outline"
                               }
                             >
@@ -348,8 +241,8 @@ const MarketingTarefas = () => {
                             </Badge>
                             <Badge 
                               variant={
-                                task.priority === "Alta" ? "destructive" :
-                                task.priority === "Média" ? "secondary" : "outline"
+                                task.priority === "Alta" || task.priority === "high" ? "destructive" :
+                                task.priority === "Média" || task.priority === "medium" ? "secondary" : "outline"
                               }
                             >
                               {task.priority}
@@ -407,9 +300,9 @@ const MarketingTarefas = () => {
                           </div>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
