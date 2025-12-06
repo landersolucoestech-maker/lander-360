@@ -429,34 +429,34 @@ const RegistroMusicas = () => {
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-4 text-sm flex-wrap">
-                              <div className="text-center min-w-[80px]">
-                                <div className="text-muted-foreground text-xs">ISRC</div>
-                                <div className="font-medium text-foreground text-xs">{phono.isrc || "-"}</div>
-                              </div>
-                              <div className="text-center min-w-[80px]">
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="text-center">
                                 <div className="text-muted-foreground text-xs">Cód Abramus</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).abramus_code || "-"}</div>
                               </div>
-                              <div className="text-center min-w-[80px]">
+                              <div className="text-center">
                                 <div className="text-muted-foreground text-xs">Cód ECAD</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).ecad_code || "-"}</div>
                               </div>
-                              <div className="text-center min-w-[120px]">
+                              <div className="text-center">
+                                <div className="text-muted-foreground text-xs">ISRC</div>
+                                <div className="font-medium text-foreground text-xs">{phono.isrc || "-"}</div>
+                              </div>
+                              <div className="text-center flex-1">
                                 <div className="text-muted-foreground text-xs">Compositores</div>
-                                <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
+                                <div className="font-medium text-foreground text-xs truncate">
                                   {phono.participants?.filter((p: any) => p.role === 'compositor' || p.role === 'compositor_autor').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="text-center min-w-[120px]">
+                              <div className="text-center flex-1">
                                 <div className="text-muted-foreground text-xs">Intérpretes</div>
-                                <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
+                                <div className="font-medium text-foreground text-xs truncate">
                                   {phono.participants?.filter((p: any) => p.role === 'interprete').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="text-center min-w-[120px]">
+                              <div className="text-center flex-1">
                                 <div className="text-muted-foreground text-xs">Produtores</div>
-                                <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
+                                <div className="font-medium text-foreground text-xs truncate">
                                   {phono.participants?.filter((p: any) => p.role === 'produtor_fonografico').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
