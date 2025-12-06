@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
 import { LoginHistoryModal } from "@/components/modals/LoginHistoryModal";
 import { TwoFactorModal } from "@/components/modals/TwoFactorModal";
+import { SessionManager } from "@/components/security/SessionManager";
 
 interface ProfileData {
   name: string;
@@ -526,6 +527,11 @@ const PerfilUsuario = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Session Manager */}
+              <div className="lg:col-span-3">
+                <SessionManager />
+              </div>
             </div>
           </div>
         </SidebarInset>
