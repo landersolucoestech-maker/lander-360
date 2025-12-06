@@ -4,19 +4,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { MusicRegistrationInsert, MusicRegistrationUpdate } from '@/types/database';
-import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
 import { useCrmContacts } from '@/hooks/useCrm';
+import { useSearchMusic, useMusicRegistry } from '@/hooks/useMusicRegistry';
+import { AbramusService, AbramusWork, AbramusParticipant } from '@/services/abramusService';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const participantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -50,7 +52,6 @@ const musicRegistrationSchema = z.object({
   isrc: z.string().optional(),
   iswc: z.string().optional(),
   status: z.enum(['pending', 'registered', 'approved', 'rejected']).default('pending'),
-  // Legacy fields for backward compatibility
   artist_id: z.string().optional(),
   project_id: z.string().optional(),
   duration: z.number().optional(),
@@ -79,35 +80,37 @@ interface MusicRegistrationFormProps {
 
 export function MusicRegistrationForm({ registration, onSuccess, onCancel }: MusicRegistrationFormProps) {
   const { toast } = useToast();
-  const { data: projects = [], isLoading: loadingProjects } = useProjects();
+  const { data: projects = [] } = useProjects();
   const { data: artists = [] } = useArtists();
   const { data: crmContacts = [] } = useCrmContacts();
+  const { data: existingWorks = [] } = useMusicRegistry();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  
+  const [participantSearchQuery, setParticipantSearchQuery] = useState('');
+  const [isSearchingParticipant, setIsSearchingParticipant] = useState(false);
+  const [participantResults, setParticipantResults] = useState<AbramusParticipant[]>([]);
+  const [showParticipantDialog, setShowParticipantDialog] = useState(false);
+
   const [participationOpen, setParticipationOpen] = useState(true);
   const [otherTitlesOpen, setOtherTitlesOpen] = useState(false);
   const [referencesOpen, setReferencesOpen] = useState(false);
 
-  // Helper function to find CPF by name from artists or CRM contacts
   const findCpfByName = (name: string): string => {
     if (!name || name.trim() === '') return '';
-    
     const normalizedName = name.trim().toLowerCase();
-    
     const artist = artists.find(a => 
       a.name?.toLowerCase() === normalizedName ||
       a.stage_name?.toLowerCase() === normalizedName ||
       a.full_name?.toLowerCase() === normalizedName
     );
-    
-    if (artist?.cpf_cnpj) {
-      return artist.cpf_cnpj;
-    }
-    
+    if (artist?.cpf_cnpj) return artist.cpf_cnpj;
     return '';
   };
 
-  // Calculate total participation percentage
   const calculateTotalPercentage = () => {
     const participants = form.watch('participants') || [];
     return participants.reduce((sum, p) => sum + (p.percentage || 0), 0);
@@ -163,7 +166,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     name: 'connected_references',
   });
 
-  const handleSearch = () => {
+  // Search existing works (local DB + ABRAMUS)
+  const handleSearch = async () => {
     if (!searchQuery.trim()) {
       toast({
         title: "Busca vazia",
@@ -172,17 +176,165 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       });
       return;
     }
+
+    setIsSearching(true);
+    setSearchResults([]);
+    setShowSearchResults(true);
+
+    try {
+      // Search local database
+      const localResults = existingWorks.filter(work => 
+        work.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        work.isrc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        work.iswc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        work.genre?.toLowerCase().includes(searchQuery.toLowerCase())
+      ).map(work => ({ ...work, source: 'local' }));
+
+      // Search ABRAMUS
+      const abramusResponse = await AbramusService.searchWorks(searchQuery);
+      const abramusResults = abramusResponse.data.map(work => ({ ...work, source: 'abramus' }));
+
+      const combinedResults = [...localResults, ...abramusResults];
+      setSearchResults(combinedResults);
+
+      if (combinedResults.length === 0) {
+        toast({
+          title: "Nenhum resultado",
+          description: "Nenhuma obra encontrada. Você pode criar uma nova.",
+        });
+      } else {
+        toast({
+          title: "Busca concluída",
+          description: `${combinedResults.length} obra(s) encontrada(s)`,
+        });
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: "Erro na busca",
+        description: "Ocorreu um erro ao buscar obras. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Select work from search results
+  const handleSelectWork = (work: any) => {
+    if (work.source === 'local') {
+      form.setValue('title', work.title || '');
+      form.setValue('genre', work.genre || '');
+      form.setValue('isrc', work.isrc || '');
+      form.setValue('iswc', work.iswc || '');
+      if (work.duration) {
+        form.setValue('duration_minutes', Math.floor(work.duration / 60));
+        form.setValue('duration_seconds', work.duration % 60);
+      }
+    } else if (work.source === 'abramus') {
+      form.setValue('title', work.titulo || '');
+      form.setValue('abramus_code', work.codigo_abramus || '');
+      form.setValue('ecad_code', work.codigo_ecad || '');
+      form.setValue('genre', work.genero || '');
+      form.setValue('language', work.idioma || 'portugues');
+      form.setValue('is_instrumental', work.instrumental || false);
+      
+      // Add participants from ABRAMUS
+      if (work.participantes && work.participantes.length > 0) {
+        const formattedParticipants = work.participantes.map((p: any) => ({
+          name: p.nome,
+          cpf: p.cpf,
+          role: p.funcao,
+          percentage: p.percentual,
+        }));
+        form.setValue('participants', formattedParticipants);
+      }
+    }
+
+    setShowSearchResults(false);
+    setSearchQuery('');
     
     toast({
-      title: "Buscando...",
-      description: `Pesquisando por: ${searchQuery}`,
+      title: "Obra selecionada",
+      description: `Dados da obra "${work.title || work.titulo}" foram preenchidos.`,
+    });
+  };
+
+  // Search participants in ABRAMUS
+  const handleSearchParticipant = async () => {
+    if (!participantSearchQuery.trim()) {
+      toast({
+        title: "Busca vazia",
+        description: "Digite o nome ou CPF do participante",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearchingParticipant(true);
+    setParticipantResults([]);
+
+    try {
+      // Search in local artists first
+      const localArtists = artists.filter(a => 
+        a.name?.toLowerCase().includes(participantSearchQuery.toLowerCase()) ||
+        a.full_name?.toLowerCase().includes(participantSearchQuery.toLowerCase()) ||
+        a.cpf_cnpj?.includes(participantSearchQuery)
+      ).map(a => ({
+        nome: a.full_name || a.name,
+        cpf: a.cpf_cnpj || '',
+        codigo_abramus: '',
+        funcoes: ['compositor'],
+        obras_registradas: 0,
+        source: 'local'
+      }));
+
+      // Search ABRAMUS
+      const abramusResponse = await AbramusService.searchParticipants(participantSearchQuery);
+      const abramusParticipants = abramusResponse.data.map(p => ({ ...p, source: 'abramus' }));
+
+      const combinedResults = [...localArtists, ...abramusParticipants] as any[];
+      setParticipantResults(combinedResults);
+
+      if (combinedResults.length === 0) {
+        toast({
+          title: "Nenhum resultado",
+          description: "Nenhum participante encontrado.",
+        });
+      }
+    } catch (error) {
+      console.error('Participant search error:', error);
+      toast({
+        title: "Erro na busca",
+        description: "Ocorreu um erro ao buscar participantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingParticipant(false);
+    }
+  };
+
+  // Add participant from search
+  const handleAddParticipantFromSearch = (participant: any) => {
+    appendParticipant({
+      name: participant.nome,
+      cpf: participant.cpf,
+      role: participant.funcoes?.[0] || 'compositor',
+      percentage: 0,
+    });
+    setShowParticipantDialog(false);
+    setParticipantSearchQuery('');
+    setParticipantResults([]);
+    
+    toast({
+      title: "Participante adicionado",
+      description: `${participant.nome} foi adicionado à lista.`,
     });
   };
 
   const onSubmit = async (data: MusicRegistrationFormData) => {
     try {
       const totalDuration = ((data.duration_minutes || 0) * 60) + (data.duration_seconds || 0);
-      
       const totalPercentage = (data.participants || []).reduce((sum, p) => sum + p.percentage, 0);
       
       if (data.participants && data.participants.length > 0 && Math.abs(totalPercentage - 100) > 0.01) {
@@ -219,7 +371,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           <CardHeader className="pb-4">
             <CardTitle className="text-lg">Buscar Obra Existente</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Input 
                 placeholder="Digite o título, gênero ou código e pressione ENTER para buscar" 
@@ -228,10 +380,42 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
                 className="flex-1"
               />
-              <Button type="button" variant="outline" size="icon" onClick={handleSearch}>
-                <Search className="h-4 w-4" />
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                onClick={handleSearch}
+                disabled={isSearching}
+              >
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               </Button>
             </div>
+
+            {/* Search Results */}
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="border rounded-lg p-2 max-h-60 overflow-y-auto">
+                <p className="text-sm text-muted-foreground mb-2">
+                  {searchResults.length} resultado(s) encontrado(s):
+                </p>
+                {searchResults.map((work, index) => (
+                  <div 
+                    key={index}
+                    className="p-3 hover:bg-accent rounded-md cursor-pointer flex justify-between items-center"
+                    onClick={() => handleSelectWork(work)}
+                  >
+                    <div>
+                      <p className="font-medium">{work.title || work.titulo}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {work.genre || work.genero} • {work.source === 'local' ? 'Base Local' : 'ABRAMUS'}
+                      </p>
+                    </div>
+                    <Button type="button" variant="ghost" size="sm">
+                      Selecionar
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -480,12 +664,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                     type="button" 
                     variant="outline" 
                     size="sm"
-                    onClick={() => {
-                      toast({
-                        title: "Buscar participante",
-                        description: "Funcionalidade de busca em desenvolvimento",
-                      });
-                    }}
+                    onClick={() => setShowParticipantDialog(true)}
                   >
                     <Search className="h-4 w-4 mr-2" />
                     Buscar participante
@@ -761,6 +940,62 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             {registration ? 'Atualizar Obra' : 'Cadastrar Nova Obra'}
           </Button>
         </div>
+
+        {/* Participant Search Dialog */}
+        <Dialog open={showParticipantDialog} onOpenChange={setShowParticipantDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Buscar Participante</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Digite o nome ou CPF do participante"
+                  value={participantSearchQuery}
+                  onChange={(e) => setParticipantSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchParticipant())}
+                />
+                <Button 
+                  type="button" 
+                  onClick={handleSearchParticipant}
+                  disabled={isSearchingParticipant}
+                >
+                  {isSearchingParticipant ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              {participantResults.length > 0 && (
+                <ScrollArea className="h-60">
+                  <div className="space-y-2">
+                    {participantResults.map((participant, index) => (
+                      <div 
+                        key={index}
+                        className="p-3 border rounded-lg hover:bg-accent cursor-pointer"
+                        onClick={() => handleAddParticipantFromSearch(participant)}
+                      >
+                        <p className="font-medium">{participant.nome}</p>
+                        <p className="text-sm text-muted-foreground">
+                          CPF: {participant.cpf} • {(participant as any).source === 'local' ? 'Base Local' : 'ABRAMUS'}
+                        </p>
+                        {participant.funcoes && (
+                          <p className="text-xs text-muted-foreground">
+                            Funções: {participant.funcoes.join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+
+              {participantResults.length === 0 && participantSearchQuery && !isSearchingParticipant && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Nenhum participante encontrado. Você pode adicionar manualmente.
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </form>
     </Form>
   );
