@@ -497,6 +497,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         status: data.status || 'pendente',
         abramus_code: data.abramus_code || null,
         ecad_code: data.ecad_code || null,
+        participants: data.participants || [],
       };
 
       if (registration?.id) {
