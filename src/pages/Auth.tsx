@@ -133,9 +133,9 @@ export default function Auth() {
   }
   return <div className="min-h-screen flex">
       {/* Left Side - Login Form */}
-      <div className="w-full lg:w-[45%] flex flex-col items-center justify-center px-8 py-12 relative" style={{
+      <div style={{
       background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)'
-    }}>
+    }} className="w-full lg:w-[45%] flex flex-col items-center justify-center relative bg-black px-[3px] py-[32px]">
         
         <div className="w-full max-w-md flex flex-col items-center">
           {/* Welcome Text */}
