@@ -589,7 +589,7 @@ export function PhonogramForm({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Input 
-                              className="pl-3"
+                              className="pl-3 text-left"
                               placeholder={getPlaceholder()}
                               value={formField.value}
                               onChange={(e) => {
