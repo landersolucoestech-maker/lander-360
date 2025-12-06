@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDashboardStats } from "@/hooks/useDashboard";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   Music,
@@ -20,6 +21,7 @@ import { mockDashboardStats, mockEvents } from "@/data/mockData";
 
 const Index = () => {
   const { data: stats, isLoading, error } = useDashboardStats();
+  const navigate = useNavigate();
 
   // Use mock data when no database data exists or all values are zero
   const hasNoData = !stats || (
@@ -136,7 +138,7 @@ const Index = () => {
                       <p className="text-muted-foreground mb-4">
                         Nenhum evento agendado para hoje
                       </p>
-                      <Button variant="outline" onClick={() => window.location.href = '/agenda'}>Ver Agenda Completa</Button>
+                      <Button variant="outline" onClick={() => navigate('/agenda')}>Ver Agenda Completa</Button>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -166,7 +168,7 @@ const Index = () => {
                           </div>
                         </div>
                       ))}
-                      <Button variant="outline" className="w-full" onClick={() => window.location.href = '/agenda'}>
+                      <Button variant="outline" className="w-full" onClick={() => navigate('/agenda')}>
                         Ver Agenda Completa
                       </Button>
                     </div>

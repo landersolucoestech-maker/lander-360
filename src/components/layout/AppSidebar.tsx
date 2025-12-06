@@ -2,6 +2,7 @@ import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 const navigationItems = [{
   title: "Dashboard",
@@ -82,6 +83,16 @@ export function AppSidebar({
   className
 }: AppSidebarProps) {
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const isActive = (url: string) => {
+    if (url === "/") return currentPath === "/";
+    return currentPath.startsWith(url);
+  };
+
+  const isMarketingActive = marketingItems.some(item => currentPath.startsWith(item.url));
+
   return <Sidebar className={cn("border-r border-sidebar-border", className)}>
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
@@ -99,27 +110,35 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {navigationItems.map(item => <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                    <a href={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
+                  <SidebarMenuButton asChild className={cn(
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    isActive(item.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
+                  )}>
+                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
                       <item.icon className="h-4 w-4" />
                       <span className="font-medium">{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>)}
 
               {/* Marketing dropdown */}
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => setIsMarketingOpen(!isMarketingOpen)} className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-3 px-3 py-2.5 rounded-md">
+                <SidebarMenuButton onClick={() => setIsMarketingOpen(!isMarketingOpen)} className={cn(
+                  "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-3 px-3 py-2.5 rounded-md",
+                  isMarketingActive && "bg-sidebar-accent text-sidebar-accent-foreground"
+                )}>
                   <Megaphone className="h-4 w-4" />
                   <span className="font-medium">Marketing</span>
                   <ChevronDown className={cn("h-4 w-4 transition-transform ml-auto", isMarketingOpen && "rotate-180")} />
                 </SidebarMenuButton>
                 {isMarketingOpen && <SidebarMenuSub className="mt-1 space-y-1">
                     {marketingItems.map(subItem => <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
-                          <a href={subItem.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md ml-6">
+                        <SidebarMenuSubButton asChild className={cn(
+                          isActive(subItem.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
+                        )}>
+                          <Link to={subItem.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md ml-6">
                             <span className="font-medium text-sm">{subItem.title}</span>
-                          </a>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>)}
                   </SidebarMenuSub>}
@@ -132,11 +151,14 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                  <a href="/configuracoes" className="flex items-center gap-3 px-3 py-2">
+                <SidebarMenuButton asChild className={cn(
+                  "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  isActive("/configuracoes") && "bg-sidebar-accent text-sidebar-accent-foreground"
+                )}>
+                  <Link to="/configuracoes" className="flex items-center gap-3 px-3 py-2">
                     <Settings className="h-4 w-4" />
                     <span className="font-medium">Configurações</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

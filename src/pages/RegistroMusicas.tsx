@@ -8,13 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { MusicViewModal } from "@/components/modals/MusicViewModal";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Music, Plus, FileText, CheckCircle, DollarSign, Clock } from "lucide-react";
 import { mockSongs } from "@/data/mockData";
+import { useToast } from "@/hooks/use-toast";
 
 const RegistroMusicas = () => {
-  const allSongs = mockSongs;
-
+  const [allSongs, setAllSongs] = useState(mockSongs);
   const [filteredSongs, setFilteredSongs] = useState(allSongs);
+  const { toast } = useToast();
   const [newMusicModalOpen, setNewMusicModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -267,6 +269,26 @@ const RegistroMusicas = () => {
               open={viewModalOpen}
               onOpenChange={setViewModalOpen}
               song={selectedSong}
+            />
+
+            <DeleteConfirmationModal
+              open={deleteModalOpen}
+              onOpenChange={setDeleteModalOpen}
+              onConfirm={() => {
+                if (selectedSong) {
+                  const updated = allSongs.filter(s => s.id !== selectedSong.id);
+                  setAllSongs(updated);
+                  setFilteredSongs(updated);
+                  setDeleteModalOpen(false);
+                  setSelectedSong(null);
+                  toast({
+                    title: "Música Excluída",
+                    description: "A música foi removida com sucesso.",
+                  });
+                }
+              }}
+              title="Excluir Música"
+              description={`Tem certeza que deseja excluir a música "${selectedSong?.title}"? Esta ação não pode ser desfeita.`}
             />
           </div>
         </SidebarInset>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CheckSquare, FileText } from "lucide-react";
 import { AgendaEventModal } from "@/components/modals/AgendaEventModal";
+import { AgendaViewModal } from "@/components/modals/AgendaViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns";
@@ -32,7 +33,9 @@ interface AgendaEvent {
 
 const Agenda = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | undefined>();
+  const [eventToView, setEventToView] = useState<AgendaEvent | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<AgendaEvent | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,6 +55,11 @@ const Agenda = () => {
   const handleEditEvent = (event: AgendaEvent) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
+  };
+
+  const handleViewEvent = (event: AgendaEvent) => {
+    setEventToView(event);
+    setIsViewModalOpen(true);
   };
 
   const handleDeleteEvent = (event: AgendaEvent) => {
@@ -316,6 +324,7 @@ const Agenda = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
+                                  onClick={() => handleViewEvent(event)}
                                 >
                                   Ver
                                 </Button>
@@ -347,6 +356,12 @@ const Agenda = () => {
       </div>
 
       {/* Modals */}
+      <AgendaViewModal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        event={eventToView}
+      />
+
       <AgendaEventModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
