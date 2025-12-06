@@ -572,7 +572,7 @@ export function PhonogramForm({
             
             return (
               <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
-                <div className="col-span-6">
+                <div className="col-span-7">
                   <FormField control={form.control} name={`${fieldName}.${index}.name`} render={({
                     field: formField
                   }) => (
@@ -651,7 +651,7 @@ export function PhonogramForm({
                     </FormItem>
                   )} />
                 </div>
-                <div className="col-span-4">
+                <div className="col-span-3">
                   <FormField control={form.control} name={`${fieldName}.${index}.percentage`} render={({
                     field
                   }) => <FormItem>
@@ -661,7 +661,7 @@ export function PhonogramForm({
                         </FormControl>
                       </FormItem>} />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-2 flex justify-end">
                   <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                     <Trash2Icon className="h-4 w-4 text-destructive" />
                   </Button>
