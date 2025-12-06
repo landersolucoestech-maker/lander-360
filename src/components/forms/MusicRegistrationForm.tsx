@@ -372,7 +372,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gênero *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o gênero" />
