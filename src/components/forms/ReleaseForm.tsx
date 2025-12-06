@@ -64,14 +64,14 @@ interface ReleaseFormProps {
   onCancel?: () => void;
 }
 
-const platformOptions = [
-  { id: 'spotify', label: 'Spotify' },
-  { id: 'apple_music', label: 'Apple Music' },
-  { id: 'youtube_music', label: 'YouTube Music' },
-  { id: 'deezer', label: 'Deezer' },
-  { id: 'amazon_music', label: 'Amazon Music' },
-  { id: 'tidal', label: 'Tidal' },
-  { id: 'soundcloud', label: 'SoundCloud' },
+const distributorOptions = [
+  { id: 'onerpm', label: 'ONErpm' },
+  { id: 'distrokid', label: 'DistroKid' },
+  { id: '30por1', label: '30por1' },
+  { id: 'believe', label: 'Believe' },
+  { id: 'tunecore', label: 'TuneCore' },
+  { id: 'cd_baby', label: 'CD Baby' },
+  { id: 'outras_distribuidoras', label: 'Outras' },
 ];
 
 // Componente para gerenciar lista de strings múltiplas
@@ -153,7 +153,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
       release_type: release?.release_type || undefined,
       release_date: release?.release_date || '',
       status: release?.status || 'em_analise',
-      platforms: release?.platforms || ['spotify', 'apple_music', 'youtube_music', 'deezer'],
+      platforms: release?.platforms || ['onerpm'],
       distribution_notes: release?.distribution_notes || '',
       genre: release?.genre || '',
       language: release?.language || '',
@@ -921,36 +921,36 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
               render={() => (
                 <FormItem>
                   <div className="mb-4">
-                    <FormLabel className="text-base">Plataformas de Distribuição</FormLabel>
+                    <FormLabel className="text-base">Distribuidoras</FormLabel>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {platformOptions.map((platform) => (
+                    {distributorOptions.map((distributor) => (
                       <FormField
-                        key={platform.id}
+                        key={distributor.id}
                         control={form.control}
                         name="platforms"
                         render={({ field }) => {
                           return (
                             <FormItem
-                              key={platform.id}
+                              key={distributor.id}
                               className="flex flex-row items-start space-x-3 space-y-0"
                             >
                               <FormControl>
                                 <Checkbox
-                                  checked={field.value?.includes(platform.id)}
+                                  checked={field.value?.includes(distributor.id)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...field.value, platform.id])
+                                      ? field.onChange([...field.value, distributor.id])
                                       : field.onChange(
                                           field.value?.filter(
-                                            (value) => value !== platform.id
+                                            (value) => value !== distributor.id
                                           )
                                         );
                                   }}
                                 />
                               </FormControl>
                               <FormLabel className="font-normal">
-                                {platform.label}
+                                {distributor.label}
                               </FormLabel>
                             </FormItem>
                           );
