@@ -1006,124 +1006,126 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name={`participants.${index}.contract_start_date`}
-                          render={({ field }) => {
-                            const [dateMode, setDateMode] = React.useState<'select' | 'type'>('select');
-                            const [dayValue, setDayValue] = React.useState('');
-                            const [monthValue, setMonthValue] = React.useState('');
-                            const [yearValue, setYearValue] = React.useState('');
+                        {form.watch(`participants.${index}.role`) === 'editor' && (
+                          <FormField
+                            control={form.control}
+                            name={`participants.${index}.contract_start_date`}
+                            render={({ field }) => {
+                              const [dateMode, setDateMode] = React.useState<'select' | 'type'>('select');
+                              const [dayValue, setDayValue] = React.useState('');
+                              const [monthValue, setMonthValue] = React.useState('');
+                              const [yearValue, setYearValue] = React.useState('');
 
-                            // Parse existing value
-                            React.useEffect(() => {
-                              if (field.value && field.value.length === 10) {
-                                const [y, m, d] = field.value.split('-');
-                                setYearValue(y);
-                                setMonthValue(m);
-                                setDayValue(d);
-                              }
-                            }, []);
+                              // Parse existing value
+                              React.useEffect(() => {
+                                if (field.value && field.value.length === 10) {
+                                  const [y, m, d] = field.value.split('-');
+                                  setYearValue(y);
+                                  setMonthValue(m);
+                                  setDayValue(d);
+                                }
+                              }, []);
 
-                            const handleDateChange = (day: string, month: string, year: string) => {
-                              setDayValue(day);
-                              setMonthValue(month);
-                              setYearValue(year);
-                              if (day && month && year && year.length === 4) {
-                                field.onChange(`${year}-${month}-${day.padStart(2, '0')}`);
-                              }
-                            };
+                              const handleDateChange = (day: string, month: string, year: string) => {
+                                setDayValue(day);
+                                setMonthValue(month);
+                                setYearValue(year);
+                                if (day && month && year && year.length === 4) {
+                                  field.onChange(`${year}-${month}-${day.padStart(2, '0')}`);
+                                }
+                              };
 
-                            const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+                              const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
-                            return (
-                              <FormItem>
-                                <FormLabel>Início Contrato</FormLabel>
-                                <div className="space-y-2">
-                                  <div className="flex gap-1">
-                                    <Button
-                                      type="button"
-                                      variant={dateMode === 'select' ? 'default' : 'outline'}
-                                      size="sm"
-                                      className="h-6 text-xs px-2"
-                                      onClick={() => setDateMode('select')}
-                                    >
-                                      Selecionar
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant={dateMode === 'type' ? 'default' : 'outline'}
-                                      size="sm"
-                                      className="h-6 text-xs px-2"
-                                      onClick={() => setDateMode('type')}
-                                    >
-                                      Digitar
-                                    </Button>
-                                  </div>
-                                  <FormControl>
-                                    {dateMode === 'select' ? (
-                                      <div className="flex gap-1">
-                                        <Select
-                                          value={dayValue}
-                                          onValueChange={(val) => handleDateChange(val, monthValue, yearValue)}
-                                        >
-                                          <SelectTrigger className="w-[55px] px-2">
-                                            <SelectValue placeholder="Dia" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {days.map((d) => (
-                                              <SelectItem key={d} value={d}>{d}</SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                        <Select
-                                          value={monthValue}
-                                          onValueChange={(val) => handleDateChange(dayValue, val, yearValue)}
-                                        >
-                                          <SelectTrigger className="w-[60px] px-2">
-                                            <SelectValue placeholder="Mês" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="01">Jan</SelectItem>
-                                            <SelectItem value="02">Fev</SelectItem>
-                                            <SelectItem value="03">Mar</SelectItem>
-                                            <SelectItem value="04">Abr</SelectItem>
-                                            <SelectItem value="05">Mai</SelectItem>
-                                            <SelectItem value="06">Jun</SelectItem>
-                                            <SelectItem value="07">Jul</SelectItem>
-                                            <SelectItem value="08">Ago</SelectItem>
-                                            <SelectItem value="09">Set</SelectItem>
-                                            <SelectItem value="10">Out</SelectItem>
-                                            <SelectItem value="11">Nov</SelectItem>
-                                            <SelectItem value="12">Dez</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                        <Input
-                                          type="text"
-                                          placeholder="Ano"
-                                          maxLength={4}
-                                          className="w-[60px] px-2"
-                                          value={yearValue}
-                                          onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, '');
-                                            handleDateChange(dayValue, monthValue, val);
-                                          }}
+                              return (
+                                <FormItem>
+                                  <FormLabel>Início Contrato</FormLabel>
+                                  <div className="space-y-2">
+                                    <div className="flex gap-1">
+                                      <Button
+                                        type="button"
+                                        variant={dateMode === 'select' ? 'default' : 'outline'}
+                                        size="sm"
+                                        className="h-6 text-xs px-2"
+                                        onClick={() => setDateMode('select')}
+                                      >
+                                        Selecionar
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant={dateMode === 'type' ? 'default' : 'outline'}
+                                        size="sm"
+                                        className="h-6 text-xs px-2"
+                                        onClick={() => setDateMode('type')}
+                                      >
+                                        Digitar
+                                      </Button>
+                                    </div>
+                                    <FormControl>
+                                      {dateMode === 'select' ? (
+                                        <div className="flex gap-1">
+                                          <Select
+                                            value={dayValue}
+                                            onValueChange={(val) => handleDateChange(val, monthValue, yearValue)}
+                                          >
+                                            <SelectTrigger className="w-[55px] px-2">
+                                              <SelectValue placeholder="Dia" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {days.map((d) => (
+                                                <SelectItem key={d} value={d}>{d}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                          <Select
+                                            value={monthValue}
+                                            onValueChange={(val) => handleDateChange(dayValue, val, yearValue)}
+                                          >
+                                            <SelectTrigger className="w-[60px] px-2">
+                                              <SelectValue placeholder="Mês" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="01">Jan</SelectItem>
+                                              <SelectItem value="02">Fev</SelectItem>
+                                              <SelectItem value="03">Mar</SelectItem>
+                                              <SelectItem value="04">Abr</SelectItem>
+                                              <SelectItem value="05">Mai</SelectItem>
+                                              <SelectItem value="06">Jun</SelectItem>
+                                              <SelectItem value="07">Jul</SelectItem>
+                                              <SelectItem value="08">Ago</SelectItem>
+                                              <SelectItem value="09">Set</SelectItem>
+                                              <SelectItem value="10">Out</SelectItem>
+                                              <SelectItem value="11">Nov</SelectItem>
+                                              <SelectItem value="12">Dez</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <Input
+                                            type="text"
+                                            placeholder="Ano"
+                                            maxLength={4}
+                                            className="w-[60px] px-2"
+                                            value={yearValue}
+                                            onChange={(e) => {
+                                              const val = e.target.value.replace(/\D/g, '');
+                                              handleDateChange(dayValue, monthValue, val);
+                                            }}
+                                          />
+                                        </div>
+                                      ) : (
+                                        <Input 
+                                          type="date" 
+                                          {...field} 
+                                          value={field.value || ''} 
                                         />
-                                      </div>
-                                    ) : (
-                                      <Input 
-                                        type="date" 
-                                        {...field} 
-                                        value={field.value || ''} 
-                                      />
-                                    )}
-                                  </FormControl>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            );
-                          }}
-                        />
+                                      )}
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        )}
                         <FormField
                           control={form.control}
                           name={`participants.${index}.percentage`}
