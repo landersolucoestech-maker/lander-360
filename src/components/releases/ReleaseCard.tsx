@@ -84,7 +84,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
             </Badge>
           ) : release.approvalStatus === 'pendente' ? (
             <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">
-              PENDENTE
+              EM ANÁLISE
             </Badge>
           ) : release.approvalStatus === 'aceita' ? (
             <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">
