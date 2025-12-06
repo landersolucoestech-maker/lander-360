@@ -150,6 +150,14 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             form.setValue('artist_id', selectedProject.artist_id);
           }
 
+          // Set duration from project
+          if (firstSong.duration_minutes !== undefined) {
+            form.setValue('duration_minutes', firstSong.duration_minutes);
+          }
+          if (firstSong.duration_seconds !== undefined) {
+            form.setValue('duration_seconds', firstSong.duration_seconds);
+          }
+
           // Set lyrics
           if (firstSong.lyrics) {
             form.setValue('lyrics', firstSong.lyrics);
