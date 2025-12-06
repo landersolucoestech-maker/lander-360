@@ -405,7 +405,7 @@ export default function Auth() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -418,7 +418,7 @@ export default function Auth() {
         <div className="w-full max-w-md space-y-8">
           {/* Welcome Text */}
           <div className="text-center">
-            <h1 className="text-xl font-bold tracking-wider text-primary-foreground">
+            <h1 className="text-xl font-bold tracking-wider text-white">
               SEJA BEM VINDO!
             </h1>
           </div>
@@ -453,7 +453,7 @@ export default function Auth() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-primary-foreground mb-2">
+                    <h2 className="text-lg font-semibold text-white mb-2">
                       E-mail Enviado!
                     </h2>
                     <p className="text-sm text-gray-400">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSafe } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getSessionSettings } from '@/hooks/useSessionSettings';
 
@@ -11,7 +11,9 @@ const EXPIRY_CHECK_INTERVAL_MS = 60 * 1000;
 
 export function useSessionActivity() {
   const [sessionSettings, setSessionSettings] = useState(getSessionSettings);
-  const { user, signOut } = useAuth();
+  const auth = useAuthSafe();
+  const user = auth?.user;
+  const signOut = auth?.signOut;
   const { toast } = useToast();
   const lastActivityRef = useRef<Date>(new Date());
   const sessionTokenRef = useRef<string | null>(null);
@@ -99,7 +101,7 @@ export function useSessionActivity() {
         });
 
         // Sign out user
-        await signOut();
+        if (signOut) await signOut();
       } catch (error) {
         console.error('Error expiring session:', error);
       }
