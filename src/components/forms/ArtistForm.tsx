@@ -489,161 +489,60 @@ export function ArtistForm({
 
               <FormField control={form.control} name="birth_date" render={({
               field
-            }) => {
-              const currentYear = new Date().getFullYear();
-              const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
-              const months = [
-                { value: 0, label: 'Janeiro' },
-                { value: 1, label: 'Fevereiro' },
-                { value: 2, label: 'Março' },
-                { value: 3, label: 'Abril' },
-                { value: 4, label: 'Maio' },
-                { value: 5, label: 'Junho' },
-                { value: 6, label: 'Julho' },
-                { value: 7, label: 'Agosto' },
-                { value: 8, label: 'Setembro' },
-                { value: 9, label: 'Outubro' },
-                { value: 10, label: 'Novembro' },
-                { value: 11, label: 'Dezembro' },
-              ];
-              
-              const selectedMonth = field.value ? field.value.getMonth() : undefined;
-              const selectedYear = field.value ? field.value.getFullYear() : undefined;
-              const selectedDay = field.value ? field.value.getDate() : undefined;
-              
-              const getDaysInMonth = (month: number, year: number) => {
-                return new Date(year, month + 1, 0).getDate();
-              };
-              
-              const days = selectedMonth !== undefined && selectedYear 
-                ? Array.from({ length: getDaysInMonth(selectedMonth, selectedYear) }, (_, i) => i + 1)
-                : Array.from({ length: 31 }, (_, i) => i + 1);
-              
-              const handleDatePartChange = (part: 'day' | 'month' | 'year', value: number) => {
-                const currentDate = field.value || new Date();
-                let newDay = part === 'day' ? value : (selectedDay || 1);
-                let newMonth = part === 'month' ? value : (selectedMonth ?? 0);
-                let newYear = part === 'year' ? value : (selectedYear || currentYear);
-                
-                // Ajustar dia se exceder dias do mês
-                const maxDays = getDaysInMonth(newMonth, newYear);
-                if (newDay > maxDays) newDay = maxDays;
-                
-                const newDate = new Date(newYear, newMonth, newDay);
-                if (newDate <= new Date() && newDate >= new Date("1900-01-01")) {
-                  field.onChange(newDate);
-                }
-              };
-
-              return (
+            }) => (
                 <FormItem>
                   <FormLabel>Data de Nascimento</FormLabel>
-                  <div className="space-y-2">
-                    {/* Input para digitar */}
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input 
-                          type="text"
-                          placeholder="DD/MM/AAAA"
-                          className="flex-1"
-                          value={field.value ? format(field.value, "dd/MM/yyyy") : ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            let formatted = value.replace(/\D/g, '');
-                            if (formatted.length >= 2) {
-                              formatted = formatted.slice(0, 2) + '/' + formatted.slice(2);
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input 
+                        type="text"
+                        placeholder="DD/MM/AAAA"
+                        className="flex-1"
+                        value={field.value ? format(field.value, "dd/MM/yyyy") : ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          let formatted = value.replace(/\D/g, '');
+                          if (formatted.length >= 2) {
+                            formatted = formatted.slice(0, 2) + '/' + formatted.slice(2);
+                          }
+                          if (formatted.length >= 5) {
+                            formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+                          }
+                          e.target.value = formatted;
+                          
+                          if (formatted.length === 10) {
+                            const [day, month, year] = formatted.split('/').map(Number);
+                            const date = new Date(year, month - 1, day);
+                            if (!isNaN(date.getTime()) && date <= new Date() && date >= new Date("1900-01-01")) {
+                              field.onChange(date);
                             }
-                            if (formatted.length >= 5) {
-                              formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
-                            }
-                            e.target.value = formatted;
-                            
-                            if (formatted.length === 10) {
-                              const [day, month, year] = formatted.split('/').map(Number);
-                              const date = new Date(year, month - 1, day);
-                              if (!isNaN(date.getTime()) && date <= new Date() && date >= new Date("1900-01-01")) {
-                                field.onChange(date);
-                              }
-                            } else if (value === '') {
-                              field.onChange(undefined);
-                            }
-                          }}
+                          } else if (value === '') {
+                            field.onChange(undefined);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button type="button" variant="outline" size="icon">
+                          <CalendarIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar 
+                          mode="single" 
+                          selected={field.value} 
+                          onSelect={field.onChange} 
+                          disabled={date => date > new Date() || date < new Date("1900-01-01")} 
+                          initialFocus 
+                          className={cn("p-3 pointer-events-auto")} 
                         />
-                      </FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button type="button" variant="outline" size="icon">
-                            <CalendarIcon className="h-4 w-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar 
-                            mode="single" 
-                            selected={field.value} 
-                            onSelect={field.onChange} 
-                            disabled={date => date > new Date() || date < new Date("1900-01-01")} 
-                            initialFocus 
-                            className={cn("p-3 pointer-events-auto")} 
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    
-                    {/* Seletores de Dia, Mês e Ano */}
-                    <div className="grid grid-cols-3 gap-2">
-                      <Select 
-                        value={selectedDay?.toString()} 
-                        onValueChange={(value) => handleDatePartChange('day', parseInt(value))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Dia" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-48">
-                          {days.map(day => (
-                            <SelectItem key={day} value={day.toString()}>
-                              {day.toString().padStart(2, '0')}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      <Select 
-                        value={selectedMonth?.toString()} 
-                        onValueChange={(value) => handleDatePartChange('month', parseInt(value))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Mês" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-48">
-                          {months.map(month => (
-                            <SelectItem key={month.value} value={month.value.toString()}>
-                              {month.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      <Select 
-                        value={selectedYear?.toString()} 
-                        onValueChange={(value) => handleDatePartChange('year', parseInt(value))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Ano" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-48">
-                          {years.map(year => (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <FormMessage />
                 </FormItem>
-              );
-            }} />
+              )} />
 
               <FormField control={form.control} name="cpf_cnpj" render={({
               field
