@@ -108,7 +108,7 @@ const PerfilUsuario = () => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 space-y-6">
+          <div className="w-full h-full px-4 py-4 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
