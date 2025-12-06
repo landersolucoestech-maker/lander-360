@@ -60,9 +60,7 @@ const phonogramSchema = z.object({
   musicians: z.array(participantSchema).optional(),
   // Áudio e Termos
   audio_file: z.any().optional(),
-  accept_terms: z.boolean().refine(val => val === true, {
-    message: "Você deve aceitar os termos de uso"
-  })
+  accept_terms: z.boolean().optional()
 });
 type PhonogramFormData = z.infer<typeof phonogramSchema>;
 interface PhonogramFormProps {
