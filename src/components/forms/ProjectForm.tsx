@@ -10,6 +10,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ProjectInsert, ProjectUpdate } from '@/types/database';
 import { useCreateProject, useUpdateProject } from '@/hooks/useProjects';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { AudioUploader } from './AudioUploader';
+
+const audioFileSchema = z.object({
+  name: z.string().optional(),
+  url: z.string().optional(),
+  size: z.number().optional(),
+  path: z.string().optional(),
+});
 
 const songSchema = z.object({
   song_name: z.string().min(1, 'Nome da música é obrigatório'),
@@ -22,7 +30,7 @@ const songSchema = z.object({
   performers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um intérprete é obrigatório'),
   producers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um produtor é obrigatório'),
   lyrics: z.string().optional(),
-  audio_files: z.array(z.string()).optional(),
+  audio_files: z.array(audioFileSchema).optional(),
 });
 
 const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Coreano', 'Mandarim', 'Instrumental', 'Multilíngue', 'Outro'];
@@ -352,17 +360,24 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                 )}
               />
 
-              <div className="space-y-4">
-                <FormLabel>Arquivos de Áudio (MP3/WAV)</FormLabel>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Clique para selecionar arquivos ou arraste e solte aqui
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Formatos aceitos: MP3, WAV
-                  </p>
-                </div>
-              </div>
+              <FormField
+                control={form.control}
+                name={`songs.${songIndex}.audio_files`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Arquivos de Áudio (MP3/WAV)</FormLabel>
+                    <FormControl>
+                      <AudioUploader
+                        files={field.value || []}
+                        onChange={field.onChange}
+                        projectId={project?.id}
+                        songIndex={songIndex}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           ))}
         </div>
