@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Shield, Phone, Building2, Camera, Save, X, Edit2 } from "lucide-react";
+import { User, Mail, Shield, Phone, Building2, Camera, Save, X, Edit2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileData {
   name: string;
@@ -25,17 +27,77 @@ interface ProfileData {
 
 const PerfilUsuario = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: "Administrador",
-    email: "admin@lander360.com",
-    phone: "(11) 99999-9999",
-    sector: "Gestão",
-    role: "admin",
-    bio: "Administrador do sistema Lander 360º, responsável pela gestão completa da plataforma.",
+    name: "",
+    email: "",
+    phone: "",
+    sector: "",
+    role: "user",
+    bio: "",
     avatarUrl: ""
   });
   const [editData, setEditData] = useState<ProfileData>(profileData);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      // Fetch profile data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error fetching profile:', profileError);
+      }
+
+      // Fetch user role
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.error('Error fetching role:', roleError);
+      }
+
+      const newProfileData: ProfileData = {
+        name: profile?.full_name || user.user_metadata?.full_name || "",
+        email: user.email || "",
+        phone: profile?.phone || "",
+        sector: profile?.sector || "",
+        role: roleData?.role || "user",
+        bio: "",
+        avatarUrl: profile?.avatar_url || ""
+      };
+
+      setProfileData(newProfileData);
+      setEditData(newProfileData);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os dados do perfil",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleEdit = () => {
     setEditData(profileData);
@@ -47,7 +109,9 @@ const PerfilUsuario = () => {
     setIsEditing(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user) return;
+
     // Validação básica
     if (!editData.name.trim()) {
       toast({
@@ -57,24 +121,44 @@ const PerfilUsuario = () => {
       });
       return;
     }
-    if (!editData.email.trim() || !editData.email.includes("@")) {
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: editData.name.trim(),
+          phone: editData.phone.trim() || null,
+          sector: editData.sector || null,
+          avatar_url: editData.avatarUrl || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setProfileData(editData);
+      setIsEditing(false);
       toast({
-        title: "Erro",
-        description: "Email inválido",
+        title: "Perfil atualizado",
+        description: "Suas informações foram salvas com sucesso"
+      });
+    } catch (error: any) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: error.message || "Não foi possível salvar as alterações",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsSaving(false);
     }
-
-    setProfileData(editData);
-    setIsEditing(false);
-    toast({
-      title: "Perfil atualizado",
-      description: "Suas informações foram salvas com sucesso"
-    });
   };
 
   const getInitials = (name: string) => {
+    if (!name) return "U";
     return name
       .split(" ")
       .map(n => n[0])
@@ -103,6 +187,21 @@ const PerfilUsuario = () => {
     "Administrativo"
   ];
 
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <SidebarInset className="flex-1">
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -121,12 +220,16 @@ const PerfilUsuario = () => {
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleCancel} className="gap-2">
+                  <Button variant="outline" onClick={handleCancel} className="gap-2" disabled={isSaving}>
                     <X className="h-4 w-4" />
                     Cancelar
                   </Button>
-                  <Button onClick={handleSave} className="gap-2">
-                    <Save className="h-4 w-4" />
+                  <Button onClick={handleSave} className="gap-2" disabled={isSaving}>
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
                     Salvar
                   </Button>
                 </div>
@@ -157,10 +260,10 @@ const PerfilUsuario = () => {
                       </Button>
                     )}
                   </div>
-                  <CardTitle>{isEditing ? editData.name : profileData.name}</CardTitle>
+                  <CardTitle>{isEditing ? editData.name : profileData.name || "Usuário"}</CardTitle>
                   <CardDescription className="flex items-center justify-center gap-2">
                     <Mail className="h-4 w-4" />
-                    {isEditing ? editData.email : profileData.email}
+                    {profileData.email}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -169,20 +272,20 @@ const PerfilUsuario = () => {
                       <span className="text-sm font-medium">Função:</span>
                       <Badge variant="outline" className="gap-1">
                         <Shield className="h-3 w-3" />
-                        {getRoleLabel(isEditing ? editData.role : profileData.role)}
+                        {getRoleLabel(profileData.role)}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Setor:</span>
                       <Badge variant="secondary">
                         <Building2 className="h-3 w-3 mr-1" />
-                        {isEditing ? editData.sector : profileData.sector}
+                        {(isEditing ? editData.sector : profileData.sector) || "Não definido"}
                       </Badge>
                     </div>
                     <Separator />
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="h-4 w-4" />
-                      {isEditing ? editData.phone : profileData.phone}
+                      {(isEditing ? editData.phone : profileData.phone) || "Não informado"}
                     </div>
                   </div>
                 </CardContent>
@@ -211,22 +314,15 @@ const PerfilUsuario = () => {
                           placeholder="Seu nome completo"
                         />
                       ) : (
-                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.name}</p>
+                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.name || "Não informado"}</p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="email">E-mail</Label>
-                      {isEditing ? (
-                        <Input
-                          id="email"
-                          type="email"
-                          value={editData.email}
-                          onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                          placeholder="seu@email.com"
-                        />
-                      ) : (
-                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.email}</p>
+                      <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.email}</p>
+                      {isEditing && (
+                        <p className="text-xs text-muted-foreground">O e-mail não pode ser alterado</p>
                       )}
                     </div>
 
@@ -240,7 +336,7 @@ const PerfilUsuario = () => {
                           placeholder="(11) 99999-9999"
                         />
                       ) : (
-                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.phone}</p>
+                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.phone || "Não informado"}</p>
                       )}
                     </div>
 
@@ -263,43 +359,15 @@ const PerfilUsuario = () => {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.sector}</p>
+                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.sector || "Não definido"}</p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="role">Nível de Acesso</Label>
-                      {isEditing ? (
-                        <Select
-                          value={editData.role}
-                          onValueChange={(value) => setEditData({ ...editData, role: value })}
-                        >
-                          <SelectTrigger id="role">
-                            <SelectValue placeholder="Selecione o nível" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Administrador</SelectItem>
-                            <SelectItem value="manager">Gerente</SelectItem>
-                            <SelectItem value="user">Usuário</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{getRoleLabel(profileData.role)}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="bio">Biografia</Label>
-                      {isEditing ? (
-                        <Textarea
-                          id="bio"
-                          value={editData.bio}
-                          onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                          placeholder="Uma breve descrição sobre você..."
-                          rows={4}
-                        />
-                      ) : (
-                        <p className="text-sm py-2 px-3 bg-muted rounded-md min-h-[80px]">{profileData.bio}</p>
+                      <p className="text-sm py-2 px-3 bg-muted rounded-md">{getRoleLabel(profileData.role)}</p>
+                      {isEditing && (
+                        <p className="text-xs text-muted-foreground">O nível de acesso é definido pelo administrador</p>
                       )}
                     </div>
                   </div>
