@@ -99,19 +99,46 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
     try {
       // Atualizar nome do projeto baseado no primeiro nome da música
       const firstSong = data.songs[0];
-      const projectData = {
-        ...data,
+      
+      // Preparar os dados das músicas com arquivos de áudio para salvar no banco
+      const songsData = data.songs.map(song => ({
+        song_name: song.song_name,
+        collaboration_type: song.collaboration_type,
+        track_type: song.track_type,
+        instrumental: song.instrumental,
+        genre: song.genre,
+        language: song.language,
+        composers: song.composers,
+        performers: song.performers,
+        producers: song.producers,
+        lyrics: song.lyrics,
+        audio_files: song.audio_files || [],
+      }));
+
+      // Criar objeto apenas com campos válidos da tabela projects
+      const projectData: any = {
         name: firstSong.song_name,
         description: `${data.release_type} - ${firstSong.song_name} (${firstSong.genre})`,
+        status: data.status,
+        audio_files: JSON.stringify({
+          release_type: data.release_type,
+          songs: songsData,
+          observations: data.observations,
+        }),
       };
+
+      // Apenas incluir created_by se for um novo projeto
+      if (!project) {
+        projectData.created_by = data.created_by;
+      }
 
       if (project) {
         await updateProject.mutateAsync({
           id: project.id,
-          data: projectData as ProjectUpdate,
+          data: projectData,
         });
       } else {
-        await createProject.mutateAsync(projectData as ProjectInsert);
+        await createProject.mutateAsync(projectData);
       }
       
       onSuccess?.();
