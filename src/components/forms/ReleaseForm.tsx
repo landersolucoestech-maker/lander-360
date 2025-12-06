@@ -17,6 +17,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
 import { useMusicRegistry } from '@/hooks/useMusicRegistry';
 import { usePhonograms } from '@/hooks/usePhonograms';
+import { useCreateRelease, useUpdateRelease } from '@/hooks/useReleases';
 
 const trackSchema = z.object({
   title: z.string().min(1, 'Título da faixa é obrigatório'),
@@ -142,6 +143,8 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const { data: artists = [] } = useArtists();
   const { data: musicRegistry = [] } = useMusicRegistry();
   const { data: phonograms = [] } = usePhonograms();
+  const createRelease = useCreateRelease();
+  const updateRelease = useUpdateRelease();
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   
   const form = useForm<ReleaseFormData>({
@@ -207,6 +210,25 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
       if (projectArtist) {
         const artistDisplayName = projectArtist.stage_name || projectArtist.name || '';
         form.setValue('artist_name', artistDisplayName);
+        
+        // Auto-select artist's distributors
+        if (projectArtist.distributors && projectArtist.distributors.length > 0) {
+          // Map distributor names to form values
+          const distributorMap: Record<string, string> = {
+            'ONErpm': 'onerpm',
+            'DistroKid': 'distrokid',
+            '30por1': '30por1',
+            'Believe': 'believe',
+            'TuneCore': 'tunecore',
+            'CD Baby': 'cd_baby',
+          };
+          const mappedDistributors = projectArtist.distributors
+            .map((d: string) => distributorMap[d] || d.toLowerCase())
+            .filter(Boolean);
+          if (mappedDistributors.length > 0) {
+            form.setValue('platforms', mappedDistributors);
+          }
+        }
       }
       
       // Get songs data
@@ -346,15 +368,35 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
 
   const onSubmit = async (data: ReleaseFormData) => {
     try {
-      // TODO: Implementar salvamento no Supabase
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      // Find the artist_id from the selected project
+      const projectArtist = artists.find(a => 
+        a.stage_name === data.artist_name || a.name === data.artist_name
+      );
       
-      toast({
-        title: "Lançamento salvo",
-        description: "O lançamento foi salvo com sucesso!",
-      });
+      const releaseData = {
+        title: data.release_title,
+        artist_id: projectArtist?.id || selectedProject?.artist_id || null,
+        release_type: data.release_type || 'single',
+        type: data.release_type || 'single',
+        release_date: data.release_date || null,
+        status: data.status === 'aprovado' ? 'released' : 
+                data.status === 'rejeitado' ? 'cancelled' : 
+                data.status === 'pausado' ? 'paused' : 'planning',
+        cover_url: data.cover_art || null,
+      };
+      
+      if (release?.id) {
+        await updateRelease.mutateAsync({
+          id: release.id,
+          data: releaseData
+        });
+      } else {
+        await createRelease.mutateAsync(releaseData);
+      }
+      
       onSuccess?.();
     } catch (error) {
+      console.error('Error saving release:', error);
       toast({
         title: "Erro",
         description: "Erro ao salvar lançamento.",
