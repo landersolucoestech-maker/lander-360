@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe, Mail, ArrowLeft, CheckCircle, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MFAVerification } from '@/components/auth/MFAVerification';
-import authBackground from '@/assets/auth-background.jpeg';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -117,7 +116,6 @@ export default function Auth() {
           const remainingMinutes = Math.ceil(remainingMs / (1000 * 60));
           return { locked: true, remainingMinutes };
         } else {
-          // Lockout expired, reset attempts
           await supabase
             .from("login_attempts")
             .delete()
@@ -135,18 +133,12 @@ export default function Auth() {
 
   const sendLockoutNotification = async (email: string) => {
     try {
-      const response = await supabase.functions.invoke("send-lockout-notification", {
+      await supabase.functions.invoke("send-lockout-notification", {
         body: {
           email: email,
           lockoutDurationMinutes: LOCKOUT_DURATION_MINUTES
         }
       });
-      
-      if (response.error) {
-        console.error("Error sending lockout notification:", response.error);
-      } else {
-        console.log("Lockout notification sent to:", email);
-      }
     } catch (error) {
       console.error("Error calling lockout notification function:", error);
     }
@@ -178,7 +170,6 @@ export default function Auth() {
             })
             .eq("email", normalizedEmail);
           
-          // Send lockout notification email
           sendLockoutNotification(normalizedEmail);
           
           return { attemptsRemaining: 0, locked: true };
@@ -223,11 +214,9 @@ export default function Auth() {
 
   const checkMFARequired = async (userId: string, userEmail: string): Promise<boolean> => {
     try {
-      // Check TOTP factors
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const hasTotp = factors?.totp?.some(f => f.status === "verified") || false;
 
-      // Check email 2FA settings
       const { data: settings } = await supabase
         .from("user_2fa_settings")
         .select("email_2fa_enabled")
@@ -259,7 +248,6 @@ export default function Auth() {
     setLockoutInfo(null);
     
     try {
-      // Check if account is locked
       const lockStatus = await checkAccountLocked(data.email);
       if (lockStatus.locked) {
         setLockoutInfo(lockStatus);
@@ -298,10 +286,8 @@ export default function Auth() {
           });
         }
       } else {
-        // Login successful, clear attempts
         await clearLoginAttempts(data.email);
         
-        // Get the current user to check MFA
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const mfaRequired = await checkMFARequired(user.id, user.email || data.email);
@@ -392,7 +378,6 @@ export default function Auth() {
   };
 
   const handleMFACancel = async () => {
-    // Sign out and reset state
     await supabase.auth.signOut();
     setMfaState({
       required: false,
@@ -406,7 +391,7 @@ export default function Auth() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
       </div>
     );
   }
@@ -418,7 +403,7 @@ export default function Auth() {
         <div className="w-full max-w-md space-y-8">
           {/* Welcome Text */}
           <div className="text-center">
-            <h1 className="text-xl font-bold tracking-wider text-primary-foreground">
+            <h1 className="text-xl font-bold tracking-wider text-white">
               SEJA BEM VINDO!
             </h1>
           </div>
@@ -444,7 +429,6 @@ export default function Auth() {
                 userId={mfaState.userId}
               />
             ) : authMode === "forgot-password" ? (
-              // Forgot Password Form
               resetEmailSent ? (
                 <div className="text-center space-y-6">
                   <div className="flex justify-center">
@@ -453,7 +437,7 @@ export default function Auth() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-primary-foreground mb-2">
+                    <h2 className="text-lg font-semibold text-white mb-2">
                       E-mail Enviado!
                     </h2>
                     <p className="text-sm text-gray-400">
@@ -515,7 +499,6 @@ export default function Auth() {
                 </Form>
               )
             ) : authMode === "login" ? (
-              // Login Form
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                   {lockoutInfo?.locked && (
@@ -588,7 +571,6 @@ export default function Auth() {
                 </form>
               </Form>
             ) : (
-              // Signup Form
               <Form {...signupForm}>
                 <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                   <FormField 
@@ -689,7 +671,7 @@ export default function Auth() {
             )}
           </div>
 
-          {/* Toggle Mode & Forgot Password - Hide during MFA */}
+          {/* Toggle Mode & Forgot Password */}
           {!mfaState.required && authMode !== "forgot-password" && (
             <div className="text-center space-y-3">
               {authMode === "login" ? (
@@ -697,7 +679,7 @@ export default function Auth() {
                   <button 
                     type="button" 
                     onClick={() => setAuthMode("forgot-password")} 
-                    className="text-sm font-medium underline text-primary-foreground"
+                    className="text-sm font-medium underline text-white"
                   >
                     Esqueci minha senha
                   </button>
@@ -715,7 +697,7 @@ export default function Auth() {
                 <button 
                   type="button" 
                   onClick={() => setAuthMode("login")} 
-                  className="text-sm font-medium underline text-primary-foreground"
+                  className="text-sm font-medium underline text-white"
                 >
                   Já tenho uma conta
                 </button>
@@ -723,13 +705,12 @@ export default function Auth() {
             </div>
           )}
 
-          {/* Back to login for forgot password */}
           {authMode === "forgot-password" && !resetEmailSent && (
             <div className="text-center">
               <button 
                 type="button" 
                 onClick={() => setAuthMode("login")} 
-                className="text-sm font-medium underline text-primary-foreground"
+                className="text-sm font-medium underline text-white"
               >
                 Voltar ao login
               </button>
@@ -738,16 +719,16 @@ export default function Auth() {
 
           {/* Social Icons */}
           <div className="flex justify-center gap-6 pt-4">
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <a href="#" className="text-gray-500 hover:text-gray-300 transition-colors">
               <Facebook className="h-5 w-5" />
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <a href="#" className="text-gray-500 hover:text-gray-300 transition-colors">
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <a href="#" className="text-gray-500 hover:text-gray-300 transition-colors">
               <MessageCircle className="h-5 w-5" />
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
+            <a href="#" className="text-gray-500 hover:text-gray-300 transition-colors">
               <Globe className="h-5 w-5" />
             </a>
           </div>
@@ -766,8 +747,8 @@ export default function Auth() {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
           style={{
-            backgroundImage: `url(${authBackground})`,
-            backgroundPosition: 'right center'
+            backgroundImage: `url('/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png')`,
+            backgroundPosition: 'center center'
           }} 
         />
         <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-900/30" />
