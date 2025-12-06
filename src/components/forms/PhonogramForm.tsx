@@ -109,6 +109,7 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
   const [producersOpen, setProducersOpen] = useState(true);
   const [performersOpen, setPerformersOpen] = useState(false);
   const [musiciansOpen, setMusiciansOpen] = useState(false);
+  const [audioUploadOpen, setAudioUploadOpen] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -824,44 +825,53 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
 
         {/* Upload de Áudio */}
         <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Upload de Áudio</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <input
-                type="file"
-                ref={audioInputRef}
-                accept="audio/*"
-                onChange={handleAudioUpload}
-                className="hidden"
-              />
-              {!audioFile ? (
-                <div
-                  className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => audioInputRef.current?.click()}
-                >
-                  <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Clique para fazer upload do arquivo de áudio</p>
-                  <p className="text-sm text-muted-foreground mt-1">MP3, WAV, FLAC, etc.</p>
+          <CardContent className="pt-6">
+            <Collapsible open={audioUploadOpen} onOpenChange={setAudioUploadOpen}>
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70">
+                  <span className="font-medium">
+                    Upload de Áudio {audioFile ? `- ${audioFile.name}` : ''}
+                  </span>
+                  {audioUploadOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
-              ) : (
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FileAudio className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="font-medium">{audioFile.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    ref={audioInputRef}
+                    accept="audio/*"
+                    onChange={handleAudioUpload}
+                    className="hidden"
+                  />
+                  {!audioFile ? (
+                    <div
+                      className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                      onClick={() => audioInputRef.current?.click()}
+                    >
+                      <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">Clique para fazer upload do arquivo de áudio</p>
+                      <p className="text-sm text-muted-foreground mt-1">MP3, WAV, FLAC, etc.</p>
                     </div>
-                  </div>
-                  <Button type="button" variant="ghost" size="icon" onClick={removeAudioFile}>
-                    <X className="h-5 w-5 text-destructive" />
-                  </Button>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileAudio className="h-8 w-8 text-primary" />
+                        <div>
+                          <p className="font-medium">{audioFile.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+                      <Button type="button" variant="ghost" size="icon" onClick={removeAudioFile}>
+                        <X className="h-5 w-5 text-destructive" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
           </CardContent>
         </Card>
 
