@@ -32,7 +32,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="dark" 
+      enableSystem={false}
+      storageKey="lander360-theme"
+      disableTransitionOnChange={false}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
