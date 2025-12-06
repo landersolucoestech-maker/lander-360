@@ -270,7 +270,6 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       }
     });
     
-    console.log('Available works from projects:', works);
     return works;
   }, [projects]);
 
@@ -956,108 +955,111 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
                 {participantFields.length > 0 && (
                   <div className="space-y-3">
-                    {participantFields.map((field, index) => (
-                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1.5fr_1.2fr_0.8fr_auto] gap-3 p-4 border rounded-lg items-end">
-                        <FormField
-                          control={form.control}
-                          name={`participants.${index}.name`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nome *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Nome do participante" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`participants.${index}.role`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Classe/Função *</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecione" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="compositor_autor">Compositor/Autor</SelectItem>
-                                  <SelectItem value="tradutor">Tradutor</SelectItem>
-                                  <SelectItem value="editor">Editor</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`participants.${index}.link`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Link</FormLabel>
-                              <FormControl>
-                                <Input placeholder="URL ou link" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {form.watch(`participants.${index}.role`) === 'editor' && (
+                    {participantFields.map((field, index) => {
+                      const isEditor = form.watch(`participants.${index}.role`) === 'editor';
+                      return (
+                        <div key={field.id} className={`grid grid-cols-1 gap-3 p-4 border rounded-lg items-end ${isEditor ? 'md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr_auto]' : 'md:grid-cols-[2fr_1.5fr_1.5fr_0.8fr_auto]'}`}>
                           <FormField
                             control={form.control}
-                            name={`participants.${index}.contract_start_date`}
+                            name={`participants.${index}.name`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Início Contrato</FormLabel>
+                                <FormLabel>Nome *</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Nome do participante" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`participants.${index}.role`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Classe/Função *</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="compositor_autor">Compositor/Autor</SelectItem>
+                                    <SelectItem value="tradutor">Tradutor</SelectItem>
+                                    <SelectItem value="editor">Editor</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`participants.${index}.link`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Link</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="URL ou link" {...field} value={field.value || ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {isEditor && (
+                            <FormField
+                              control={form.control}
+                              name={`participants.${index}.contract_start_date`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Início Contrato</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="date" 
+                                      {...field} 
+                                      value={field.value || ''} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                          <FormField
+                            control={form.control}
+                            name={`participants.${index}.percentage`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>% Part. *</FormLabel>
                                 <FormControl>
                                   <Input 
-                                    type="date" 
-                                    {...field} 
-                                    value={field.value || ''} 
+                                    type="number" 
+                                    placeholder="0" 
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    {...field}
+                                    value={field.value ?? 0}
+                                    onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
                                   />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        )}
-                        <FormField
-                          control={form.control}
-                          name={`participants.${index}.percentage`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>% Part. *</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  placeholder="0" 
-                                  step="0.01"
-                                  min="0"
-                                  max="100"
-                                  {...field}
-                                  value={field.value ?? 0}
-                                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="shrink-0"
-                          onClick={() => removeParticipant(index)}
-                        >
-                          <Trash2Icon className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="shrink-0"
+                            onClick={() => removeParticipant(index)}
+                          >
+                            <Trash2Icon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
