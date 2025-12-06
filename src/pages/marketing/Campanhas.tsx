@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -7,131 +7,88 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingCampaignModal } from "@/components/modals/MarketingCampaignModal";
-import { Target, Plus, Calendar, Users, DollarSign, TrendingUp, BarChart3, Megaphone } from "lucide-react";
+import { useMarketingCampaigns } from "@/hooks/useMarketing";
+import { Target, Plus, Calendar, DollarSign, TrendingUp, BarChart3, Megaphone } from "lucide-react";
+
 const MarketingCampanhas = () => {
-  const allCampaigns = [
-    {
-      id: "1",
-      name: "Lançamento Single 'Noite Estrelada'",
-      objective: "Awareness",
-      status: "Ativa",
-      targetAudience: "Jovens 18-35, fãs de MPB e Pop",
-      budget: "R$ 25.000",
-      spent: "R$ 18.500",
-      platforms: ["Instagram", "TikTok", "Spotify"],
-      startDate: "01/12/2024",
-      endDate: "31/12/2024",
-      kpis: { reach: "1.2M", ctr: "4.5%", cpc: "R$ 0,15" }
-    },
-    {
-      id: "2",
-      name: "Turnê Nacional 2025",
-      objective: "Conversão",
-      status: "Planejada",
-      targetAudience: "Fãs existentes, 25-45 anos",
-      budget: "R$ 50.000",
-      spent: "R$ 0",
-      platforms: ["Instagram", "Facebook", "YouTube"],
-      startDate: "15/01/2025",
-      endDate: "28/02/2025",
-      kpis: { reach: "-", ctr: "-", cpc: "-" }
-    },
-    {
-      id: "3",
-      name: "Promoção Álbum Completo",
-      objective: "Engajamento",
-      status: "Ativa",
-      targetAudience: "Ouvintes de streaming, todas as idades",
-      budget: "R$ 15.000",
-      spent: "R$ 12.300",
-      platforms: ["Spotify", "YouTube", "TikTok"],
-      startDate: "15/11/2024",
-      endDate: "15/12/2024",
-      kpis: { reach: "850K", ctr: "3.8%", cpc: "R$ 0,18" }
-    },
-    {
-      id: "4",
-      name: "Parceria com Influenciadores",
-      objective: "Awareness",
-      status: "Finalizada",
-      targetAudience: "Público Gen Z, 16-24 anos",
-      budget: "R$ 30.000",
-      spent: "R$ 29.800",
-      platforms: ["TikTok", "Instagram"],
-      startDate: "01/10/2024",
-      endDate: "31/10/2024",
-      kpis: { reach: "2.5M", ctr: "5.2%", cpc: "R$ 0,12" }
-    },
-    {
-      id: "5",
-      name: "Campanha de Fim de Ano",
-      objective: "Tráfego",
-      status: "Pausada",
-      targetAudience: "Público geral, compradores de ingressos",
-      budget: "R$ 20.000",
-      spent: "R$ 8.500",
-      platforms: ["Facebook", "Instagram", "YouTube"],
-      startDate: "20/11/2024",
-      endDate: "25/12/2024",
-      kpis: { reach: "420K", ctr: "2.9%", cpc: "R$ 0,22" }
-    },
-    {
-      id: "6",
-      name: "Lançamento Clipe Oficial",
-      objective: "Engajamento",
-      status: "Ativa",
-      targetAudience: "Fãs de música, 18-40 anos",
-      budget: "R$ 35.000",
-      spent: "R$ 22.000",
-      platforms: ["YouTube", "Instagram", "TikTok"],
-      startDate: "05/12/2024",
-      endDate: "05/01/2025",
-      kpis: { reach: "980K", ctr: "4.1%", cpc: "R$ 0,16" }
-    }
-  ];
-  const [filteredCampaigns, setFilteredCampaigns] = useState(allCampaigns);
+  const { data: dbCampaigns, isLoading } = useMarketingCampaigns();
+  const [filteredCampaigns, setFilteredCampaigns] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+  useEffect(() => {
+    if (dbCampaigns) {
+      setFilteredCampaigns(dbCampaigns);
+    }
+  }, [dbCampaigns]);
+
+  const allCampaigns = dbCampaigns || [];
+
   const filterOptions = [{
-    key: "objective",
-    label: "Objetivo",
-    options: ["Awareness", "Conversão", "Engajamento", "Tráfego"]
-  }, {
     key: "status",
     label: "Status",
-    options: ["Ativa", "Planejada", "Finalizada", "Pausada"]
-  }, {
-    key: "platforms",
-    label: "Plataforma",
-    options: ["Instagram", "TikTok", "Facebook", "YouTube", "Spotify"]
+    options: ["planning", "active", "paused", "completed"]
   }];
+
   const handleSearch = (searchTerm: string) => {
     filterCampaigns(searchTerm, {});
   };
+
   const handleFilter = (filters: Record<string, string>) => {
     filterCampaigns("", filters);
   };
+
   const handleClear = () => {
     setFilteredCampaigns(allCampaigns);
   };
+
   const filterCampaigns = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = allCampaigns;
     if (searchTerm) {
-      filtered = filtered.filter(campaign => campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) || campaign.targetAudience.toLowerCase().includes(searchTerm.toLowerCase()));
+      filtered = filtered.filter(campaign => 
+        campaign.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        campaign.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(campaign => {
-          if (key === "objective") return campaign.objective === value;
           if (key === "status") return campaign.status === value;
-          if (key === "platforms") return campaign.platforms.includes(value);
           return true;
         });
       }
     });
     setFilteredCampaigns(filtered);
   };
-  return <SidebarProvider>
+
+  const formatCurrency = (value: number | null) => {
+    if (!value) return "R$ 0";
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  const getStatusBadge = (status: string | null) => {
+    switch (status) {
+      case "active": return <Badge variant="success">Ativa</Badge>;
+      case "planning": return <Badge variant="info">Planejada</Badge>;
+      case "completed": return <Badge variant="outline">Finalizada</Badge>;
+      case "paused": return <Badge variant="warning">Pausada</Badge>;
+      default: return <Badge variant="secondary">{status || "Indefinido"}</Badge>;
+    }
+  };
+
+  // Calculate KPIs
+  const activeCampaigns = allCampaigns.filter(c => c.status === "active").length;
+  const totalBudget = allCampaigns.reduce((sum, c) => sum + (c.budget || 0), 0);
+  const totalSpent = allCampaigns.reduce((sum, c) => sum + (c.spent || 0), 0);
+  const avgRoas = allCampaigns.length > 0 
+    ? allCampaigns.reduce((sum, c) => sum + (c.roas || 0), 0) / allCampaigns.length 
+    : 0;
+  const avgCtr = allCampaigns.length > 0 
+    ? allCampaigns.reduce((sum, c) => sum + (c.ctr || 0), 0) / allCampaigns.length 
+    : 0;
+
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
@@ -152,26 +109,44 @@ const MarketingCampanhas = () => {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <DashboardCard title="Campanhas Ativas" value={3} description="em execução" icon={Target} trend={{
-              value: 12,
-              isPositive: true
-            }} />
-              <DashboardCard title="Budget Total" value="R$ 175.000" description="investimento mensal" icon={DollarSign} trend={{
-              value: 8,
-              isPositive: true
-            }} />
-              <DashboardCard title="ROI Médio" value="245%" description="retorno sobre investimento" icon={TrendingUp} trend={{
-              value: 18,
-              isPositive: true
-            }} />
-              <DashboardCard title="Taxa de Conversão" value="4.1%" description="média geral" icon={BarChart3} trend={{
-              value: 5,
-              isPositive: true
-            }} />
+              <DashboardCard 
+                title="Campanhas Ativas" 
+                value={activeCampaigns} 
+                description="em execução" 
+                icon={Target} 
+                trend={{ value: 0, isPositive: true }} 
+              />
+              <DashboardCard 
+                title="Budget Total" 
+                value={formatCurrency(totalBudget)} 
+                description="investimento total" 
+                icon={DollarSign} 
+                trend={{ value: 0, isPositive: true }} 
+              />
+              <DashboardCard 
+                title="ROI Médio" 
+                value={`${avgRoas.toFixed(0)}%`} 
+                description="retorno sobre investimento" 
+                icon={TrendingUp} 
+                trend={{ value: 0, isPositive: true }} 
+              />
+              <DashboardCard 
+                title="Taxa de Conversão" 
+                value={`${avgCtr.toFixed(1)}%`} 
+                description="média geral" 
+                icon={BarChart3} 
+                trend={{ value: 0, isPositive: true }} 
+              />
             </div>
 
             {/* Search and Filters */}
-            <SearchFilter searchPlaceholder="Buscar campanhas por nome ou público-alvo..." filters={filterOptions} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
+            <SearchFilter 
+              searchPlaceholder="Buscar campanhas por nome ou descrição..." 
+              filters={filterOptions} 
+              onSearch={handleSearch} 
+              onFilter={handleFilter} 
+              onClear={handleClear} 
+            />
 
             {/* Campaigns List */}
             <Card className="flex-1">
@@ -182,85 +157,90 @@ const MarketingCampanhas = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {filteredCampaigns.map(campaign => (
-                    <div key={campaign.id} className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                        {/* Info principal */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-base font-semibold text-foreground truncate">{campaign.name}</h3>
-                            <Badge variant="secondary" className="text-xs shrink-0">{campaign.objective}</Badge>
-                            <Badge 
-                              variant={campaign.status === "Ativa" ? "success" : campaign.status === "Planejada" ? "info" : campaign.status === "Finalizada" ? "outline" : "warning"}
-                              className="text-xs shrink-0"
-                            >
-                              {campaign.status}
-                            </Badge>
+                {isLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+                ) : filteredCampaigns.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Megaphone className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma campanha cadastrada</h3>
+                    <p className="text-muted-foreground mb-4">Comece criando sua primeira campanha de marketing</p>
+                    <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Criar Primeira Campanha
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredCampaigns.map(campaign => (
+                      <div key={campaign.id} className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                          {/* Info principal */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="text-base font-semibold text-foreground truncate">{campaign.name}</h3>
+                              {getStatusBadge(campaign.status)}
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              {campaign.description && <span>{campaign.description}</span>}
+                              {campaign.start_date && campaign.end_date && (
+                                <span className="flex items-center">
+                                  <Calendar className="h-3 w-3 mr-1" />
+                                  {new Date(campaign.start_date).toLocaleDateString('pt-BR')} - {new Date(campaign.end_date).toLocaleDateString('pt-BR')}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>Público: {campaign.targetAudience}</span>
-                            <span className="flex items-center">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {campaign.startDate} - {campaign.endDate}
-                            </span>
-                          </div>
-                        </div>
 
-                        {/* KPIs */}
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">Budget</div>
-                            <div className="font-medium">{campaign.budget}</div>
+                          {/* KPIs */}
+                          <div className="flex items-center gap-6 text-sm">
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground">Budget</div>
+                              <div className="font-medium">{formatCurrency(campaign.budget)}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground">Gasto</div>
+                              <div className="font-medium">{formatCurrency(campaign.spent)}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground">Alcance</div>
+                              <div className="font-medium">{campaign.reach?.toLocaleString() || "-"}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground">CTR</div>
+                              <div className="font-medium">{campaign.ctr ? `${campaign.ctr}%` : "-"}</div>
+                            </div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">Gasto</div>
-                            <div className="font-medium">{campaign.spent}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">Alcance</div>
-                            <div className="font-medium">{campaign.kpis.reach}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">CTR</div>
-                            <div className="font-medium">{campaign.kpis.ctr}</div>
-                          </div>
-                        </div>
 
-                        {/* Ações */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Button variant="outline" size="sm">Ver</Button>
-                          <Button variant="outline" size="sm" onClick={() => {
-                            setSelectedCampaign(campaign);
-                            setIsModalOpen(true);
-                          }}>Editar</Button>
-                          <Button variant="outline" size="sm">Excluir</Button>
+                          {/* Ações */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button variant="outline" size="sm">Ver</Button>
+                            <Button variant="outline" size="sm" onClick={() => {
+                              setSelectedCampaign(campaign);
+                              setIsModalOpen(true);
+                            }}>Editar</Button>
+                            <Button variant="outline" size="sm">Excluir</Button>
+                          </div>
                         </div>
                       </div>
-
-                      {/* Plataformas */}
-                      <div className="flex gap-1 mt-3 pt-3 border-t border-border">
-                        {campaign.platforms.map((platform, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">{platform}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Campaign Templates */}
-            
-
-            <MarketingCampaignModal isOpen={isModalOpen} onClose={() => {
-            setIsModalOpen(false);
-            setSelectedCampaign(null);
-          }} initialData={selectedCampaign} />
-
+            <MarketingCampaignModal 
+              isOpen={isModalOpen} 
+              onClose={() => {
+                setIsModalOpen(false);
+                setSelectedCampaign(null);
+              }} 
+              initialData={selectedCampaign} 
+            />
           </div>
         </SidebarInset>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
+
 export default MarketingCampanhas;
