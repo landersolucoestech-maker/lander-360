@@ -267,6 +267,12 @@ const Projetos = () => {
                                   </div>
                                 </div>
                                 <div className="text-center">
+                                  <div className="text-muted-foreground">Produtores</div>
+                                  <div className="font-medium">
+                                    {firstSong.producers?.map((p: any) => p.name).filter(Boolean).join(', ') || '-'}
+                                  </div>
+                                </div>
+                                <div className="text-center">
                                   <div className="text-muted-foreground">Gênero</div>
                                   <div className="font-medium">{firstSong.genre || '-'}</div>
                                 </div>
