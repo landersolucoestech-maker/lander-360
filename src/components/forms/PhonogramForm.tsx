@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusIcon, Trash2Icon, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { PlusIcon, Trash2Icon, ChevronDown, ChevronUp, Search, Upload, FileAudio, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useArtists } from '@/hooks/useArtists';
@@ -57,6 +58,12 @@ const phonogramSchema = z.object({
   phonographic_producers: z.array(participantSchema).optional(),
   performers: z.array(participantSchema).optional(),
   musicians: z.array(participantSchema).optional(),
+  
+  // Áudio e Termos
+  audio_file: z.any().optional(),
+  accept_terms: z.boolean().refine(val => val === true, {
+    message: "Você deve aceitar os termos de uso",
+  }),
 });
 
 type PhonogramFormData = z.infer<typeof phonogramSchema>;
@@ -102,6 +109,9 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
   const [producersOpen, setProducersOpen] = useState(true);
   const [performersOpen, setPerformersOpen] = useState(false);
   const [musiciansOpen, setMusiciansOpen] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
   // Parse ISRC from phonogram
   const parseIsrc = (isrc: string | null) => {
@@ -146,8 +156,35 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
       phonographic_producers: phonogram?.participants?.filter((p: any) => p.role === 'produtor_fonografico') || [],
       performers: phonogram?.participants?.filter((p: any) => p.role === 'interprete') || [],
       musicians: phonogram?.participants?.filter((p: any) => p.role === 'musico') || [],
+      accept_terms: false,
     },
   });
+
+  const handleAudioUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type.startsWith('audio/')) {
+        setAudioFile(file);
+        toast({
+          title: "Áudio carregado",
+          description: `Arquivo "${file.name}" foi adicionado.`,
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione um arquivo de áudio válido.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const removeAudioFile = () => {
+    setAudioFile(null);
+    if (audioInputRef.current) {
+      audioInputRef.current.value = '';
+    }
+  };
 
   const { fields: producerFields, append: appendProducer, remove: removeProducer } = useFieldArray({
     control: form.control,
@@ -785,6 +822,85 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
           </CardContent>
         </Card>
 
+        {/* Upload de Áudio */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Upload de Áudio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <input
+                type="file"
+                ref={audioInputRef}
+                accept="audio/*"
+                onChange={handleAudioUpload}
+                className="hidden"
+              />
+              {!audioFile ? (
+                <div
+                  className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                  onClick={() => audioInputRef.current?.click()}
+                >
+                  <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Clique para fazer upload do arquivo de áudio</p>
+                  <p className="text-sm text-muted-foreground mt-1">MP3, WAV, FLAC, etc.</p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FileAudio className="h-8 w-8 text-primary" />
+                    <div>
+                      <p className="font-medium">{audioFile.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <Button type="button" variant="ghost" size="icon" onClick={removeAudioFile}>
+                    <X className="h-5 w-5 text-destructive" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Aceito o Termo */}
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <FormField
+                control={form.control}
+                name="accept_terms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Aceito o Termo -{" "}
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="p-0 h-auto text-primary underline"
+                          onClick={() => setTermsDialogOpen(true)}
+                        >
+                          Leia e aceite os Termos de Uso
+                        </Button>
+                      </FormLabel>
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Actions */}
         <div className="flex justify-end gap-2">
           {onCancel && (
@@ -796,6 +912,66 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
             {phonogram?.id ? 'Atualizar Fonograma' : 'Cadastrar Fonograma'}
           </Button>
         </div>
+
+        {/* Terms Dialog */}
+        <Dialog open={termsDialogOpen} onOpenChange={setTermsDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Termos de Uso</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <h3 className="font-semibold text-foreground">1. Objeto</h3>
+                <p>
+                  O presente termo estabelece as condições gerais de uso para o registro de fonogramas 
+                  na plataforma Lander 360º, incluindo a submissão de arquivos de áudio e metadados 
+                  relacionados às gravações sonoras.
+                </p>
+                
+                <h3 className="font-semibold text-foreground">2. Declarações do Usuário</h3>
+                <p>
+                  Ao registrar um fonograma, o usuário declara que possui todos os direitos necessários 
+                  sobre a gravação, incluindo autorizações de intérpretes, músicos e produtores 
+                  fonográficos envolvidos na criação do fonograma.
+                </p>
+                
+                <h3 className="font-semibold text-foreground">3. Responsabilidades</h3>
+                <p>
+                  O usuário é integralmente responsável pela veracidade das informações fornecidas, 
+                  incluindo dados de participação, percentuais de direitos e identificadores como ISRC.
+                </p>
+                
+                <h3 className="font-semibold text-foreground">4. Propriedade Intelectual</h3>
+                <p>
+                  O registro do fonograma na plataforma não transfere quaisquer direitos de propriedade 
+                  intelectual. A plataforma atua apenas como intermediária no processo de registro 
+                  junto aos órgãos competentes.
+                </p>
+                
+                <h3 className="font-semibold text-foreground">5. Proteção de Dados</h3>
+                <p>
+                  Os dados fornecidos serão tratados em conformidade com a Lei Geral de Proteção de 
+                  Dados (LGPD) e utilizados exclusivamente para fins de registro e gestão de direitos.
+                </p>
+              </div>
+            </ScrollArea>
+            <DialogFooter>
+              <Button
+                type="button"
+                onClick={() => {
+                  form.setValue('accept_terms', true);
+                  setTermsDialogOpen(false);
+                  toast({
+                    title: "Termos aceitos",
+                    description: "Você aceitou os termos de uso.",
+                  });
+                }}
+              >
+                Li e Aceito os Termos
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Work Search Dialog */}
         <Dialog open={workSearchOpen} onOpenChange={setWorkSearchOpen}>
