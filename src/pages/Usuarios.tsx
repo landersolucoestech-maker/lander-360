@@ -139,7 +139,7 @@ const Usuarios = () => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 space-y-6">
+          <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-2">
