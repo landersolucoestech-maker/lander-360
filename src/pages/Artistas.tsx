@@ -8,6 +8,7 @@ import { ArtistCard } from "@/components/artists/ArtistCard";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ArtistModal } from "@/components/modals/ArtistModal";
 import { useArtists, useArtistsCount } from "@/hooks/useArtists";
+import { useArtistPageTrends } from "@/hooks/useTrends";
 import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
 import { mockArtists } from "@/data/mockData";
 
@@ -15,6 +16,7 @@ const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const { data: artists, isLoading, error } = useArtists();
   const { data: artistsCount } = useArtistsCount();
+  const { data: trends } = useArtistPageTrends();
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
 
   // Transform database artists to match UI format - pass complete database data
@@ -162,24 +164,28 @@ const Artistas = () => {
                 value={isLoading ? '...' : artistsCount || displayArtists.length}
                 description="artistas cadastrados"
                 icon={Users}
+                trend={trends?.artistsTrend || undefined}
               />
               <DashboardCard
                 title="Artistas Ativos"
                 value={isLoading ? '...' : displayArtists.filter((a: any) => a.status === 'Ativo').length}
                 description="com contratos vigentes"
                 icon={Star}
+                trend={trends?.activeArtistsTrend || undefined}
               />
               <DashboardCard
                 title="Obras Totais"
                 value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)}
                 description="músicas registradas"
                 icon={Music}
+                trend={trends?.worksTrend || undefined}
               />
               <DashboardCard
                 title="Receita dos Artistas"
                 value="R$ 0"
                 description="este mês"
                 icon={DollarSign}
+                trend={trends?.revenueTrend || undefined}
               />
             </div>
 
