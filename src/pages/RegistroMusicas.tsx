@@ -32,16 +32,12 @@ const RegistroMusicas = () => {
     const durationMinutes = music.duration ? Math.floor(music.duration / 60) : 0;
     const durationSeconds = music.duration ? music.duration % 60 : 0;
     return {
-      id: music.id,
-      title: music.title,
+      // Keep original data for editing
+      ...music,
+      // Display fields
       artist: artist?.name || 'N/A',
-      artist_id: music.artist_id,
-      genre: music.genre || 'N/A',
-      isrc: music.isrc || '-',
-      iswc: music.iswc || '-',
-      ecad: '-',
-      duration: music.duration ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}` : '-',
-      status: music.status === 'draft' ? 'Pendente' : music.status === 'registered' ? 'Registrado' : music.status === 'approved' ? 'Aprovado' : 'Revisão',
+      durationFormatted: music.duration ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}` : '-',
+      statusDisplay: music.status === 'draft' ? 'Pendente' : music.status === 'registered' ? 'Registrado' : music.status === 'approved' ? 'Aprovado' : 'Revisão',
       composers: music.writers || [],
       performers: [],
       producers: music.publishers || [],
@@ -84,11 +80,10 @@ const RegistroMusicas = () => {
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(song =>
-        song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.isrc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.iswc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        song.ecad.toLowerCase().includes(searchTerm.toLowerCase())
+        song.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        song.artist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (song.isrc || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (song.iswc || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -96,7 +91,7 @@ const RegistroMusicas = () => {
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(song => {
-          if (key === "status") return song.status === value;
+          if (key === "status") return song.statusDisplay === value;
           if (key === "genre") return song.genre === value;
           return true;
         });
@@ -222,13 +217,13 @@ const RegistroMusicas = () => {
                             <div className="flex items-center gap-2">
                               <Badge 
                                 variant={
-                                  song.status === "Registrado" ? "default" :
-                                  song.status === "Pendente" ? "secondary" : "outline"
+                                  song.statusDisplay === "Registrado" ? "default" :
+                                  song.statusDisplay === "Pendente" ? "secondary" : "outline"
                                 }
                               >
-                                {song.status}
+                                {song.statusDisplay}
                               </Badge>
-                              <Badge variant="secondary">{song.genre}</Badge>
+                              <Badge variant="secondary">{song.genre || 'N/A'}</Badge>
                             </div>
                           </div>
                         </div>
@@ -248,15 +243,15 @@ const RegistroMusicas = () => {
                           </div>
                           <div className="text-center">
                             <div className="text-muted-foreground">ISWC</div>
-                            <div className="font-medium text-foreground">{song.iswc}</div>
+                            <div className="font-medium text-foreground">{song.iswc || '-'}</div>
                           </div>
                           <div className="text-center">
                             <div className="text-muted-foreground">ISRC</div>
-                            <div className="font-medium text-foreground">{song.isrc}</div>
+                            <div className="font-medium text-foreground">{song.isrc || '-'}</div>
                           </div>
                           <div className="text-center">
                             <div className="text-muted-foreground">Duração</div>
-                            <div className="font-medium">{song.duration}</div>
+                            <div className="font-medium">{song.durationFormatted}</div>
                           </div>
                           <div className="text-center">
                             <div className="text-muted-foreground">Registro</div>
