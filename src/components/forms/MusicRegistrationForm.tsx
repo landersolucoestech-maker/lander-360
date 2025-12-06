@@ -226,9 +226,12 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     
     // Add works from projects audio_files
     projects.forEach(project => {
-      const audioFiles = project.audio_files as any[];
-      if (audioFiles && Array.isArray(audioFiles)) {
-        audioFiles.forEach((song: any, index: number) => {
+      const audioFilesData = project.audio_files as any;
+      // Handle structure: { release_type, songs: [...], observations }
+      const songs = audioFilesData?.songs || [];
+      
+      if (Array.isArray(songs)) {
+        songs.forEach((song: any, index: number) => {
           const songName = song.song_name || song.title || '';
           if (songName) {
             works.push({
@@ -243,7 +246,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
               composers: song.composers || [],
               performers: song.performers || [],
               producers: song.producers || [],
-              is_instrumental: song.is_instrumental || false,
+              is_instrumental: song.instrumental === 'sim' || song.is_instrumental || false,
               project_id: project.id,
               project_name: project.name,
               artist_id: project.artist_id,
@@ -256,7 +259,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     });
     
     return works;
-  }, [existingWorks, projects]);
+  }, [projects]);
 
   // Select work from search results
   const handleSelectWork = (work: any) => {
