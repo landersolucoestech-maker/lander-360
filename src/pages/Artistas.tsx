@@ -18,36 +18,47 @@ const Artistas = () => {
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
 
   // Transform database artists to match UI format - pass complete database data
-  const transformDatabaseArtist = (dbArtist: any) => ({
-    // Pass the raw database artist for edit mode
-    ...dbArtist,
-    id: dbArtist.id,
-    name: dbArtist.name || dbArtist.stage_name,
-    genre: dbArtist.genre || 'Não informado',
-    status: dbArtist.contract_status || 'ativo',
-    email: dbArtist.email || 'Não informado',
-    avatar: dbArtist.image_url,
-    socialMedia: {
-      instagram: dbArtist.instagram,
-      spotify: dbArtist.spotify_url,
-      youtube: dbArtist.youtube_url,
-      tiktok: dbArtist.tiktok,
-      soundcloud: dbArtist.soundcloud,
-    },
-    stats: {
-      projetos: 0,
-      obras: 0,
-      fonogramas: 0,
-      lancamentos: 0,
-      streams: '0'
-    },
-    profile: {
-      nome: dbArtist.full_name || dbArtist.name || 'Não informado',
+  const transformDatabaseArtist = (dbArtist: any) => {
+    const hasManager = ['Com Empresário', 'Gravadora', 'Editora'].includes(dbArtist.profile_type);
+    
+    return {
+      // Pass the raw database artist for edit mode
+      ...dbArtist,
+      id: dbArtist.id,
+      name: dbArtist.name || dbArtist.stage_name,
+      genre: dbArtist.genre || 'Não informado',
+      status: dbArtist.contract_status || 'ativo',
       email: dbArtist.email || 'Não informado',
-      telefone: dbArtist.phone || 'Não informado'
-    },
-    gravadora: dbArtist.profile_type || 'Independente'
-  });
+      avatar: dbArtist.image_url,
+      socialMedia: {
+        instagram: dbArtist.instagram,
+        spotify: dbArtist.spotify_url,
+        youtube: dbArtist.youtube_url,
+        tiktok: dbArtist.tiktok,
+        soundcloud: dbArtist.soundcloud,
+      },
+      stats: {
+        projetos: 0,
+        obras: 0,
+        fonogramas: 0,
+        lancamentos: 0,
+        streams: '0'
+      },
+      // Dados do responsável/empresário quando aplicável
+      responsible: hasManager ? {
+        nome: dbArtist.manager_name || 'Não informado',
+        email: dbArtist.manager_email || 'Não informado',
+        telefone: dbArtist.manager_phone || 'Não informado'
+      } : null,
+      // Dados pessoais do artista
+      profile: {
+        nome: dbArtist.full_name || dbArtist.name || 'Não informado',
+        email: dbArtist.email || 'Não informado',
+        telefone: dbArtist.phone || 'Não informado'
+      },
+      gravadora: dbArtist.profile_type || 'Independente'
+    };
+  };
 
   // Use mock data when no database artists exist
   const displayArtists = artists?.length 
