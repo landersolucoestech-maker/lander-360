@@ -657,6 +657,33 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          email: string
+          id: string
+          last_attempt_at: string
+          locked_until: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          email: string
+          id?: string
+          last_attempt_at?: string
+          locked_until?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          email?: string
+          id?: string
+          last_attempt_at?: string
+          locked_until?: string | null
+        }
+        Relationships: []
+      }
       login_history: {
         Row: {
           browser: string | null
