@@ -22,6 +22,7 @@ import Usuarios from "./pages/Usuarios";
 import Relatorios from "./pages/Relatorios";
 import CRM from "./pages/CRM";
 import Configuracoes from "./pages/Configuracoes";
+import SegurancaLogs from "./pages/SegurancaLogs";
 import NotFound from "./pages/NotFound";
 // Marketing pages
 import MarketingVisaoGeral from "./pages/marketing/VisaoGeral";
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/marketing/metricas" element={<ProtectedRoute><MarketingMetricas /></ProtectedRoute>} />
               <Route path="/marketing/briefing" element={<ProtectedRoute><MarketingBriefing /></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+              <Route path="/seguranca-logs" element={<ProtectedRoute><SegurancaLogs /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
