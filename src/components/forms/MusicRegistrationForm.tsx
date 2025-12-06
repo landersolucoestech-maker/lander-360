@@ -1010,33 +1010,31 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           control={form.control}
                           name={`participants.${index}.contract_start_date`}
                           render={({ field }) => {
-                            const [dateMode, setDateMode] = React.useState<'month' | 'full'>('month');
+                            const [dateMode, setDateMode] = React.useState<'select' | 'type'>('select');
+                            const [dayValue, setDayValue] = React.useState('');
                             const [monthValue, setMonthValue] = React.useState('');
                             const [yearValue, setYearValue] = React.useState('');
 
-                            // Parse existing value if it's a full date
+                            // Parse existing value
                             React.useEffect(() => {
-                              if (field.value) {
-                                if (field.value.length === 7) {
-                                  // Format: YYYY-MM
-                                  const [y, m] = field.value.split('-');
-                                  setYearValue(y);
-                                  setMonthValue(m);
-                                  setDateMode('month');
-                                } else if (field.value.length === 10) {
-                                  // Format: YYYY-MM-DD
-                                  setDateMode('full');
-                                }
+                              if (field.value && field.value.length === 10) {
+                                const [y, m, d] = field.value.split('-');
+                                setYearValue(y);
+                                setMonthValue(m);
+                                setDayValue(d);
                               }
                             }, []);
 
-                            const handleMonthYearChange = (month: string, year: string) => {
+                            const handleDateChange = (day: string, month: string, year: string) => {
+                              setDayValue(day);
                               setMonthValue(month);
                               setYearValue(year);
-                              if (month && year && year.length === 4) {
-                                field.onChange(`${year}-${month}`);
+                              if (day && month && year && year.length === 4) {
+                                field.onChange(`${year}-${month}-${day.padStart(2, '0')}`);
                               }
                             };
+
+                            const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
                             return (
                               <FormItem>
@@ -1045,37 +1043,44 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                                   <div className="flex gap-1">
                                     <Button
                                       type="button"
-                                      variant={dateMode === 'month' ? 'default' : 'outline'}
+                                      variant={dateMode === 'select' ? 'default' : 'outline'}
                                       size="sm"
-                                      className="h-7 text-xs px-2"
-                                      onClick={() => {
-                                        setDateMode('month');
-                                        field.onChange('');
-                                      }}
+                                      className="h-6 text-xs px-2"
+                                      onClick={() => setDateMode('select')}
                                     >
-                                      Mês/Ano
+                                      Selecionar
                                     </Button>
                                     <Button
                                       type="button"
-                                      variant={dateMode === 'full' ? 'default' : 'outline'}
+                                      variant={dateMode === 'type' ? 'default' : 'outline'}
                                       size="sm"
-                                      className="h-7 text-xs px-2"
-                                      onClick={() => {
-                                        setDateMode('full');
-                                        field.onChange('');
-                                      }}
+                                      className="h-6 text-xs px-2"
+                                      onClick={() => setDateMode('type')}
                                     >
-                                      Data
+                                      Digitar
                                     </Button>
                                   </div>
                                   <FormControl>
-                                    {dateMode === 'month' ? (
+                                    {dateMode === 'select' ? (
                                       <div className="flex gap-1">
                                         <Select
-                                          value={monthValue}
-                                          onValueChange={(val) => handleMonthYearChange(val, yearValue)}
+                                          value={dayValue}
+                                          onValueChange={(val) => handleDateChange(val, monthValue, yearValue)}
                                         >
-                                          <SelectTrigger className="w-[70px]">
+                                          <SelectTrigger className="w-[55px] px-2">
+                                            <SelectValue placeholder="Dia" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {days.map((d) => (
+                                              <SelectItem key={d} value={d}>{d}</SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                        <Select
+                                          value={monthValue}
+                                          onValueChange={(val) => handleDateChange(dayValue, val, yearValue)}
+                                        >
+                                          <SelectTrigger className="w-[60px] px-2">
                                             <SelectValue placeholder="Mês" />
                                           </SelectTrigger>
                                           <SelectContent>
@@ -1097,11 +1102,11 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                                           type="text"
                                           placeholder="Ano"
                                           maxLength={4}
-                                          className="w-[70px]"
+                                          className="w-[60px] px-2"
                                           value={yearValue}
                                           onChange={(e) => {
                                             const val = e.target.value.replace(/\D/g, '');
-                                            handleMonthYearChange(monthValue, val);
+                                            handleDateChange(dayValue, monthValue, val);
                                           }}
                                         />
                                       </div>
