@@ -986,6 +986,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                                 <SelectContent>
                                   <SelectItem value="compositor_autor">Compositor/Autor</SelectItem>
                                   <SelectItem value="tradutor">Tradutor</SelectItem>
+                                  <SelectItem value="editor">Editor</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
