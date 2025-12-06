@@ -2,6 +2,3 @@ project_id = "dkrrfnpvqrpakngigxsb"
 
 [functions.send-lockout-notification]
 verify_jwt = false
-
-[functions.send-new-device-notification]
-verify_jwt = false
