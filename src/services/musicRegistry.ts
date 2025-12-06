@@ -10,7 +10,7 @@ export class MusicRegistryService {
     const { data, error } = await supabase
       .from('music_registry')
       .select('*')
-      .order('registration_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -64,7 +64,7 @@ export class MusicRegistryService {
       .from('music_registry')
       .select('*')
       .eq('artist_id', artistId)
-      .order('registration_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -75,7 +75,7 @@ export class MusicRegistryService {
       .from('music_registry')
       .select('*')
       .eq('genre', genre)
-      .order('registration_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -86,7 +86,7 @@ export class MusicRegistryService {
       .from('music_registry')
       .select('*')
       .or(`title.ilike.%${query}%,isrc.ilike.%${query}%,iswc.ilike.%${query}%`)
-      .order('registration_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -96,8 +96,8 @@ export class MusicRegistryService {
     const { data, error } = await supabase
       .from('music_registry')
       .select('*')
-      .contains('composers', [composer])
-      .order('registration_date', { ascending: false });
+      .contains('writers', [composer])
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -107,8 +107,8 @@ export class MusicRegistryService {
     const { data, error } = await supabase
       .from('music_registry')
       .select('*')
-      .contains('producers', [producer])
-      .order('registration_date', { ascending: false });
+      .contains('publishers', [producer])
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
