@@ -281,23 +281,27 @@ export function PhonogramForm({
         if (matchingSong) {
           // Preencher Intérpretes (performers do projeto)
           if (matchingSong.performers && matchingSong.performers.length > 0) {
+            const performerCount = matchingSong.performers.filter((p: any) => p.name && p.name.trim() !== '').length;
+            const defaultPercentagePerPerformer = performerCount > 0 ? 41.70 / performerCount : 0;
             interpreters = matchingSong.performers
               .filter((p: any) => p.name && p.name.trim() !== '')
               .map((p: any) => ({
                 name: p.name || '',
                 role: 'interprete',
-                percentage: p.percentage || 0
+                percentage: p.percentage || defaultPercentagePerPerformer
               }));
           }
           
           // Preencher Músicos Acompanhantes (producers do projeto - sempre são produtores)
           if (matchingSong.producers && matchingSong.producers.length > 0) {
+            const musicianCount = matchingSong.producers.filter((p: any) => p.name && p.name.trim() !== '').length;
+            const defaultPercentagePerMusician = musicianCount > 0 ? 16.60 / musicianCount : 0;
             musicianProducers = matchingSong.producers
               .filter((p: any) => p.name && p.name.trim() !== '')
               .map((p: any) => ({
                 name: p.name || '',
                 role: 'musico',
-                percentage: p.percentage || 0
+                percentage: p.percentage || defaultPercentagePerMusician
               }));
           }
           
@@ -319,26 +323,28 @@ export function PhonogramForm({
     // Se não encontrou no projeto, tentar nos participantes da obra
     if (interpreters.length === 0) {
       const workParticipants = work.participants || [];
-      interpreters = workParticipants
+      const filteredInterpreters = workParticipants
         .filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete'))
-        .filter((p: any) => p.name && p.name.trim() !== '')
-        .map((p: any) => ({
-          name: p.name || '',
-          role: 'interprete',
-          percentage: p.percentage || 0
-        }));
+        .filter((p: any) => p.name && p.name.trim() !== '');
+      const defaultPercentagePerPerformer = filteredInterpreters.length > 0 ? 41.70 / filteredInterpreters.length : 0;
+      interpreters = filteredInterpreters.map((p: any) => ({
+        name: p.name || '',
+        role: 'interprete',
+        percentage: p.percentage || defaultPercentagePerPerformer
+      }));
     }
     
     if (musicianProducers.length === 0) {
       const workParticipants = work.participants || [];
-      musicianProducers = workParticipants
+      const filteredMusicians = workParticipants
         .filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor'))
-        .filter((p: any) => p.name && p.name.trim() !== '')
-        .map((p: any) => ({
-          name: p.name || '',
-          role: 'musico',
-          percentage: p.percentage || 0
-        }));
+        .filter((p: any) => p.name && p.name.trim() !== '');
+      const defaultPercentagePerMusician = filteredMusicians.length > 0 ? 16.60 / filteredMusicians.length : 0;
+      musicianProducers = filteredMusicians.map((p: any) => ({
+        name: p.name || '',
+        role: 'musico',
+        percentage: p.percentage || defaultPercentagePerMusician
+      }));
     }
     
     if (interpreters.length > 0) {
