@@ -939,7 +939,7 @@ export function PhonogramForm({
               </div>
             </div>
 
-            {/* Row 3: Classificação, Mídia, Nacional, Publicação, Países */}
+            {/* Row 3: Classificação, Mídia, Nacional, Publicação, Países, Status */}
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField control={form.control} name="classification" render={({
@@ -1001,6 +1001,26 @@ export function PhonogramForm({
                     </FormItem>} />
               </div>
               <div className="col-span-2">
+                <FormField control={form.control} name="status" render={({
+                field
+              }) => <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pendente" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="em_analise">Em Análise</SelectItem>
+                          <SelectItem value="aceita">Aceita</SelectItem>
+                          <SelectItem value="recusada">Recusada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>} />
+              </div>
+              <div className="col-span-2">
                 <FormField control={form.control} name="origin_country" render={({
                 field
               }) => <FormItem>
@@ -1021,6 +1041,10 @@ export function PhonogramForm({
                       </Select>
                     </FormItem>} />
               </div>
+            </div>
+
+            {/* Row 4: País Publicação */}
+            <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField control={form.control} name="publication_country" render={({
                 field
