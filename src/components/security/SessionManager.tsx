@@ -6,9 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Monitor, Smartphone, Tablet, RefreshCw, LogOut, Shield, AlertTriangle } from "lucide-react";
-import { format } from "date-fns";
+import { Monitor, Smartphone, Tablet, RefreshCw, LogOut, Shield, AlertTriangle, Clock } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+// Session timeout configuration (must match useSessionActivity.ts)
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 import {
   AlertDialog,
   AlertDialogAction,
@@ -236,12 +239,21 @@ export function SessionManager() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                       <span>{session.device_type || "Dispositivo desconhecido"}</span>
                       <span>•</span>
                       <span>
                         Última atividade: {format(new Date(session.last_activity_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </span>
+                      {isCurrentSession(session.session_token) && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-500">
+                            <Clock className="h-3 w-3" />
+                            Expira em 30 min de inatividade
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
