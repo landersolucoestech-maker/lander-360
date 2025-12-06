@@ -609,9 +609,9 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
               </div>
             </div>
 
-            {/* Row 3: Classificação */}
+            {/* Row 3: Classificação, Mídia, Nacional, Publicação, Países */}
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <FormField
                   control={form.control}
                   name="classification"
@@ -635,10 +635,6 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   )}
                 />
               </div>
-            </div>
-
-            {/* Row 4: Mídia, Nacional, Publicação, Países */}
-            <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField
                   control={form.control}
@@ -682,7 +678,7 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   name="simultaneous_publication"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Publicação Simultânea</FormLabel>
+                      <FormLabel>Pub. Simultânea</FormLabel>
                       <FormControl>
                         <ToggleButton value={field.value} onChange={field.onChange} options={["Não", "Sim"]} />
                       </FormControl>
@@ -690,13 +686,13 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   )}
                 />
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <FormField
                   control={form.control}
                   name="origin_country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>País de Origem</FormLabel>
+                      <FormLabel>País Origem</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -715,13 +711,13 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   )}
                 />
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <FormField
                   control={form.control}
                   name="publication_country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>País de Publicação</FormLabel>
+                      <FormLabel>País Publicação</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
