@@ -81,6 +81,8 @@ const RegistroMusicas = () => {
       statusDisplay: getStatusDisplay(phono.status),
       registrationDate: new Date(phono.created_at).toLocaleDateString('pt-BR'),
       workComposers: composers.length > 0 ? composers : (linkedWork?.writers || []),
+      abramus_code: linkedWork?.abramus_code || null,
+      ecad_code: linkedWork?.ecad_code || null,
     };
   });
 
