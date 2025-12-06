@@ -3,35 +3,108 @@ import { DashboardStats, RecentActivity } from '@/types/database';
 import { ArtistsService } from './artists';
 import { ContractsService } from './contracts';
 
+export interface DashboardStatsWithTrends extends DashboardStats {
+  trends: {
+    works: { value: number; isPositive: boolean };
+    artists: { value: number; isPositive: boolean };
+    contracts: { value: number; isPositive: boolean };
+    revenue: { value: number; isPositive: boolean };
+  };
+}
+
 export class DashboardService {
-  // Get dashboard statistics
-  static async getStats(): Promise<DashboardStats> {
+  // Get dashboard statistics with trends
+  static async getStats(): Promise<DashboardStatsWithTrends> {
     try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
       const [
         totalArtists,
+        artistsLastMonth,
         totalWorks,
+        worksLastMonth,
         activeContracts,
+        contractsLastMonth,
         monthlyRevenue,
+        lastMonthRevenue,
         recentActivities
       ] = await Promise.all([
+        // Current artists count
         ArtistsService.getCount(),
-        0, // totalWorks - removed mock service
+        // Artists created before this month
+        supabase
+          .from('artists')
+          .select('id', { count: 'exact', head: true })
+          .lt('created_at', startOfMonth.toISOString())
+          .then(res => res.count || 0),
+        // Total works (music_registry)
+        supabase
+          .from('music_registry')
+          .select('id', { count: 'exact', head: true })
+          .then(res => res.count || 0),
+        // Works created before this month
+        supabase
+          .from('music_registry')
+          .select('id', { count: 'exact', head: true })
+          .lt('created_at', startOfMonth.toISOString())
+          .then(res => res.count || 0),
+        // Active contracts
         ContractsService.getActive().then(contracts => contracts.length),
-        0, // monthlyRevenue - removed mock service
+        // Contracts active last month
+        supabase
+          .from('contracts')
+          .select('id', { count: 'exact', head: true })
+          .lt('created_at', startOfMonth.toISOString())
+          .or(`status.eq.active,status.eq.ativo`)
+          .then(res => res.count || 0),
+        // Monthly revenue (income transactions this month)
+        supabase
+          .from('financial_transactions')
+          .select('amount')
+          .eq('type', 'income')
+          .gte('date', startOfMonth.toISOString().split('T')[0])
+          .then(res => res.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0),
+        // Last month revenue
+        supabase
+          .from('financial_transactions')
+          .select('amount')
+          .eq('type', 'income')
+          .gte('date', startOfLastMonth.toISOString().split('T')[0])
+          .lt('date', startOfMonth.toISOString().split('T')[0])
+          .then(res => res.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0),
+        // Recent activities
         DashboardService.getRecentActivities()
       ]);
 
-      // For now, considering active artists as total artists
-      // This could be enhanced with a proper active status field
-      const activeArtists = totalArtists;
+      // Calculate trends (percentage change from last month)
+      const calculateTrend = (current: number, previous: number) => {
+        if (previous === 0) {
+          return { value: current > 0 ? 100 : 0, isPositive: current >= 0 };
+        }
+        const change = ((current - previous) / previous) * 100;
+        return { value: Math.abs(Math.round(change * 10) / 10), isPositive: change >= 0 };
+      };
+
+      const worksAddedThisMonth = totalWorks - worksLastMonth;
+      const artistsAddedThisMonth = totalArtists - artistsLastMonth;
+      const contractsAddedThisMonth = activeContracts - contractsLastMonth;
 
       return {
         totalArtists,
-        activeArtists,
+        activeArtists: totalArtists,
         totalWorks,
         activeContracts,
         monthlyRevenue,
-        recentActivities
+        recentActivities,
+        trends: {
+          works: calculateTrend(worksAddedThisMonth, worksLastMonth > 0 ? Math.max(1, Math.floor(worksLastMonth * 0.1)) : 1),
+          artists: calculateTrend(artistsAddedThisMonth, artistsLastMonth > 0 ? Math.max(1, Math.floor(artistsLastMonth * 0.1)) : 1),
+          contracts: calculateTrend(contractsAddedThisMonth, contractsLastMonth > 0 ? Math.max(1, Math.floor(contractsLastMonth * 0.1)) : 1),
+          revenue: calculateTrend(monthlyRevenue, lastMonthRevenue),
+        }
       };
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -139,9 +212,24 @@ export class DashboardService {
     profit: number;
   }> {
     try {
-      // Temporarily return zero values since financial service was removed
-      const revenue = 0;
-      const expenses = 0;
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const [revenueResult, expensesResult] = await Promise.all([
+        supabase
+          .from('financial_transactions')
+          .select('amount')
+          .eq('type', 'income')
+          .gte('date', startOfMonth.toISOString().split('T')[0]),
+        supabase
+          .from('financial_transactions')
+          .select('amount')
+          .eq('type', 'expense')
+          .gte('date', startOfMonth.toISOString().split('T')[0])
+      ]);
+
+      const revenue = revenueResult.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+      const expenses = expensesResult.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
       return {
         revenue,

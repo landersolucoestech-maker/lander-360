@@ -95,28 +95,28 @@ const Index = () => {
                 value={isLoading ? '...' : displayStats.totalWorks || 0}
                 description="Cadastrados no sistema"
                 icon={Music}
-                trend={{ value: 12.5, isPositive: true }}
+                trend={stats?.trends?.works}
               />
               <DashboardCard
                 title="Artistas Ativos"
                 value={isLoading ? '...' : displayStats.activeArtists || 0}
                 description="Artistas ativos no sistema"
                 icon={Users}
-                trend={{ value: 8.3, isPositive: true }}
+                trend={stats?.trends?.artists}
               />
               <DashboardCard
                 title="Contratos Vigentes"
                 value={isLoading ? '...' : displayStats.activeContracts || 0}
                 description="Contratos ativos no sistema"
                 icon={FileText}
-                trend={{ value: 5.2, isPositive: true }}
+                trend={stats?.trends?.contracts}
               />
               <DashboardCard
                 title="Receita Mensal"
                 value={isLoading ? '...' : formatCurrency(displayStats.monthlyRevenue || 0)}
                 description="Receita do mês atual"
                 icon={DollarSign}
-                trend={{ value: 18.7, isPositive: true }}
+                trend={stats?.trends?.revenue}
               />
             </div>
 
