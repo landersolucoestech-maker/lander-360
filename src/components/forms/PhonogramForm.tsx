@@ -178,6 +178,9 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
     form.setValue('work_abramus_code', work.abramus_code || '');
     form.setValue('work_title', work.title);
     form.setValue('genre', work.genre || '');
+    // Preencher códigos ABRAMUS e ECAD da obra selecionada
+    form.setValue('abramus_code', work.abramus_code || '');
+    form.setValue('ecad_code', work.ecad_code || '');
     if (work.duration) {
       form.setValue('duration_minutes', Math.floor(work.duration / 60));
       form.setValue('duration_seconds', work.duration % 60);
