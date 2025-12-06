@@ -58,9 +58,9 @@ const PerfilUsuario = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError && profileError.code !== 'PGRST116') {
+      if (profileError) {
         console.error('Error fetching profile:', profileError);
       }
 
@@ -69,9 +69,9 @@ const PerfilUsuario = () => {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (roleError && roleError.code !== 'PGRST116') {
+      if (roleError) {
         console.error('Error fetching role:', roleError);
       }
 
@@ -124,16 +124,17 @@ const PerfilUsuario = () => {
 
     setIsSaving(true);
     try {
+      // Use upsert to create profile if it doesn't exist
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           full_name: editData.name.trim(),
           phone: editData.phone.trim() || null,
           sector: editData.sector || null,
           avatar_url: editData.avatarUrl || null,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+        }, { onConflict: 'id' });
 
       if (error) {
         throw error;
