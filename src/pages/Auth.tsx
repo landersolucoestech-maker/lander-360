@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe, Mail, ArrowLeft, CheckCircle, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MFAVerification } from '@/components/auth/MFAVerification';
 import authBackground from '@/assets/auth-background.jpeg';
@@ -46,6 +46,9 @@ interface MFAState {
   userId: string;
 }
 
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 15;
+
 export default function Auth() {
   const navigate = useNavigate();
   const { user, signIn, signUp, loading: authLoading } = useAuth();
@@ -53,6 +56,7 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [lockoutInfo, setLockoutInfo] = useState<{ locked: boolean; remainingMinutes: number } | null>(null);
   const [mfaState, setMfaState] = useState<MFAState>({
     required: false,
     hasTotp: false,
@@ -92,6 +96,109 @@ export default function Auth() {
     }
   });
 
+  const checkAccountLocked = async (email: string): Promise<{ locked: boolean; remainingMinutes: number }> => {
+    try {
+      const { data: attempt } = await supabase
+        .from("login_attempts")
+        .select("*")
+        .eq("email", email.toLowerCase())
+        .maybeSingle();
+
+      if (!attempt) {
+        return { locked: false, remainingMinutes: 0 };
+      }
+
+      if (attempt.locked_until) {
+        const lockedUntil = new Date(attempt.locked_until);
+        const now = new Date();
+        
+        if (lockedUntil > now) {
+          const remainingMs = lockedUntil.getTime() - now.getTime();
+          const remainingMinutes = Math.ceil(remainingMs / (1000 * 60));
+          return { locked: true, remainingMinutes };
+        } else {
+          // Lockout expired, reset attempts
+          await supabase
+            .from("login_attempts")
+            .delete()
+            .eq("email", email.toLowerCase());
+          return { locked: false, remainingMinutes: 0 };
+        }
+      }
+
+      return { locked: false, remainingMinutes: 0 };
+    } catch (error) {
+      console.error("Error checking account lock:", error);
+      return { locked: false, remainingMinutes: 0 };
+    }
+  };
+
+  const recordFailedAttempt = async (email: string): Promise<{ attemptsRemaining: number; locked: boolean }> => {
+    try {
+      const normalizedEmail = email.toLowerCase();
+      
+      const { data: existing } = await supabase
+        .from("login_attempts")
+        .select("*")
+        .eq("email", normalizedEmail)
+        .maybeSingle();
+
+      if (existing) {
+        const newAttemptCount = existing.attempt_count + 1;
+        
+        if (newAttemptCount >= MAX_LOGIN_ATTEMPTS) {
+          const lockedUntil = new Date();
+          lockedUntil.setMinutes(lockedUntil.getMinutes() + LOCKOUT_DURATION_MINUTES);
+          
+          await supabase
+            .from("login_attempts")
+            .update({
+              attempt_count: newAttemptCount,
+              locked_until: lockedUntil.toISOString(),
+              last_attempt_at: new Date().toISOString()
+            })
+            .eq("email", normalizedEmail);
+          
+          return { attemptsRemaining: 0, locked: true };
+        } else {
+          await supabase
+            .from("login_attempts")
+            .update({
+              attempt_count: newAttemptCount,
+              last_attempt_at: new Date().toISOString()
+            })
+            .eq("email", normalizedEmail);
+          
+          return { attemptsRemaining: MAX_LOGIN_ATTEMPTS - newAttemptCount, locked: false };
+        }
+      } else {
+        await supabase
+          .from("login_attempts")
+          .insert({
+            email: normalizedEmail,
+            attempt_count: 1,
+            last_attempt_at: new Date().toISOString()
+          });
+        
+        return { attemptsRemaining: MAX_LOGIN_ATTEMPTS - 1, locked: false };
+      }
+    } catch (error) {
+      console.error("Error recording failed attempt:", error);
+      return { attemptsRemaining: MAX_LOGIN_ATTEMPTS, locked: false };
+    }
+  };
+
+  const clearLoginAttempts = async (email: string) => {
+    try {
+      await supabase
+        .from("login_attempts")
+        .delete()
+        .eq("email", email.toLowerCase());
+    } catch (error) {
+      console.error("Error clearing login attempts:", error);
+    }
+  };
+
   const checkMFARequired = async (userId: string, userEmail: string): Promise<boolean> => {
     try {
       // Check TOTP factors
@@ -127,15 +234,40 @@ export default function Auth() {
 
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
+    setLockoutInfo(null);
+    
     try {
+      // Check if account is locked
+      const lockStatus = await checkAccountLocked(data.email);
+      if (lockStatus.locked) {
+        setLockoutInfo(lockStatus);
+        toast({
+          title: 'Conta bloqueada',
+          description: `Muitas tentativas de login falhas. Tente novamente em ${lockStatus.remainingMinutes} minuto(s).`,
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const { error } = await signIn(data.email, data.password);
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          toast({
-            title: 'Erro de autenticação',
-            description: 'Email ou senha incorretos',
-            variant: 'destructive'
-          });
+          const result = await recordFailedAttempt(data.email);
+          
+          if (result.locked) {
+            setLockoutInfo({ locked: true, remainingMinutes: LOCKOUT_DURATION_MINUTES });
+            toast({
+              title: 'Conta bloqueada',
+              description: `Muitas tentativas de login falhas. Sua conta foi bloqueada por ${LOCKOUT_DURATION_MINUTES} minutos.`,
+              variant: 'destructive'
+            });
+          } else {
+            toast({
+              title: 'Erro de autenticação',
+              description: `Email ou senha incorretos. ${result.attemptsRemaining} tentativa(s) restante(s).`,
+              variant: 'destructive'
+            });
+          }
         } else {
           toast({
             title: 'Erro',
@@ -144,6 +276,9 @@ export default function Auth() {
           });
         }
       } else {
+        // Login successful, clear attempts
+        await clearLoginAttempts(data.email);
+        
         // Get the current user to check MFA
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -361,6 +496,17 @@ export default function Auth() {
               // Login Form
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                  {lockoutInfo?.locked && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3">
+                      <ShieldAlert className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-red-500">Conta temporariamente bloqueada</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Muitas tentativas de login falhas. Tente novamente em {lockoutInfo.remainingMinutes} minuto(s).
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <FormField 
                     control={loginForm.control} 
                     name="email" 
@@ -404,13 +550,15 @@ export default function Auth() {
                   <Button 
                     type="submit" 
                     className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-sm tracking-wider rounded-lg" 
-                    disabled={isLoading}
+                    disabled={isLoading || lockoutInfo?.locked}
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ACESSANDO...
                       </>
+                    ) : lockoutInfo?.locked ? (
+                      'CONTA BLOQUEADA'
                     ) : (
                       'ACESSAR O SISTEMA'
                     )}
