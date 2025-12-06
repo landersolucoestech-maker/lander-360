@@ -317,15 +317,15 @@ export const AgendaEventForm: React.FC<AgendaEventFormProps> = ({
                       />
                     </div>
 
-                    {/* Valor do Ingresso */}
+                    {/* Valor do Cachê */}
                     <div className="space-y-2">
-                      <Label htmlFor="ticket_price">Preço do Ingresso (R$)</Label>
+                      <Label htmlFor="ticket_price">Valor do Cachê (R$)</Label>
                       <Input
                         id="ticket_price"
                         type="number"
                         step="0.01"
                         {...form.register('ticket_price', { valueAsNumber: true })}
-                        placeholder="Preço do ingresso"
+                        placeholder="Valor do cachê"
                       />
                     </div>
 
