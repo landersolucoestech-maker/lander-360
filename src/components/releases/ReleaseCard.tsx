@@ -15,6 +15,7 @@ interface ReleaseCardProps {
     approvalStatus?: 'pendente' | 'aceita' | 'recusada' | 'em_espera';
     priority?: 'alta' | 'media' | 'baixa';
     takedown?: boolean;
+    hasMarketingPlan?: boolean;
   };
   onViewDetails: (release: any) => void;
   onEdit?: (release: any) => void;
@@ -115,30 +116,32 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
             <p className="text-sm text-white/70">{release.artist}</p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="secondary"
-              className="flex-1 bg-primary/80 hover:bg-primary text-primary-foreground text-xs h-7"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              Planejamento
-            </Button>
-            <Badge 
-              className={`flex-1 flex items-center justify-center text-xs h-7 ${
-                release.priority === 'alta' 
-                  ? 'bg-destructive text-destructive-foreground' 
-                  : release.priority === 'media' 
-                    ? 'bg-yellow-500 text-black' 
-                    : 'bg-green-500 text-white'
-              }`}
-            >
-              {release.priority === 'alta' ? 'Alta' : release.priority === 'media' ? 'Média' : 'Baixa'}
-            </Badge>
-          </div>
+          {/* Marketing Planning - Only show when there's a marketing plan */}
+          {release.hasMarketingPlan && (
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="secondary"
+                className="flex-1 bg-primary/80 hover:bg-primary text-primary-foreground text-xs h-7"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                Planejamento
+              </Button>
+              <Badge 
+                className={`flex-1 flex items-center justify-center text-xs h-7 ${
+                  release.priority === 'alta' 
+                    ? 'bg-destructive text-destructive-foreground' 
+                    : release.priority === 'media' 
+                      ? 'bg-yellow-500 text-black' 
+                      : 'bg-green-500 text-white'
+                }`}
+              >
+                {release.priority === 'alta' ? 'Alta' : release.priority === 'media' ? 'Média' : 'Baixa'}
+              </Badge>
+            </div>
+          )}
 
           {/* Countdown Timer */}
           {!timeRemaining.isPast && (release.approvalStatus === 'aceita' || !release.approvalStatus) && (
