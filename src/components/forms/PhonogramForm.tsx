@@ -524,7 +524,14 @@ export function PhonogramForm({
                   }) => (
                     <FormItem className="flex flex-col">
                       {index === 0 && <FormLabel>Nome</FormLabel>}
-                      <Popover open={isPopoverOpen && filteredSuggestions.length > 0} onOpenChange={(open) => setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }))}>
+                      <Popover 
+                        open={isPopoverOpen} 
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
+                          }
+                        }}
+                      >
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Input 
@@ -548,35 +555,44 @@ export function PhonogramForm({
                             />
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[300px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-                          <Command>
-                            <CommandList>
-                              <CommandGroup heading={getHeading()}>
-                                {filteredSuggestions.map((suggestion, suggestionIndex) => (
-                                  <CommandItem
-                                    key={`${suggestion.name}-${suggestionIndex}`}
-                                    onSelect={() => {
-                                      if (suggestion.isArtist && suggestion.artistData) {
-                                        handleSelectArtist(suggestion.artistData, fieldName, index);
-                                      } else {
-                                        handleSelectProjectParticipant(suggestion, fieldName, index);
-                                      }
-                                    }}
-                                    className="cursor-pointer"
-                                  >
-                                    <Check className={cn("mr-2 h-4 w-4", formField.value === suggestion.name ? "opacity-100" : "opacity-0")} />
-                                    <div className="flex flex-col">
-                                      <span>{suggestion.name}</span>
-                                      <span className="text-xs text-muted-foreground">
-                                        {suggestion.isArtist ? 'Artista cadastrado' : `Projeto: ${suggestion.projectName}`}
-                                      </span>
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
+                        {filteredSuggestions.length > 0 && (
+                          <PopoverContent 
+                            className="w-[300px] p-0" 
+                            align="start" 
+                            onOpenAutoFocus={(e) => e.preventDefault()}
+                            onInteractOutside={(e) => {
+                              setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
+                            }}
+                          >
+                            <Command>
+                              <CommandList>
+                                <CommandGroup heading={getHeading()}>
+                                  {filteredSuggestions.map((suggestion, suggestionIndex) => (
+                                    <CommandItem
+                                      key={`${suggestion.name}-${suggestionIndex}`}
+                                      onSelect={() => {
+                                        if (suggestion.isArtist && suggestion.artistData) {
+                                          handleSelectArtist(suggestion.artistData, fieldName, index);
+                                        } else {
+                                          handleSelectProjectParticipant(suggestion, fieldName, index);
+                                        }
+                                      }}
+                                      className="cursor-pointer"
+                                    >
+                                      <Check className={cn("mr-2 h-4 w-4", formField.value === suggestion.name ? "opacity-100" : "opacity-0")} />
+                                      <div className="flex flex-col">
+                                        <span>{suggestion.name}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {suggestion.isArtist ? 'Artista cadastrado' : `Projeto: ${suggestion.projectName}`}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        )}
                       </Popover>
                     </FormItem>
                   )} />
