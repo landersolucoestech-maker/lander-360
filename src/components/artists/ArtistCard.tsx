@@ -100,22 +100,79 @@ export function ArtistCard({
                 <div>
                   <h4 className="text-sm md:text-base font-medium text-foreground mb-2">Redes Sociais</h4>
                   <div className="flex items-center gap-3 flex-wrap">
-                    {artist.socialMedia?.instagram && <a href={artist.socialMedia.instagram.startsWith('http') ? artist.socialMedia.instagram : `https://instagram.com/${artist.socialMedia.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-pink-500 transition-colors">
+                    {artist.socialMedia?.instagram && (
+                      <a 
+                        href={artist.socialMedia.instagram.startsWith('http') ? artist.socialMedia.instagram : `https://instagram.com/${artist.socialMedia.instagram.replace('@', '')}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-muted-foreground hover:text-pink-500 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(artist.socialMedia.instagram.startsWith('http') ? artist.socialMedia.instagram : `https://instagram.com/${artist.socialMedia.instagram.replace('@', '')}`, '_blank');
+                        }}
+                      >
                         <FaInstagram className="h-5 w-5" />
-                      </a>}
-                    {artist.socialMedia?.spotify && <a href={artist.socialMedia.spotify.startsWith('http') ? artist.socialMedia.spotify : `https://open.spotify.com/artist/${artist.socialMedia.spotify}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-green-500 transition-colors">
+                      </a>
+                    )}
+                    {artist.socialMedia?.spotify && (
+                      <a 
+                        href={artist.socialMedia.spotify.startsWith('http') ? artist.socialMedia.spotify : `https://open.spotify.com/artist/${artist.socialMedia.spotify}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-muted-foreground hover:text-green-500 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(artist.socialMedia.spotify.startsWith('http') ? artist.socialMedia.spotify : `https://open.spotify.com/artist/${artist.socialMedia.spotify}`, '_blank');
+                        }}
+                      >
                         <FaSpotify className="h-5 w-5" />
-                      </a>}
-                    {artist.socialMedia?.youtube && <a href={artist.socialMedia.youtube.startsWith('http') ? artist.socialMedia.youtube : `https://youtube.com/${artist.socialMedia.youtube}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-red-500 transition-colors">
+                      </a>
+                    )}
+                    {artist.socialMedia?.youtube && (
+                      <a 
+                        href={artist.socialMedia.youtube.startsWith('http') ? artist.socialMedia.youtube : `https://youtube.com/${artist.socialMedia.youtube}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-muted-foreground hover:text-red-500 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(artist.socialMedia.youtube.startsWith('http') ? artist.socialMedia.youtube : `https://youtube.com/${artist.socialMedia.youtube}`, '_blank');
+                        }}
+                      >
                         <FaYoutube className="h-5 w-5" />
-                      </a>}
-                    {artist.socialMedia?.tiktok && <a href={artist.socialMedia.tiktok.startsWith('http') ? artist.socialMedia.tiktok : `https://tiktok.com/@${artist.socialMedia.tiktok.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                      </a>
+                    )}
+                    {artist.socialMedia?.tiktok && (
+                      <a 
+                        href={artist.socialMedia.tiktok.startsWith('http') ? artist.socialMedia.tiktok : `https://tiktok.com/@${artist.socialMedia.tiktok.replace('@', '')}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(artist.socialMedia.tiktok.startsWith('http') ? artist.socialMedia.tiktok : `https://tiktok.com/@${artist.socialMedia.tiktok.replace('@', '')}`, '_blank');
+                        }}
+                      >
                         <FaTiktok className="h-5 w-5" />
-                      </a>}
-                    {artist.socialMedia?.soundcloud && <a href={artist.socialMedia.soundcloud.startsWith('http') ? artist.socialMedia.soundcloud : `https://soundcloud.com/${artist.socialMedia.soundcloud}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-orange-500 transition-colors">
+                      </a>
+                    )}
+                    {artist.socialMedia?.soundcloud && (
+                      <a 
+                        href={artist.socialMedia.soundcloud.startsWith('http') ? artist.socialMedia.soundcloud : `https://soundcloud.com/${artist.socialMedia.soundcloud}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-muted-foreground hover:text-orange-500 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(artist.socialMedia.soundcloud.startsWith('http') ? artist.socialMedia.soundcloud : `https://soundcloud.com/${artist.socialMedia.soundcloud}`, '_blank');
+                        }}
+                      >
                         <FaSoundcloud className="h-5 w-5" />
-                      </a>}
-                    {!artist.socialMedia?.instagram && !artist.socialMedia?.spotify && !artist.socialMedia?.youtube && !artist.socialMedia?.tiktok && !artist.socialMedia?.soundcloud && <span className="text-xs text-muted-foreground">Nenhuma rede cadastrada</span>}
+                      </a>
+                    )}
+                    {!artist.socialMedia?.instagram && !artist.socialMedia?.spotify && !artist.socialMedia?.youtube && !artist.socialMedia?.tiktok && !artist.socialMedia?.soundcloud && (
+                      <span className="text-xs text-muted-foreground">Nenhuma rede cadastrada</span>
+                    )}
                   </div>
                 </div>
 
