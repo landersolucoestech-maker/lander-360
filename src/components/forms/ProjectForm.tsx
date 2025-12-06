@@ -21,14 +21,14 @@ const audioFileSchema = z.object({
 
 const songSchema = z.object({
   song_name: z.string().min(1, 'Nome da música é obrigatório'),
-  collaboration_type: z.enum(['solo', 'feat']),
-  track_type: z.enum(['original', 'remix']),
-  instrumental: z.enum(['sim', 'nao']),
-  genre: z.string().min(1, 'Gênero é obrigatório'),
-  language: z.string().min(1, 'Idioma é obrigatório'),
-  composers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um compositor é obrigatório'),
-  performers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um intérprete é obrigatório'),
-  producers: z.array(z.object({ name: z.string() })).min(1, 'Pelo menos um produtor é obrigatório'),
+  collaboration_type: z.enum(['solo', 'feat']).default('solo'),
+  track_type: z.enum(['original', 'remix']).default('original'),
+  instrumental: z.enum(['sim', 'nao']).default('nao'),
+  genre: z.string().optional(),
+  language: z.string().optional(),
+  composers: z.array(z.object({ name: z.string() })).optional(),
+  performers: z.array(z.object({ name: z.string() })).optional(),
+  producers: z.array(z.object({ name: z.string() })).optional(),
   lyrics: z.string().optional(),
   audio_files: z.array(audioFileSchema).optional(),
 });
@@ -36,14 +36,14 @@ const songSchema = z.object({
 const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Coreano', 'Mandarim', 'Instrumental', 'Multilíngue', 'Outro'];
 
 const projectSchema = z.object({
-  release_type: z.enum(['single', 'ep', 'album']),
+  release_type: z.enum(['single', 'ep', 'album']).default('single'),
   songs: z.array(songSchema).min(1, 'Pelo menos uma música é obrigatória'),
   observations: z.string().optional(),
   // Campos originais para compatibilidade
-  name: z.string().min(1, 'Nome é obrigatório'),
+  name: z.string().optional(),
   description: z.string().optional(),
   status: z.enum(['draft', 'in_progress', 'completed', 'cancelled']).default('draft'),
-  created_by: z.string().min(1, 'Criador é obrigatório'),
+  created_by: z.string().optional(),
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;
@@ -148,6 +148,12 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
   };
 
   const isLoading = createProject.isPending || updateProject.isPending;
+  const formErrors = form.formState.errors;
+
+  // Debug: log validation errors
+  const handleFormSubmit = form.handleSubmit(onSubmit, (errors) => {
+    console.log('Validation errors:', errors);
+  });
 
   const addNewSong = () => {
     appendSong({
@@ -167,7 +173,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <FormField
           control={form.control}
           name="release_type"
