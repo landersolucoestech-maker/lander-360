@@ -29,18 +29,24 @@ const RegistroMusicas = () => {
   // Transform music registry data to display format
   const allSongs = musicRegistry.map(music => {
     const artist = artists.find(a => a.id === music.artist_id);
-    const durationMinutes = music.duration ? Math.floor(music.duration / 60) : 0;
-    const durationSeconds = music.duration ? music.duration % 60 : 0;
+    // Map status to display values
+    const getStatusDisplay = (status: string | null) => {
+      switch (status) {
+        case 'em_analise': return 'Em Análise';
+        case 'aceita': return 'Aceita';
+        case 'pendente': return 'Pendente';
+        case 'recusada': return 'Recusada';
+        case 'draft': return 'Pendente';
+        default: return 'Pendente';
+      }
+    };
     return {
       // Keep original data for editing
       ...music,
       // Display fields
       artist: artist?.name || 'N/A',
-      durationFormatted: music.duration ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}` : '-',
-      statusDisplay: music.status === 'draft' ? 'Pendente' : music.status === 'registered' ? 'Registrado' : music.status === 'approved' ? 'Aprovado' : 'Revisão',
+      statusDisplay: getStatusDisplay(music.status),
       composers: music.writers || [],
-      performers: [],
-      producers: music.publishers || [],
       registrationDate: new Date(music.created_at).toLocaleDateString('pt-BR'),
     };
   });
@@ -52,13 +58,13 @@ const RegistroMusicas = () => {
   const filterOptions = [
     {
       key: "status",
-      label: "Status",
-      options: ["Registrado", "Pendente", "Revisão", "Aprovado"]
+      label: "Situação",
+      options: ["Em Análise", "Aceita", "Pendente", "Recusada"]
     },
     {
       key: "genre",
       label: "Gênero",
-      options: ["MPB", "Rock", "Pop", "Sertanejo", "Funk"]
+      options: ["MPB", "Rock", "Pop", "Sertanejo", "Funk", "Trap", "Eletrônica"]
     }
   ];
 
@@ -213,41 +219,30 @@ const RegistroMusicas = () => {
                           </div>
                           <div className="space-y-1">
                             <h3 className="font-medium text-foreground">{song.title}</h3>
-                            <div className="text-sm text-muted-foreground">{song.artist}</div>
-                            <div className="flex items-center gap-2">
-                              <Badge 
-                                variant={
-                                  song.statusDisplay === "Registrado" ? "default" :
-                                  song.statusDisplay === "Pendente" ? "secondary" : "outline"
-                                }
-                              >
-                                {song.statusDisplay}
-                              </Badge>
-                              <Badge variant="secondary">{song.genre || 'N/A'}</Badge>
-                            </div>
+                            <Badge 
+                              variant={
+                                song.statusDisplay === "Aceita" ? "default" :
+                                song.statusDisplay === "Recusada" ? "destructive" :
+                                song.statusDisplay === "Em Análise" ? "outline" : "secondary"
+                              }
+                            >
+                              {song.statusDisplay}
+                            </Badge>
                           </div>
                         </div>
                         
                         <div className="flex items-center gap-6 text-sm">
                           <div className="text-center">
-                            <div className="text-muted-foreground">Compositores</div>
+                            <div className="text-muted-foreground">Cód. ABRAMUS</div>
+                            <div className="font-medium text-foreground">{(song as any).abramus_code || "-"}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-muted-foreground">Cód. ECAD</div>
+                            <div className="font-medium text-foreground">{(song as any).ecad_code || "-"}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-muted-foreground">Participantes</div>
                             <div className="font-medium text-foreground">{song.composers?.join(", ") || "-"}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground">ISWC</div>
-                            <div className="font-medium text-foreground">{song.iswc || '-'}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground">ISRC</div>
-                            <div className="font-medium text-foreground">{song.isrc || '-'}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground">Duração</div>
-                            <div className="font-medium">{song.durationFormatted}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground">Registro</div>
-                            <div className="font-medium">{song.registrationDate}</div>
                           </div>
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={() => handleViewSong(song)}>

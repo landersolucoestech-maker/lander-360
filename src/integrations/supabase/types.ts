@@ -953,11 +953,13 @@ export type Database = {
       }
       music_registry: {
         Row: {
+          abramus_code: string | null
           artist_id: string | null
           bpm: number | null
           created_at: string
           created_by: string | null
           duration: number | null
+          ecad_code: string | null
           genre: string | null
           id: string
           isrc: string | null
@@ -971,11 +973,13 @@ export type Database = {
           writers: string[] | null
         }
         Insert: {
+          abramus_code?: string | null
           artist_id?: string | null
           bpm?: number | null
           created_at?: string
           created_by?: string | null
           duration?: number | null
+          ecad_code?: string | null
           genre?: string | null
           id?: string
           isrc?: string | null
@@ -989,11 +993,13 @@ export type Database = {
           writers?: string[] | null
         }
         Update: {
+          abramus_code?: string | null
           artist_id?: string | null
           bpm?: number | null
           created_at?: string
           created_by?: string | null
           duration?: number | null
+          ecad_code?: string | null
           genre?: string | null
           id?: string
           isrc?: string | null
