@@ -299,35 +299,16 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         form.setValue('duration_seconds', work.duration % 60);
       }
       
-      // Add participants from project (composers, performers, producers)
+      // Add only composers/authors to participants grid
       const participants: any[] = [];
       if (work.composers && Array.isArray(work.composers)) {
         work.composers.forEach((c: any) => {
           participants.push({
             name: c.name || c,
-            cpf: c.cpf || findCpfByName(c.name || c),
             role: 'compositor',
+            link: '',
+            contract_start_date: '',
             percentage: c.percentage || 0,
-          });
-        });
-      }
-      if (work.performers && Array.isArray(work.performers)) {
-        work.performers.forEach((p: any) => {
-          participants.push({
-            name: p.name || p,
-            cpf: p.cpf || findCpfByName(p.name || p),
-            role: 'interprete',
-            percentage: p.percentage || 0,
-          });
-        });
-      }
-      if (work.producers && Array.isArray(work.producers)) {
-        work.producers.forEach((p: any) => {
-          participants.push({
-            name: p.name || p,
-            cpf: p.cpf || findCpfByName(p.name || p),
-            role: 'produtor',
-            percentage: p.percentage || 0,
           });
         });
       }
@@ -342,14 +323,18 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       form.setValue('language', work.idioma || 'portugues');
       form.setValue('is_instrumental', work.instrumental || false);
       
-      // Add participants from ABRAMUS
+      // Add only composers/authors from ABRAMUS
       if (work.participantes && work.participantes.length > 0) {
-        const formattedParticipants = work.participantes.map((p: any) => ({
-          name: p.nome,
-          cpf: p.cpf,
-          role: p.funcao,
-          percentage: p.percentual,
-        }));
+        const composerRoles = ['compositor', 'autor', 'tradutor'];
+        const formattedParticipants = work.participantes
+          .filter((p: any) => composerRoles.includes(p.funcao?.toLowerCase()))
+          .map((p: any) => ({
+            name: p.nome,
+            role: p.funcao?.toLowerCase() || 'compositor',
+            link: '',
+            contract_start_date: '',
+            percentage: p.percentual || 0,
+          }));
         form.setValue('participants', formattedParticipants);
       }
     }
