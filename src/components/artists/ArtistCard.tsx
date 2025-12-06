@@ -37,6 +37,11 @@ interface ArtistCardProps {
       email: string;
       telefone: string;
     };
+    responsible?: {
+      nome: string;
+      email: string;
+      telefone: string;
+    } | null;
     gravadora: string;
   };
 }
@@ -152,11 +157,20 @@ export function ArtistCard({
                     <span className="text-sm md:text-base font-medium text-foreground">Perfil:</span>
                     <span className="text-sm md:text-base font-medium text-foreground ml-1">{artist.gravadora}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
-                    <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.profile.telefone}</div>
-                    <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
-                  </div>
+                  {artist.responsible ? (
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div className="text-xs text-primary font-medium mb-1">Responsável/Empresário:</div>
+                      <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.responsible.nome}</div>
+                      <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.responsible.telefone}</div>
+                      <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.responsible.email}</div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
+                      <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.profile.telefone}</div>
+                      <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
