@@ -436,9 +436,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         return;
       }
 
-      // Prepare data for database
+      // Prepare data for database - extract participant names for writers/publishers columns
       const writers = data.participants?.filter(p => 
-        ['autor', 'compositor', 'editor', 'adaptador', 'versionista', 'sub_editor'].includes(p.role)
+        ['compositor_autor', 'autor', 'compositor', 'tradutor', 'adaptador', 'versionista'].includes(p.role)
       ).map(p => p.name) || [];
       
       const publishers = data.participants?.filter(p => 
