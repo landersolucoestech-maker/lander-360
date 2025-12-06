@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2 } from "lucide-react";
 import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
+import { FinancialViewModal } from "@/components/modals/FinancialViewModal";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { FinancialTransaction } from "@/types/database";
@@ -18,8 +19,10 @@ import { mockTransactions } from "@/data/mockData";
 
 const Financeiro = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<FinancialTransaction | undefined>();
+  const [transactionToView, setTransactionToView] = useState<FinancialTransaction | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<FinancialTransaction | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,6 +42,11 @@ const Financeiro = () => {
   const handleEditTransaction = (transaction: FinancialTransaction) => {
     setSelectedTransaction(transaction);
     setIsModalOpen(true);
+  };
+
+  const handleViewTransaction = (transaction: FinancialTransaction) => {
+    setTransactionToView(transaction);
+    setIsViewModalOpen(true);
   };
 
   const handleDeleteTransaction = (transaction: FinancialTransaction) => {
@@ -356,6 +364,7 @@ const Financeiro = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
+                              onClick={() => handleViewTransaction(transaction)}
                             >
                               Ver
                             </Button>
@@ -386,6 +395,12 @@ const Financeiro = () => {
       </div>
 
       {/* Modals */}
+      <FinancialViewModal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        transaction={transactionToView}
+      />
+
       <FinancialTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

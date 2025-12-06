@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { ContactProfileModal } from "@/components/modals/ContactProfileModal";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
 import { UserCheck, Plus, Phone, Mail, Calendar, Star } from "lucide-react";
 import { mockContacts } from "@/data/mockData";
@@ -15,10 +16,14 @@ import { mockContacts } from "@/data/mockData";
 const CRM = () => {
   const { toast } = useToast();
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [selectedContact, setSelectedContact] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [contactToDelete, setContactToDelete] = useState<any>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [allContacts, setAllContacts] = useState(mockContacts);
   
-  const contacts = mockContacts;
+  const contacts = allContacts;
 
   return (
     <SidebarProvider>
@@ -206,12 +211,20 @@ const CRM = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
+                              onClick={() => {
+                                setSelectedContact(contact);
+                                setIsEditModalOpen(true);
+                              }}
                             >
                               Editar
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm"
+                              onClick={() => {
+                                setContactToDelete(contact);
+                                setIsDeleteModalOpen(true);
+                              }}
                             >
                               Excluir
                             </Button>
@@ -254,6 +267,45 @@ const CRM = () => {
         open={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
         contact={selectedContact}
+      />
+
+      <ContactModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSubmit={async (data) => {
+          try {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            toast({
+              title: "Contato Atualizado",
+              description: "O contato foi atualizado com sucesso!",
+            });
+            setIsEditModalOpen(false);
+          } catch (error) {
+            toast({
+              title: "Erro",
+              description: "Erro ao atualizar contato.",
+              variant: "destructive",
+            });
+          }
+        }}
+      />
+
+      <DeleteConfirmationModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        onConfirm={() => {
+          if (contactToDelete) {
+            setAllContacts(prev => prev.filter(c => c.id !== contactToDelete.id));
+            setIsDeleteModalOpen(false);
+            setContactToDelete(null);
+            toast({
+              title: "Contato Excluído",
+              description: "O contato foi removido com sucesso.",
+            });
+          }
+        }}
+        title="Excluir Contato"
+        description={`Tem certeza que deseja excluir o contato "${contactToDelete?.name}"? Esta ação não pode ser desfeita.`}
       />
     </SidebarProvider>
   );

@@ -8,17 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ProjectModal } from "@/components/modals/ProjectModal";
 import { ProjectViewModal } from "@/components/modals/ProjectViewModal";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { PlayCircle, Plus, TrendingUp, Calendar, Music } from "lucide-react";
 import { mockProjects } from "@/data/mockData";
+import { useToast } from "@/hooks/use-toast";
 
 const Projetos = () => {
-  const allProjects = mockProjects;
-
+  const [allProjects, setAllProjects] = useState(mockProjects);
   const [filteredProjects, setFilteredProjects] = useState(allProjects);
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const { toast } = useToast();
 
   const filterOptions = [
     {
@@ -58,6 +61,25 @@ const Projetos = () => {
   const handleViewProject = (project) => {
     setSelectedProject(project);
     setViewModalOpen(true);
+  };
+
+  const handleDeleteProject = (project) => {
+    setSelectedProject(project);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteProject = () => {
+    if (selectedProject) {
+      const updated = allProjects.filter(p => p.id !== selectedProject.id);
+      setAllProjects(updated);
+      setFilteredProjects(updated);
+      setDeleteModalOpen(false);
+      setSelectedProject(null);
+      toast({
+        title: "Projeto Excluído",
+        description: "O projeto foi removido com sucesso.",
+      });
+    }
   };
 
   const filterProjects = (searchTerm: string, filters: Record<string, string>) => {
@@ -221,7 +243,7 @@ const Projetos = () => {
                             <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
                               Editar
                             </Button>
-                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDeleteProject(project)}>
                               Excluir
                             </Button>
                           </div>
@@ -251,6 +273,14 @@ const Projetos = () => {
               open={viewModalOpen}
               onOpenChange={setViewModalOpen}
               project={selectedProject}
+            />
+
+            <DeleteConfirmationModal
+              open={deleteModalOpen}
+              onOpenChange={setDeleteModalOpen}
+              onConfirm={confirmDeleteProject}
+              title="Excluir Projeto"
+              description={`Tem certeza que deseja excluir o projeto "${selectedProject?.name}"? Esta ação não pode ser desfeita.`}
             />
           </div>
         </SidebarInset>

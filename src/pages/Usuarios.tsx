@@ -10,6 +10,7 @@ import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical } from "lucide-react";
 import { UserModal } from "@/components/modals/UserModal";
+import { UserViewModal } from "@/components/modals/UserViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { mockUsers } from "@/data/mockData";
@@ -21,7 +22,9 @@ const Usuarios = () => {
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [userToView, setUserToView] = useState<any>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
@@ -44,6 +47,11 @@ const Usuarios = () => {
   const handleEditUser = (user: any) => {
     setSelectedUser(user);
     setIsUserModalOpen(true);
+  };
+
+  const handleViewUser = (user: any) => {
+    setUserToView(user);
+    setIsViewModalOpen(true);
   };
 
   const handleToggleUserStatus = (user: any) => {
@@ -231,6 +239,7 @@ const Usuarios = () => {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => handleViewUser(userData)}
                           >
                             Ver
                           </Button>
@@ -284,6 +293,12 @@ const Usuarios = () => {
       </div>
 
       {/* Modals */}
+      <UserViewModal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        user={userToView}
+      />
+
       <UserModal
         mode={selectedUser ? "edit" : "create"}
         user={selectedUser}
