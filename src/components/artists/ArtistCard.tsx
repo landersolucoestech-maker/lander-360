@@ -11,7 +11,6 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { useDeleteArtist } from "@/hooks/useArtists";
 import { Mail, Phone } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud } from "react-icons/fa";
-
 interface ArtistCardProps {
   artist: {
     id: number;
@@ -101,34 +100,22 @@ export function ArtistCard({
                 <div>
                   <h4 className="text-sm md:text-base font-medium text-foreground mb-2">Redes Sociais</h4>
                   <div className="flex items-center gap-3 flex-wrap">
-                    {artist.socialMedia?.instagram && (
-                      <a href={artist.socialMedia.instagram.startsWith('http') ? artist.socialMedia.instagram : `https://instagram.com/${artist.socialMedia.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-pink-500 transition-colors">
+                    {artist.socialMedia?.instagram && <a href={artist.socialMedia.instagram.startsWith('http') ? artist.socialMedia.instagram : `https://instagram.com/${artist.socialMedia.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-pink-500 transition-colors">
                         <FaInstagram className="h-5 w-5" />
-                      </a>
-                    )}
-                    {artist.socialMedia?.spotify && (
-                      <a href={artist.socialMedia.spotify.startsWith('http') ? artist.socialMedia.spotify : `https://open.spotify.com/artist/${artist.socialMedia.spotify}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-green-500 transition-colors">
+                      </a>}
+                    {artist.socialMedia?.spotify && <a href={artist.socialMedia.spotify.startsWith('http') ? artist.socialMedia.spotify : `https://open.spotify.com/artist/${artist.socialMedia.spotify}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-green-500 transition-colors">
                         <FaSpotify className="h-5 w-5" />
-                      </a>
-                    )}
-                    {artist.socialMedia?.youtube && (
-                      <a href={artist.socialMedia.youtube.startsWith('http') ? artist.socialMedia.youtube : `https://youtube.com/${artist.socialMedia.youtube}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-red-500 transition-colors">
+                      </a>}
+                    {artist.socialMedia?.youtube && <a href={artist.socialMedia.youtube.startsWith('http') ? artist.socialMedia.youtube : `https://youtube.com/${artist.socialMedia.youtube}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-red-500 transition-colors">
                         <FaYoutube className="h-5 w-5" />
-                      </a>
-                    )}
-                    {artist.socialMedia?.tiktok && (
-                      <a href={artist.socialMedia.tiktok.startsWith('http') ? artist.socialMedia.tiktok : `https://tiktok.com/@${artist.socialMedia.tiktok.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                      </a>}
+                    {artist.socialMedia?.tiktok && <a href={artist.socialMedia.tiktok.startsWith('http') ? artist.socialMedia.tiktok : `https://tiktok.com/@${artist.socialMedia.tiktok.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                         <FaTiktok className="h-5 w-5" />
-                      </a>
-                    )}
-                    {artist.socialMedia?.soundcloud && (
-                      <a href={artist.socialMedia.soundcloud.startsWith('http') ? artist.socialMedia.soundcloud : `https://soundcloud.com/${artist.socialMedia.soundcloud}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-orange-500 transition-colors">
+                      </a>}
+                    {artist.socialMedia?.soundcloud && <a href={artist.socialMedia.soundcloud.startsWith('http') ? artist.socialMedia.soundcloud : `https://soundcloud.com/${artist.socialMedia.soundcloud}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-orange-500 transition-colors">
                         <FaSoundcloud className="h-5 w-5" />
-                      </a>
-                    )}
-                    {!artist.socialMedia?.instagram && !artist.socialMedia?.spotify && !artist.socialMedia?.youtube && !artist.socialMedia?.tiktok && !artist.socialMedia?.soundcloud && (
-                      <span className="text-xs text-muted-foreground">Nenhuma rede cadastrada</span>
-                    )}
+                      </a>}
+                    {!artist.socialMedia?.instagram && !artist.socialMedia?.spotify && !artist.socialMedia?.youtube && !artist.socialMedia?.tiktok && !artist.socialMedia?.soundcloud && <span className="text-xs text-muted-foreground">Nenhuma rede cadastrada</span>}
                   </div>
                 </div>
 
@@ -157,20 +144,16 @@ export function ArtistCard({
                     <span className="text-sm md:text-base font-medium text-foreground">Perfil:</span>
                     <span className="text-sm md:text-base font-medium text-foreground ml-1">{artist.gravadora}</span>
                   </div>
-                  {artist.responsible ? (
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="text-xs text-primary font-medium mb-1">Responsável/Empresário:</div>
+                  {artist.responsible ? <div className="text-sm text-muted-foreground space-y-1">
+                      <div className="text-xs font-medium mb-1 text-primary-foreground">Responsável/Empresário:</div>
                       <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.responsible.nome}</div>
                       <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.responsible.telefone}</div>
                       <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.responsible.email}</div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground space-y-1">
+                    </div> : <div className="text-sm text-muted-foreground space-y-1">
                       <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
                       <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.profile.telefone}</div>
                       <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
-                    </div>
-                  )}
+                    </div>}
                 </div>
 
                 {/* Action Buttons */}
