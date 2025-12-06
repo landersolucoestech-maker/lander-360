@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -8,6 +8,8 @@ import { ArtistCard } from "@/components/artists/ArtistCard";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ArtistModal } from "@/components/modals/ArtistModal";
 import { useArtists, useArtistsCount } from "@/hooks/useArtists";
+import { useProjects } from "@/hooks/useProjects";
+import { useReleases } from "@/hooks/useReleases";
 import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
 import { mockArtists } from "@/data/mockData";
 
@@ -15,7 +17,34 @@ const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const { data: artists, isLoading, error } = useArtists();
   const { data: artistsCount } = useArtistsCount();
+  const { data: projects = [] } = useProjects();
+  const { data: releases = [] } = useReleases();
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
+
+  // Count projects and releases per artist
+  const artistStats = useMemo(() => {
+    const stats: Record<string, { projetos: number; lancamentos: number }> = {};
+    
+    projects.forEach((project: any) => {
+      if (project.artist_id) {
+        if (!stats[project.artist_id]) {
+          stats[project.artist_id] = { projetos: 0, lancamentos: 0 };
+        }
+        stats[project.artist_id].projetos++;
+      }
+    });
+    
+    releases.forEach((release: any) => {
+      if (release.artist_id) {
+        if (!stats[release.artist_id]) {
+          stats[release.artist_id] = { projetos: 0, lancamentos: 0 };
+        }
+        stats[release.artist_id].lancamentos++;
+      }
+    });
+    
+    return stats;
+  }, [projects, releases]);
 
   // Transform database artists to match UI format - pass complete database data
   const transformDatabaseArtist = (dbArtist: any) => {
@@ -49,10 +78,10 @@ const Artistas = () => {
         soundcloud: dbArtist.soundcloud,
       },
       stats: {
-        projetos: 0,
+        projetos: artistStats[dbArtist.id]?.projetos || 0,
         obras: 0,
         fonogramas: 0,
-        lancamentos: 0,
+        lancamentos: artistStats[dbArtist.id]?.lancamentos || 0,
         streams: '0'
       },
       // Dados do responsável/empresário quando aplicável
