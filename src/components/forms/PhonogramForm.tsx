@@ -471,31 +471,33 @@ export function PhonogramForm({
   };
 
   const getFilteredArtists = (searchTerm: string) => {
-    if (!searchTerm || searchTerm.length < 2) return [];
+    if (!searchTerm || searchTerm.length < 1) return artists.slice(0, 15);
     const term = searchTerm.toLowerCase();
     return artists.filter((artist: any) => 
       artist.name?.toLowerCase().includes(term) ||
       artist.stage_name?.toLowerCase().includes(term) ||
       artist.full_name?.toLowerCase().includes(term)
-    ).slice(0, 10);
+    ).slice(0, 15);
   };
 
   // Filtrar performers dos projetos para intérpretes
   const getFilteredPerformers = (searchTerm: string) => {
-    if (!searchTerm || searchTerm.length < 2) return [];
+    const allPerformers = getProjectPerformers();
+    if (!searchTerm || searchTerm.length < 1) return allPerformers.slice(0, 15);
     const term = searchTerm.toLowerCase();
-    return getProjectPerformers().filter(p => 
+    return allPerformers.filter(p => 
       p.name.toLowerCase().includes(term)
-    ).slice(0, 10);
+    ).slice(0, 15);
   };
 
   // Filtrar producers dos projetos para músicos acompanhantes
   const getFilteredProducers = (searchTerm: string) => {
-    if (!searchTerm || searchTerm.length < 2) return [];
+    const allProducers = getProjectProducers();
+    if (!searchTerm || searchTerm.length < 1) return allProducers.slice(0, 15);
     const term = searchTerm.toLowerCase();
     return getProjectProducers().filter(p => 
       p.name.toLowerCase().includes(term)
-    ).slice(0, 10);
+    ).slice(0, 15);
   };
 
   const handleSelectArtist = (artist: any, fieldName: string, index: number) => {
@@ -514,12 +516,12 @@ export function PhonogramForm({
   const renderParticipantSection = (title: string, fields: any[], append: (value: any) => void, remove: (index: number) => void, isOpen: boolean, setIsOpen: (open: boolean) => void, fieldName: 'phonographic_producers' | 'performers' | 'musicians', percentage: number, maxPercentage: number = 100) => {
     // Filtrar contatos do CRM
     const getFilteredCrmContacts = (searchTerm: string) => {
-      if (!searchTerm || searchTerm.length < 2) return [];
+      if (!searchTerm || searchTerm.length < 1) return crmContacts.slice(0, 15);
       const term = searchTerm.toLowerCase();
       return crmContacts.filter((contact: any) => 
         contact.name?.toLowerCase().includes(term) ||
         contact.company?.toLowerCase().includes(term)
-      ).slice(0, 10);
+      ).slice(0, 15);
     };
 
     // Determinar fonte de autocomplete baseado no tipo de participante
@@ -619,17 +621,13 @@ export function PhonogramForm({
                               onChange={(e) => {
                                 formField.onChange(e.target.value);
                                 setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
-                                if (e.target.value.length >= 2) {
-                                  setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                                } else {
-                                  setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
-                                }
+                                // Abrir popover com qualquer digitação
+                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
                               }}
                               onFocus={() => {
-                                if (formField.value && formField.value.length >= 2) {
-                                  setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: formField.value }));
-                                  setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                                }
+                                // Abrir popover ao focar para mostrar todas as opções
+                                setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: formField.value || '' }));
+                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
                               }}
                             />
                           </FormControl>
