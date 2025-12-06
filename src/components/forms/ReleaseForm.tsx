@@ -174,12 +174,78 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   // Auto-fill data when project is selected
   useEffect(() => {
     if (selectedProject) {
+      // Parse audio_files data
+      let audioData: any = null;
+      if (selectedProject.audio_files) {
+        if (typeof selectedProject.audio_files === 'string') {
+          try {
+            audioData = JSON.parse(selectedProject.audio_files);
+          } catch {
+            audioData = null;
+          }
+        } else {
+          audioData = selectedProject.audio_files;
+        }
+      }
+      
+      // Set release title from project name
+      form.setValue('release_title', selectedProject.name || '');
+      
+      // Set release type from audio_files
+      if (audioData?.release_type) {
+        form.setValue('release_type', audioData.release_type as 'single' | 'ep' | 'album');
+      }
+      
+      // Get songs data
+      const songs = audioData?.songs || [];
+      if (songs.length > 0) {
+        const firstSong = songs[0];
+        
+        // Set genre from first song
+        if (firstSong.genre) {
+          form.setValue('genre', firstSong.genre.toLowerCase());
+        }
+        
+        // Set language from first song
+        if (firstSong.language) {
+          const langMap: Record<string, string> = {
+            'Português': 'portugues',
+            'Inglês': 'ingles',
+            'Espanhol': 'espanhol',
+            'Instrumental': 'instrumental'
+          };
+          form.setValue('language', langMap[firstSong.language] || firstSong.language.toLowerCase());
+        }
+        
+        // Get artist name from performers or composers
+        const artistName = firstSong.performers?.[0]?.name || firstSong.composers?.[0]?.name || '';
+        if (artistName) {
+          form.setValue('artist_name', artistName);
+        }
+        
+        // Create tracks from songs
+        const tracks = songs.map((song: any) => ({
+          title: song.song_name || '',
+          artist: song.performers?.[0]?.name || song.composers?.[0]?.name || '',
+          composers: (song.composers || []).map((c: any) => c.name).filter(Boolean),
+          performers: (song.performers || []).map((p: any) => p.name).filter(Boolean),
+          producers: (song.producers || []).map((p: any) => p.name).filter(Boolean),
+          isrc: '',
+          audio_file: song.audio_files?.[0]?.url || '',
+          lyrics: song.lyrics || '',
+        }));
+        
+        if (tracks.length > 0) {
+          form.setValue('tracks', tracks);
+        }
+      }
+      
       toast({
         title: "Projeto selecionado",
-        description: `Dados do projeto "${selectedProject.name}" carregados. Complete os campos restantes.`,
+        description: `Dados do projeto "${selectedProject.name}" carregados.`,
       });
     }
-  }, [selectedProject, toast]);
+  }, [selectedProject, form, toast]);
 
   const releaseType = form.watch('release_type');
 
