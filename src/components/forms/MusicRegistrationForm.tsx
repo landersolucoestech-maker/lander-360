@@ -118,13 +118,103 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
   // Auto-fill data when project is selected
   useEffect(() => {
-    if (selectedProject) {
-      toast({
-        title: "Projeto selecionado",
-        description: `Informações do projeto "${selectedProject.name}" foram carregadas. Complete os dados faltantes.`,
-      });
+    if (selectedProject && !registration) {
+      try {
+        // Parse audio_files to get project details
+        let projectDetails = null;
+        if (selectedProject.audio_files && typeof selectedProject.audio_files === 'string') {
+          projectDetails = JSON.parse(selectedProject.audio_files);
+        } else if (selectedProject.audio_files && typeof selectedProject.audio_files === 'object') {
+          projectDetails = selectedProject.audio_files;
+        }
+
+        if (projectDetails?.songs && projectDetails.songs.length > 0) {
+          const firstSong = projectDetails.songs[0];
+          
+          // Set title from song name
+          if (firstSong.song_name) {
+            form.setValue('title', firstSong.song_name);
+          }
+          
+          // Set genre
+          if (firstSong.genre) {
+            form.setValue('genre', firstSong.genre);
+          }
+
+          // Set artist_id from project
+          if (selectedProject.artist_id) {
+            form.setValue('artist_id', selectedProject.artist_id);
+          }
+
+          // Set lyrics
+          if (firstSong.lyrics) {
+            form.setValue('lyrics', firstSong.lyrics);
+          }
+          
+          // Convert composers to the form format (with CPF and percentage)
+          if (firstSong.composers && firstSong.composers.length > 0) {
+            const formattedComposers = firstSong.composers
+              .filter((c: any) => c.name && c.name.trim() !== '')
+              .map((c: any, index: number, arr: any[]) => ({
+                name: c.name,
+                cpf: c.cpf || '',
+                percentage: c.percentage || Math.round(100 / arr.length),
+              }));
+            
+            if (formattedComposers.length > 0) {
+              form.setValue('composers', formattedComposers);
+            }
+          }
+          
+          // Convert performers to the form format
+          if (firstSong.performers && firstSong.performers.length > 0) {
+            const formattedPerformers = firstSong.performers
+              .filter((p: any) => p.name && p.name.trim() !== '')
+              .map((p: any, index: number, arr: any[]) => ({
+                name: p.name,
+                cpf: p.cpf || '',
+                percentage: p.percentage || Math.round(100 / arr.length),
+              }));
+            
+            if (formattedPerformers.length > 0) {
+              form.setValue('performers', formattedPerformers);
+            }
+          }
+          
+          // Convert producers to the form format
+          if (firstSong.producers && firstSong.producers.length > 0) {
+            const formattedProducers = firstSong.producers
+              .filter((p: any) => p.name && p.name.trim() !== '')
+              .map((p: any, index: number, arr: any[]) => ({
+                name: p.name,
+                cpf: p.cpf || '',
+                percentage: p.percentage || Math.round(100 / arr.length),
+              }));
+            
+            if (formattedProducers.length > 0) {
+              form.setValue('producers', formattedProducers);
+            }
+          }
+
+          toast({
+            title: "Projeto carregado",
+            description: `Informações do projeto "${selectedProject.name}" foram preenchidas. Complete os dados faltantes (CPF e porcentagens).`,
+          });
+        } else {
+          toast({
+            title: "Projeto selecionado",
+            description: `Projeto "${selectedProject.name}" não possui músicas cadastradas. Preencha manualmente.`,
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing project data:', error);
+        toast({
+          title: "Projeto selecionado",
+          description: `Não foi possível carregar dados do projeto. Preencha manualmente.`,
+        });
+      }
     }
-  }, [selectedProject, form, toast]);
+  }, [selectedProjectId, projects]);
 
   const onSubmit = async (data: MusicRegistrationFormData) => {
     try {
