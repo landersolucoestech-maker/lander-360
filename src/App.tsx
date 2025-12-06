@@ -4,7 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Artistas from "./pages/Artistas";
 import Projetos from "./pages/Projetos";
 import RegistroMusicas from "./pages/RegistroMusicas";
@@ -43,32 +46,35 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            <Route path="/perfil" element={<PerfilUsuario />} />
-            <Route path="/" element={<Index />} />
-            <Route path="/artistas" element={<Artistas />} />
-            <Route path="/projetos" element={<Projetos />} />
-            <Route path="/registro-musicas" element={<RegistroMusicas />} />
-            <Route path="/lancamentos" element={<Lancamentos />} />
-            <Route path="/contratos" element={<Contratos />} />
-            <Route path="/financeiro" element={<Financeiro />} />
-            <Route path="/agenda" element={<Agenda />} />
-            <Route path="/nota-fiscal" element={<NotaFiscal />} />
-            <Route path="/inventario" element={<Inventario />} />
-            <Route path="/usuarios" element={<Usuarios />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/crm" element={<CRM />} />
-            {/* Marketing routes */}
-            <Route path="/marketing/visao-geral" element={<MarketingVisaoGeral />} />
-            <Route path="/marketing/campanhas" element={<MarketingCampanhas />} />
-            <Route path="/marketing/tarefas" element={<MarketingTarefas />} />
-            <Route path="/marketing/calendario" element={<MarketingCalendario />} />
-            <Route path="/marketing/metricas" element={<MarketingMetricas />} />
-            <Route path="/marketing/briefing" element={<MarketingBriefing />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/artistas" element={<ProtectedRoute><Artistas /></ProtectedRoute>} />
+              <Route path="/projetos" element={<ProtectedRoute><Projetos /></ProtectedRoute>} />
+              <Route path="/registro-musicas" element={<ProtectedRoute><RegistroMusicas /></ProtectedRoute>} />
+              <Route path="/lancamentos" element={<ProtectedRoute><Lancamentos /></ProtectedRoute>} />
+              <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
+              <Route path="/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
+              <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
+              <Route path="/nota-fiscal" element={<ProtectedRoute><NotaFiscal /></ProtectedRoute>} />
+              <Route path="/inventario" element={<ProtectedRoute><Inventario /></ProtectedRoute>} />
+              <Route path="/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
+              <Route path="/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
+              <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
+              {/* Marketing routes */}
+              <Route path="/marketing/visao-geral" element={<ProtectedRoute><MarketingVisaoGeral /></ProtectedRoute>} />
+              <Route path="/marketing/campanhas" element={<ProtectedRoute><MarketingCampanhas /></ProtectedRoute>} />
+              <Route path="/marketing/tarefas" element={<ProtectedRoute><MarketingTarefas /></ProtectedRoute>} />
+              <Route path="/marketing/calendario" element={<ProtectedRoute><MarketingCalendario /></ProtectedRoute>} />
+              <Route path="/marketing/metricas" element={<ProtectedRoute><MarketingMetricas /></ProtectedRoute>} />
+              <Route path="/marketing/briefing" element={<ProtectedRoute><MarketingBriefing /></ProtectedRoute>} />
+              <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
