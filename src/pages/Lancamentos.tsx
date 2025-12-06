@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -10,20 +10,38 @@ import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle } from "lucide-react";
-import { mockReleases } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
+import { useArtists } from "@/hooks/useArtists";
 
 const Lancamentos = () => {
   const { toast } = useToast();
-  const allReleases = mockReleases;
+  const { data: releasesData = [], isLoading, refetch } = useReleases();
+  const { data: artists = [] } = useArtists();
+  const deleteRelease = useDeleteRelease();
 
-  const [filteredReleases, setFilteredReleases] = useState(allReleases);
+  // Map releases to include artist name
+  const allReleases = releasesData.map((release: any) => {
+    const artist = artists.find((a: any) => a.id === release.artist_id);
+    return {
+      ...release,
+      artist: artist?.stage_name || artist?.name || 'Artista Desconhecido',
+      cover: release.cover_url,
+    };
+  });
+
+  const [filteredReleases, setFilteredReleases] = useState<any[]>([]);
   const [isNewReleaseModalOpen, setIsNewReleaseModalOpen] = useState(false);
   const [selectedRelease, setSelectedRelease] = useState<any>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
+
+  // Update filtered releases when data changes
+  useEffect(() => {
+    setFilteredReleases(allReleases);
+  }, [releasesData, artists]);
 
   const filterOptions = [
     {
@@ -100,14 +118,15 @@ const Lancamentos = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDeleteRelease = () => {
+  const confirmDeleteRelease = async () => {
     if (releaseToDelete) {
-      toast({
-        title: "Lançamento excluído",
-        description: `O lançamento "${releaseToDelete.title}" foi excluído com sucesso.`,
-      });
-      setIsDeleteModalOpen(false);
-      setReleaseToDelete(null);
+      try {
+        await deleteRelease.mutateAsync(releaseToDelete.id);
+        setIsDeleteModalOpen(false);
+        setReleaseToDelete(null);
+      } catch (error) {
+        console.error('Error deleting release:', error);
+      }
     }
   };
 
