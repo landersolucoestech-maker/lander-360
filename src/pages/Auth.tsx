@@ -143,6 +143,7 @@ export default function Auth() {
           </div>
 
           {/* Form */}
+          <div className="relative z-10">
           {!isSignupMode ? <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                 <FormField control={loginForm.control} name="email" render={({
@@ -228,6 +229,7 @@ export default function Auth() {
                 </Button>
               </form>
             </Form>}
+          </div>
 
           {/* Toggle Mode & Forgot Password */}
           <div className="text-center space-y-3">
