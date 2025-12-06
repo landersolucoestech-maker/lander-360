@@ -60,7 +60,9 @@ const phonogramSchema = z.object({
   musicians: z.array(participantSchema).optional(),
   // Áudio e Termos
   audio_file: z.any().optional(),
-  accept_terms: z.boolean().optional()
+  accept_terms: z.boolean().refine(val => val === true, {
+    message: "Você deve aceitar os termos de uso"
+  })
 });
 type PhonogramFormData = z.infer<typeof phonogramSchema>;
 interface PhonogramFormProps {
@@ -1126,7 +1128,7 @@ export function PhonogramForm({
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="cursor-pointer">
-                        Aceito o Termo -{" "}
+                        Aceito o Termo <span className="text-destructive">*</span> -{" "}
                         <Button type="button" variant="link" className="p-0 h-auto text-primary underline" onClick={() => setTermsDialogOpen(true)}>
                           Leia e aceite os Termos de Uso
                         </Button>
