@@ -20,13 +20,18 @@ const Lancamentos = () => {
   const { data: artists = [] } = useArtists();
   const deleteRelease = useDeleteRelease();
 
-  // Map releases to include artist name
+  // Map releases to include artist name and correct field names
   const allReleases = releasesData.map((release: any) => {
     const artist = artists.find((a: any) => a.id === release.artist_id);
     return {
       ...release,
       artist: artist?.stage_name || artist?.name || 'Artista Desconhecido',
       cover: release.cover_url,
+      releaseDate: release.release_date || new Date().toISOString(),
+      approvalStatus: release.status === 'released' ? 'aceita' : 
+                      release.status === 'cancelled' ? 'recusada' : 
+                      release.status === 'paused' ? 'em_espera' : 'pendente',
+      priority: 'media',
     };
   });
 
