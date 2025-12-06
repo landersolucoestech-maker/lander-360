@@ -232,7 +232,7 @@ export default function Auth() {
           </div>
 
           {/* Toggle Mode & Forgot Password */}
-          <div className="text-center space-y-3">
+          <div className="text-center space-y-3 py-[15px]">
             <button type="button" onClick={() => setIsSignupMode(!isSignupMode)} className="text-sm font-medium underline text-primary-foreground">
               {isSignupMode ? 'Já tenho uma conta' : 'Esqueci minha senha'}
             </button>
