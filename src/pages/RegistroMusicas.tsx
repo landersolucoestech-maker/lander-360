@@ -429,34 +429,51 @@ const RegistroMusicas = () => {
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-6 text-sm">
-                              <div className="text-center">
-                                <div className="text-muted-foreground">ISRC</div>
-                                <div className="font-medium text-foreground">{phono.isrc || "-"}</div>
+                            <div className="flex items-center gap-4 text-sm flex-wrap">
+                              <div className="text-center min-w-[80px]">
+                                <div className="text-muted-foreground text-xs">ISRC</div>
+                                <div className="font-medium text-foreground text-xs">{phono.isrc || "-"}</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Gênero</div>
-                                <div className="font-medium text-foreground">{phono.genre || "-"}</div>
+                              <div className="text-center min-w-[80px]">
+                                <div className="text-muted-foreground text-xs">Cód Abramus</div>
+                                <div className="font-medium text-foreground text-xs">{(phono as any).abramus_code || "-"}</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Duração</div>
-                                <div className="font-medium text-foreground">
-                                  {phono.duration ? `${Math.floor(phono.duration / 60)}:${String(phono.duration % 60).padStart(2, '0')}` : "-"}
+                              <div className="text-center min-w-[80px]">
+                                <div className="text-muted-foreground text-xs">Cód ECAD</div>
+                                <div className="font-medium text-foreground text-xs">{(phono as any).ecad_code || "-"}</div>
+                              </div>
+                              <div className="text-center min-w-[80px]">
+                                <div className="text-muted-foreground text-xs">Situação</div>
+                                <Badge 
+                                  variant={
+                                    phono.status === "aceita" ? "default" :
+                                    phono.status === "recusada" ? "destructive" :
+                                    phono.status === "em_analise" ? "outline" : "secondary"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {phono.statusDisplay || phono.status || "Pendente"}
+                                </Badge>
+                              </div>
+                              <div className="text-center min-w-[120px]">
+                                <div className="text-muted-foreground text-xs">Compositores</div>
+                                <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
+                                  {phono.participants?.filter((p: any) => p.role === 'compositor' || p.role === 'compositor_autor').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Gravação</div>
-                                <div className="font-medium text-foreground">
-                                  {phono.recording_date ? new Date(phono.recording_date).toLocaleDateString('pt-BR') : "-"}
+                              <div className="text-center min-w-[120px]">
+                                <div className="text-muted-foreground text-xs">Intérpretes</div>
+                                <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
+                                  {phono.participants?.filter((p: any) => p.role === 'interprete').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Produtor</div>
-                                <div className="font-medium text-foreground">
-                                  {phono.participants?.find((p: any) => p.role === 'produtor_fonografico')?.name || "-"}
+                              <div className="text-center min-w-[120px]">
+                                <div className="text-muted-foreground text-xs">Produtores</div>
+                                <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
+                                  {phono.participants?.filter((p: any) => p.role === 'produtor_fonografico').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 ml-auto">
                                 <Button variant="outline" size="sm" onClick={() => handleViewPhonogram(phono)}>
                                   Ver
                                 </Button>
