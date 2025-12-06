@@ -3,11 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
 import Artistas from "./pages/Artistas";
 import Projetos from "./pages/Projetos";
 import RegistroMusicas from "./pages/RegistroMusicas";
@@ -21,7 +21,6 @@ import Usuarios from "./pages/Usuarios";
 import Relatorios from "./pages/Relatorios";
 import CRM from "./pages/CRM";
 import Configuracoes from "./pages/Configuracoes";
-import SegurancaLogs from "./pages/SegurancaLogs";
 import NotFound from "./pages/NotFound";
 // Marketing pages
 import MarketingVisaoGeral from "./pages/marketing/VisaoGeral";
@@ -31,17 +30,18 @@ import MarketingCalendario from "./pages/marketing/Calendario";
 import MarketingMetricas from "./pages/marketing/Metricas";
 import MarketingBriefing from "./pages/marketing/Briefing";
 import PerfilUsuario from "./pages/PerfilUsuario";
-import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="system" 
+      enableSystem={true}
+      storageKey="lander360-theme"
+      disableTransitionOnChange={false}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -49,7 +49,6 @@ const App = () => {
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/artistas" element={<ProtectedRoute><Artistas /></ProtectedRoute>} />
@@ -72,15 +71,14 @@ const App = () => {
               <Route path="/marketing/metricas" element={<ProtectedRoute><MarketingMetricas /></ProtectedRoute>} />
               <Route path="/marketing/briefing" element={<ProtectedRoute><MarketingBriefing /></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
-              <Route path="/seguranca-logs" element={<ProtectedRoute><SegurancaLogs /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
+    </ThemeProvider>
+  </QueryClientProvider>
+);
 
 export default App;
