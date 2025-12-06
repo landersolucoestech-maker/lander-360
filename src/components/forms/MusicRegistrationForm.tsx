@@ -1009,19 +1009,115 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                         <FormField
                           control={form.control}
                           name={`participants.${index}.contract_start_date`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Início Contrato</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="date" 
-                                  {...field} 
-                                  value={field.value || ''} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                          render={({ field }) => {
+                            const [dateMode, setDateMode] = React.useState<'month' | 'full'>('month');
+                            const [monthValue, setMonthValue] = React.useState('');
+                            const [yearValue, setYearValue] = React.useState('');
+
+                            // Parse existing value if it's a full date
+                            React.useEffect(() => {
+                              if (field.value) {
+                                if (field.value.length === 7) {
+                                  // Format: YYYY-MM
+                                  const [y, m] = field.value.split('-');
+                                  setYearValue(y);
+                                  setMonthValue(m);
+                                  setDateMode('month');
+                                } else if (field.value.length === 10) {
+                                  // Format: YYYY-MM-DD
+                                  setDateMode('full');
+                                }
+                              }
+                            }, []);
+
+                            const handleMonthYearChange = (month: string, year: string) => {
+                              setMonthValue(month);
+                              setYearValue(year);
+                              if (month && year && year.length === 4) {
+                                field.onChange(`${year}-${month}`);
+                              }
+                            };
+
+                            return (
+                              <FormItem>
+                                <FormLabel>Início Contrato</FormLabel>
+                                <div className="space-y-2">
+                                  <div className="flex gap-1">
+                                    <Button
+                                      type="button"
+                                      variant={dateMode === 'month' ? 'default' : 'outline'}
+                                      size="sm"
+                                      className="h-7 text-xs px-2"
+                                      onClick={() => {
+                                        setDateMode('month');
+                                        field.onChange('');
+                                      }}
+                                    >
+                                      Mês/Ano
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant={dateMode === 'full' ? 'default' : 'outline'}
+                                      size="sm"
+                                      className="h-7 text-xs px-2"
+                                      onClick={() => {
+                                        setDateMode('full');
+                                        field.onChange('');
+                                      }}
+                                    >
+                                      Data
+                                    </Button>
+                                  </div>
+                                  <FormControl>
+                                    {dateMode === 'month' ? (
+                                      <div className="flex gap-1">
+                                        <Select
+                                          value={monthValue}
+                                          onValueChange={(val) => handleMonthYearChange(val, yearValue)}
+                                        >
+                                          <SelectTrigger className="w-[70px]">
+                                            <SelectValue placeholder="Mês" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="01">Jan</SelectItem>
+                                            <SelectItem value="02">Fev</SelectItem>
+                                            <SelectItem value="03">Mar</SelectItem>
+                                            <SelectItem value="04">Abr</SelectItem>
+                                            <SelectItem value="05">Mai</SelectItem>
+                                            <SelectItem value="06">Jun</SelectItem>
+                                            <SelectItem value="07">Jul</SelectItem>
+                                            <SelectItem value="08">Ago</SelectItem>
+                                            <SelectItem value="09">Set</SelectItem>
+                                            <SelectItem value="10">Out</SelectItem>
+                                            <SelectItem value="11">Nov</SelectItem>
+                                            <SelectItem value="12">Dez</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <Input
+                                          type="text"
+                                          placeholder="Ano"
+                                          maxLength={4}
+                                          className="w-[70px]"
+                                          value={yearValue}
+                                          onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            handleMonthYearChange(monthValue, val);
+                                          }}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <Input 
+                                        type="date" 
+                                        {...field} 
+                                        value={field.value || ''} 
+                                      />
+                                    )}
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
                         />
                         <FormField
                           control={form.control}
