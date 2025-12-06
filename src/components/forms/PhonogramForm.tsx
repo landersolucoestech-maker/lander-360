@@ -604,45 +604,53 @@ export function PhonogramForm({
                   }) => (
                     <FormItem className="flex flex-col">
                       {index === 0 && <FormLabel>Nome</FormLabel>}
-                      <Popover 
-                        open={isPopoverOpen} 
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
-                          }
-                        }}
-                      >
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Input 
-                              className="pl-3 text-left"
-                              placeholder={getPlaceholder()}
-                              value={formField.value}
-                              onChange={(e) => {
-                                formField.onChange(e.target.value);
-                                setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
-                                // Abrir popover com qualquer digitação
-                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                              }}
-                              onFocus={() => {
-                                // Abrir popover ao focar para mostrar todas as opções
-                                setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: formField.value || '' }));
-                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                              }}
-                            />
-                          </FormControl>
-                        </PopoverTrigger>
-                        {filteredSuggestions.length > 0 && (
-                          <PopoverContent 
-                            className="w-[300px] p-0" 
-                            align="start" 
-                            onOpenAutoFocus={(e) => e.preventDefault()}
-                            onInteractOutside={(e) => {
-                              setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
+                      <div className="relative">
+                        <FormControl>
+                          <Input 
+                            className="pl-3 pr-10 text-left"
+                            placeholder={getPlaceholder()}
+                            value={formField.value}
+                            onChange={(e) => {
+                              formField.onChange(e.target.value);
+                              setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
+                              setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
                             }}
+                          />
+                        </FormControl>
+                        <Popover 
+                          open={isPopoverOpen} 
+                          onOpenChange={(open) => {
+                            setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }));
+                            if (open) {
+                              setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: '' }));
+                            }
+                          }}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-2"
+                            >
+                              <ChevronDown className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent 
+                            className="w-[350px] p-0 z-50 bg-popover" 
+                            align="end"
+                            sideOffset={4}
                           >
                             <Command>
+                              <CommandInput 
+                                placeholder="Buscar..."
+                                value={searchTerm}
+                                onValueChange={(value) => {
+                                  setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: value }));
+                                }}
+                              />
                               <CommandList>
+                                <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
                                 <CommandGroup heading={getHeading()}>
                                   {filteredSuggestions.map((suggestion: any, suggestionIndex) => (
                                     <CommandItem
@@ -651,10 +659,9 @@ export function PhonogramForm({
                                         if (suggestion.isArtist && suggestion.artistData) {
                                           handleSelectArtist(suggestion.artistData, fieldName, index);
                                         } else if (suggestion.isCrmContact) {
-                                          // Para contatos CRM, usar o nome diretamente
                                           form.setValue(`${fieldName}.${index}.name` as any, suggestion.name);
-                                          setOpenParticipantPopovers(prev => ({ ...prev, [`${fieldName}_${index}`]: false }));
-                                          setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
+                                          setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
+                                          setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: '' }));
                                         } else {
                                           handleSelectProjectParticipant(suggestion, fieldName, index);
                                         }
@@ -674,8 +681,8 @@ export function PhonogramForm({
                               </CommandList>
                             </Command>
                           </PopoverContent>
-                        )}
-                      </Popover>
+                        </Popover>
+                      </div>
                     </FormItem>
                   )} />
                 </div>
