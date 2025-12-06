@@ -55,23 +55,31 @@ export function ArtistCard({
       <Card className="py-4 px-5 md:py-5 md:px-6">
         <CardContent className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
-            {/* Left Section - Artist Info */}
+            {/* Left Section - Avatar & Artist Info */}
             <div className="md:col-span-3">
-              <div className="space-y-2">
-                <h3 className="text-lg md:text-xl font-bold text-foreground truncate">{artist.name}</h3>
-                <p className="text-sm md:text-base text-muted-foreground">{artist.genre}</p>
-                <Badge variant="default" className="bg-green-500 text-white hover:bg-green-600 text-xs md:text-sm">
-                  {artist.status}
-                </Badge>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-3 flex-wrap">
-                  {artist.profile?.telefone && <div className="flex items-center gap-1.5">
-                      <Phone className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{artist.profile.telefone}</span>
-                    </div>}
-                  <div className="flex items-center gap-1.5">
-                    <Mail className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{artist.email}</span>
-                  </div>
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16 md:h-20 md:w-20 flex-shrink-0 border-2 border-border">
+                  <AvatarImage src={artist.avatar} alt={artist.name} className="object-cover" />
+                  <AvatarFallback className="text-lg md:text-xl font-bold bg-muted">
+                    {artist.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1.5 min-w-0 flex-1">
+                  <h3 className="text-lg md:text-xl font-bold text-foreground truncate">{artist.name}</h3>
+                  <p className="text-sm md:text-base text-muted-foreground">{artist.genre}</p>
+                  <Badge variant="default" className="bg-green-500 text-white hover:bg-green-600 text-xs md:text-sm">
+                    {artist.status}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-3 flex-wrap">
+                {artist.profile?.telefone && <div className="flex items-center gap-1.5">
+                    <Phone className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{artist.profile.telefone}</span>
+                  </div>}
+                <div className="flex items-center gap-1.5">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{artist.email}</span>
                 </div>
               </div>
             </div>
