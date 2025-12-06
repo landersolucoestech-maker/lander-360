@@ -284,63 +284,83 @@ export function ArtistProfileModal({
             <h3 className="text-lg font-semibold mb-4">Redes Sociais</h3>
             <div className="flex gap-4 flex-wrap">
               {(artist.instagram || artist.instagram_url || artist.socialMedia?.instagram) && (
-                <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={(() => {
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
                     const url = artist.instagram_url || artist.instagram || artist.socialMedia?.instagram;
-                    return url?.startsWith('http') ? url : `https://instagram.com/${url?.replace('@', '')}`;
-                  })()} target="_blank" rel="noopener noreferrer">
-                    <FaInstagram className="h-4 w-4" />
-                    Instagram
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                    const finalUrl = url?.startsWith('http') ? url : `https://instagram.com/${url?.replace('@', '')}`;
+                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <FaInstagram className="h-4 w-4" />
+                  Instagram
+                  <ExternalLink className="h-3 w-3" />
                 </Button>
               )}
               {(artist.spotify_url || artist.socialMedia?.spotify) && (
-                <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={(() => {
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
                     const url = artist.spotify_url || artist.socialMedia?.spotify;
-                    return url?.startsWith('http') ? url : `https://open.spotify.com/artist/${url}`;
-                  })()} target="_blank" rel="noopener noreferrer">
-                    <FaSpotify className="h-4 w-4" />
-                    Spotify
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                    const finalUrl = url?.startsWith('http') ? url : `https://open.spotify.com/artist/${url}`;
+                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <FaSpotify className="h-4 w-4" />
+                  Spotify
+                  <ExternalLink className="h-3 w-3" />
                 </Button>
               )}
               {(artist.youtube_url || artist.socialMedia?.youtube) && (
-                <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={(() => {
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
                     const url = artist.youtube_url || artist.socialMedia?.youtube;
-                    return url?.startsWith('http') ? url : `https://youtube.com/${url}`;
-                  })()} target="_blank" rel="noopener noreferrer">
-                    <FaYoutube className="h-4 w-4" />
-                    YouTube
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                    const finalUrl = url?.startsWith('http') ? url : `https://youtube.com/${url}`;
+                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <FaYoutube className="h-4 w-4" />
+                  YouTube
+                  <ExternalLink className="h-3 w-3" />
                 </Button>
               )}
               {(artist.tiktok || artist.socialMedia?.tiktok) && (
-                <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={(() => {
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
                     const url = artist.tiktok || artist.socialMedia?.tiktok;
-                    return url?.startsWith('http') ? url : `https://tiktok.com/@${url?.replace('@', '')}`;
-                  })()} target="_blank" rel="noopener noreferrer">
-                    <FaTiktok className="h-4 w-4" />
-                    TikTok
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                    const finalUrl = url?.startsWith('http') ? url : `https://tiktok.com/@${url?.replace('@', '')}`;
+                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <FaTiktok className="h-4 w-4" />
+                  TikTok
+                  <ExternalLink className="h-3 w-3" />
                 </Button>
               )}
               {(artist.soundcloud || artist.socialMedia?.soundcloud) && (
-                <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={(() => {
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
                     const url = artist.soundcloud || artist.socialMedia?.soundcloud;
-                    return url?.startsWith('http') ? url : `https://soundcloud.com/${url}`;
-                  })()} target="_blank" rel="noopener noreferrer">
-                    <FaSoundcloud className="h-4 w-4" />
-                    SoundCloud
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                    const finalUrl = url?.startsWith('http') ? url : `https://soundcloud.com/${url}`;
+                    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <FaSoundcloud className="h-4 w-4" />
+                  SoundCloud
+                  <ExternalLink className="h-3 w-3" />
                 </Button>
               )}
               {!artist.instagram && !artist.instagram_url && !artist.socialMedia?.instagram &&
