@@ -324,21 +324,7 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="grid grid-cols-12 gap-4 items-end">
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="work_abramus_code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cód Abramus</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Código Abramus" {...field} readOnly className="bg-muted/50" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-8">
+              <div className="col-span-10">
                 <FormField
                   control={form.control}
                   name="work_title"
