@@ -17,6 +17,7 @@ import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { useBackupData } from "@/hooks/useBackupData";
 import { useSessionSettings } from "@/hooks/useSessionSettings";
+import { useSecurityAuditLog } from "@/hooks/useSecurityAuditLog";
 import { RestoreBackupModal } from "@/components/modals/RestoreBackupModal";
 
 const Configuracoes = () => {
@@ -26,6 +27,7 @@ const Configuracoes = () => {
   const { settings: notificationSettings, toggleNewContracts, toggleContractsExpiring, toggleNewReleases } = useNotificationSettings();
   const { exportData, createBackup, isExporting, isBackingUp } = useBackupData();
   const { settings: sessionSettings, updateTimeoutMinutes, TIMEOUT_OPTIONS } = useSessionSettings();
+  const { logSecurityChange } = useSecurityAuditLog();
   const [showRestoreBackup, setShowRestoreBackup] = useState(false);
   const [showBankIntegration, setShowBankIntegration] = useState(false);
   const [timezoneInput, setTimezoneInput] = useState(systemSettings.timezone);
@@ -117,7 +119,16 @@ const Configuracoes = () => {
                         Escolha o tema da interface
                       </p>
                     </div>
-                    <Select value={theme} onValueChange={setTheme}>
+                    <Select value={theme} onValueChange={(value) => {
+                      const oldTheme = theme;
+                      setTheme(value);
+                      logSecurityChange({
+                        action: 'theme_changed',
+                        settingType: 'theme',
+                        oldValue: oldTheme,
+                        newValue: value
+                      });
+                    }}>
                       <SelectTrigger className="w-[140px]">
                         <SelectValue placeholder="Selecionar tema" />
                       </SelectTrigger>
@@ -153,7 +164,15 @@ const Configuracoes = () => {
                     </div>
                     <Switch 
                       checked={systemSettings.autoBackup}
-                      onCheckedChange={toggleAutoBackup}
+                      onCheckedChange={(checked) => {
+                        toggleAutoBackup();
+                        logSecurityChange({
+                          action: 'backup_setting_changed',
+                          settingType: 'backup',
+                          oldValue: checked ? 'Desativado' : 'Ativado',
+                          newValue: checked ? 'Ativado' : 'Desativado'
+                        });
+                      }}
                     />
                   </div>
                   <Separator />
@@ -203,10 +222,21 @@ const Configuracoes = () => {
                     <Select 
                       value={sessionSettings.timeoutMinutes.toString()} 
                       onValueChange={(value) => {
-                        updateTimeoutMinutes(parseInt(value));
+                        const oldValue = sessionSettings.timeoutMinutes.toString();
+                        const newValue = parseInt(value);
+                        updateTimeoutMinutes(newValue);
+                        
+                        // Log the security change
+                        logSecurityChange({
+                          action: 'session_timeout_changed',
+                          settingType: 'session_timeout',
+                          oldValue: `${oldValue} minutos`,
+                          newValue: `${newValue} minutos`
+                        });
+                        
                         toast({
                           title: "Configuração atualizada",
-                          description: `Sessão expirará após ${TIMEOUT_OPTIONS.find(o => o.value === parseInt(value))?.label || value + ' minutos'} de inatividade`
+                          description: `Sessão expirará após ${TIMEOUT_OPTIONS.find(o => o.value === newValue)?.label || newValue + ' minutos'} de inatividade`
                         });
                       }}
                     >

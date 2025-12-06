@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldAlert, Search, RefreshCw, Lock, AlertTriangle, CheckCircle, Monitor, Smartphone, Tablet } from "lucide-react";
+import { ShieldAlert, Search, RefreshCw, Lock, AlertTriangle, CheckCircle, Monitor, Smartphone, Tablet, Settings, ClipboardList } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { getAuditActionLabel, getSettingTypeLabel } from "@/hooks/useSecurityAuditLog";
 
 interface LoginAttempt {
   id: string;
@@ -32,13 +33,25 @@ interface LoginHistory {
   location: string | null;
 }
 
+interface SecurityAuditLog {
+  id: string;
+  user_id: string;
+  action: string;
+  setting_type: string;
+  old_value: string | null;
+  new_value: string | null;
+  user_agent: string | null;
+  created_at: string;
+}
+
 export default function SegurancaLogs() {
   const [loginAttempts, setLoginAttempts] = useState<LoginAttempt[]>([]);
   const [loginHistory, setLoginHistory] = useState<LoginHistory[]>([]);
+  const [auditLogs, setAuditLogs] = useState<SecurityAuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<"attempts" | "history">("attempts");
+  const [activeTab, setActiveTab] = useState<"attempts" | "history" | "audit">("attempts");
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -62,6 +75,16 @@ export default function SegurancaLogs() {
 
       if (historyError) throw historyError;
       setLoginHistory(historyData || []);
+
+      // Fetch security audit logs
+      const { data: auditData, error: auditError } = await supabase
+        .from("security_audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (auditError) throw auditError;
+      setAuditLogs(auditData || []);
 
     } catch (error) {
       console.error("Error fetching security logs:", error);
@@ -139,7 +162,8 @@ export default function SegurancaLogs() {
     totalAttempts: loginAttempts.length,
     lockedAccounts: loginAttempts.filter(a => getAttemptStatus(a) === "locked").length,
     warningAccounts: loginAttempts.filter(a => getAttemptStatus(a) === "warning").length,
-    successfulLogins: loginHistory.length
+    successfulLogins: loginHistory.length,
+    auditEvents: auditLogs.length
   };
 
   return (
@@ -218,7 +242,7 @@ export default function SegurancaLogs() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant={activeTab === "attempts" ? "default" : "outline"}
                 onClick={() => setActiveTab("attempts")}
@@ -233,9 +257,16 @@ export default function SegurancaLogs() {
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Histórico de Logins
               </Button>
+              <Button
+                variant={activeTab === "audit" ? "default" : "outline"}
+                onClick={() => setActiveTab("audit")}
+              >
+                <ClipboardList className="h-4 w-4 mr-2" />
+                Alterações de Segurança
+              </Button>
             </div>
 
-            {activeTab === "attempts" ? (
+            {activeTab === "attempts" && (
               <Card>
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -349,7 +380,9 @@ export default function SegurancaLogs() {
                   )}
                 </CardContent>
               </Card>
-            ) : (
+            )}
+
+            {activeTab === "history" && (
               <Card>
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -396,6 +429,71 @@ export default function SegurancaLogs() {
                             </TableCell>
                             <TableCell>{log.browser || "Desconhecido"}</TableCell>
                             <TableCell>{log.location || "-"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === "audit" && (
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <ClipboardList className="h-5 w-5 text-primary" />
+                      Log de Alterações de Segurança
+                    </CardTitle>
+                    <Button variant="outline" size="icon" onClick={fetchData} disabled={isLoading}>
+                      <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : auditLogs.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <ClipboardList className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Nenhuma alteração de segurança registrada</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data/Hora</TableHead>
+                          <TableHead>Ação</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Valor Anterior</TableHead>
+                          <TableHead>Novo Valor</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {auditLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {getAuditActionLabel(log.action)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">
+                                {getSettingTypeLabel(log.setting_type)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {log.old_value || "-"}
+                            </TableCell>
+                            <TableCell>
+                              {log.new_value || "-"}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
