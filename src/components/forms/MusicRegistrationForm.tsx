@@ -33,6 +33,8 @@ const musicRegistrationSchema = z.object({
   project_id: z.string().optional(),
   genre: z.string().min(1, 'Gênero é obrigatório'),
   duration: z.number().optional(),
+  duration_minutes: z.number().min(0).optional(),
+  duration_seconds: z.number().min(0).max(59).optional(),
   isrc: z.string().optional(),
   iswc: z.string().optional(),
   ecad_code: z.string().optional(),
@@ -68,6 +70,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       project_id: registration?.project_id || '',
       genre: registration?.genre || '',
       duration: registration?.duration || undefined,
+      duration_minutes: registration?.duration ? Math.floor(registration.duration / 60) : undefined,
+      duration_seconds: registration?.duration ? registration.duration % 60 : undefined,
       isrc: registration?.isrc || '',
       iswc: registration?.iswc || '',
       ecad_code: registration?.ecad_code || '',
@@ -218,6 +222,13 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
   const onSubmit = async (data: MusicRegistrationFormData) => {
     try {
+      // Calculate total duration in seconds from minutes and seconds
+      const totalDuration = ((data.duration_minutes || 0) * 60) + (data.duration_seconds || 0);
+      const submissionData = {
+        ...data,
+        duration: totalDuration > 0 ? totalDuration : undefined,
+      };
+
       // Validate that percentages add up to 100 for each category
       const composerTotal = data.composers.reduce((sum, composer) => sum + composer.percentage, 0);
       const performerTotal = data.performers.reduce((sum, performer) => sum + performer.percentage, 0);
@@ -385,18 +396,35 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
               <FormField
                 control={form.control}
-                name="duration"
+                name="duration_minutes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duração (segundos)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="240" 
-                        {...field} 
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                      />
-                    </FormControl>
+                    <FormLabel>Duração</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          placeholder="Min" 
+                          className="w-20"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <span className="text-muted-foreground">:</span>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          max="59"
+                          placeholder="Seg" 
+                          className="w-20"
+                          value={form.watch('duration_seconds') ?? ''}
+                          onChange={(e) => form.setValue('duration_seconds', e.target.value ? parseInt(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
