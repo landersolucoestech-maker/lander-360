@@ -10,7 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PlusIcon, Trash2Icon, ChevronDown, ChevronUp, Search, Upload, FileAudio, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { PlusIcon, Trash2Icon, ChevronDown, ChevronUp, Search, Upload, FileAudio, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useArtists } from '@/hooks/useArtists';
@@ -97,6 +99,7 @@ export function PhonogramForm({
     data: works = []
   } = useMusicRegistry();
   const { data: projects = [] } = useProjects();
+  const { data: artists = [] } = useArtists();
   const createPhonogram = useCreatePhonogram();
   const updatePhonogram = useUpdatePhonogram();
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
@@ -108,6 +111,8 @@ export function PhonogramForm({
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const [participantSearchTerms, setParticipantSearchTerms] = useState<Record<string, string>>({});
+  const [openParticipantPopovers, setOpenParticipantPopovers] = useState<Record<string, boolean>>({});
 
   // Parse ISRC from phonogram
   const parseIsrc = (isrc: string | null) => {
@@ -363,6 +368,23 @@ export function PhonogramForm({
       });
     }
   };
+  const getFilteredArtists = (searchTerm: string) => {
+    if (!searchTerm || searchTerm.length < 2) return [];
+    const term = searchTerm.toLowerCase();
+    return artists.filter((artist: any) => 
+      artist.name?.toLowerCase().includes(term) ||
+      artist.stage_name?.toLowerCase().includes(term) ||
+      artist.full_name?.toLowerCase().includes(term)
+    ).slice(0, 10);
+  };
+
+  const handleSelectArtist = (artist: any, fieldName: string, index: number) => {
+    const displayName = artist.stage_name || artist.name || artist.full_name;
+    form.setValue(`${fieldName}.${index}.name` as any, displayName);
+    setOpenParticipantPopovers(prev => ({ ...prev, [`${fieldName}_${index}`]: false }));
+    setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
+  };
+
   const renderParticipantSection = (title: string, fields: any[], append: (value: any) => void, remove: (index: number) => void, isOpen: boolean, setIsOpen: (open: boolean) => void, fieldName: 'phonographic_producers' | 'performers' | 'musicians', percentage: number, maxPercentage: number = 100) => <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70">
@@ -371,33 +393,89 @@ export function PhonogramForm({
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-4 space-y-3">
-        {fields.map((field, index) => <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
-            <div className="col-span-6">
-              <FormField control={form.control} name={`${fieldName}.${index}.name`} render={({
-            field
-          }) => <FormItem>
+        {fields.map((field, index) => {
+          const popoverKey = `${fieldName}_${index}`;
+          const searchTerm = participantSearchTerms[popoverKey] || '';
+          const filteredArtists = getFilteredArtists(searchTerm);
+          const isPopoverOpen = openParticipantPopovers[popoverKey] || false;
+          
+          return (
+            <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
+              <div className="col-span-6">
+                <FormField control={form.control} name={`${fieldName}.${index}.name`} render={({
+                  field: formField
+                }) => (
+                  <FormItem className="flex flex-col">
                     {index === 0 && <FormLabel>Nome</FormLabel>}
-                    <FormControl>
-                      <Input placeholder="Nome do participante" {...field} />
-                    </FormControl>
-                  </FormItem>} />
+                    <Popover open={isPopoverOpen} onOpenChange={(open) => setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }))}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Input 
+                            placeholder="Digite para buscar artista..." 
+                            value={formField.value}
+                            onChange={(e) => {
+                              formField.onChange(e.target.value);
+                              setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
+                              if (e.target.value.length >= 2) {
+                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
+                              }
+                            }}
+                            onFocus={() => {
+                              if (formField.value && formField.value.length >= 2) {
+                                setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: formField.value }));
+                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
+                              }
+                            }}
+                          />
+                        </FormControl>
+                      </PopoverTrigger>
+                      {filteredArtists.length > 0 && (
+                        <PopoverContent className="w-[300px] p-0" align="start">
+                          <Command>
+                            <CommandList>
+                              <CommandGroup heading="Artistas cadastrados">
+                                {filteredArtists.map((artist: any) => (
+                                  <CommandItem
+                                    key={artist.id}
+                                    onSelect={() => handleSelectArtist(artist, fieldName, index)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", formField.value === (artist.stage_name || artist.name) ? "opacity-100" : "opacity-0")} />
+                                    <div className="flex flex-col">
+                                      <span>{artist.stage_name || artist.name}</span>
+                                      {artist.full_name && artist.full_name !== artist.name && (
+                                        <span className="text-xs text-muted-foreground">{artist.full_name}</span>
+                                      )}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      )}
+                    </Popover>
+                  </FormItem>
+                )} />
+              </div>
+              <div className="col-span-4">
+                <FormField control={form.control} name={`${fieldName}.${index}.percentage`} render={({
+                  field
+                }) => <FormItem>
+                      {index === 0 && <FormLabel>Percentual (%)</FormLabel>}
+                      <FormControl>
+                        <Input type="number" min={0} max={100} step={0.01} placeholder="0.00" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                      </FormControl>
+                    </FormItem>} />
+              </div>
+              <div className="col-span-2">
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                  <Trash2Icon className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
             </div>
-            <div className="col-span-4">
-              <FormField control={form.control} name={`${fieldName}.${index}.percentage`} render={({
-            field
-          }) => <FormItem>
-                    {index === 0 && <FormLabel>Percentual (%)</FormLabel>}
-                    <FormControl>
-                      <Input type="number" min={0} max={100} step={0.01} placeholder="0.00" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
-                    </FormControl>
-                  </FormItem>} />
-            </div>
-            <div className="col-span-2">
-              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                <Trash2Icon className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          </div>)}
+          );
+        })}
         <Button type="button" variant="outline" size="sm" onClick={() => append({
         name: '',
         role: '',
