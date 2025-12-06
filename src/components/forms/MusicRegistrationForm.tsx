@@ -48,7 +48,7 @@ const musicRegistrationSchema = z.object({
   performers: z.array(creditSchema).min(1, 'Pelo menos um intérprete é obrigatório'),
   producers: z.array(creditSchema).min(1, 'Pelo menos um produtor é obrigatório'),
   has_publisher: z.boolean().default(false),
-  publisher: publisherSchema.optional(),
+  publishers: z.array(publisherSchema).optional(),
   status: z.enum(['pending', 'registered', 'approved', 'rejected']).default('pending'),
 });
 
@@ -114,7 +114,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       performers: registration?.performers || [{ name: '', cpf: '', percentage: 0 }],
       producers: registration?.producers || [{ name: '', cpf: '', percentage: 0 }],
       has_publisher: registration?.has_publisher || false,
-      publisher: registration?.publisher || { name: '', cpf_cnpj: '', percentage: 0 },
+      publishers: registration?.publishers || [{ name: '', cpf_cnpj: '', percentage: 0 }],
       status: registration?.status || 'pending',
     },
   });
@@ -147,6 +147,15 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   } = useFieldArray({
     control: form.control,
     name: 'producers',
+  });
+
+  const {
+    fields: publisherFields,
+    append: appendPublisher,
+    remove: removePublisher,
+  } = useFieldArray({
+    control: form.control,
+    name: 'publishers',
   });
 
   const hasPublisher = form.watch('has_publisher');
@@ -542,54 +551,81 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
               />
 
               {hasPublisher && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
-                  <FormField
-                    control={form.control}
-                    name="publisher.name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome da Editora *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nome da editora musical" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="publisher.cpf_cnpj"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CPF/CNPJ *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="000.000.000-00 ou 00.000.000/0000-00" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="publisher.percentage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Porcentagem (%)*</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0.00" 
-                            step="0.01"
-                            min="0"
-                            max="100"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium">Editoras</h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendPublisher({ name: '', cpf_cnpj: '', percentage: 0 })}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Adicionar Editora
+                    </Button>
+                  </div>
+                  
+                  {publisherFields.map((publisherField, index) => (
+                    <div key={publisherField.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg items-end">
+                      <FormField
+                        control={form.control}
+                        name={`publishers.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Editora *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome da editora musical" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`publishers.${index}.cpf_cnpj`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>CPF/CNPJ *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="000.000.000-00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`publishers.${index}.percentage`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Porcentagem (%)*</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="0.00" 
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                {...field}
+                                value={field.value ?? 0}
+                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removePublisher(index)}
+                        disabled={publisherFields.length === 1}
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
