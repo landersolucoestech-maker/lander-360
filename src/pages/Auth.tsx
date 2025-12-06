@@ -128,7 +128,7 @@ export default function Auth() {
   }
   return <div className="min-h-screen flex">
       {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 p-8 relative bg-black items-center justify-center px-0 py-0 flex flex-col">
+      <div className="w-full lg:w-1/2 p-0 relative bg-black items-center justify-center px-0 py-0 flex flex-col gap-0">
         <div className="w-full max-w-md space-y-0">
           {/* Welcome Text */}
           <div className="text-center">
