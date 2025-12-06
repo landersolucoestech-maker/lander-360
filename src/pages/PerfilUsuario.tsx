@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { User, Mail, Shield, Phone, Building2, Camera, Save, X, Edit2, Loader2 } from "lucide-react";
@@ -28,9 +27,11 @@ interface ProfileData {
 const PerfilUsuario = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     email: "",
@@ -107,6 +108,94 @@ const PerfilUsuario = () => {
   const handleCancel = () => {
     setEditData(profileData);
     setIsEditing(false);
+  };
+
+  const handleAvatarClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma imagem válida",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Update local state
+      setEditData({ ...editData, avatarUrl });
+      setProfileData({ ...profileData, avatarUrl });
+
+      toast({
+        title: "Foto atualizada",
+        description: "Sua foto de perfil foi atualizada com sucesso"
+      });
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "Erro ao enviar foto",
+        description: error.message || "Não foi possível enviar a foto",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -242,12 +331,23 @@ const PerfilUsuario = () => {
               <Card className="lg:col-span-1">
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4 relative">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleAvatarUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
                     <Avatar className="h-32 w-32">
-                      {profileData.avatarUrl ? (
-                        <AvatarImage src={profileData.avatarUrl} alt={profileData.name} />
+                      {(isEditing ? editData.avatarUrl : profileData.avatarUrl) ? (
+                        <AvatarImage src={isEditing ? editData.avatarUrl : profileData.avatarUrl} alt={profileData.name} />
                       ) : null}
                       <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                        {getInitials(isEditing ? editData.name : profileData.name)}
+                        {isUploadingAvatar ? (
+                          <Loader2 className="h-8 w-8 animate-spin" />
+                        ) : (
+                          getInitials(isEditing ? editData.name : profileData.name)
+                        )}
                       </AvatarFallback>
                     </Avatar>
                     {isEditing && (
@@ -255,9 +355,14 @@ const PerfilUsuario = () => {
                         size="icon" 
                         variant="secondary" 
                         className="absolute bottom-0 right-1/2 translate-x-8 translate-y-2 rounded-full h-10 w-10"
-                        onClick={() => toast({ title: "Em desenvolvimento", description: "Upload de foto será implementado em breve" })}
+                        onClick={handleAvatarClick}
+                        disabled={isUploadingAvatar}
                       >
-                        <Camera className="h-4 w-4" />
+                        {isUploadingAvatar ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Camera className="h-4 w-4" />
+                        )}
                       </Button>
                     )}
                   </div>
