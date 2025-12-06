@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InventoryModal } from "@/components/modals/InventoryModal";
+import { InventoryViewModal } from "@/components/modals/InventoryViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Package, Plus, Headphones, Mic, Speaker } from "lucide-react";
 import { mockEquipment } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
@@ -262,61 +262,14 @@ const Inventario = () => {
             />
 
             {/* Modal Visualizar */}
-            <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Detalhes do Equipamento</DialogTitle>
-                  <DialogDescription>Informações completas do item selecionado</DialogDescription>
-                </DialogHeader>
-                {selectedEquipment && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                        {selectedEquipment.category === "Microfone" ? (
-                          <Mic className="h-8 w-8 text-primary" />
-                        ) : selectedEquipment.category === "Fone" ? (
-                          <Headphones className="h-8 w-8 text-primary" />
-                        ) : (
-                          <Speaker className="h-8 w-8 text-primary" />
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold">{selectedEquipment.name}</h3>
-                        <div className="flex gap-2 mt-1">
-                          <Badge variant="secondary">{selectedEquipment.category}</Badge>
-                          <Badge 
-                            variant={
-                              selectedEquipment.status === "Disponível" ? "success" :
-                              selectedEquipment.status === "Em Uso" ? "info" : "warning"
-                            }
-                          >
-                            {selectedEquipment.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Quantidade</p>
-                        <p className="font-medium">{selectedEquipment.quantity} unidades</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Local</p>
-                        <p className="font-medium">{selectedEquipment.location}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valor</p>
-                        <p className="font-medium">{selectedEquipment.value}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Última Manutenção</p>
-                        <p className="font-medium">{selectedEquipment.lastMaintenance}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
+            <InventoryViewModal
+              isOpen={isViewModalOpen}
+              onClose={() => {
+                setIsViewModalOpen(false);
+                setSelectedEquipment(null);
+              }}
+              equipment={selectedEquipment}
+            />
 
             {/* Modal Editar */}
             <InventoryModal 
