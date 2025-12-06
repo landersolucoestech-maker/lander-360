@@ -12,7 +12,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp, Loader2, FileText } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp, Loader2, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
@@ -98,10 +101,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const { data: crmContacts = [] } = useCrmContacts();
   const { data: existingWorks = [] } = useMusicRegistry();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [workDropdownOpen, setWorkDropdownOpen] = useState(false);
+  const [selectedWork, setSelectedWork] = useState<any>(null);
   
   const [participantSearchQuery, setParticipantSearchQuery] = useState('');
   const [isSearchingParticipant, setIsSearchingParticipant] = useState(false);
@@ -219,96 +220,57 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [isAiCreated, aiGenerationType, form]);
 
-  // Search existing works (local DB + Projects + ABRAMUS)
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      toast({
-        title: "Busca vazia",
-        description: "Digite um título, gênero ou código para buscar",
-        variant: "destructive",
+  // Build list of all available works (local + projects)
+  const availableWorks = React.useMemo(() => {
+    const works: any[] = [];
+    
+    // Add works from music_registry (local)
+    existingWorks.forEach(work => {
+      works.push({
+        id: work.id,
+        title: work.title || '',
+        genre: work.genre || '',
+        isrc: work.isrc || '',
+        iswc: work.iswc || '',
+        duration: work.duration,
+        source: 'local',
+        label: `${work.title} - Base Local`
       });
-      return;
-    }
-
-    setIsSearching(true);
-    setSearchResults([]);
-    setShowSearchResults(true);
-
-    try {
-      // Search local music_registry database
-      const localResults = existingWorks.filter(work => 
-        work.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        work.isrc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        work.iswc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        work.genre?.toLowerCase().includes(searchQuery.toLowerCase())
-      ).map(work => ({ ...work, source: 'local' }));
-
-      // Search in projects audio_files
-      const projectSongResults: any[] = [];
-      projects.forEach(project => {
-        const audioFiles = project.audio_files as any[];
-        if (audioFiles && Array.isArray(audioFiles)) {
-          audioFiles.forEach((song: any) => {
-            const songName = song.song_name || song.title || '';
-            const genre = song.genre || '';
-            const isrc = song.isrc || '';
-            
-            if (
-              songName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              genre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              isrc.toLowerCase().includes(searchQuery.toLowerCase())
-            ) {
-              projectSongResults.push({
-                title: songName,
-                genre: genre,
-                isrc: isrc,
-                duration: song.duration_minutes && song.duration_seconds 
-                  ? (song.duration_minutes * 60) + song.duration_seconds 
-                  : null,
-                lyrics: song.lyrics || '',
-                composers: song.composers || [],
-                performers: song.performers || [],
-                producers: song.producers || [],
-                is_instrumental: song.is_instrumental || false,
-                project_id: project.id,
-                project_name: project.name,
-                artist_id: project.artist_id,
-                source: 'project'
-              });
-            }
-          });
-        }
-      });
-
-      // Search ABRAMUS
-      const abramusResponse = await AbramusService.searchWorks(searchQuery);
-      const abramusResults = abramusResponse.data.map(work => ({ ...work, source: 'abramus' }));
-
-      const combinedResults = [...localResults, ...projectSongResults, ...abramusResults];
-      setSearchResults(combinedResults);
-
-      if (combinedResults.length === 0) {
-        toast({
-          title: "Nenhum resultado",
-          description: "Nenhuma obra encontrada. Você pode criar uma nova.",
-        });
-      } else {
-        toast({
-          title: "Busca concluída",
-          description: `${combinedResults.length} obra(s) encontrada(s)`,
+    });
+    
+    // Add works from projects audio_files
+    projects.forEach(project => {
+      const audioFiles = project.audio_files as any[];
+      if (audioFiles && Array.isArray(audioFiles)) {
+        audioFiles.forEach((song: any, index: number) => {
+          const songName = song.song_name || song.title || '';
+          if (songName) {
+            works.push({
+              id: `${project.id}-${index}`,
+              title: songName,
+              genre: song.genre || '',
+              isrc: song.isrc || '',
+              duration: song.duration_minutes && song.duration_seconds 
+                ? (song.duration_minutes * 60) + song.duration_seconds 
+                : null,
+              lyrics: song.lyrics || '',
+              composers: song.composers || [],
+              performers: song.performers || [],
+              producers: song.producers || [],
+              is_instrumental: song.is_instrumental || false,
+              project_id: project.id,
+              project_name: project.name,
+              artist_id: project.artist_id,
+              source: 'project',
+              label: `${songName} - Projeto: ${project.name}`
+            });
+          }
         });
       }
-    } catch (error) {
-      console.error('Search error:', error);
-      toast({
-        title: "Erro na busca",
-        description: "Ocorreu um erro ao buscar obras. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    });
+    
+    return works;
+  }, [existingWorks, projects]);
 
   // Select work from search results
   const handleSelectWork = (work: any) => {
@@ -390,8 +352,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       }
     }
 
-    setShowSearchResults(false);
-    setSearchQuery('');
+    setSelectedWork(work);
+    setWorkDropdownOpen(false);
     
     toast({
       title: "Obra selecionada",
@@ -511,53 +473,55 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             <CardTitle className="text-lg">Buscar Obra Existente</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input 
-                placeholder="Digite o título, gênero ou código e pressione ENTER para buscar" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
-                className="flex-1"
-              />
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="icon" 
-                onClick={handleSearch}
-                disabled={isSearching}
-              >
-                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-              </Button>
-            </div>
-
-            {/* Search Results */}
-            {showSearchResults && searchResults.length > 0 && (
-              <div className="border rounded-lg p-2 max-h-60 overflow-y-auto">
-                <p className="text-sm text-muted-foreground mb-2">
-                  {searchResults.length} resultado(s) encontrado(s):
-                </p>
-                {searchResults.map((work, index) => (
-                  <div 
-                    key={index}
-                    className="p-3 hover:bg-accent rounded-md cursor-pointer flex justify-between items-center"
-                    onClick={() => handleSelectWork(work)}
-                  >
-                    <div>
-                      <p className="font-medium">{work.title || work.titulo}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {work.genre || work.genero} • {
-                          work.source === 'local' ? 'Base Local' : 
-                          work.source === 'project' ? `Projeto: ${work.project_name}` : 
-                          'ABRAMUS'
-                        }
-                      </p>
-                    </div>
-                    <Button type="button" variant="ghost" size="sm">
-                      Selecionar
-                    </Button>
-                  </div>
-                ))}
-              </div>
+            <Popover open={workDropdownOpen} onOpenChange={setWorkDropdownOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={workDropdownOpen}
+                  className="w-full justify-between"
+                >
+                  {selectedWork ? selectedWork.title : "Selecione uma obra existente..."}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0 min-w-[var(--radix-popover-trigger-width)]" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar obra..." />
+                  <CommandList>
+                    <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                    <CommandGroup heading="Obras Disponíveis">
+                      {availableWorks.map((work) => (
+                        <CommandItem
+                          key={work.id}
+                          value={work.label}
+                          onSelect={() => handleSelectWork(work)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedWork?.id === work.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <div className="flex flex-col">
+                            <span>{work.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {work.genre ? `${work.genre} • ` : ''}
+                              {work.source === 'local' ? 'Base Local' : `Projeto: ${work.project_name}`}
+                            </span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            
+            {availableWorks.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Nenhuma obra cadastrada. Preencha os campos abaixo para criar uma nova.
+              </p>
             )}
           </CardContent>
         </Card>
