@@ -19,7 +19,18 @@ const Artistas = () => {
 
   // Transform database artists to match UI format - pass complete database data
   const transformDatabaseArtist = (dbArtist: any) => {
-    const hasManager = ['Com Empresário', 'Gravadora', 'Editora'].includes(dbArtist.profile_type);
+    const profileType = dbArtist.profile_type?.trim() || '';
+    const hasManager = ['Com Empresário', 'Gravadora', 'Editora'].includes(profileType) && 
+                       (dbArtist.manager_name || dbArtist.manager_phone || dbArtist.manager_email);
+    
+    console.log('Artist transform:', {
+      name: dbArtist.name,
+      profile_type: profileType,
+      hasManager,
+      manager_name: dbArtist.manager_name,
+      manager_phone: dbArtist.manager_phone,
+      manager_email: dbArtist.manager_email
+    });
     
     return {
       // Pass the raw database artist for edit mode
@@ -56,7 +67,7 @@ const Artistas = () => {
         email: dbArtist.email || 'Não informado',
         telefone: dbArtist.phone || 'Não informado'
       },
-      gravadora: dbArtist.profile_type || 'Independente'
+      gravadora: profileType || 'Independente'
     };
   };
 
