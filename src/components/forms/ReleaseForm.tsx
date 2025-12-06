@@ -442,7 +442,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Lançamento</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o tipo" />
@@ -465,7 +465,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gênero *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o gênero" />
@@ -501,7 +501,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Idioma da Música *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o idioma" />
@@ -547,7 +547,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o status" />
@@ -721,37 +721,53 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                 {/* Upload de Áudio para a Faixa */}
                 <div className="space-y-2">
                   <FormLabel>Arquivo de Áudio</FormLabel>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    {uploadedFiles[`track_${index}_audio`] ? (
-                      <p className="text-sm text-green-600">Áudio carregado com sucesso</p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        MP3 ou WAV (máx. 25MB)
-                      </p>
+                  <FormField
+                    control={form.control}
+                    name={`tracks.${index}.audio_file`}
+                    render={({ field }) => (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        {field.value ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-green-600 flex items-center justify-center gap-2">
+                              <MusicIcon className="h-4 w-4" />
+                              Áudio carregado
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate max-w-full">
+                              {field.value.split('/').pop()?.substring(0, 50) || 'Arquivo de áudio'}
+                            </p>
+                          </div>
+                        ) : uploadedFiles[`track_${index}_audio`] ? (
+                          <p className="text-sm text-green-600">Áudio carregado com sucesso</p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            MP3 ou WAV (máx. 25MB)
+                          </p>
+                        )}
+                        <input
+                          type="file"
+                          accept=".mp3,.wav,audio/mpeg,audio/wav"
+                          className="hidden"
+                          id={`track-${index}-audio-upload`}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleFileUpload(`track_${index}_audio`, file);
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => document.getElementById(`track-${index}-audio-upload`)?.click()}
+                          className="mt-2"
+                        >
+                          <UploadIcon className="h-4 w-4 mr-2" />
+                          {field.value ? 'Substituir Áudio' : 'Selecionar Áudio'}
+                        </Button>
+                      </div>
                     )}
-                    <input
-                      type="file"
-                      accept=".mp3,.wav,audio/mpeg,audio/wav"
-                      className="hidden"
-                      id={`track-${index}-audio-upload`}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleFileUpload(`track_${index}_audio`, file);
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => document.getElementById(`track-${index}-audio-upload`)?.click()}
-                      className="mt-2"
-                    >
-                      <UploadIcon className="h-4 w-4 mr-2" />
-                      Selecionar Áudio
-                    </Button>
-                  </div>
+                  />
                 </div>
 
                 <FormField
