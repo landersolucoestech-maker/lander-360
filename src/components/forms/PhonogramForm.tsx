@@ -233,10 +233,40 @@ export function PhonogramForm({
       form.setValue('duration_minutes', Math.floor(work.duration / 60));
       form.setValue('duration_seconds', work.duration % 60);
     }
+    
+    // Auto-preencher Intérpretes da obra cadastrada
+    const workParticipants = work.participants || [];
+    const interpreters = workParticipants
+      .filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete'))
+      .map((p: any) => ({
+        name: p.name || '',
+        role: 'interprete',
+        percentage: p.percentage || 0
+      }));
+    
+    if (interpreters.length > 0) {
+      form.setValue('performers', interpreters);
+      setPerformersOpen(true);
+    }
+    
+    // Auto-preencher Músicos Acompanhantes (produtores da obra)
+    const producers = workParticipants
+      .filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor'))
+      .map((p: any) => ({
+        name: p.name || '',
+        role: 'musico',
+        percentage: p.percentage || 0
+      }));
+    
+    if (producers.length > 0) {
+      form.setValue('musicians', producers);
+      setMusiciansOpen(true);
+    }
+    
     setWorkSearchOpen(false);
     toast({
       title: "Obra vinculada",
-      description: `Obra "${work.title}" foi vinculada ao fonograma.`
+      description: `Obra "${work.title}" foi vinculada ao fonograma.${interpreters.length > 0 ? ` ${interpreters.length} intérprete(s) carregado(s).` : ''}${producers.length > 0 ? ` ${producers.length} músico(s) acompanhante(s) carregado(s).` : ''}`
     });
   };
   const filteredWorks = works.filter(w => w.title?.toLowerCase().includes(workSearchTerm.toLowerCase()) || w.abramus_code?.toLowerCase().includes(workSearchTerm.toLowerCase()));
