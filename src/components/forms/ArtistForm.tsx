@@ -153,20 +153,43 @@ export function ArtistForm({
   };
   const onSubmit = async (data: ArtistFormData) => {
     try {
-      console.log('Dados do artista:', data);
       const artistData = {
         name: data.artistic_name,
-        legal_name: data.full_name,
-        // Mapear outros campos conforme necessário para a tabela artists
-        ...data
+        genre: data.genre,
+        bio: data.biography,
+        full_name: data.full_name,
+        birth_date: data.birth_date ? format(data.birth_date, 'yyyy-MM-dd') : null,
+        cpf_cnpj: data.cpf_cnpj,
+        rg: data.rg,
+        full_address: data.full_address,
+        phone: data.phone,
+        email: data.email,
+        bank: data.bank,
+        agency: data.agency,
+        account: data.account,
+        pix_key: data.pix_key || null,
+        account_holder: data.account_holder,
+        spotify_url: data.spotify_profile || null,
+        instagram: data.instagram || null,
+        youtube_url: data.youtube || null,
+        tiktok: data.tiktok || null,
+        soundcloud: data.soundcloud || null,
+        profile_type: data.profile_type,
+        manager_name: data.manager_name || null,
+        manager_phone: data.manager_phone || null,
+        manager_email: data.manager_email || null,
+        distributors: data.distributors || [],
+        distributor_emails: data.distributor_emails || {},
+        observations: data.observations || null,
       };
+      
       if (artist) {
         await updateArtist.mutateAsync({
           id: artist.id,
-          data: artistData as ArtistUpdate
+          data: artistData
         });
       } else {
-        await createArtist.mutateAsync(artistData as any);
+        await createArtist.mutateAsync(artistData);
       }
       toast({
         title: 'Sucesso',

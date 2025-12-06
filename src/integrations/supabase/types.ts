@@ -66,64 +66,124 @@ export type Database = {
       }
       artists: {
         Row: {
+          account: string | null
+          account_holder: string | null
+          agency: string | null
+          bank: string | null
           bio: string | null
+          birth_date: string | null
           contract_status: string | null
+          cpf_cnpj: string | null
           created_at: string
           created_by: string | null
+          distributor_emails: Json | null
+          distributors: string[] | null
+          documents_url: string | null
           email: string | null
+          full_address: string | null
+          full_name: string | null
           genre: string | null
           id: string
           image_url: string | null
           instagram: string | null
           instagram_url: string | null
           legal_name: string | null
+          manager_email: string | null
+          manager_name: string | null
+          manager_phone: string | null
           name: string
+          observations: string | null
           phone: string | null
+          pix_key: string | null
+          profile_type: string | null
+          rg: string | null
+          soundcloud: string | null
           spotify_id: string | null
           spotify_url: string | null
           stage_name: string | null
+          tiktok: string | null
           updated_at: string
           youtube_channel_id: string | null
           youtube_url: string | null
         }
         Insert: {
+          account?: string | null
+          account_holder?: string | null
+          agency?: string | null
+          bank?: string | null
           bio?: string | null
+          birth_date?: string | null
           contract_status?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
+          distributor_emails?: Json | null
+          distributors?: string[] | null
+          documents_url?: string | null
           email?: string | null
+          full_address?: string | null
+          full_name?: string | null
           genre?: string | null
           id?: string
           image_url?: string | null
           instagram?: string | null
           instagram_url?: string | null
           legal_name?: string | null
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_phone?: string | null
           name: string
+          observations?: string | null
           phone?: string | null
+          pix_key?: string | null
+          profile_type?: string | null
+          rg?: string | null
+          soundcloud?: string | null
           spotify_id?: string | null
           spotify_url?: string | null
           stage_name?: string | null
+          tiktok?: string | null
           updated_at?: string
           youtube_channel_id?: string | null
           youtube_url?: string | null
         }
         Update: {
+          account?: string | null
+          account_holder?: string | null
+          agency?: string | null
+          bank?: string | null
           bio?: string | null
+          birth_date?: string | null
           contract_status?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
+          distributor_emails?: Json | null
+          distributors?: string[] | null
+          documents_url?: string | null
           email?: string | null
+          full_address?: string | null
+          full_name?: string | null
           genre?: string | null
           id?: string
           image_url?: string | null
           instagram?: string | null
           instagram_url?: string | null
           legal_name?: string | null
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_phone?: string | null
           name?: string
+          observations?: string | null
           phone?: string | null
+          pix_key?: string | null
+          profile_type?: string | null
+          rg?: string | null
+          soundcloud?: string | null
           spotify_id?: string | null
           spotify_url?: string | null
           stage_name?: string | null
+          tiktok?: string | null
           updated_at?: string
           youtube_channel_id?: string | null
           youtube_url?: string | null
