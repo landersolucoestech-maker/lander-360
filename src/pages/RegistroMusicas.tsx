@@ -435,12 +435,26 @@ const RegistroMusicas = () => {
                                 <div className="font-medium text-foreground">{phono.isrc || "-"}</div>
                               </div>
                               <div className="text-center">
-                                <div className="text-muted-foreground">Artista</div>
-                                <div className="font-medium text-foreground">{phono.artistName}</div>
+                                <div className="text-muted-foreground">Gênero</div>
+                                <div className="font-medium text-foreground">{phono.genre || "-"}</div>
                               </div>
                               <div className="text-center">
-                                <div className="text-muted-foreground">Gravadora</div>
-                                <div className="font-medium text-foreground">{phono.label || "-"}</div>
+                                <div className="text-muted-foreground">Duração</div>
+                                <div className="font-medium text-foreground">
+                                  {phono.duration ? `${Math.floor(phono.duration / 60)}:${String(phono.duration % 60).padStart(2, '0')}` : "-"}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-muted-foreground">Gravação</div>
+                                <div className="font-medium text-foreground">
+                                  {phono.recording_date ? new Date(phono.recording_date).toLocaleDateString('pt-BR') : "-"}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-muted-foreground">Produtor</div>
+                                <div className="font-medium text-foreground">
+                                  {phono.participants?.find((p: any) => p.role === 'produtor_fonografico')?.name || "-"}
+                                </div>
                               </div>
                               <div className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleViewPhonogram(phono)}>
