@@ -262,9 +262,7 @@ export default function Auth() {
 
         {/* Copyright Footer */}
         <div className="absolute bottom-6 left-0 right-0 text-center">
-          <p className="text-xs text-gray-500">
-            Copyright © GESTÃO 360. Todos os direitos reservados.
-          </p>
+          <p className="text-xs text-gray-500 text-center">Copyright © LANDER 360º. Todos os direitos reservados.</p>
         </div>
       </div>
 
