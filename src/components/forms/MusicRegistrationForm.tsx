@@ -432,7 +432,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
               <FormField
                 control={form.control}
                 name="duration_minutes"
@@ -445,7 +447,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           type="number" 
                           min="0"
                           placeholder="Min" 
-                          className="w-20"
+                          className="w-16"
                           {...field}
                           value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
@@ -458,7 +460,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           min="0"
                           max="59"
                           placeholder="Seg" 
-                          className="w-20"
+                          className="w-16"
                           value={form.watch('duration_seconds') ?? ''}
                           onChange={(e) => form.setValue('duration_seconds', e.target.value ? parseInt(e.target.value) : undefined)}
                         />
