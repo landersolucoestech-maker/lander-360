@@ -32,12 +32,16 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
     const roles: Record<string, string> = {
       'interprete': 'Intérprete',
       'musico': 'Músico',
+      'musico_acompanhante': 'Músico Acompanhante',
       'produtor': 'Produtor',
+      'produtor_fonografico': 'Produtor Fonográfico',
       'engenheiro_som': 'Engenheiro de Som',
       'tecnico_mixagem': 'Técnico de Mixagem',
       'masterizacao': 'Masterização',
+      'compositor': 'Compositor',
+      'compositor_autor': 'Compositor/Autor',
     };
-    return roles[role] || role;
+    return roles[role] || role.replace(/_/g, ' ');
   };
 
   const participants = phonogram.participants || [];
