@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle } from 'lucide-react';
+import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
@@ -20,6 +20,7 @@ import { useMusicRegistry } from '@/hooks/useMusicRegistry';
 import { usePhonograms } from '@/hooks/usePhonograms';
 import { useCreateRelease, useUpdateRelease } from '@/hooks/useReleases';
 import { DateInput } from '@/components/ui/date-input';
+import { supabase } from '@/integrations/supabase/client';
 
 const trackSchema = z.object({
   title: z.string().min(1, 'Título da faixa é obrigatório'),
@@ -147,7 +148,13 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const { data: phonograms = [] } = usePhonograms();
   const createRelease = useCreateRelease();
   const updateRelease = useUpdateRelease();
-  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>(() => {
+    // Initialize with existing cover when editing
+    if (release?.cover_url || release?.cover_art) {
+      return { cover_art: release.cover_url || release.cover_art };
+    }
+    return {};
+  });
   
   const form = useForm<ReleaseFormData>({
     resolver: zodResolver(releaseSchema),
@@ -309,14 +316,9 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
     name: 'tracks',
   });
 
-  const handleFileUpload = (fileType: string, file: File) => {
-    // TODO: Implementar upload para Supabase Storage
-    // Por enquanto, apenas simula o upload
-    toast({
-      title: "Arquivo carregado",
-      description: `Arquivo ${fileType}: ${file.name} selecionado com sucesso!`,
-    });
-    
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (fileType: string, file: File) => {
     // Validações
     if (fileType === 'cover_art' || fileType.startsWith('additional_')) {
       const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -358,13 +360,52 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
       }
     }
     
-    // Simular upload
-    const fileUrl = URL.createObjectURL(file);
-    setUploadedFiles(prev => ({ ...prev, [fileType]: fileUrl }));
-    
-    // Atualizar form
+    // Upload to Supabase Storage
     if (fileType === 'cover_art') {
-      form.setValue(fileType, fileUrl);
+      setIsUploading(true);
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `covers/${fileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from('release-covers')
+          .upload(filePath, file);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('release-covers')
+          .getPublicUrl(filePath);
+        
+        setUploadedFiles(prev => ({ ...prev, [fileType]: publicUrl }));
+        form.setValue('cover_art', publicUrl);
+        
+        toast({
+          title: "Imagem carregada",
+          description: "A capa foi carregada com sucesso!",
+        });
+      } catch (error: any) {
+        console.error('Upload error:', error);
+        toast({
+          title: "Erro no upload",
+          description: error.message || "Erro ao carregar a imagem.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    } else {
+      // For audio files, still use blob URL for now
+      const fileUrl = URL.createObjectURL(file);
+      setUploadedFiles(prev => ({ ...prev, [fileType]: fileUrl }));
+      toast({
+        title: "Arquivo carregado",
+        description: `Arquivo ${file.name} selecionado com sucesso!`,
+      });
     }
   };
 
@@ -957,9 +998,19 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                   variant="outline"
                   onClick={() => document.getElementById('cover-art-upload')?.click()}
                   className="mt-2"
+                  disabled={isUploading}
                 >
-                  <UploadIcon className="h-4 w-4 mr-2" />
-                  Selecionar Capa
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Carregando...
+                    </>
+                  ) : (
+                    <>
+                      <UploadIcon className="h-4 w-4 mr-2" />
+                      Selecionar Capa
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
