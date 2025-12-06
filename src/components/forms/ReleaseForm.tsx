@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { format, parse, isValid } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +19,7 @@ import { useArtists } from '@/hooks/useArtists';
 import { useMusicRegistry } from '@/hooks/useMusicRegistry';
 import { usePhonograms } from '@/hooks/usePhonograms';
 import { useCreateRelease, useUpdateRelease } from '@/hooks/useReleases';
+import { DateInput } from '@/components/ui/date-input';
 
 const trackSchema = z.object({
   title: z.string().min(1, 'Título da faixa é obrigatório'),
@@ -596,7 +598,13 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                   <FormItem>
                     <FormLabel>Data de Lançamento</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <DateInput
+                        value={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
+                        onChange={(date) => {
+                          field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                        }}
+                        placeholder="DD/MM/AAAA"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
