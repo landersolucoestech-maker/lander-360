@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor } from "lucide-react";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { useToast } from "@/hooks/use-toast";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
@@ -109,15 +110,36 @@ const Configuracoes = () => {
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label>Modo Escuro</Label>
+                      <Label>Aparência</Label>
                       <p className="text-sm text-muted-foreground">
-                        Alternar entre tema claro e escuro
+                        Escolha o tema da interface
                       </p>
                     </div>
-                    <Switch 
-                      checked={theme === 'dark'}
-                      onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                    />
+                    <Select value={theme} onValueChange={setTheme}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Selecionar tema" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">
+                          <div className="flex items-center gap-2">
+                            <Sun className="h-4 w-4" />
+                            Claro
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="dark">
+                          <div className="flex items-center gap-2">
+                            <Moon className="h-4 w-4" />
+                            Escuro
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="system">
+                          <div className="flex items-center gap-2">
+                            <Monitor className="h-4 w-4" />
+                            Sistema
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between">

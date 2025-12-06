@@ -34,8 +34,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider 
       attribute="class" 
-      defaultTheme="dark" 
-      enableSystem={false}
+      defaultTheme="system" 
+      enableSystem={true}
       storageKey="lander360-theme"
       disableTransitionOnChange={false}
     >
