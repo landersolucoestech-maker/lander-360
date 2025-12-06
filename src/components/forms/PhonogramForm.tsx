@@ -407,7 +407,7 @@ export function PhonogramForm({
                 }) => (
                   <FormItem className="flex flex-col">
                     {index === 0 && <FormLabel>Nome</FormLabel>}
-                    <Popover open={isPopoverOpen} onOpenChange={(open) => setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }))}>
+                    <Popover open={isPopoverOpen && filteredArtists.length > 0} onOpenChange={(open) => setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }))}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Input 
@@ -418,6 +418,8 @@ export function PhonogramForm({
                               setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
                               if (e.target.value.length >= 2) {
                                 setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
+                              } else {
+                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
                               }
                             }}
                             onFocus={() => {
@@ -429,31 +431,29 @@ export function PhonogramForm({
                           />
                         </FormControl>
                       </PopoverTrigger>
-                      {filteredArtists.length > 0 && (
-                        <PopoverContent className="w-[300px] p-0" align="start">
-                          <Command>
-                            <CommandList>
-                              <CommandGroup heading="Artistas cadastrados">
-                                {filteredArtists.map((artist: any) => (
-                                  <CommandItem
-                                    key={artist.id}
-                                    onSelect={() => handleSelectArtist(artist, fieldName, index)}
-                                    className="cursor-pointer"
-                                  >
-                                    <Check className={cn("mr-2 h-4 w-4", formField.value === (artist.stage_name || artist.name) ? "opacity-100" : "opacity-0")} />
-                                    <div className="flex flex-col">
-                                      <span>{artist.stage_name || artist.name}</span>
-                                      {artist.full_name && artist.full_name !== artist.name && (
-                                        <span className="text-xs text-muted-foreground">{artist.full_name}</span>
-                                      )}
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      )}
+                      <PopoverContent className="w-[300px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                        <Command>
+                          <CommandList>
+                            <CommandGroup heading="Artistas cadastrados">
+                              {filteredArtists.map((artist: any) => (
+                                <CommandItem
+                                  key={artist.id}
+                                  onSelect={() => handleSelectArtist(artist, fieldName, index)}
+                                  className="cursor-pointer"
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", formField.value === (artist.stage_name || artist.name) ? "opacity-100" : "opacity-0")} />
+                                  <div className="flex flex-col">
+                                    <span>{artist.stage_name || artist.name}</span>
+                                    {artist.full_name && artist.full_name !== artist.name && (
+                                      <span className="text-xs text-muted-foreground">{artist.full_name}</span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
                     </Popover>
                   </FormItem>
                 )} />
