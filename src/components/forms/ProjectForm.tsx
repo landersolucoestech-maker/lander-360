@@ -127,6 +127,8 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
         collaboration_type: song.collaboration_type,
         track_type: song.track_type,
         instrumental: song.instrumental,
+        duration_minutes: song.duration_minutes,
+        duration_seconds: song.duration_seconds,
         genre: song.genre,
         language: song.language,
         composers: song.composers,
