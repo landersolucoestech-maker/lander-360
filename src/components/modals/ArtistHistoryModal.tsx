@@ -5,18 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Calendar, 
   Music, 
   FileText, 
-  DollarSign, 
-  Mic,
-  Upload,
   Users,
-  Trophy
+  Trophy,
+  Info
 } from "lucide-react";
 
 interface ArtistHistoryModalProps {
@@ -32,33 +28,12 @@ export function ArtistHistoryModal({
 }: ArtistHistoryModalProps) {
   if (!artist) return null;
 
-  const historyItems: any[] = [];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Ativo":
-      case "Concluído":
-      case "Realizado":
-      case "Aprovado":
-        return "success";
-      case "Pendente":
-        return "warning";
-      case "Indicado":
-        return "info";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "contract": return FileText;
-      case "release": return Music;
-      case "recording": return Mic;
-      case "upload": return Upload;
-      case "show": return Users;
-      case "award": return Trophy;
-      default: return Calendar;
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Não informado';
+    try {
+      return new Date(dateString).toLocaleDateString('pt-BR');
+    } catch {
+      return dateString;
     }
   };
 
@@ -68,7 +43,7 @@ export function ArtistHistoryModal({
         <DialogHeader>
           <DialogTitle>Histórico - {artist.name}</DialogTitle>
           <DialogDescription>
-            Histórico completo de atividades e marcos do artista
+            Histórico de atividades e marcos do artista
           </DialogDescription>
         </DialogHeader>
         
@@ -82,23 +57,44 @@ export function ArtistHistoryModal({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <Music className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <div className="text-xl font-bold">8</div>
+                  <div className="text-xl font-bold">{artist.stats?.lancamentos || 0}</div>
                   <div className="text-sm text-muted-foreground">Lançamentos</div>
                 </div>
                 <div className="text-center">
                   <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <div className="text-xl font-bold">12</div>
+                  <div className="text-xl font-bold">0</div>
                   <div className="text-sm text-muted-foreground">Shows</div>
                 </div>
                 <div className="text-center">
                   <FileText className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <div className="text-xl font-bold">3</div>
+                  <div className="text-xl font-bold">0</div>
                   <div className="text-sm text-muted-foreground">Contratos</div>
                 </div>
                 <div className="text-center">
                   <Trophy className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <div className="text-xl font-bold">2</div>
+                  <div className="text-xl font-bold">0</div>
                   <div className="text-sm text-muted-foreground">Prêmios</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Informações do Cadastro */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Informações do Cadastro</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Data de Cadastro:</span>
+                  <span>{formatDate(artist.created_at)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Última Atualização:</span>
+                  <span>{formatDate(artist.updated_at)}</span>
                 </div>
               </div>
             </CardContent>
@@ -110,66 +106,12 @@ export function ArtistHistoryModal({
               <CardTitle className="text-lg">Timeline de Atividades</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {historyItems.map((item, index) => {
-                  const IconComponent = getTypeIcon(item.type);
-                  return (
-                    <div key={item.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-primary/10">
-                          <IconComponent className="h-6 w-6 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="font-medium">{item.title}</h4>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
-                          </div>
-                          <Badge variant={getStatusColor(item.status) as any}>
-                            {item.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(item.date).toLocaleDateString('pt-BR')}
-                          </div>
-                          
-                          {item.amount && (
-                            <div className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              {item.amount}
-                            </div>
-                          )}
-                          
-                          {item.streams && (
-                            <div className="flex items-center gap-1">
-                              <Music className="h-3 w-3" />
-                              {item.streams} streams
-                            </div>
-                          )}
-                          
-                          {item.audience && (
-                            <div className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {item.audience}
-                            </div>
-                          )}
-                          
-                          {item.duration && (
-                            <div className="flex items-center gap-1">
-                              <Mic className="h-3 w-3" />
-                              {item.duration}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <Info className="h-12 w-12 mb-4" />
+                <p className="text-center">Nenhuma atividade registrada ainda.</p>
+                <p className="text-sm text-center mt-2">
+                  As atividades do artista aparecerão aqui conforme forem registradas no sistema.
+                </p>
               </div>
             </CardContent>
           </Card>
