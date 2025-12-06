@@ -38,6 +38,12 @@ const connectedReferenceSchema = z.object({
   type: z.string().optional(),
 });
 
+const aiElementSchema = z.object({
+  element_type: z.enum(['harmonia', 'melodia', 'letra']),
+  tool_name: z.string().optional(),
+  prompt: z.string().optional(),
+});
+
 const musicRegistrationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
   abramus_code: z.string().optional(),
@@ -48,6 +54,8 @@ const musicRegistrationSchema = z.object({
   duration_seconds: z.number().min(0).max(59).optional(),
   is_instrumental: z.boolean().default(false),
   is_ai_created: z.boolean().default(false),
+  ai_generation_type: z.enum(['total', 'partial']).optional(),
+  ai_elements: z.array(aiElementSchema).optional(),
   participants: z.array(participantSchema).optional(),
   other_titles: z.array(otherTitleSchema).optional(),
   connected_references: z.array(connectedReferenceSchema).optional(),
@@ -135,6 +143,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       duration_seconds: registration?.duration ? registration.duration % 60 : undefined,
       is_instrumental: registration?.is_instrumental || false,
       is_ai_created: registration?.is_ai_created || false,
+      ai_generation_type: registration?.ai_generation_type || undefined,
+      ai_elements: registration?.ai_elements || [],
       participants: registration?.participants || [],
       other_titles: registration?.other_titles || [],
       connected_references: registration?.connected_references || [],
@@ -174,6 +184,31 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     control: form.control,
     name: 'connected_references',
   });
+
+  const {
+    fields: aiElementFields,
+    append: appendAiElement,
+    remove: removeAiElement,
+  } = useFieldArray({
+    control: form.control,
+    name: 'ai_elements',
+  });
+
+  const isAiCreated = form.watch('is_ai_created');
+
+  // Initialize AI elements when is_ai_created becomes true
+  useEffect(() => {
+    if (isAiCreated) {
+      const currentElements = form.getValues('ai_elements') || [];
+      if (currentElements.length === 0) {
+        form.setValue('ai_elements', [
+          { element_type: 'harmonia', tool_name: '', prompt: '' },
+          { element_type: 'melodia', tool_name: '', prompt: '' },
+          { element_type: 'letra', tool_name: '', prompt: '' },
+        ]);
+      }
+    }
+  }, [isAiCreated, form]);
 
   // Search existing works (local DB + ABRAMUS)
   const handleSearch = async () => {
@@ -645,6 +680,184 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                 />
               </div>
             </div>
+
+            {/* Seção de IA Generativa - exibida quando is_ai_created é true */}
+            {isAiCreated && (
+              <div className="mt-6 p-4 border rounded-lg bg-muted/30 space-y-4">
+                <h3 className="text-base font-semibold">Criado por IA Generativa</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="ai_generation_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value || ''}
+                          className="flex flex-col sm:flex-row gap-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="total" id="ai-total" />
+                            <Label htmlFor="ai-total" className="text-sm">
+                              A obra foi totalmente gerada pela inteligência artificial generativa.
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="partial" id="ai-partial" />
+                            <Label htmlFor="ai-partial" className="text-sm">
+                              A obra foi parcialmente gerada pela inteligência artificial generativa.
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Elementos da obra musical criados por inteligência artificial generativa:
+                  </p>
+
+                  {/* HARMONIA */}
+                  <div className="space-y-2">
+                    <Label className="font-semibold">HARMONIA:</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4 items-end">
+                      <FormField
+                        control={form.control}
+                        name={`ai_elements.0.tool_name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">Ferramenta</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome da ferramenta" {...field} value={field.value || ''} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`ai_elements.0.prompt`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">Prompt</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Prompt utilizado" {...field} value={field.value || ''} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const currentElements = form.getValues('ai_elements') || [];
+                          if (currentElements[0]) {
+                            currentElements[0] = { element_type: 'harmonia', tool_name: '', prompt: '' };
+                            form.setValue('ai_elements', currentElements);
+                          }
+                        }}
+                      >
+                        <Trash2Icon className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* MELODIA */}
+                  <div className="space-y-2">
+                    <Label className="font-semibold">MELODIA:</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4 items-end">
+                      <FormField
+                        control={form.control}
+                        name={`ai_elements.1.tool_name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">Ferramenta</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome da ferramenta" {...field} value={field.value || ''} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`ai_elements.1.prompt`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">Prompt</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Prompt utilizado" {...field} value={field.value || ''} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const currentElements = form.getValues('ai_elements') || [];
+                          if (currentElements[1]) {
+                            currentElements[1] = { element_type: 'melodia', tool_name: '', prompt: '' };
+                            form.setValue('ai_elements', currentElements);
+                          }
+                        }}
+                      >
+                        <Trash2Icon className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* LETRA */}
+                  <div className="space-y-2">
+                    <Label className="font-semibold">LETRA:</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4 items-end">
+                      <FormField
+                        control={form.control}
+                        name={`ai_elements.2.tool_name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">Ferramenta</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome da ferramenta" {...field} value={field.value || ''} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`ai_elements.2.prompt`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">Prompt</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Prompt utilizado" {...field} value={field.value || ''} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const currentElements = form.getValues('ai_elements') || [];
+                          if (currentElements[2]) {
+                            currentElements[2] = { element_type: 'letra', tool_name: '', prompt: '' };
+                            form.setValue('ai_elements', currentElements);
+                          }
+                        }}
+                      >
+                        <Trash2Icon className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
