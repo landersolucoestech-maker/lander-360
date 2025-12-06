@@ -226,7 +226,18 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     
     // Add works from projects audio_files
     projects.forEach(project => {
-      const audioFilesData = project.audio_files as any;
+      let audioFilesData = project.audio_files as any;
+      
+      // Handle if audio_files is a string (JSON stringified)
+      if (typeof audioFilesData === 'string') {
+        try {
+          audioFilesData = JSON.parse(audioFilesData);
+        } catch (e) {
+          console.error('Error parsing audio_files:', e);
+          return;
+        }
+      }
+      
       // Handle structure: { release_type, songs: [...], observations }
       const songs = audioFilesData?.songs || [];
       
@@ -258,6 +269,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       }
     });
     
+    console.log('Available works from projects:', works);
     return works;
   }, [projects]);
 
