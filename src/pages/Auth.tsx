@@ -132,7 +132,7 @@ export default function Auth() {
         <div className="w-full max-w-md space-y-8">
           {/* Welcome Text */}
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-800 tracking-wider">
+            <h1 className="text-xl font-bold tracking-wider text-primary-foreground">
               SEJA BEM VINDO!
             </h1>
           </div>
