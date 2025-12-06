@@ -957,7 +957,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                 {participantFields.length > 0 && (
                   <div className="space-y-3">
                     {participantFields.map((field, index) => (
-                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border rounded-lg items-end">
+                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1.5fr_1.2fr_0.8fr_auto] gap-3 p-4 border rounded-lg items-end">
                         <FormField
                           control={form.control}
                           name={`participants.${index}.name`}
@@ -1010,7 +1010,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           name={`participants.${index}.contract_start_date`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Data Início Contrato</FormLabel>
+                              <FormLabel>Início Contrato</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="date" 
@@ -1027,11 +1027,11 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           name={`participants.${index}.percentage`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>% Participação *</FormLabel>
+                              <FormLabel>% Part. *</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  placeholder="0.00" 
+                                  placeholder="0" 
                                   step="0.01"
                                   min="0"
                                   max="100"
@@ -1048,6 +1048,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           type="button"
                           variant="outline"
                           size="icon"
+                          className="shrink-0"
                           onClick={() => removeParticipant(index)}
                         >
                           <Trash2Icon className="h-4 w-4" />
