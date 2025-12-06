@@ -7,16 +7,17 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import { 
   PlayCircle, 
-  Calendar, 
-  DollarSign, 
-  Users, 
   Music,
   Mic2,
-  Headphones
+  Headphones,
+  FileText,
+  Globe,
+  User,
+  FileAudio
 } from "lucide-react";
+import { useArtists } from "@/hooks/useArtists";
 
 interface ProjectViewModalProps {
   open: boolean;
@@ -29,11 +30,60 @@ export function ProjectViewModal({
   onOpenChange,
   project,
 }: ProjectViewModalProps) {
+  const { data: artists = [] } = useArtists();
+
   if (!project) return null;
+
+  // Parse audio_files to get full project details
+  const getProjectDetails = () => {
+    try {
+      if (project.audio_files && typeof project.audio_files === 'string') {
+        return JSON.parse(project.audio_files);
+      }
+      if (project.audio_files && typeof project.audio_files === 'object') {
+        return project.audio_files;
+      }
+    } catch (e) {
+      console.error('Error parsing audio_files:', e);
+    }
+    return null;
+  };
+
+  const details = getProjectDetails();
+  const artist = artists.find(a => a.id === project.artist_id);
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      draft: "Rascunho",
+      in_progress: "Em Andamento",
+      completed: "Concluído",
+      cancelled: "Cancelado"
+    };
+    return labels[status] || status;
+  };
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "completed": return "default";
+      case "in_progress": return "secondary";
+      case "draft": return "outline";
+      case "cancelled": return "destructive";
+      default: return "secondary";
+    }
+  };
+
+  const getReleaseTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      single: "Single",
+      ep: "EP",
+      album: "Álbum"
+    };
+    return labels[type] || type;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalhes do Projeto</DialogTitle>
           <DialogDescription>
@@ -49,105 +99,165 @@ export function ProjectViewModal({
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold">{project.name}</h2>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge 
-                  variant={
-                    project.status === "Concluído" ? "default" :
-                    project.status === "Em Andamento" ? "secondary" : "outline"
-                  }
-                >
-                  {project.status}
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <Badge variant={getStatusVariant(project.status)}>
+                  {getStatusLabel(project.status)}
                 </Badge>
-                <Badge variant="secondary">{project.type}</Badge>
-                <Badge variant="outline">{project.genre}</Badge>
+                {details?.release_type && (
+                  <Badge variant="secondary">
+                    {getReleaseTypeLabel(details.release_type)}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
 
-          <Separator />
-
-          {/* Progresso */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Progresso do Projeto</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Conclusão</span>
-                <span className="font-medium">{project.progress || 0}%</span>
-              </div>
-              <Progress value={project.progress || 0} className="h-2" />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Equipe */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Equipe do Projeto</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Music className="h-5 w-5 text-primary" />
-                  <span className="font-medium">Compositores</span>
+          {/* Artista Responsável */}
+          {artist && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Artista Responsável
+                </h3>
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="font-medium">{artist.name}</p>
+                  {artist.genre && (
+                    <p className="text-sm text-muted-foreground mt-1">Gênero: {artist.genre}</p>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">{project.compositors || "Não informado"}</p>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Mic2 className="h-5 w-5 text-primary" />
-                  <span className="font-medium">Intérpretes</span>
-                </div>
-                <p className="text-sm text-muted-foreground">{project.interpreters || "Não informado"}</p>
-              </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Headphones className="h-5 w-5 text-primary" />
-                  <span className="font-medium">Produtores</span>
-                </div>
-                <p className="text-sm text-muted-foreground">{project.djProducer || "Não informado"}</p>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
 
           <Separator />
 
-          {/* Datas e Orçamento */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Informações do Projeto</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Data de Início</div>
-                  <div className="font-medium">
-                    {project.startDate ? new Date(project.startDate).toLocaleDateString('pt-BR') : "Não definida"}
+          {/* Músicas do Projeto */}
+          {details?.songs && details.songs.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">
+                {details.songs.length === 1 ? 'Música' : `Músicas (${details.songs.length})`}
+              </h3>
+              <div className="space-y-4">
+                {details.songs.map((song: any, index: number) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-lg">{song.song_name || 'Sem nome'}</h4>
+                      <div className="flex gap-2">
+                        {song.collaboration_type && (
+                          <Badge variant="outline">
+                            {song.collaboration_type === 'solo' ? 'Solo' : 'Feat'}
+                          </Badge>
+                        )}
+                        {song.track_type && (
+                          <Badge variant="outline">
+                            {song.track_type === 'original' ? 'Original' : 'Remix'}
+                          </Badge>
+                        )}
+                        {song.instrumental === 'sim' && (
+                          <Badge variant="secondary">Instrumental</Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {song.genre && (
+                        <div className="flex items-center gap-2">
+                          <Music className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Gênero:</span>
+                          <span className="text-sm font-medium">{song.genre}</span>
+                        </div>
+                      )}
+                      {song.language && (
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Idioma:</span>
+                          <span className="text-sm font-medium">{song.language}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Créditos */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Music className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Compositores</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {song.composers?.map((c: any) => c.name).filter(Boolean).join(', ') || 'Não informado'}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Mic2 className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Intérpretes</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {song.performers?.map((p: any) => p.name).filter(Boolean).join(', ') || 'Não informado'}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Headphones className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Produtores</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {song.producers?.map((p: any) => p.name).filter(Boolean).join(', ') || 'Não informado'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Letra */}
+                    {song.lyrics && (
+                      <div className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Letra</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">
+                          {song.lyrics}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Arquivos de Áudio */}
+                    {song.audio_files && song.audio_files.length > 0 && (
+                      <div className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileAudio className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">Arquivos de Áudio ({song.audio_files.length})</span>
+                        </div>
+                        <div className="space-y-1">
+                          {song.audio_files.map((file: any, fileIndex: number) => (
+                            <p key={fileIndex} className="text-sm text-muted-foreground">
+                              • {file.name}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Data de Término</div>
-                  <div className="font-medium">
-                    {project.endDate ? new Date(project.endDate).toLocaleDateString('pt-BR') : "Não definida"}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <DollarSign className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Orçamento</div>
-                  <div className="font-medium">{project.budget || "Não definido"}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Gênero Musical</div>
-                  <div className="font-medium">{project.genre || "Não definido"}</div>
-                </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Observações */}
+          {details?.observations && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Observações</h3>
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {details.observations}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
