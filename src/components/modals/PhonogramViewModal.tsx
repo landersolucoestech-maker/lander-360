@@ -137,7 +137,7 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
                     <span className="font-medium">{participant.name}</span>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{getRoleDisplay(participant.role)}</Badge>
-                      {participant.percentage > 0 && (
+                      {participant.percentage !== undefined && participant.percentage !== null && (
                         <span className="text-sm text-muted-foreground">({participant.percentage}%)</span>
                       )}
                     </div>
