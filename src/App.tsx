@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Artistas from "./pages/Artistas";
 import Projetos from "./pages/Projetos";
 import RegistroMusicas from "./pages/RegistroMusicas";
@@ -49,6 +50,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/artistas" element={<ProtectedRoute><Artistas /></ProtectedRoute>} />

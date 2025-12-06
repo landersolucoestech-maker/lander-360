@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe } from 'lucide-react';
+import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MFAVerification } from '@/components/auth/MFAVerification';
 import authBackground from '@/assets/auth-background.jpeg';
@@ -28,8 +28,15 @@ const signupSchema = z.object({
   path: ['confirmPassword']
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Email inválido')
+});
+
 type LoginFormData = z.infer<typeof loginSchema>;
 type SignupFormData = z.infer<typeof signupSchema>;
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+type AuthMode = "login" | "signup" | "forgot-password";
 
 interface MFAState {
   required: boolean;
@@ -44,7 +51,8 @@ export default function Auth() {
   const { user, signIn, signUp, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignupMode, setIsSignupMode] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const [mfaState, setMfaState] = useState<MFAState>({
     required: false,
     hasTotp: false,
@@ -74,6 +82,13 @@ export default function Auth() {
       email: '',
       password: '',
       confirmPassword: ''
+    }
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: ''
     }
   });
 
@@ -177,6 +192,33 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async (data: ForgotPasswordFormData) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setResetEmailSent(true);
+      toast({
+        title: 'E-mail enviado!',
+        description: 'Verifique sua caixa de entrada para redefinir sua senha.'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro',
+        description: error.message || 'Não foi possível enviar o e-mail de recuperação',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleMFAVerified = () => {
     setMfaState({
       required: false,
@@ -233,7 +275,7 @@ export default function Auth() {
             />
           </div>
 
-          {/* MFA Verification or Login Form */}
+          {/* MFA Verification or Auth Forms */}
           <div className="relative z-10">
             {mfaState.required ? (
               <MFAVerification
@@ -244,7 +286,79 @@ export default function Auth() {
                 userEmail={mfaState.userEmail}
                 userId={mfaState.userId}
               />
-            ) : !isSignupMode ? (
+            ) : authMode === "forgot-password" ? (
+              // Forgot Password Form
+              resetEmailSent ? (
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <CheckCircle className="h-8 w-8 text-green-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-primary-foreground mb-2">
+                      E-mail Enviado!
+                    </h2>
+                    <p className="text-sm text-gray-400">
+                      Verifique sua caixa de entrada para redefinir sua senha.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setAuthMode("login");
+                      setResetEmailSent(false);
+                    }}
+                    className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Voltar ao Login
+                  </Button>
+                </div>
+              ) : (
+                <Form {...forgotPasswordForm}>
+                  <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+                    <p className="text-sm text-gray-400 text-center mb-4">
+                      Digite seu e-mail para receber um link de recuperação de senha.
+                    </p>
+                    <FormField 
+                      control={forgotPasswordForm.control} 
+                      name="email" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                              <Input 
+                                type="email" 
+                                placeholder="Digite seu e-mail" 
+                                className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} 
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-sm tracking-wider rounded-lg" 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ENVIANDO...
+                        </>
+                      ) : (
+                        'ENVIAR LINK DE RECUPERAÇÃO'
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              )
+            ) : authMode === "login" ? (
+              // Login Form
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                   <FormField 
@@ -304,6 +418,7 @@ export default function Auth() {
                 </form>
               </Form>
             ) : (
+              // Signup Form
               <Form {...signupForm}>
                 <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                   <FormField 
@@ -405,26 +520,49 @@ export default function Auth() {
           </div>
 
           {/* Toggle Mode & Forgot Password - Hide during MFA */}
-          {!mfaState.required && (
+          {!mfaState.required && authMode !== "forgot-password" && (
             <div className="text-center space-y-3">
-              <button 
-                type="button" 
-                onClick={() => setIsSignupMode(!isSignupMode)} 
-                className="text-sm font-medium underline text-primary-foreground"
-              >
-                {isSignupMode ? 'Já tenho uma conta' : 'Esqueci minha senha'}
-              </button>
-              {!isSignupMode && (
-                <div>
+              {authMode === "login" ? (
+                <>
                   <button 
                     type="button" 
-                    onClick={() => setIsSignupMode(true)} 
-                    className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    onClick={() => setAuthMode("forgot-password")} 
+                    className="text-sm font-medium underline text-primary-foreground"
                   >
-                    Criar nova conta
+                    Esqueci minha senha
                   </button>
-                </div>
+                  <div>
+                    <button 
+                      type="button" 
+                      onClick={() => setAuthMode("signup")} 
+                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    >
+                      Criar nova conta
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={() => setAuthMode("login")} 
+                  className="text-sm font-medium underline text-primary-foreground"
+                >
+                  Já tenho uma conta
+                </button>
               )}
+            </div>
+          )}
+
+          {/* Back to login for forgot password */}
+          {authMode === "forgot-password" && !resetEmailSent && (
+            <div className="text-center">
+              <button 
+                type="button" 
+                onClick={() => setAuthMode("login")} 
+                className="text-sm font-medium underline text-primary-foreground"
+              >
+                Voltar ao login
+              </button>
             </div>
           )}
 
