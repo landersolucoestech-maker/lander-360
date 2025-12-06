@@ -13,6 +13,8 @@ import { MusicRegistrationInsert, MusicRegistrationUpdate } from '@/types/databa
 import { PlusIcon, Trash2Icon, FolderOpen, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
+import { useArtists } from '@/hooks/useArtists';
+import { useCrmContacts } from '@/hooks/useCrm';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const creditSchema = z.object({
@@ -61,6 +63,35 @@ interface MusicRegistrationFormProps {
 export function MusicRegistrationForm({ registration, onSuccess, onCancel }: MusicRegistrationFormProps) {
   const { toast } = useToast();
   const { data: projects = [], isLoading: loadingProjects } = useProjects();
+  const { data: artists = [] } = useArtists();
+  const { data: crmContacts = [] } = useCrmContacts();
+
+  // Helper function to find CPF by name from artists or CRM contacts
+  const findCpfByName = (name: string): string => {
+    if (!name || name.trim() === '') return '';
+    
+    const normalizedName = name.trim().toLowerCase();
+    
+    // First, search in artists by name or stage_name
+    const artist = artists.find(a => 
+      a.name?.toLowerCase() === normalizedName ||
+      a.stage_name?.toLowerCase() === normalizedName ||
+      a.full_name?.toLowerCase() === normalizedName
+    );
+    
+    if (artist?.cpf_cnpj) {
+      return artist.cpf_cnpj;
+    }
+    
+    // If not found in artists, search in CRM contacts
+    const crmContact = crmContacts.find(c => 
+      c.name?.toLowerCase() === normalizedName
+    );
+    
+    // CRM contacts don't have CPF field in current schema, but we check anyway
+    // Return empty string if no CPF found
+    return '';
+  };
   
   const form = useForm<MusicRegistrationFormData>({
     resolver: zodResolver(musicRegistrationSchema),
@@ -163,13 +194,13 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             form.setValue('lyrics', firstSong.lyrics);
           }
           
-          // Convert composers to the form format (with CPF and percentage)
+          // Convert composers to the form format (with CPF from artists/CRM and percentage)
           if (firstSong.composers && firstSong.composers.length > 0) {
             const formattedComposers = firstSong.composers
               .filter((c: any) => c.name && c.name.trim() !== '')
               .map((c: any, index: number, arr: any[]) => ({
                 name: c.name,
-                cpf: c.cpf || '',
+                cpf: c.cpf || findCpfByName(c.name),
                 percentage: c.percentage || Math.round(100 / arr.length),
               }));
             
@@ -184,7 +215,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
               .filter((p: any) => p.name && p.name.trim() !== '')
               .map((p: any, index: number, arr: any[]) => ({
                 name: p.name,
-                cpf: p.cpf || '',
+                cpf: p.cpf || findCpfByName(p.name),
                 percentage: p.percentage || Math.round(100 / arr.length),
               }));
             
@@ -199,7 +230,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
               .filter((p: any) => p.name && p.name.trim() !== '')
               .map((p: any, index: number, arr: any[]) => ({
                 name: p.name,
-                cpf: p.cpf || '',
+                cpf: p.cpf || findCpfByName(p.name),
                 percentage: p.percentage || Math.round(100 / arr.length),
               }));
             
@@ -210,7 +241,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
           toast({
             title: "Projeto carregado",
-            description: `Informações do projeto "${selectedProject.name}" foram preenchidas. Complete os dados faltantes (CPF e porcentagens).`,
+            description: `Informações do projeto "${selectedProject.name}" foram preenchidas automaticamente.`,
           });
         } else {
           toast({
@@ -226,7 +257,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         });
       }
     }
-  }, [selectedProjectId, projects]);
+  }, [selectedProjectId, projects, artists, crmContacts]);
 
   const onSubmit = async (data: MusicRegistrationFormData) => {
     try {
