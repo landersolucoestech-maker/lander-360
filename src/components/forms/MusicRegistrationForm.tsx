@@ -195,10 +195,11 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   });
 
   const isAiCreated = form.watch('is_ai_created');
+  const aiGenerationType = form.watch('ai_generation_type');
 
-  // Initialize AI elements when is_ai_created becomes true
+  // Initialize AI elements when ai_generation_type is selected
   useEffect(() => {
-    if (isAiCreated) {
+    if (isAiCreated && aiGenerationType) {
       const currentElements = form.getValues('ai_elements') || [];
       if (currentElements.length === 0) {
         form.setValue('ai_elements', [
@@ -208,7 +209,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         ]);
       }
     }
-  }, [isAiCreated, form]);
+  }, [isAiCreated, aiGenerationType, form]);
 
   // Search existing works (local DB + ABRAMUS)
   const handleSearch = async () => {
@@ -716,6 +717,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                   )}
                 />
 
+                {aiGenerationType && (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     Elementos da obra musical criados por inteligência artificial generativa:
@@ -856,6 +858,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </CardContent>
