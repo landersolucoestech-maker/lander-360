@@ -441,12 +441,6 @@ const Lancamentos = () => {
                         </div>
                       </div>
                     )}
-
-                    {/* ID do Lançamento */}
-                    <div className="pt-4 border-t">
-                      <label className="text-sm font-medium text-muted-foreground">ID do Lançamento</label>
-                      <p className="font-mono text-xs text-muted-foreground">{selectedRelease.id}</p>
-                    </div>
                   </div>
                 )}
               </DialogContent>
