@@ -965,6 +965,7 @@ export type Database = {
           isrc: string | null
           iswc: string | null
           key: string | null
+          participants: Json | null
           publishers: string[] | null
           release_date: string | null
           status: string | null
@@ -985,6 +986,7 @@ export type Database = {
           isrc?: string | null
           iswc?: string | null
           key?: string | null
+          participants?: Json | null
           publishers?: string[] | null
           release_date?: string | null
           status?: string | null
@@ -1005,6 +1007,7 @@ export type Database = {
           isrc?: string | null
           iswc?: string | null
           key?: string | null
+          participants?: Json | null
           publishers?: string[] | null
           release_date?: string | null
           status?: string | null
