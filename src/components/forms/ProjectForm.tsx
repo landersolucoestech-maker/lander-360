@@ -26,6 +26,8 @@ const songSchema = z.object({
   collaboration_type: z.enum(['solo', 'feat']).default('solo'),
   track_type: z.enum(['original', 'remix']).default('original'),
   instrumental: z.enum(['sim', 'nao']).default('nao'),
+  duration_minutes: z.number().min(0).optional(),
+  duration_seconds: z.number().min(0).max(59).optional(),
   genre: z.string().optional(),
   language: z.string().optional(),
   composers: z.array(z.object({ name: z.string() })).optional(),
@@ -84,6 +86,8 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
         collaboration_type: 'solo',
         track_type: 'original',
         instrumental: 'nao',
+        duration_minutes: undefined,
+        duration_seconds: undefined,
         genre: '',
         language: '',
         composers: [{ name: '' }],
@@ -179,6 +183,8 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
       collaboration_type: 'solo',
       track_type: 'original',
       instrumental: 'nao',
+      duration_minutes: undefined,
+      duration_seconds: undefined,
       genre: '',
       language: '',
       composers: [{ name: '' }],
@@ -278,7 +284,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name={`songs.${songIndex}.song_name`}
@@ -358,6 +364,44 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                     </FormItem>
                   )}
                 />
+
+                <div className="flex gap-2">
+                  <FormField
+                    control={form.control}
+                    name={`songs.${songIndex}.duration_minutes`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Duração</FormLabel>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              placeholder="Min" 
+                              className="w-20"
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                            />
+                          </FormControl>
+                          <span className="text-muted-foreground">:</span>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              max="59"
+                              placeholder="Seg" 
+                              className="w-20"
+                              value={form.watch(`songs.${songIndex}.duration_seconds`) ?? ''}
+                              onChange={(e) => form.setValue(`songs.${songIndex}.duration_seconds`, e.target.value ? parseInt(e.target.value) : undefined)}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
