@@ -442,19 +442,6 @@ const RegistroMusicas = () => {
                                 <div className="text-muted-foreground text-xs">Cód ECAD</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).ecad_code || "-"}</div>
                               </div>
-                              <div className="text-center min-w-[80px]">
-                                <div className="text-muted-foreground text-xs">Situação</div>
-                                <Badge 
-                                  variant={
-                                    phono.status === "aceita" ? "default" :
-                                    phono.status === "recusada" ? "destructive" :
-                                    phono.status === "em_analise" ? "outline" : "secondary"
-                                  }
-                                  className="text-xs"
-                                >
-                                  {phono.statusDisplay || phono.status || "Pendente"}
-                                </Badge>
-                              </div>
                               <div className="text-center min-w-[120px]">
                                 <div className="text-muted-foreground text-xs">Compositores</div>
                                 <div className="font-medium text-foreground text-xs truncate max-w-[120px]">
