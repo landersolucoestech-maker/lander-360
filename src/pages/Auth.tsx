@@ -133,6 +133,25 @@ export default function Auth() {
     }
   };
 
+  const sendLockoutNotification = async (email: string) => {
+    try {
+      const response = await supabase.functions.invoke("send-lockout-notification", {
+        body: {
+          email: email,
+          lockoutDurationMinutes: LOCKOUT_DURATION_MINUTES
+        }
+      });
+      
+      if (response.error) {
+        console.error("Error sending lockout notification:", response.error);
+      } else {
+        console.log("Lockout notification sent to:", email);
+      }
+    } catch (error) {
+      console.error("Error calling lockout notification function:", error);
+    }
+  };
+
   const recordFailedAttempt = async (email: string): Promise<{ attemptsRemaining: number; locked: boolean }> => {
     try {
       const normalizedEmail = email.toLowerCase();
@@ -158,6 +177,9 @@ export default function Auth() {
               last_attempt_at: new Date().toISOString()
             })
             .eq("email", normalizedEmail);
+          
+          // Send lockout notification email
+          sendLockoutNotification(normalizedEmail);
           
           return { attemptsRemaining: 0, locked: true };
         } else {
