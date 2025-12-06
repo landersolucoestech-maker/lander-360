@@ -135,6 +135,46 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     return participants.reduce((sum, p) => sum + (p.percentage || 0), 0);
   };
   
+  // Convert writers/publishers arrays to participants format for editing
+  const getParticipantsFromRegistration = () => {
+    if (registration?.participants && registration.participants.length > 0) {
+      return registration.participants;
+    }
+    
+    const participants: any[] = [];
+    
+    // Convert writers to participants
+    if (registration?.writers && Array.isArray(registration.writers)) {
+      registration.writers.forEach((writer: string) => {
+        participants.push({
+          name: writer,
+          role: 'compositor_autor',
+          link: '',
+          contract_start_date: '',
+          percentage: 0,
+        });
+      });
+    }
+    
+    // Convert publishers to participants (editors)
+    if (registration?.publishers && Array.isArray(registration.publishers)) {
+      registration.publishers.forEach((publisher: string) => {
+        // Avoid duplicates if already added as writer
+        if (!participants.some(p => p.name === publisher)) {
+          participants.push({
+            name: publisher,
+            role: 'editor',
+            link: '',
+            contract_start_date: '',
+            percentage: 0,
+          });
+        }
+      });
+    }
+    
+    return participants;
+  };
+
   const form = useForm<MusicRegistrationFormData>({
     resolver: zodResolver(musicRegistrationSchema),
     defaultValues: {
@@ -149,7 +189,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       is_ai_created: registration?.is_ai_created || false,
       ai_generation_type: registration?.ai_generation_type || undefined,
       ai_elements: registration?.ai_elements || [],
-      participants: registration?.participants || [],
+      participants: getParticipantsFromRegistration(),
       other_titles: registration?.other_titles || [],
       connected_references: registration?.connected_references || [],
       isrc: registration?.isrc || '',
@@ -158,7 +198,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       artist_id: registration?.artist_id || '',
       project_id: registration?.project_id || '',
       lyrics: registration?.lyrics || '',
-      accept_terms: false,
+      accept_terms: registration?.id ? true : false,
     },
   });
 
