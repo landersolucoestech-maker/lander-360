@@ -305,7 +305,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         work.composers.forEach((c: any) => {
           participants.push({
             name: c.name || c,
-            role: 'compositor',
+            role: 'compositor_autor',
             link: '',
             contract_start_date: '',
             percentage: c.percentage || 0,
@@ -325,12 +325,12 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       
       // Add only composers/authors from ABRAMUS
       if (work.participantes && work.participantes.length > 0) {
-        const composerRoles = ['compositor', 'autor', 'tradutor'];
+        const composerRoles = ['compositor', 'autor'];
         const formattedParticipants = work.participantes
-          .filter((p: any) => composerRoles.includes(p.funcao?.toLowerCase()))
+          .filter((p: any) => composerRoles.includes(p.funcao?.toLowerCase()) || p.funcao?.toLowerCase() === 'tradutor')
           .map((p: any) => ({
             name: p.nome,
-            role: p.funcao?.toLowerCase() || 'compositor',
+            role: p.funcao?.toLowerCase() === 'tradutor' ? 'tradutor' : 'compositor_autor',
             link: '',
             contract_start_date: '',
             percentage: p.percentual || 0,
@@ -984,8 +984,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="compositor">Compositor</SelectItem>
-                                  <SelectItem value="autor">Autor</SelectItem>
+                                  <SelectItem value="compositor_autor">Compositor/Autor</SelectItem>
                                   <SelectItem value="tradutor">Tradutor</SelectItem>
                                 </SelectContent>
                               </Select>
