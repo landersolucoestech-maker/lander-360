@@ -269,9 +269,9 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Background Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
+      <div className="hidden lg:w-1/2 relative bg-gray-900 lg:flex-row lg:flex lg:items-end lg:justify-end">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-        backgroundImage: `url(${authBackground})`,
+        backgroundImage: "url(\"/lovable-uploads/c7c7ae81-beee-48bc-be1b-fa6583c175ee.jpg\")",
         backgroundPosition: 'right center'
       }} />
         <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-900/30" />
