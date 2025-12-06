@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
+import { LoginHistoryModal } from "@/components/modals/LoginHistoryModal";
 
 interface ProfileData {
   name: string;
@@ -34,6 +35,7 @@ const PerfilUsuario = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isLoginHistoryModalOpen, setIsLoginHistoryModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     email: "",
@@ -514,7 +516,7 @@ const PerfilUsuario = () => {
                     <Button 
                       variant="outline" 
                       className="justify-start gap-2"
-                      onClick={() => toast({ title: "Em desenvolvimento", description: "Histórico de login será implementado em breve" })}
+                      onClick={() => setIsLoginHistoryModalOpen(true)}
                     >
                       <User className="h-4 w-4" />
                       Histórico de Login
@@ -530,6 +532,11 @@ const PerfilUsuario = () => {
       <ChangePasswordModal 
         open={isPasswordModalOpen} 
         onOpenChange={setIsPasswordModalOpen} 
+      />
+      
+      <LoginHistoryModal
+        open={isLoginHistoryModalOpen}
+        onOpenChange={setIsLoginHistoryModalOpen}
       />
     </SidebarProvider>
   );
