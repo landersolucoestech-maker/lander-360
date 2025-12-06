@@ -491,20 +491,56 @@ export function ArtistForm({
               field
             }) => <FormItem>
                     <FormLabel>Data de Nascimento</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                            {field.value ? format(field.value, "dd/MM/yyyy") : <span>Selecione a data ou digite</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input 
+                          type="text"
+                          placeholder="DD/MM/AAAA"
+                          className="flex-1"
+                          value={field.value ? format(field.value, "dd/MM/yyyy") : ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Auto-format with slashes
+                            let formatted = value.replace(/\D/g, '');
+                            if (formatted.length >= 2) {
+                              formatted = formatted.slice(0, 2) + '/' + formatted.slice(2);
+                            }
+                            if (formatted.length >= 5) {
+                              formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+                            }
+                            e.target.value = formatted;
+                            
+                            // Parse date when complete
+                            if (formatted.length === 10) {
+                              const [day, month, year] = formatted.split('/').map(Number);
+                              const date = new Date(year, month - 1, day);
+                              if (!isNaN(date.getTime()) && date <= new Date() && date >= new Date("1900-01-01")) {
+                                field.onChange(date);
+                              }
+                            } else if (value === '') {
+                              field.onChange(undefined);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button type="button" variant="outline" size="icon">
+                            <CalendarIcon className="h-4 w-4" />
                           </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={date => date > new Date() || date < new Date("1900-01-01")} initialFocus className={cn("p-3 pointer-events-auto")} />
-                      </PopoverContent>
-                    </Popover>
-                    
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar 
+                            mode="single" 
+                            selected={field.value} 
+                            onSelect={field.onChange} 
+                            disabled={date => date > new Date() || date < new Date("1900-01-01")} 
+                            initialFocus 
+                            className={cn("p-3 pointer-events-auto")} 
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                     <FormMessage />
                   </FormItem>} />
 
