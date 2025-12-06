@@ -63,17 +63,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Record login history if successful
     if (!error && data.user) {
-      recordLoginHistory(data.user.id);
+      recordLoginHistory(data.user.id, data.user.email || email);
     }
     
     return { error: error as Error | null };
   };
 
-  const recordLoginHistory = async (userId: string) => {
+  const recordLoginHistory = async (userId: string, userEmail: string) => {
     try {
       const userAgent = navigator.userAgent;
       const browser = getBrowserName(userAgent);
       const deviceType = getDeviceType(userAgent);
+      
+      // Check if this is a new device
+      const isNewDevice = await checkIfNewDevice(userId, browser, deviceType);
       
       await supabase.from('login_history').insert({
         user_id: userId,
@@ -81,8 +84,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         browser: browser,
         device_type: deviceType,
       });
+
+      // Send notification if new device detected
+      if (isNewDevice && userEmail) {
+        sendNewDeviceNotification(userEmail, deviceType, browser);
+      }
     } catch (error) {
       console.error('Error recording login history:', error);
+    }
+  };
+
+  const checkIfNewDevice = async (userId: string, browser: string, deviceType: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('login_history')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('browser', browser)
+        .eq('device_type', deviceType)
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking device history:', error);
+        return false;
+      }
+
+      // If no records found, it's a new device
+      return !data || data.length === 0;
+    } catch (error) {
+      console.error('Error checking if new device:', error);
+      return false;
+    }
+  };
+
+  const sendNewDeviceNotification = async (email: string, deviceType: string, browser: string) => {
+    try {
+      const response = await supabase.functions.invoke('send-new-device-notification', {
+        body: {
+          email: email,
+          deviceType: deviceType,
+          browser: browser,
+          loginTime: new Date().toISOString()
+        }
+      });
+
+      if (response.error) {
+        console.error('Error sending new device notification:', response.error);
+      } else {
+        console.log('New device notification sent to:', email);
+      }
+    } catch (error) {
+      console.error('Error calling new device notification function:', error);
     }
   };
 
