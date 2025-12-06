@@ -231,7 +231,7 @@ export default function Auth() {
 
           {/* Toggle Mode & Forgot Password */}
           <div className="text-center space-y-3">
-            <button type="button" onClick={() => setIsSignupMode(!isSignupMode)} className="text-gray-600 hover:text-gray-800 text-sm font-medium underline">
+            <button type="button" onClick={() => setIsSignupMode(!isSignupMode)} className="text-sm font-medium underline text-primary-foreground">
               {isSignupMode ? 'Já tenho uma conta' : 'Esqueci minha senha'}
             </button>
             {!isSignupMode && <div>
