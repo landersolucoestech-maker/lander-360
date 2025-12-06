@@ -4,13 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp, Loader2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
@@ -68,6 +70,9 @@ const musicRegistrationSchema = z.object({
     cpf_cnpj: z.string(),
     percentage: z.number(),
   })).optional(),
+  accept_terms: z.boolean().refine((val) => val === true, {
+    message: 'Você precisa aceitar os Termos de Uso para continuar',
+  }),
 });
 
 type MusicRegistrationFormData = z.infer<typeof musicRegistrationSchema>;
@@ -98,6 +103,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const [participationOpen, setParticipationOpen] = useState(true);
   const [otherTitlesOpen, setOtherTitlesOpen] = useState(false);
   const [referencesOpen, setReferencesOpen] = useState(false);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
 
   const findCpfByName = (name: string): string => {
     if (!name || name.trim() === '') return '';
@@ -136,6 +143,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       status: registration?.status || 'pending',
       artist_id: registration?.artist_id || '',
       project_id: registration?.project_id || '',
+      lyrics: registration?.lyrics || '',
+      accept_terms: false,
     },
   });
 
@@ -931,6 +940,80 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           </Collapsible>
         </Card>
 
+        {/* Letra da Música */}
+        <Card className="bg-card">
+          <Collapsible open={lyricsOpen} onOpenChange={setLyricsOpen}>
+            <CardHeader className="pb-4">
+              <CollapsibleTrigger className="flex items-center justify-between w-full">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Letra da Música
+                </CardTitle>
+                {lyricsOpen ? (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                )}
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="lyrics"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Letra Completa</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Digite a letra completa da música aqui..."
+                          className="min-h-[200px] resize-y"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+
+        {/* Termos de Uso */}
+        <Card className="bg-card">
+          <CardContent className="pt-6">
+            <FormField
+              control={form.control}
+              name="accept_terms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">
+                      Aceito o Termo - {' '}
+                      <Button 
+                        type="button"
+                        variant="link" 
+                        className="p-0 h-auto text-primary underline"
+                        onClick={() => setShowTermsDialog(true)}
+                      >
+                        Leia e aceite os Termos de Uso
+                      </Button>
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
         {/* Form Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-end">
           <Button type="button" variant="outline" onClick={onCancel}>
@@ -993,6 +1076,93 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                   Nenhum participante encontrado. Você pode adicionar manualmente.
                 </p>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Terms of Use Dialog */}
+        <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Termos de Uso - Cadastro de Obras Musicais</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-4 text-sm">
+                <h3 className="font-semibold text-base">1. DEFINIÇÕES</h3>
+                <p>
+                  Para os fins deste Termo de Uso, as seguintes definições se aplicam:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>Obra Musical:</strong> Composição musical original, incluindo letra (se houver), melodia e arranjo.</li>
+                  <li><strong>Titular:</strong> Pessoa física ou jurídica detentora dos direitos autorais sobre a obra musical.</li>
+                  <li><strong>Participante:</strong> Compositor, autor, intérprete, produtor ou qualquer pessoa que tenha contribuído para a criação da obra.</li>
+                </ul>
+
+                <h3 className="font-semibold text-base">2. DECLARAÇÃO DE TITULARIDADE</h3>
+                <p>
+                  Ao cadastrar uma obra musical neste sistema, o usuário declara que:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>É o legítimo titular ou representante autorizado dos direitos autorais da obra cadastrada;</li>
+                  <li>Possui autorização expressa de todos os coautores, quando aplicável;</li>
+                  <li>As informações fornecidas são verdadeiras e completas;</li>
+                  <li>A obra não viola direitos de terceiros.</li>
+                </ul>
+
+                <h3 className="font-semibold text-base">3. RESPONSABILIDADES</h3>
+                <p>
+                  O usuário se responsabiliza por:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Manter atualizados os dados cadastrais da obra e dos participantes;</li>
+                  <li>Garantir a veracidade das informações sobre percentuais de participação;</li>
+                  <li>Informar imediatamente qualquer alteração nos direitos autorais da obra;</li>
+                  <li>Arcar com todas as consequências legais decorrentes de informações falsas ou incompletas.</li>
+                </ul>
+
+                <h3 className="font-semibold text-base">4. DIREITOS AUTORAIS</h3>
+                <p>
+                  O cadastro da obra neste sistema não implica em cessão ou transferência de direitos autorais. 
+                  Todos os direitos permanecem com seus respectivos titulares. O sistema serve apenas como 
+                  ferramenta de gestão e organização das informações das obras musicais.
+                </p>
+
+                <h3 className="font-semibold text-base">5. PROTEÇÃO DE DADOS</h3>
+                <p>
+                  Os dados pessoais dos titulares e participantes serão tratados conforme a Lei Geral de 
+                  Proteção de Dados (LGPD - Lei nº 13.709/2018), sendo utilizados exclusivamente para 
+                  fins de gestão das obras musicais e comunicações pertinentes.
+                </p>
+
+                <h3 className="font-semibold text-base">6. DISPOSIÇÕES GERAIS</h3>
+                <p>
+                  Este termo poderá ser atualizado a qualquer momento, sendo responsabilidade do usuário 
+                  manter-se informado sobre eventuais alterações. A continuidade do uso do sistema após 
+                  alterações implica em aceitação das novas condições.
+                </p>
+
+                <p className="text-muted-foreground italic mt-6">
+                  Última atualização: Dezembro de 2024
+                </p>
+              </div>
+            </ScrollArea>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowTermsDialog(false)}
+              >
+                Fechar
+              </Button>
+              <Button 
+                type="button" 
+                onClick={() => {
+                  form.setValue('accept_terms', true);
+                  setShowTermsDialog(false);
+                }}
+              >
+                Li e Aceito os Termos
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
