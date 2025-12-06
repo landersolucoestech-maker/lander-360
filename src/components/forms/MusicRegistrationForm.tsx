@@ -65,7 +65,7 @@ const musicRegistrationSchema = z.object({
   connected_references: z.array(connectedReferenceSchema).optional(),
   isrc: z.string().optional(),
   iswc: z.string().optional(),
-  status: z.enum(['pending', 'registered', 'approved', 'rejected']).default('pending'),
+  status: z.enum(['pendente', 'em_analise', 'aceita', 'recusada']).default('pendente'),
   artist_id: z.string().optional(),
   project_id: z.string().optional(),
   duration: z.number().optional(),
@@ -154,7 +154,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       connected_references: registration?.connected_references || [],
       isrc: registration?.isrc || '',
       iswc: registration?.iswc || '',
-      status: registration?.status || 'pending',
+      status: registration?.status || 'pendente',
       artist_id: registration?.artist_id || '',
       project_id: registration?.project_id || '',
       lyrics: registration?.lyrics || '',
@@ -454,7 +454,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         artist_id: data.artist_id || null,
         writers: writers.length > 0 ? writers : null,
         publishers: publishers.length > 0 ? publishers : null,
-        status: 'draft',
+        status: data.status || 'pendente',
+        abramus_code: data.abramus_code || null,
+        ecad_code: data.ecad_code || null,
       };
 
       if (registration?.id) {
@@ -545,7 +547,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             <CardTitle className="text-lg">Dados Principais da Obra</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Row 1: Cód Abramus, Cód ECAD, Título da Obra */}
+            {/* Row 1: Cód Abramus, Cód ECAD, Título da Obra, Situação */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               <div className="md:col-span-2">
                 <FormField
@@ -577,7 +579,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                   )}
                 />
               </div>
-              <div className="md:col-span-8">
+              <div className="md:col-span-5">
                 <FormField
                   control={form.control}
                   name="title"
@@ -587,6 +589,31 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                       <FormControl>
                         <Input placeholder="Digite para buscar ou criar nova obra" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Situação</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="em_analise">Em Análise</SelectItem>
+                          <SelectItem value="aceita">Aceita</SelectItem>
+                          <SelectItem value="recusada">Recusada</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
