@@ -219,7 +219,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [isAiCreated, aiGenerationType, form]);
 
-  // Search existing works (local DB + ABRAMUS)
+  // Search existing works (local DB + Projects + ABRAMUS)
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       toast({
@@ -235,7 +235,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     setShowSearchResults(true);
 
     try {
-      // Search local database
+      // Search local music_registry database
       const localResults = existingWorks.filter(work => 
         work.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         work.isrc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -243,11 +243,48 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         work.genre?.toLowerCase().includes(searchQuery.toLowerCase())
       ).map(work => ({ ...work, source: 'local' }));
 
+      // Search in projects audio_files
+      const projectSongResults: any[] = [];
+      projects.forEach(project => {
+        const audioFiles = project.audio_files as any[];
+        if (audioFiles && Array.isArray(audioFiles)) {
+          audioFiles.forEach((song: any) => {
+            const songName = song.song_name || song.title || '';
+            const genre = song.genre || '';
+            const isrc = song.isrc || '';
+            
+            if (
+              songName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              genre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              isrc.toLowerCase().includes(searchQuery.toLowerCase())
+            ) {
+              projectSongResults.push({
+                title: songName,
+                genre: genre,
+                isrc: isrc,
+                duration: song.duration_minutes && song.duration_seconds 
+                  ? (song.duration_minutes * 60) + song.duration_seconds 
+                  : null,
+                lyrics: song.lyrics || '',
+                composers: song.composers || [],
+                performers: song.performers || [],
+                producers: song.producers || [],
+                is_instrumental: song.is_instrumental || false,
+                project_id: project.id,
+                project_name: project.name,
+                artist_id: project.artist_id,
+                source: 'project'
+              });
+            }
+          });
+        }
+      });
+
       // Search ABRAMUS
       const abramusResponse = await AbramusService.searchWorks(searchQuery);
       const abramusResults = abramusResponse.data.map(work => ({ ...work, source: 'abramus' }));
 
-      const combinedResults = [...localResults, ...abramusResults];
+      const combinedResults = [...localResults, ...projectSongResults, ...abramusResults];
       setSearchResults(combinedResults);
 
       if (combinedResults.length === 0) {
@@ -283,6 +320,55 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       if (work.duration) {
         form.setValue('duration_minutes', Math.floor(work.duration / 60));
         form.setValue('duration_seconds', work.duration % 60);
+      }
+    } else if (work.source === 'project') {
+      form.setValue('title', work.title || '');
+      form.setValue('genre', work.genre || '');
+      form.setValue('isrc', work.isrc || '');
+      form.setValue('is_instrumental', work.is_instrumental || false);
+      form.setValue('lyrics', work.lyrics || '');
+      form.setValue('project_id', work.project_id || '');
+      form.setValue('artist_id', work.artist_id || '');
+      
+      if (work.duration) {
+        form.setValue('duration_minutes', Math.floor(work.duration / 60));
+        form.setValue('duration_seconds', work.duration % 60);
+      }
+      
+      // Add participants from project (composers, performers, producers)
+      const participants: any[] = [];
+      if (work.composers && Array.isArray(work.composers)) {
+        work.composers.forEach((c: any) => {
+          participants.push({
+            name: c.name || c,
+            cpf: c.cpf || findCpfByName(c.name || c),
+            role: 'compositor',
+            percentage: c.percentage || 0,
+          });
+        });
+      }
+      if (work.performers && Array.isArray(work.performers)) {
+        work.performers.forEach((p: any) => {
+          participants.push({
+            name: p.name || p,
+            cpf: p.cpf || findCpfByName(p.name || p),
+            role: 'interprete',
+            percentage: p.percentage || 0,
+          });
+        });
+      }
+      if (work.producers && Array.isArray(work.producers)) {
+        work.producers.forEach((p: any) => {
+          participants.push({
+            name: p.name || p,
+            cpf: p.cpf || findCpfByName(p.name || p),
+            role: 'produtor',
+            percentage: p.percentage || 0,
+          });
+        });
+      }
+      if (participants.length > 0) {
+        form.setValue('participants', participants);
       }
     } else if (work.source === 'abramus') {
       form.setValue('title', work.titulo || '');
@@ -459,7 +545,11 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                     <div>
                       <p className="font-medium">{work.title || work.titulo}</p>
                       <p className="text-sm text-muted-foreground">
-                        {work.genre || work.genero} • {work.source === 'local' ? 'Base Local' : 'ABRAMUS'}
+                        {work.genre || work.genero} • {
+                          work.source === 'local' ? 'Base Local' : 
+                          work.source === 'project' ? `Projeto: ${work.project_name}` : 
+                          'ABRAMUS'
+                        }
                       </p>
                     </div>
                     <Button type="button" variant="ghost" size="sm">
