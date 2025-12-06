@@ -3,10 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { SessionActivityMonitor } from "@/components/security/SessionActivityMonitor";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -37,47 +37,55 @@ import PerfilUsuario from "./pages/PerfilUsuario";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="system" 
+      enableSystem={true}
+      storageKey="lander360-theme"
+      disableTransitionOnChange={false}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/perfil" element={<ProtectedRoute><SessionActivityMonitor><PerfilUsuario /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><SessionActivityMonitor><Index /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/artistas" element={<ProtectedRoute><SessionActivityMonitor><Artistas /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/projetos" element={<ProtectedRoute><SessionActivityMonitor><Projetos /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/registro-musicas" element={<ProtectedRoute><SessionActivityMonitor><RegistroMusicas /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/lancamentos" element={<ProtectedRoute><SessionActivityMonitor><Lancamentos /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/contratos" element={<ProtectedRoute><SessionActivityMonitor><Contratos /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/financeiro" element={<ProtectedRoute><SessionActivityMonitor><Financeiro /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/agenda" element={<ProtectedRoute><SessionActivityMonitor><Agenda /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/nota-fiscal" element={<ProtectedRoute><SessionActivityMonitor><NotaFiscal /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/inventario" element={<ProtectedRoute><SessionActivityMonitor><Inventario /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/usuarios" element={<ProtectedRoute><SessionActivityMonitor><Usuarios /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/relatorios" element={<ProtectedRoute><SessionActivityMonitor><Relatorios /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/crm" element={<ProtectedRoute><SessionActivityMonitor><CRM /></SessionActivityMonitor></ProtectedRoute>} />
-              {/* Marketing routes */}
-              <Route path="/marketing/visao-geral" element={<ProtectedRoute><SessionActivityMonitor><MarketingVisaoGeral /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/marketing/campanhas" element={<ProtectedRoute><SessionActivityMonitor><MarketingCampanhas /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/marketing/tarefas" element={<ProtectedRoute><SessionActivityMonitor><MarketingTarefas /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/marketing/calendario" element={<ProtectedRoute><SessionActivityMonitor><MarketingCalendario /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/marketing/metricas" element={<ProtectedRoute><SessionActivityMonitor><MarketingMetricas /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/marketing/briefing" element={<ProtectedRoute><SessionActivityMonitor><MarketingBriefing /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/configuracoes" element={<ProtectedRoute><SessionActivityMonitor><Configuracoes /></SessionActivityMonitor></ProtectedRoute>} />
-              <Route path="/seguranca-logs" element={<ProtectedRoute><SessionActivityMonitor><SegurancaLogs /></SessionActivityMonitor></ProtectedRoute>} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <SessionActivityMonitor>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/artistas" element={<ProtectedRoute><Artistas /></ProtectedRoute>} />
+                <Route path="/projetos" element={<ProtectedRoute><Projetos /></ProtectedRoute>} />
+                <Route path="/registro-musicas" element={<ProtectedRoute><RegistroMusicas /></ProtectedRoute>} />
+                <Route path="/lancamentos" element={<ProtectedRoute><Lancamentos /></ProtectedRoute>} />
+                <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
+                <Route path="/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
+                <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
+                <Route path="/nota-fiscal" element={<ProtectedRoute><NotaFiscal /></ProtectedRoute>} />
+                <Route path="/inventario" element={<ProtectedRoute><Inventario /></ProtectedRoute>} />
+                <Route path="/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
+                <Route path="/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
+                <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
+                {/* Marketing routes */}
+                <Route path="/marketing/visao-geral" element={<ProtectedRoute><MarketingVisaoGeral /></ProtectedRoute>} />
+                <Route path="/marketing/campanhas" element={<ProtectedRoute><MarketingCampanhas /></ProtectedRoute>} />
+                <Route path="/marketing/tarefas" element={<ProtectedRoute><MarketingTarefas /></ProtectedRoute>} />
+                <Route path="/marketing/calendario" element={<ProtectedRoute><MarketingCalendario /></ProtectedRoute>} />
+                <Route path="/marketing/metricas" element={<ProtectedRoute><MarketingMetricas /></ProtectedRoute>} />
+                <Route path="/marketing/briefing" element={<ProtectedRoute><MarketingBriefing /></ProtectedRoute>} />
+                <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+                <Route path="/seguranca-logs" element={<ProtectedRoute><SegurancaLogs /></ProtectedRoute>} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SessionActivityMonitor>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
+    </ThemeProvider>
+  </QueryClientProvider>
 );
 
 export default App;
