@@ -228,16 +228,16 @@ const RegistroMusicas = () => {
                         
                         <div className="flex items-center gap-6 text-sm">
                           <div className="text-center">
-                            <div className="text-muted-foreground">Participantes</div>
-                            <div className="font-medium text-foreground">{song.composers?.join(", ") || "-"}</div>
-                          </div>
-                          <div className="text-center">
                             <div className="text-muted-foreground">Cód. ABRAMUS</div>
                             <div className="font-medium text-foreground">{(song as any).abramus_code || "-"}</div>
                           </div>
                           <div className="text-center">
                             <div className="text-muted-foreground">Cód. ECAD</div>
                             <div className="font-medium text-foreground">{(song as any).ecad_code || "-"}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-muted-foreground">Participantes</div>
+                            <div className="font-medium text-foreground">{song.composers?.join(", ") || "-"}</div>
                           </div>
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={() => handleViewSong(song)}>
