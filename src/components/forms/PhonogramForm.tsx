@@ -476,7 +476,7 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
               </div>
             </div>
 
-            {/* Row 2: Datas e Duração */}
+            {/* Row 2: Datas, Duração e Instrumental */}
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField
@@ -562,11 +562,6 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   />
                 </div>
               </div>
-              <div className="col-span-4" />
-            </div>
-
-            {/* Row 3: Instrumental, Gênero, Classificação */}
-            <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField
                   control={form.control}
@@ -581,6 +576,10 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   )}
                 />
               </div>
+            </div>
+
+            {/* Row 3: Gênero, Classificação */}
+            <div className="grid grid-cols-12 gap-4">
               <div className="col-span-3">
                 <FormField
                   control={form.control}
