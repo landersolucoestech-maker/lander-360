@@ -267,22 +267,13 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Background Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-        backgroundImage: `url(${authBackground})`,
-        backgroundPosition: 'right center'
-      }} />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-900/30" />
-        
-        {/* Text Overlay */}
-        <div className="absolute bottom-12 left-12 z-10">
-          <h2 className="text-3xl font-bold text-white mb-2">
-            Sistema de Gestão
-          </h2>
-          <p className="text-gray-300 text-lg">
-            Plataforma Musical Profissional
-          </p>
-        </div>
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <img 
+          src={authBackground} 
+          alt="Background" 
+          className="absolute inset-0 w-full h-full object-cover object-right"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/40" />
       </div>
     </div>;
 }
