@@ -19,6 +19,7 @@ import { useArtists } from '@/hooks/useArtists';
 import { useMusicRegistry } from '@/hooks/useMusicRegistry';
 import { useCreatePhonogram, useUpdatePhonogram } from '@/hooks/usePhonograms';
 import { useProjects } from '@/hooks/useProjects';
+import { useCrmContacts } from '@/hooks/useCrm';
 import { ScrollArea } from '@/components/ui/scroll-area';
 const participantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -100,6 +101,7 @@ export function PhonogramForm({
   } = useMusicRegistry();
   const { data: projects = [] } = useProjects();
   const { data: artists = [] } = useArtists();
+  const { data: crmContacts = [] } = useCrmContacts();
   const createPhonogram = useCreatePhonogram();
   const updatePhonogram = useUpdatePhonogram();
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
@@ -510,6 +512,16 @@ export function PhonogramForm({
   };
 
   const renderParticipantSection = (title: string, fields: any[], append: (value: any) => void, remove: (index: number) => void, isOpen: boolean, setIsOpen: (open: boolean) => void, fieldName: 'phonographic_producers' | 'performers' | 'musicians', percentage: number, maxPercentage: number = 100) => {
+    // Filtrar contatos do CRM
+    const getFilteredCrmContacts = (searchTerm: string) => {
+      if (!searchTerm || searchTerm.length < 2) return [];
+      const term = searchTerm.toLowerCase();
+      return crmContacts.filter((contact: any) => 
+        contact.name?.toLowerCase().includes(term) ||
+        contact.company?.toLowerCase().includes(term)
+      ).slice(0, 10);
+    };
+
     // Determinar fonte de autocomplete baseado no tipo de participante
     const getFilteredSuggestions = (searchTerm: string) => {
       if (fieldName === 'performers') {
@@ -519,9 +531,10 @@ export function PhonogramForm({
           name: a.stage_name || a.name || a.full_name,
           projectName: 'Artista cadastrado',
           isArtist: true,
+          isCrmContact: false,
           artistData: a
         }));
-        return [...projectPerformers.map(p => ({ ...p, isArtist: false, artistData: null })), ...artistSuggestions];
+        return [...projectPerformers.map(p => ({ ...p, isArtist: false, isCrmContact: false, artistData: null })), ...artistSuggestions];
       } else if (fieldName === 'musicians') {
         // Para músicos acompanhantes, buscar dos producers dos projetos + artistas
         const projectProducers = getFilteredProducers(searchTerm);
@@ -529,30 +542,41 @@ export function PhonogramForm({
           name: a.stage_name || a.name || a.full_name,
           projectName: 'Artista cadastrado',
           isArtist: true,
+          isCrmContact: false,
           artistData: a
         }));
-        return [...projectProducers.map(p => ({ ...p, isArtist: false, artistData: null })), ...artistSuggestions];
+        return [...projectProducers.map(p => ({ ...p, isArtist: false, isCrmContact: false, artistData: null })), ...artistSuggestions];
       } else {
-        // Para produtores fonográficos, buscar apenas de artistas cadastrados
-        return getFilteredArtists(searchTerm).map(a => ({
+        // Para produtores fonográficos, buscar de artistas (pessoa física) e contatos CRM (pessoa jurídica/física)
+        const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
           name: a.stage_name || a.name || a.full_name,
-          projectName: 'Artista cadastrado',
+          projectName: 'Pessoa Física - Artista',
           isArtist: true,
+          isCrmContact: false,
           artistData: a
         }));
+        const crmSuggestions = getFilteredCrmContacts(searchTerm).map(c => ({
+          name: c.company ? `${c.name} (${c.company})` : c.name,
+          projectName: c.company ? 'Pessoa Jurídica - CRM' : 'Pessoa Física - CRM',
+          isArtist: false,
+          isCrmContact: true,
+          artistData: null,
+          crmData: c
+        }));
+        return [...artistSuggestions, ...crmSuggestions];
       }
     };
 
     const getPlaceholder = () => {
-      if (fieldName === 'performers') return 'Digite para buscar intérprete do projeto...';
-      if (fieldName === 'musicians') return 'Digite para buscar músico do projeto...';
-      return 'Digite para buscar artista...';
+      if (fieldName === 'performers') return 'Digite para buscar intérprete...';
+      if (fieldName === 'musicians') return 'Digite para buscar músico...';
+      return 'Digite para buscar artista ou empresa...';
     };
 
     const getHeading = () => {
-      if (fieldName === 'performers') return 'Intérpretes dos projetos';
-      if (fieldName === 'musicians') return 'Músicos dos projetos';
-      return 'Artistas cadastrados';
+      if (fieldName === 'performers') return 'Intérpretes';
+      if (fieldName === 'musicians') return 'Músicos';
+      return 'Artistas e Contatos';
     };
 
     return (
@@ -622,12 +646,17 @@ export function PhonogramForm({
                             <Command>
                               <CommandList>
                                 <CommandGroup heading={getHeading()}>
-                                  {filteredSuggestions.map((suggestion, suggestionIndex) => (
+                                  {filteredSuggestions.map((suggestion: any, suggestionIndex) => (
                                     <CommandItem
                                       key={`${suggestion.name}-${suggestionIndex}`}
                                       onSelect={() => {
                                         if (suggestion.isArtist && suggestion.artistData) {
                                           handleSelectArtist(suggestion.artistData, fieldName, index);
+                                        } else if (suggestion.isCrmContact) {
+                                          // Para contatos CRM, usar o nome diretamente
+                                          form.setValue(`${fieldName}.${index}.name` as any, suggestion.name);
+                                          setOpenParticipantPopovers(prev => ({ ...prev, [`${fieldName}_${index}`]: false }));
+                                          setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
                                         } else {
                                           handleSelectProjectParticipant(suggestion, fieldName, index);
                                         }
@@ -638,7 +667,7 @@ export function PhonogramForm({
                                       <div className="flex flex-col">
                                         <span>{suggestion.name}</span>
                                         <span className="text-xs text-muted-foreground">
-                                          {suggestion.isArtist ? 'Artista cadastrado' : `Projeto: ${suggestion.projectName}`}
+                                          {suggestion.projectName}
                                         </span>
                                       </div>
                                     </CommandItem>
