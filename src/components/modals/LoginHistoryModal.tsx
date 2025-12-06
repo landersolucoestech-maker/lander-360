@@ -9,22 +9,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { History, Monitor, Smartphone, MapPin, Calendar, Clock, RefreshCw } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { History, Monitor, Smartphone, Tablet, MapPin, Calendar, Clock, RefreshCw, Globe } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-interface LoginEvent {
+interface LoginRecord {
   id: string;
-  timestamp: number;
-  event_message: string;
-  level: string;
-  msg: string;
-  path?: string;
-  status?: string;
-  error?: string;
+  login_at: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  device_type: string | null;
+  browser: string | null;
+  location: string | null;
 }
 
 interface LoginHistoryModalProps {
@@ -34,87 +34,31 @@ interface LoginHistoryModalProps {
 
 export function LoginHistoryModal({ open, onOpenChange }: LoginHistoryModalProps) {
   const { toast } = useToast();
-  const [loginHistory, setLoginHistory] = useState<LoginEvent[]>([]);
+  const { user } = useAuth();
+  const [loginHistory, setLoginHistory] = useState<LoginRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchLoginHistory = async () => {
+    if (!user) return;
+    
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('get-auth-logs', {
-        body: { limit: 20 }
-      });
+      const { data, error } = await supabase
+        .from('login_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('login_at', { ascending: false })
+        .limit(50);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Parse the auth logs to extract login events
-      const logs = data?.logs || [];
-      const loginEvents = logs
-        .filter((log: any) => 
-          log.msg === 'Login' || 
-          log.msg === 'request completed' || 
-          log.error?.includes('Invalid login credentials')
-        )
-        .map((log: any) => ({
-          id: log.id,
-          timestamp: log.timestamp,
-          event_message: log.event_message,
-          level: log.level,
-          msg: log.msg,
-          path: log.path,
-          status: log.status,
-          error: log.error
-        }))
-        .sort((a: any, b: any) => b.timestamp - a.timestamp);
-
-      setLoginHistory(loginEvents);
+      setLoginHistory(data || []);
     } catch (error: any) {
       console.error('Error fetching login history:', error);
-      
-      // Fallback with mock data if the function doesn't exist yet
-      const mockData = [
-        {
-          id: '1',
-          timestamp: Date.now() - 1000 * 60 * 30, // 30 minutes ago
-          event_message: 'Login realizado com sucesso',
-          level: 'info',
-          msg: 'Login',
-          status: '200'
-        },
-        {
-          id: '2',
-          timestamp: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
-          event_message: 'Login realizado com sucesso',
-          level: 'info',
-          msg: 'Login',
-          status: '200'
-        },
-        {
-          id: '3',
-          timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2, // 2 days ago
-          event_message: 'Tentativa de login com credenciais inválidas',
-          level: 'error',
-          msg: 'Invalid login credentials',
-          status: '400',
-          error: 'Invalid login credentials'
-        },
-        {
-          id: '4',
-          timestamp: Date.now() - 1000 * 60 * 60 * 24 * 3, // 3 days ago
-          event_message: 'Login realizado com sucesso',
-          level: 'info',
-          msg: 'Login',
-          status: '200'
-        }
-      ];
-      
-      setLoginHistory(mockData);
-      
       toast({
-        title: "Aviso",
-        description: "Exibindo dados de exemplo. A integração com logs reais será implementada.",
-        variant: "default",
+        title: "Erro",
+        description: "Não foi possível carregar o histórico de login",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -122,44 +66,48 @@ export function LoginHistoryModal({ open, onOpenChange }: LoginHistoryModalProps
   };
 
   useEffect(() => {
-    if (open) {
+    if (open && user) {
       fetchLoginHistory();
     }
-  }, [open]);
+  }, [open, user]);
 
-  const getDeviceIcon = (userAgent?: string) => {
-    if (!userAgent) return <Monitor className="h-4 w-4" />;
-    
-    if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
-      return <Smartphone className="h-4 w-4" />;
+  const getDeviceIcon = (deviceType: string | null) => {
+    switch (deviceType?.toLowerCase()) {
+      case 'mobile':
+        return <Smartphone className="h-4 w-4" />;
+      case 'tablet':
+        return <Tablet className="h-4 w-4" />;
+      default:
+        return <Monitor className="h-4 w-4" />;
     }
-    
-    return <Monitor className="h-4 w-4" />;
   };
 
-  const getStatusBadge = (status?: string, error?: string) => {
-    if (error || status === '400') {
-      return <Badge variant="destructive">Falha</Badge>;
-    }
-    
-    if (status === '200') {
-      return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Sucesso</Badge>;
-    }
-    
-    return <Badge variant="secondary">Desconhecido</Badge>;
-  };
-
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
+  const formatTimestamp = (dateString: string) => {
+    const date = new Date(dateString);
     return {
-      date: format(date, "dd 'de' MMM", { locale: ptBR }),
+      date: format(date, "dd 'de' MMM 'de' yyyy", { locale: ptBR }),
       time: format(date, "HH:mm", { locale: ptBR })
     };
   };
 
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Agora mesmo";
+    if (diffMins < 60) return `Há ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+    if (diffHours < 24) return `Há ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    if (diffDays < 7) return `Há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+    return null;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
@@ -173,7 +121,7 @@ export function LoginHistoryModal({ open, onOpenChange }: LoginHistoryModalProps
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
-              {loginHistory.length} eventos encontrados
+              {loginHistory.length} {loginHistory.length === 1 ? 'acesso registrado' : 'acessos registrados'}
             </p>
             <Button
               variant="outline"
@@ -208,60 +156,80 @@ export function LoginHistoryModal({ open, onOpenChange }: LoginHistoryModalProps
                 <p className="text-muted-foreground">
                   Nenhum histórico de login encontrado
                 </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Os próximos logins serão registrados aqui
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {loginHistory.map((event, index) => {
-                const { date, time } = formatTimestamp(event.timestamp);
-                
-                return (
-                  <Card key={event.id} className="transition-colors hover:bg-muted/30">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          <div className="mt-1">
-                            {getDeviceIcon()}
+            <ScrollArea className="max-h-[400px] pr-4">
+              <div className="space-y-3">
+                {loginHistory.map((record, index) => {
+                  const { date, time } = formatTimestamp(record.login_at);
+                  const relativeTime = getRelativeTime(record.login_at);
+                  
+                  return (
+                    <Card key={record.id} className={`transition-colors hover:bg-muted/30 ${index === 0 ? 'border-primary/50' : ''}`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="mt-1 p-2 bg-muted rounded-lg">
+                              {getDeviceIcon(record.device_type)}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium text-sm">
+                                  {record.browser || "Navegador"}
+                                </p>
+                                {index === 0 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Sessão atual
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <p className="text-xs text-muted-foreground mb-2">
+                                {record.device_type || "Desktop"}
+                              </p>
+                              
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {date}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {time}
+                                </div>
+                                {record.ip_address && (
+                                  <div className="flex items-center gap-1">
+                                    <Globe className="h-3 w-3" />
+                                    {record.ip_address}
+                                  </div>
+                                )}
+                                {record.location && (
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {record.location}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                           
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium text-sm">
-                                {event.error ? 'Tentativa de Login Falhada' : 'Login Realizado'}
-                              </p>
-                              {getStatusBadge(event.status, event.error)}
-                            </div>
-                            
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {date}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {time}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                Brasil
-                              </div>
-                            </div>
-                            
-                            {event.error && (
-                              <p className="text-xs text-destructive">
-                                {event.error}
-                              </p>
-                            )}
-                          </div>
+                          {relativeTime && (
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {relativeTime}
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </CardContent>
-                    
-                    {index < loginHistory.length - 1 && <Separator />}
-                  </Card>
-                );
-              })}
-            </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </ScrollArea>
           )}
         </div>
 

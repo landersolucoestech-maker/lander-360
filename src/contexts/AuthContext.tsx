@@ -56,12 +56,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     
+    // Record login history if successful
+    if (!error && data.user) {
+      recordLoginHistory(data.user.id);
+    }
+    
     return { error: error as Error | null };
+  };
+
+  const recordLoginHistory = async (userId: string) => {
+    try {
+      const userAgent = navigator.userAgent;
+      const browser = getBrowserName(userAgent);
+      const deviceType = getDeviceType(userAgent);
+      
+      await supabase.from('login_history').insert({
+        user_id: userId,
+        user_agent: userAgent,
+        browser: browser,
+        device_type: deviceType,
+      });
+    } catch (error) {
+      console.error('Error recording login history:', error);
+    }
+  };
+
+  const getBrowserName = (userAgent: string): string => {
+    if (userAgent.includes('Firefox')) return 'Firefox';
+    if (userAgent.includes('Edg')) return 'Microsoft Edge';
+    if (userAgent.includes('Chrome')) return 'Google Chrome';
+    if (userAgent.includes('Safari')) return 'Safari';
+    if (userAgent.includes('Opera') || userAgent.includes('OPR')) return 'Opera';
+    return 'Navegador desconhecido';
+  };
+
+  const getDeviceType = (userAgent: string): string => {
+    if (/tablet|ipad|playbook|silk/i.test(userAgent)) return 'Tablet';
+    if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(userAgent)) return 'Mobile';
+    return 'Desktop';
   };
 
   const signOut = async () => {
