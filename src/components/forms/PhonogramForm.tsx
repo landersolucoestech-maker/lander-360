@@ -952,7 +952,7 @@ export function PhonogramForm({
           <CardContent className="space-y-4">
             {renderParticipantSection("Produtor Fonográfico", producerFields, appendProducer, removeProducer, producersOpen, setProducersOpen, 'phonographic_producers', producersPercentage, 41.70)}
             {renderParticipantSection("Intérprete", performerFields, appendPerformer, removePerformer, performersOpen, setPerformersOpen, 'performers', performersPercentage, 41.70)}
-            {renderParticipantSection("Músico Acompanhante", musicianFields, appendMusician, removeMusician, musiciansOpen, setMusiciansOpen, 'musicians', musiciansPercentage, 16.65)}
+            {renderParticipantSection("Músico Acompanhante", musicianFields, appendMusician, removeMusician, musiciansOpen, setMusiciansOpen, 'musicians', musiciansPercentage, 16.66)}
           </CardContent>
         </Card>
 
