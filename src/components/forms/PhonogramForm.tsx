@@ -368,6 +368,52 @@ export function PhonogramForm({
       });
     }
   };
+  // Extrair performers únicos dos projetos para autocomplete de intérpretes
+  const getProjectPerformers = (): Array<{ name: string; projectName: string }> => {
+    const performersSet = new Map<string, { name: string; projectName: string }>();
+    projects.forEach((project: any) => {
+      const audioFiles = project.audio_files as any;
+      if (audioFiles?.songs) {
+        audioFiles.songs.forEach((song: any) => {
+          if (song.performers && Array.isArray(song.performers)) {
+            song.performers.forEach((p: any) => {
+              if (p.name && !performersSet.has(p.name.toLowerCase())) {
+                performersSet.set(p.name.toLowerCase(), { 
+                  name: p.name, 
+                  projectName: project.name 
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+    return Array.from(performersSet.values());
+  };
+
+  // Extrair producers únicos dos projetos para autocomplete de músicos acompanhantes
+  const getProjectProducers = (): Array<{ name: string; projectName: string }> => {
+    const producersSet = new Map<string, { name: string; projectName: string }>();
+    projects.forEach((project: any) => {
+      const audioFiles = project.audio_files as any;
+      if (audioFiles?.songs) {
+        audioFiles.songs.forEach((song: any) => {
+          if (song.producers && Array.isArray(song.producers)) {
+            song.producers.forEach((p: any) => {
+              if (p.name && !producersSet.has(p.name.toLowerCase())) {
+                producersSet.set(p.name.toLowerCase(), { 
+                  name: p.name, 
+                  projectName: project.name 
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+    return Array.from(producersSet.values());
+  };
+
   const getFilteredArtists = (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 2) return [];
     const term = searchTerm.toLowerCase();
@@ -378,6 +424,24 @@ export function PhonogramForm({
     ).slice(0, 10);
   };
 
+  // Filtrar performers dos projetos para intérpretes
+  const getFilteredPerformers = (searchTerm: string) => {
+    if (!searchTerm || searchTerm.length < 2) return [];
+    const term = searchTerm.toLowerCase();
+    return getProjectPerformers().filter(p => 
+      p.name.toLowerCase().includes(term)
+    ).slice(0, 10);
+  };
+
+  // Filtrar producers dos projetos para músicos acompanhantes
+  const getFilteredProducers = (searchTerm: string) => {
+    if (!searchTerm || searchTerm.length < 2) return [];
+    const term = searchTerm.toLowerCase();
+    return getProjectProducers().filter(p => 
+      p.name.toLowerCase().includes(term)
+    ).slice(0, 10);
+  };
+
   const handleSelectArtist = (artist: any, fieldName: string, index: number) => {
     const displayName = artist.stage_name || artist.name || artist.full_name;
     form.setValue(`${fieldName}.${index}.name` as any, displayName);
@@ -385,97 +449,156 @@ export function PhonogramForm({
     setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
   };
 
-  const renderParticipantSection = (title: string, fields: any[], append: (value: any) => void, remove: (index: number) => void, isOpen: boolean, setIsOpen: (open: boolean) => void, fieldName: 'phonographic_producers' | 'performers' | 'musicians', percentage: number, maxPercentage: number = 100) => <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70">
-          <span className="font-medium">{title} - Percentual total: {percentage.toFixed(2)}% de {maxPercentage.toFixed(2)}%</span>
-          {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pt-4 space-y-3">
-        {fields.map((field, index) => {
-          const popoverKey = `${fieldName}_${index}`;
-          const searchTerm = participantSearchTerms[popoverKey] || '';
-          const filteredArtists = getFilteredArtists(searchTerm);
-          const isPopoverOpen = openParticipantPopovers[popoverKey] || false;
-          
-          return (
-            <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
-              <div className="col-span-6">
-                <FormField control={form.control} name={`${fieldName}.${index}.name`} render={({
-                  field: formField
-                }) => (
-                  <FormItem className="flex flex-col">
-                    {index === 0 && <FormLabel>Nome</FormLabel>}
-                    <Popover open={isPopoverOpen && filteredArtists.length > 0} onOpenChange={(open) => setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }))}>
-                      <PopoverTrigger asChild>
+  const handleSelectProjectParticipant = (participant: { name: string; projectName: string }, fieldName: string, index: number) => {
+    form.setValue(`${fieldName}.${index}.name` as any, participant.name);
+    setOpenParticipantPopovers(prev => ({ ...prev, [`${fieldName}_${index}`]: false }));
+    setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
+  };
+
+  const renderParticipantSection = (title: string, fields: any[], append: (value: any) => void, remove: (index: number) => void, isOpen: boolean, setIsOpen: (open: boolean) => void, fieldName: 'phonographic_producers' | 'performers' | 'musicians', percentage: number, maxPercentage: number = 100) => {
+    // Determinar fonte de autocomplete baseado no tipo de participante
+    const getFilteredSuggestions = (searchTerm: string) => {
+      if (fieldName === 'performers') {
+        // Para intérpretes, buscar dos performers dos projetos + artistas
+        const projectPerformers = getFilteredPerformers(searchTerm);
+        const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
+          name: a.stage_name || a.name || a.full_name,
+          projectName: 'Artista cadastrado',
+          isArtist: true,
+          artistData: a
+        }));
+        return [...projectPerformers.map(p => ({ ...p, isArtist: false, artistData: null })), ...artistSuggestions];
+      } else if (fieldName === 'musicians') {
+        // Para músicos acompanhantes, buscar dos producers dos projetos + artistas
+        const projectProducers = getFilteredProducers(searchTerm);
+        const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
+          name: a.stage_name || a.name || a.full_name,
+          projectName: 'Artista cadastrado',
+          isArtist: true,
+          artistData: a
+        }));
+        return [...projectProducers.map(p => ({ ...p, isArtist: false, artistData: null })), ...artistSuggestions];
+      } else {
+        // Para produtores fonográficos, buscar apenas de artistas cadastrados
+        return getFilteredArtists(searchTerm).map(a => ({
+          name: a.stage_name || a.name || a.full_name,
+          projectName: 'Artista cadastrado',
+          isArtist: true,
+          artistData: a
+        }));
+      }
+    };
+
+    const getPlaceholder = () => {
+      if (fieldName === 'performers') return 'Digite para buscar intérprete do projeto...';
+      if (fieldName === 'musicians') return 'Digite para buscar músico do projeto...';
+      return 'Digite para buscar artista...';
+    };
+
+    const getHeading = () => {
+      if (fieldName === 'performers') return 'Intérpretes dos projetos';
+      if (fieldName === 'musicians') return 'Músicos dos projetos';
+      return 'Artistas cadastrados';
+    };
+
+    return (
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70">
+            <span className="font-medium">{title} - Percentual total: {percentage.toFixed(2)}% de {maxPercentage.toFixed(2)}%</span>
+            {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4 space-y-3">
+          {fields.map((field, index) => {
+            const popoverKey = `${fieldName}_${index}`;
+            const searchTerm = participantSearchTerms[popoverKey] || '';
+            const filteredSuggestions = getFilteredSuggestions(searchTerm);
+            const isPopoverOpen = openParticipantPopovers[popoverKey] || false;
+            
+            return (
+              <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-6">
+                  <FormField control={form.control} name={`${fieldName}.${index}.name`} render={({
+                    field: formField
+                  }) => (
+                    <FormItem className="flex flex-col">
+                      {index === 0 && <FormLabel>Nome</FormLabel>}
+                      <Popover open={isPopoverOpen && filteredSuggestions.length > 0} onOpenChange={(open) => setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }))}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Input 
+                              placeholder={getPlaceholder()}
+                              value={formField.value}
+                              onChange={(e) => {
+                                formField.onChange(e.target.value);
+                                setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
+                                if (e.target.value.length >= 2) {
+                                  setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
+                                } else {
+                                  setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
+                                }
+                              }}
+                              onFocus={() => {
+                                if (formField.value && formField.value.length >= 2) {
+                                  setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: formField.value }));
+                                  setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
+                                }
+                              }}
+                            />
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                          <Command>
+                            <CommandList>
+                              <CommandGroup heading={getHeading()}>
+                                {filteredSuggestions.map((suggestion, suggestionIndex) => (
+                                  <CommandItem
+                                    key={`${suggestion.name}-${suggestionIndex}`}
+                                    onSelect={() => {
+                                      if (suggestion.isArtist && suggestion.artistData) {
+                                        handleSelectArtist(suggestion.artistData, fieldName, index);
+                                      } else {
+                                        handleSelectProjectParticipant(suggestion, fieldName, index);
+                                      }
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", formField.value === suggestion.name ? "opacity-100" : "opacity-0")} />
+                                    <div className="flex flex-col">
+                                      <span>{suggestion.name}</span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {suggestion.isArtist ? 'Artista cadastrado' : `Projeto: ${suggestion.projectName}`}
+                                      </span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormItem>
+                  )} />
+                </div>
+                <div className="col-span-4">
+                  <FormField control={form.control} name={`${fieldName}.${index}.percentage`} render={({
+                    field
+                  }) => <FormItem>
+                        {index === 0 && <FormLabel>Percentual (%)</FormLabel>}
                         <FormControl>
-                          <Input 
-                            placeholder="Digite para buscar artista..." 
-                            value={formField.value}
-                            onChange={(e) => {
-                              formField.onChange(e.target.value);
-                              setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
-                              if (e.target.value.length >= 2) {
-                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                              } else {
-                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
-                              }
-                            }}
-                            onFocus={() => {
-                              if (formField.value && formField.value.length >= 2) {
-                                setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: formField.value }));
-                                setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                              }
-                            }}
-                          />
+                          <Input type="number" min={0} max={100} step={0.01} placeholder="0.00" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-                        <Command>
-                          <CommandList>
-                            <CommandGroup heading="Artistas cadastrados">
-                              {filteredArtists.map((artist: any) => (
-                                <CommandItem
-                                  key={artist.id}
-                                  onSelect={() => handleSelectArtist(artist, fieldName, index)}
-                                  className="cursor-pointer"
-                                >
-                                  <Check className={cn("mr-2 h-4 w-4", formField.value === (artist.stage_name || artist.name) ? "opacity-100" : "opacity-0")} />
-                                  <div className="flex flex-col">
-                                    <span>{artist.stage_name || artist.name}</span>
-                                    {artist.full_name && artist.full_name !== artist.name && (
-                                      <span className="text-xs text-muted-foreground">{artist.full_name}</span>
-                                    )}
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
-                )} />
+                      </FormItem>} />
+                </div>
+                <div className="col-span-2">
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                    <Trash2Icon className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
-              <div className="col-span-4">
-                <FormField control={form.control} name={`${fieldName}.${index}.percentage`} render={({
-                  field
-                }) => <FormItem>
-                      {index === 0 && <FormLabel>Percentual (%)</FormLabel>}
-                      <FormControl>
-                        <Input type="number" min={0} max={100} step={0.01} placeholder="0.00" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
-                      </FormControl>
-                    </FormItem>} />
-              </div>
-              <div className="col-span-2">
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                  <Trash2Icon className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
         <Button type="button" variant="outline" size="sm" onClick={() => append({
         name: '',
         role: '',
@@ -485,7 +608,10 @@ export function PhonogramForm({
           Adicionar
         </Button>
       </CollapsibleContent>
-    </Collapsible>;
+    </Collapsible>
+    );
+  };
+
   return <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Vincular Obra */}
