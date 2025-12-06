@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
 import { useCrmContacts } from '@/hooks/useCrm';
-import { useSearchMusic, useMusicRegistry } from '@/hooks/useMusicRegistry';
+import { useSearchMusic, useMusicRegistry, useCreateMusicRegistryEntry, useUpdateMusicRegistryEntry } from '@/hooks/useMusicRegistry';
 import { AbramusService, AbramusWork, AbramusParticipant } from '@/services/abramusService';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -101,6 +101,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const { data: artists = [] } = useArtists();
   const { data: crmContacts = [] } = useCrmContacts();
   const { data: existingWorks = [] } = useMusicRegistry();
+  const createMusicEntry = useCreateMusicRegistryEntry();
+  const updateMusicEntry = useUpdateMusicRegistryEntry();
 
   const [workDropdownOpen, setWorkDropdownOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<any>(null);
@@ -434,13 +436,38 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         return;
       }
 
-      toast({
-        title: "Sucesso",
-        description: "Música registrada com sucesso!",
-      });
+      // Prepare data for database
+      const writers = data.participants?.filter(p => 
+        ['autor', 'compositor', 'editor', 'adaptador', 'versionista', 'sub_editor'].includes(p.role)
+      ).map(p => p.name) || [];
+      
+      const publishers = data.participants?.filter(p => 
+        ['editor', 'sub_editor'].includes(p.role)
+      ).map(p => p.name) || [];
+
+      const musicData = {
+        title: data.title,
+        genre: data.genre,
+        isrc: data.isrc || null,
+        iswc: data.iswc || null,
+        duration: totalDuration > 0 ? totalDuration : null,
+        artist_id: data.artist_id || null,
+        writers: writers.length > 0 ? writers : null,
+        publishers: publishers.length > 0 ? publishers : null,
+        status: 'draft',
+      };
+
+      if (registration?.id) {
+        // Update existing entry
+        await updateMusicEntry.mutateAsync({ id: registration.id, data: musicData });
+      } else {
+        // Create new entry
+        await createMusicEntry.mutateAsync(musicData);
+      }
       
       onSuccess?.();
     } catch (error) {
+      console.error('Error saving music:', error);
       toast({
         title: "Erro",
         description: "Falha ao registrar música. Tente novamente.",
