@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,49 +7,66 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { MusicRegistrationInsert, MusicRegistrationUpdate } from '@/types/database';
-import { PlusIcon, Trash2Icon, FolderOpen, AlertCircle } from 'lucide-react';
+import { PlusIcon, Trash2Icon, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
 import { useCrmContacts } from '@/hooks/useCrm';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 
-const creditSchema = z.object({
+const participantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   cpf: z.string().min(1, 'CPF é obrigatório'),
   percentage: z.number().min(0, 'Percentual deve ser maior que 0').max(100, 'Percentual não pode ser maior que 100'),
+  role: z.string().optional(),
 });
 
-const publisherSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  cpf_cnpj: z.string().min(1, 'CPF/CNPJ é obrigatório'),
-  percentage: z.number().min(0, 'Porcentagem deve ser maior que 0').max(100, 'Porcentagem não pode ser maior que 100'),
+const otherTitleSchema = z.object({
+  title: z.string().min(1, 'Título é obrigatório'),
+});
+
+const connectedReferenceSchema = z.object({
+  reference: z.string().min(1, 'Referência é obrigatória'),
+  type: z.string().optional(),
 });
 
 const musicRegistrationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
-  artist_id: z.string().optional(),
-  project_id: z.string().optional(),
+  abramus_code: z.string().optional(),
+  ecad_code: z.string().optional(),
   genre: z.string().min(1, 'Gênero é obrigatório'),
-  duration: z.number().optional(),
+  language: z.string().optional(),
   duration_minutes: z.number().min(0).optional(),
   duration_seconds: z.number().min(0).max(59).optional(),
+  is_instrumental: z.boolean().default(false),
+  is_ai_created: z.boolean().default(false),
+  participants: z.array(participantSchema).optional(),
+  other_titles: z.array(otherTitleSchema).optional(),
+  connected_references: z.array(connectedReferenceSchema).optional(),
   isrc: z.string().optional(),
   iswc: z.string().optional(),
-  ecad_code: z.string().optional(),
+  status: z.enum(['pending', 'registered', 'approved', 'rejected']).default('pending'),
+  // Legacy fields for backward compatibility
+  artist_id: z.string().optional(),
+  project_id: z.string().optional(),
+  duration: z.number().optional(),
   recording_date: z.string().optional(),
   lyrics: z.string().optional(),
   audio_file: z.string().optional(),
   phonogram_report: z.string().optional(),
-  composers: z.array(creditSchema).min(1, 'Pelo menos um compositor é obrigatório'),
-  performers: z.array(creditSchema).min(1, 'Pelo menos um intérprete é obrigatório'),
-  producers: z.array(creditSchema).min(1, 'Pelo menos um produtor é obrigatório'),
+  composers: z.array(participantSchema).optional(),
+  performers: z.array(participantSchema).optional(),
+  producers: z.array(participantSchema).optional(),
   has_publisher: z.boolean().default(false),
-  publishers: z.array(publisherSchema).optional(),
-  status: z.enum(['pending', 'registered', 'approved', 'rejected']).default('pending'),
+  publishers: z.array(z.object({
+    name: z.string(),
+    cpf_cnpj: z.string(),
+    percentage: z.number(),
+  })).optional(),
 });
 
 type MusicRegistrationFormData = z.infer<typeof musicRegistrationSchema>;
@@ -66,13 +83,17 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const { data: artists = [] } = useArtists();
   const { data: crmContacts = [] } = useCrmContacts();
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [participationOpen, setParticipationOpen] = useState(true);
+  const [otherTitlesOpen, setOtherTitlesOpen] = useState(false);
+  const [referencesOpen, setReferencesOpen] = useState(false);
+
   // Helper function to find CPF by name from artists or CRM contacts
   const findCpfByName = (name: string): string => {
     if (!name || name.trim() === '') return '';
     
     const normalizedName = name.trim().toLowerCase();
     
-    // First, search in artists by name or stage_name
     const artist = artists.find(a => 
       a.name?.toLowerCase() === normalizedName ||
       a.stage_name?.toLowerCase() === normalizedName ||
@@ -83,233 +104,96 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       return artist.cpf_cnpj;
     }
     
-    // If not found in artists, search in CRM contacts
-    const crmContact = crmContacts.find(c => 
-      c.name?.toLowerCase() === normalizedName
-    );
-    
-    // CRM contacts don't have CPF field in current schema, but we check anyway
-    // Return empty string if no CPF found
     return '';
+  };
+
+  // Calculate total participation percentage
+  const calculateTotalPercentage = () => {
+    const participants = form.watch('participants') || [];
+    return participants.reduce((sum, p) => sum + (p.percentage || 0), 0);
   };
   
   const form = useForm<MusicRegistrationFormData>({
     resolver: zodResolver(musicRegistrationSchema),
     defaultValues: {
       title: registration?.title || '',
-      artist_id: registration?.artist_id || '',
-      project_id: registration?.project_id || '',
+      abramus_code: registration?.abramus_code || '',
+      ecad_code: registration?.ecad_code || '',
       genre: registration?.genre || '',
-      duration: registration?.duration || undefined,
+      language: registration?.language || 'portugues',
       duration_minutes: registration?.duration ? Math.floor(registration.duration / 60) : undefined,
       duration_seconds: registration?.duration ? registration.duration % 60 : undefined,
+      is_instrumental: registration?.is_instrumental || false,
+      is_ai_created: registration?.is_ai_created || false,
+      participants: registration?.participants || [],
+      other_titles: registration?.other_titles || [],
+      connected_references: registration?.connected_references || [],
       isrc: registration?.isrc || '',
       iswc: registration?.iswc || '',
-      ecad_code: registration?.ecad_code || '',
-      recording_date: registration?.recording_date || '',
-      lyrics: registration?.lyrics || '',
-      audio_file: registration?.audio_file || '',
-      phonogram_report: registration?.phonogram_report || '',
-      composers: registration?.composers || [{ name: '', cpf: '', percentage: 0 }],
-      performers: registration?.performers || [{ name: '', cpf: '', percentage: 0 }],
-      producers: registration?.producers || [{ name: '', cpf: '', percentage: 0 }],
-      has_publisher: registration?.has_publisher || false,
-      publishers: registration?.publishers || [{ name: '', cpf_cnpj: '', percentage: 0 }],
       status: registration?.status || 'pending',
+      artist_id: registration?.artist_id || '',
+      project_id: registration?.project_id || '',
     },
   });
 
-  const selectedProjectId = form.watch('project_id');
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
-
   const {
-    fields: composerFields,
-    append: appendComposer,
-    remove: removeComposer,
+    fields: participantFields,
+    append: appendParticipant,
+    remove: removeParticipant,
   } = useFieldArray({
     control: form.control,
-    name: 'composers',
+    name: 'participants',
   });
 
   const {
-    fields: performerFields,
-    append: appendPerformer,
-    remove: removePerformer,
+    fields: otherTitleFields,
+    append: appendOtherTitle,
+    remove: removeOtherTitle,
   } = useFieldArray({
     control: form.control,
-    name: 'performers',
+    name: 'other_titles',
   });
 
   const {
-    fields: producerFields,
-    append: appendProducer,
-    remove: removeProducer,
+    fields: referenceFields,
+    append: appendReference,
+    remove: removeReference,
   } = useFieldArray({
     control: form.control,
-    name: 'producers',
+    name: 'connected_references',
   });
 
-  const {
-    fields: publisherFields,
-    append: appendPublisher,
-    remove: removePublisher,
-  } = useFieldArray({
-    control: form.control,
-    name: 'publishers',
-  });
-
-  const hasPublisher = form.watch('has_publisher');
-
-  // Auto-fill data when project is selected
-  useEffect(() => {
-    if (selectedProject && !registration) {
-      try {
-        // Parse audio_files to get project details
-        let projectDetails = null;
-        if (selectedProject.audio_files && typeof selectedProject.audio_files === 'string') {
-          projectDetails = JSON.parse(selectedProject.audio_files);
-        } else if (selectedProject.audio_files && typeof selectedProject.audio_files === 'object') {
-          projectDetails = selectedProject.audio_files;
-        }
-
-        if (projectDetails?.songs && projectDetails.songs.length > 0) {
-          const firstSong = projectDetails.songs[0];
-          
-          // Set title from song name
-          if (firstSong.song_name) {
-            form.setValue('title', firstSong.song_name);
-          }
-          
-          // Set genre
-          if (firstSong.genre) {
-            form.setValue('genre', firstSong.genre);
-          }
-
-          // Set artist_id from project
-          if (selectedProject.artist_id) {
-            form.setValue('artist_id', selectedProject.artist_id);
-          }
-
-          // Set duration from project
-          if (firstSong.duration_minutes !== undefined) {
-            form.setValue('duration_minutes', firstSong.duration_minutes);
-          }
-          if (firstSong.duration_seconds !== undefined) {
-            form.setValue('duration_seconds', firstSong.duration_seconds);
-          }
-
-          // Set lyrics
-          if (firstSong.lyrics) {
-            form.setValue('lyrics', firstSong.lyrics);
-          }
-          
-          // Convert composers to the form format (with CPF from artists/CRM and percentage)
-          if (firstSong.composers && firstSong.composers.length > 0) {
-            const formattedComposers = firstSong.composers
-              .filter((c: any) => c.name && c.name.trim() !== '')
-              .map((c: any, index: number, arr: any[]) => ({
-                name: c.name,
-                cpf: c.cpf || findCpfByName(c.name),
-                percentage: c.percentage || Math.round(100 / arr.length),
-              }));
-            
-            if (formattedComposers.length > 0) {
-              form.setValue('composers', formattedComposers);
-            }
-          }
-          
-          // Convert performers to the form format
-          if (firstSong.performers && firstSong.performers.length > 0) {
-            const formattedPerformers = firstSong.performers
-              .filter((p: any) => p.name && p.name.trim() !== '')
-              .map((p: any, index: number, arr: any[]) => ({
-                name: p.name,
-                cpf: p.cpf || findCpfByName(p.name),
-                percentage: p.percentage || Math.round(100 / arr.length),
-              }));
-            
-            if (formattedPerformers.length > 0) {
-              form.setValue('performers', formattedPerformers);
-            }
-          }
-          
-          // Convert producers to the form format
-          if (firstSong.producers && firstSong.producers.length > 0) {
-            const formattedProducers = firstSong.producers
-              .filter((p: any) => p.name && p.name.trim() !== '')
-              .map((p: any, index: number, arr: any[]) => ({
-                name: p.name,
-                cpf: p.cpf || findCpfByName(p.name),
-                percentage: p.percentage || Math.round(100 / arr.length),
-              }));
-            
-            if (formattedProducers.length > 0) {
-              form.setValue('producers', formattedProducers);
-            }
-          }
-
-          toast({
-            title: "Projeto carregado",
-            description: `Informações do projeto "${selectedProject.name}" foram preenchidas automaticamente.`,
-          });
-        } else {
-          toast({
-            title: "Projeto selecionado",
-            description: `Projeto "${selectedProject.name}" não possui músicas cadastradas. Preencha manualmente.`,
-          });
-        }
-      } catch (error) {
-        console.error('Error parsing project data:', error);
-        toast({
-          title: "Projeto selecionado",
-          description: `Não foi possível carregar dados do projeto. Preencha manualmente.`,
-        });
-      }
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Busca vazia",
+        description: "Digite um título, gênero ou código para buscar",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [selectedProjectId, projects, artists, crmContacts]);
+    
+    toast({
+      title: "Buscando...",
+      description: `Pesquisando por: ${searchQuery}`,
+    });
+  };
 
   const onSubmit = async (data: MusicRegistrationFormData) => {
     try {
-      // Calculate total duration in seconds from minutes and seconds
       const totalDuration = ((data.duration_minutes || 0) * 60) + (data.duration_seconds || 0);
-      const submissionData = {
-        ...data,
-        duration: totalDuration > 0 ? totalDuration : undefined,
-      };
-
-      // Validate that percentages add up to 100 for each category
-      const composerTotal = data.composers.reduce((sum, composer) => sum + composer.percentage, 0);
-      const performerTotal = data.performers.reduce((sum, performer) => sum + performer.percentage, 0);
-      const producerTotal = data.producers.reduce((sum, producer) => sum + producer.percentage, 0);
-
-      if (Math.abs(composerTotal - 100) > 0.01) {
+      
+      const totalPercentage = (data.participants || []).reduce((sum, p) => sum + p.percentage, 0);
+      
+      if (data.participants && data.participants.length > 0 && Math.abs(totalPercentage - 100) > 0.01) {
         toast({
           title: "Erro de validação",
-          description: "A soma das porcentagens dos compositores deve ser 100%",
+          description: "A soma das porcentagens dos participantes deve ser 100%",
           variant: "destructive",
         });
         return;
       }
 
-      if (Math.abs(performerTotal - 100) > 0.01) {
-        toast({
-          title: "Erro de validação", 
-          description: "A soma das porcentagens dos intérpretes deve ser 100%",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (Math.abs(producerTotal - 100) > 0.01) {
-        toast({
-          title: "Erro de validação",
-          description: "A soma das porcentagens dos produtores deve ser 100%",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Here you would call the appropriate service to save the music registration
       toast({
         title: "Sucesso",
         description: "Música registrada com sucesso!",
@@ -325,292 +209,524 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   };
 
+  const totalPercentage = calculateTotalPercentage();
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Project Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FolderOpen className="h-5 w-5" />
-              Projeto Base
-            </CardTitle>
-            <CardDescription>
-              Selecione um projeto para pré-carregar informações ou deixe em branco para preencher manualmente
-            </CardDescription>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Buscar Obra Existente */}
+        <Card className="bg-card">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Buscar Obra Existente</CardTitle>
           </CardHeader>
           <CardContent>
-            <FormField
-              control={form.control}
-              name="project_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Projeto (Opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um projeto existente" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name} {project.description && `- ${project.description}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {selectedProject && (
-              <Alert className="mt-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Projeto selecionado:</strong> {selectedProject.name}
-                  <br />
-                  {selectedProject.description && (
-                    <>
-                      <strong>Descrição:</strong> {selectedProject.description}
-                    </>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
+            <div className="flex gap-2">
+              <Input 
+                placeholder="Digite o título, gênero ou código e pressione ENTER para buscar" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" size="icon" onClick={handleSearch}>
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações Básicas</CardTitle>
-            <CardDescription>
-              Dados principais da música
-            </CardDescription>
+        {/* Dados Principais da Obra */}
+        <Card className="bg-card">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Dados Principais da Obra</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Título da Música *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome da música" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="genre"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gênero *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+          <CardContent className="space-y-6">
+            {/* Row 1: Cód Abramus, Cód ECAD, Título da Obra */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="abramus_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cód Abramus</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o gênero" />
-                        </SelectTrigger>
+                        <Input placeholder="Código Abramus" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pop">Pop</SelectItem>
-                        <SelectItem value="rock">Rock</SelectItem>
-                        <SelectItem value="hip_hop">Hip Hop</SelectItem>
-                        <SelectItem value="eletronica">Eletrônica</SelectItem>
-                        <SelectItem value="sertanejo">Sertanejo</SelectItem>
-                        <SelectItem value="funk">Funk</SelectItem>
-                        <SelectItem value="mpb">MPB</SelectItem>
-                        <SelectItem value="samba">Samba</SelectItem>
-                        <SelectItem value="reggae">Reggae</SelectItem>
-                        <SelectItem value="jazz">Jazz</SelectItem>
-                        <SelectItem value="blues">Blues</SelectItem>
-                        <SelectItem value="country">Country</SelectItem>
-                        <SelectItem value="reggaeton">Reggaeton</SelectItem>
-                        <SelectItem value="trap">Trap</SelectItem>
-                        <SelectItem value="indie">Indie</SelectItem>
-                        <SelectItem value="outro">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="ecad_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cód ECAD</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Código ECAD" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-8">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Título da Obra *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite para buscar ou criar nova obra" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <FormField
-                control={form.control}
-                name="duration_minutes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duração</FormLabel>
-                    <div className="flex items-center gap-2">
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          min="0"
-                          placeholder="Min" 
-                          className="w-16"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <span className="text-muted-foreground">:</span>
-                      <FormControl>
+            {/* Row 2: Gênero Musical, Idioma, Duração, Instrumental?, Criada por IA? */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="genre"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gênero Musical</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="pop">Pop</SelectItem>
+                          <SelectItem value="rock">Rock</SelectItem>
+                          <SelectItem value="hip_hop">Hip Hop</SelectItem>
+                          <SelectItem value="eletronica">Eletrônica</SelectItem>
+                          <SelectItem value="sertanejo">Sertanejo</SelectItem>
+                          <SelectItem value="funk">Funk</SelectItem>
+                          <SelectItem value="mpb">MPB</SelectItem>
+                          <SelectItem value="samba">Samba</SelectItem>
+                          <SelectItem value="reggae">Reggae</SelectItem>
+                          <SelectItem value="jazz">Jazz</SelectItem>
+                          <SelectItem value="blues">Blues</SelectItem>
+                          <SelectItem value="country">Country</SelectItem>
+                          <SelectItem value="reggaeton">Reggaeton</SelectItem>
+                          <SelectItem value="trap">Trap</SelectItem>
+                          <SelectItem value="indie">Indie</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Idioma</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Português" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="portugues">Português</SelectItem>
+                          <SelectItem value="ingles">Inglês</SelectItem>
+                          <SelectItem value="espanhol">Espanhol</SelectItem>
+                          <SelectItem value="frances">Francês</SelectItem>
+                          <SelectItem value="italiano">Italiano</SelectItem>
+                          <SelectItem value="alemao">Alemão</SelectItem>
+                          <SelectItem value="japones">Japonês</SelectItem>
+                          <SelectItem value="coreano">Coreano</SelectItem>
+                          <SelectItem value="instrumental">Instrumental</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="duration_minutes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duração</FormLabel>
+                      <div className="flex items-center gap-1">
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0"
+                            placeholder="Mi" 
+                            className="w-14"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <span className="text-muted-foreground">:</span>
                         <Input 
                           type="number" 
                           min="0"
                           max="59"
-                          placeholder="Seg" 
-                          className="w-16"
+                          placeholder="Se" 
+                          className="w-14"
                           value={form.watch('duration_seconds') ?? ''}
                           onChange={(e) => form.setValue('duration_seconds', e.target.value ? parseInt(e.target.value) : undefined)}
                         />
-                      </FormControl>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="recording_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data da Gravação</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <FormField
+                  control={form.control}
+                  name="is_instrumental"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instrumental?</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o status" />
-                        </SelectTrigger>
+                        <RadioGroup
+                          onValueChange={(value) => field.onChange(value === 'true')}
+                          value={field.value ? 'true' : 'false'}
+                          className="flex items-center gap-4 mt-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="true" id="instrumental-sim" />
+                            <Label htmlFor="instrumental-sim" className="text-sm">Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="false" id="instrumental-nao" />
+                            <Label htmlFor="instrumental-nao" className="text-sm">Não</Label>
+                          </div>
+                        </RadioGroup>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pending">Em Análise</SelectItem>
-                        <SelectItem value="approved">Aprovado</SelectItem>
-                        <SelectItem value="rejected">Rejeitado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <FormField
+                  control={form.control}
+                  name="is_ai_created"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Criada por IA?</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={(value) => field.onChange(value === 'true')}
+                          value={field.value ? 'true' : 'false'}
+                          className="flex items-center gap-4 mt-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="true" id="ai-sim" />
+                            <Label htmlFor="ai-sim" className="text-sm">Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="false" id="ai-nao" />
+                            <Label htmlFor="ai-nao" className="text-sm">Não</Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Publisher Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Editora Musical</CardTitle>
-            <CardDescription>
-              Informações sobre a editora musical (se aplicável)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="has_publisher"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Esta música possui editora musical
-                      </FormLabel>
-                    </div>
-                  </FormItem>
+        {/* Participação */}
+        <Card className="bg-card">
+          <Collapsible open={participationOpen} onOpenChange={setParticipationOpen}>
+            <CardHeader className="pb-4">
+              <CollapsibleTrigger className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-4">
+                  <CardTitle className="text-lg">Participação</CardTitle>
+                  <span className="text-sm text-muted-foreground">
+                    Percentual total: {totalPercentage.toFixed(2)}% de 100%
+                  </span>
+                </div>
+                {participationOpen ? (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
                 )}
-              />
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      toast({
+                        title: "Buscar participante",
+                        description: "Funcionalidade de busca em desenvolvimento",
+                      });
+                    }}
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Buscar participante
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => appendParticipant({ name: '', cpf: '', percentage: 0, role: '' })}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Adicionar participante
+                  </Button>
+                </div>
 
-              {hasPublisher && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium">Editoras</h3>
+                {participantFields.length > 0 && (
+                  <div className="space-y-3">
+                    {participantFields.map((field, index) => (
+                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg items-end">
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nome do participante" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.cpf`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CPF *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="000.000.000-00" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.role`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Função</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="compositor">Compositor</SelectItem>
+                                  <SelectItem value="autor">Autor</SelectItem>
+                                  <SelectItem value="interprete">Intérprete</SelectItem>
+                                  <SelectItem value="produtor">Produtor</SelectItem>
+                                  <SelectItem value="adaptador">Adaptador</SelectItem>
+                                  <SelectItem value="tradutor">Tradutor</SelectItem>
+                                  <SelectItem value="versionista">Versionista</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.percentage`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>% Participação *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="0.00" 
+                                  step="0.01"
+                                  min="0"
+                                  max="100"
+                                  {...field}
+                                  value={field.value ?? 0}
+                                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeParticipant(index)}
+                        >
+                          <Trash2Icon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+
+        {/* Outros Títulos */}
+        <Card className="bg-card">
+          <Collapsible open={otherTitlesOpen} onOpenChange={setOtherTitlesOpen}>
+            <CardHeader className="pb-4">
+              <CollapsibleTrigger className="flex items-center justify-between w-full">
+                <CardTitle className="text-lg">Outros Títulos</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      appendOtherTitle({ title: '' });
+                      setOtherTitlesOpen(true);
+                    }}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Adicionar
+                  </Button>
+                  {otherTitlesOpen ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="space-y-3">
+                {otherTitleFields.map((field, index) => (
+                  <div key={field.id} className="flex gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name={`other_titles.${index}.title`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Título Alternativo</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Digite o título alternativo" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
-                      onClick={() => appendPublisher({ name: '', cpf_cnpj: '', percentage: 0 })}
+                      size="icon"
+                      onClick={() => removeOtherTitle(index)}
                     >
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      Adicionar Editora
+                      <Trash2Icon className="h-4 w-4" />
                     </Button>
                   </div>
-                  
-                  {publisherFields.map((publisherField, index) => (
-                    <div key={publisherField.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg items-end">
+                ))}
+                {otherTitleFields.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum título alternativo adicionado.
+                  </p>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+
+        {/* Referência Conexa */}
+        <Card className="bg-card">
+          <Collapsible open={referencesOpen} onOpenChange={setReferencesOpen}>
+            <CardHeader className="pb-4">
+              <CollapsibleTrigger className="flex items-center justify-between w-full">
+                <CardTitle className="text-lg">Referência Conexa</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      appendReference({ reference: '', type: '' });
+                      setReferencesOpen(true);
+                    }}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Adicionar
+                  </Button>
+                  {referencesOpen ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="space-y-3">
+                {referenceFields.map((field, index) => (
+                  <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name={`connected_references.${index}.reference`}
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Referência</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Digite a referência conexa" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-2 items-end">
                       <FormField
                         control={form.control}
-                        name={`publishers.${index}.name`}
+                        name={`connected_references.${index}.type`}
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome da Editora *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Nome da editora musical" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`publishers.${index}.cpf_cnpj`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>CPF/CNPJ *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="000.000.000-00" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`publishers.${index}.percentage`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Porcentagem (%)*</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="0.00" 
-                                step="0.01"
-                                min="0"
-                                max="100"
-                                {...field}
-                                value={field.value ?? 0}
-                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                              />
-                            </FormControl>
+                          <FormItem className="flex-1">
+                            <FormLabel>Tipo</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="sample">Sample</SelectItem>
+                                <SelectItem value="remix">Remix</SelectItem>
+                                <SelectItem value="versao">Versão</SelectItem>
+                                <SelectItem value="adaptacao">Adaptação</SelectItem>
+                                <SelectItem value="outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -619,349 +735,21 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                         type="button"
                         variant="outline"
                         size="icon"
-                        onClick={() => removePublisher(index)}
-                        disabled={publisherFields.length === 1}
+                        onClick={() => removeReference(index)}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contributors */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Créditos e Participações</CardTitle>
-            <CardDescription>
-              Configure os créditos dos compositores, intérpretes e produtores (cada categoria deve somar 100%)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Compositores */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Compositores</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendComposer({ name: '', cpf: '', percentage: 0 })}
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Adicionar Compositor
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {composerFields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                    <FormField
-                      control={form.control}
-                      name={`composers.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nome do compositor" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`composers.${index}.cpf`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CPF *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="000.000.000-00" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`composers.${index}.percentage`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Porcentagem (%)*</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="0.00" 
-                              step="0.01"
-                              min="0"
-                              max="100"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex items-end">
-                      {composerFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeComposer(index)}
-                        >
-                          <Trash2Icon className="h-4 w-4 mr-2" />
-                          Remover
-                        </Button>
-                      )}
-                    </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Intérpretes */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Intérpretes</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendPerformer({ name: '', cpf: '', percentage: 0 })}
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Adicionar Intérprete
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {performerFields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                    <FormField
-                      control={form.control}
-                      name={`performers.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nome do intérprete" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`performers.${index}.cpf`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CPF *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="000.000.000-00" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`performers.${index}.percentage`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Porcentagem (%)*</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="0.00" 
-                              step="0.01"
-                              min="0"
-                              max="100"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex items-end">
-                      {performerFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removePerformer(index)}
-                        >
-                          <Trash2Icon className="h-4 w-4 mr-2" />
-                          Remover
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Produtores */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Produtores</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendProducer({ name: '', cpf: '', percentage: 0 })}
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Adicionar Produtor
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {producerFields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                    <FormField
-                      control={form.control}
-                      name={`producers.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nome do produtor" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`producers.${index}.cpf`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CPF *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="000.000.000-00" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`producers.${index}.percentage`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Porcentagem (%)*</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="0.00" 
-                              step="0.01"
-                              min="0"
-                              max="100"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex items-end">
-                      {producerFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeProducer(index)}
-                        >
-                          <Trash2Icon className="h-4 w-4 mr-2" />
-                          Remover
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Additional Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações Adicionais</CardTitle>
-            <CardDescription>
-              Códigos de identificação e informações complementares
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField
-                control={form.control}
-                name="isrc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ISRC</FormLabel>
-                    <FormControl>
-                      <Input placeholder="BRAB1234567" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {referenceFields.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma referência conexa adicionada.
+                  </p>
                 )}
-              />
-
-              <FormField
-                control={form.control}
-                name="iswc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ISWC</FormLabel>
-                    <FormControl>
-                      <Input placeholder="T-123.456.789-0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="ecad_code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Código ECAD</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123456" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="mt-6">
-              <FormField
-                control={form.control}
-                name="lyrics"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Letra da Música</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Digite a letra completa da música..." 
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
 
         {/* Form Actions */}
@@ -970,7 +758,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             Cancelar
           </Button>
           <Button type="submit" className="gap-2">
-            {registration ? 'Atualizar Música' : 'Registrar Música'}
+            {registration ? 'Atualizar Obra' : 'Cadastrar Nova Obra'}
           </Button>
         </div>
       </form>
