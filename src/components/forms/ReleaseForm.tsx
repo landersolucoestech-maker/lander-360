@@ -15,6 +15,8 @@ import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, 
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
+import { useMusicRegistry } from '@/hooks/useMusicRegistry';
+import { usePhonograms } from '@/hooks/usePhonograms';
 
 const trackSchema = z.object({
   title: z.string().min(1, 'Título da faixa é obrigatório'),
@@ -138,6 +140,8 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const { toast } = useToast();
   const { data: projects = [], isLoading: loadingProjects } = useProjects();
   const { data: artists = [] } = useArtists();
+  const { data: musicRegistry = [] } = useMusicRegistry();
+  const { data: phonograms = [] } = usePhonograms();
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   
   const form = useForm<ReleaseFormData>({
@@ -230,17 +234,33 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         const trackArtistName = projectArtist?.stage_name || projectArtist?.name || 
           firstSong.performers?.[0]?.name || firstSong.composers?.[0]?.name || '';
         
-        // Create tracks from songs
-        const tracks = songs.map((song: any) => ({
-          title: song.song_name || '',
-          artist: trackArtistName,
-          composers: (song.composers || []).map((c: any) => c.name).filter(Boolean),
-          performers: (song.performers || []).map((p: any) => p.name).filter(Boolean),
-          producers: (song.producers || []).map((p: any) => p.name).filter(Boolean),
-          isrc: '',
-          audio_file: song.audio_files?.[0]?.url || '',
-          lyrics: song.lyrics || '',
-        }));
+        // Create tracks from songs - find ISRC from phonogram
+        const tracks = songs.map((song: any) => {
+          // Find the music registry entry that matches this song
+          const matchingWork = musicRegistry.find(m => 
+            m.title?.toLowerCase() === song.song_name?.toLowerCase()
+          );
+          
+          // Find the phonogram linked to this work to get the ISRC
+          let isrcCode = '';
+          if (matchingWork) {
+            const matchingPhonogram = phonograms.find(p => p.work_id === matchingWork.id);
+            if (matchingPhonogram?.isrc) {
+              isrcCode = matchingPhonogram.isrc;
+            }
+          }
+          
+          return {
+            title: song.song_name || '',
+            artist: trackArtistName,
+            composers: (song.composers || []).map((c: any) => c.name).filter(Boolean),
+            performers: (song.performers || []).map((p: any) => p.name).filter(Boolean),
+            producers: (song.producers || []).map((p: any) => p.name).filter(Boolean),
+            isrc: isrcCode,
+            audio_file: song.audio_files?.[0]?.url || '',
+            lyrics: song.lyrics || '',
+          };
+        });
         
         if (tracks.length > 0) {
           form.setValue('tracks', tracks);
@@ -252,7 +272,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         description: `Dados do projeto "${selectedProject.name}" carregados.`,
       });
     }
-  }, [selectedProject, artists, form, toast]);
+  }, [selectedProject, artists, musicRegistry, phonograms, form, toast]);
 
   const releaseType = form.watch('release_type');
 
