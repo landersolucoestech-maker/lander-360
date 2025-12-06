@@ -429,13 +429,11 @@ const RegistroMusicas = () => {
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-3 text-sm">
                               <div className="text-center">
                                 <div className="text-muted-foreground text-xs">Cód Abramus</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).abramus_code || "-"}</div>
-                              </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground text-xs">Cód ECAD</div>
+                                <div className="text-muted-foreground text-xs mt-1">Cód ECAD</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).ecad_code || "-"}</div>
                               </div>
                               <div className="text-center">
