@@ -92,7 +92,7 @@ const RegistroMusicas = () => {
 
   useEffect(() => {
     setFilteredPhonograms(allPhonograms);
-  }, [phonograms, artists]);
+  }, [phonograms, artists, musicRegistry]);
 
   const filterOptions = [
     {
