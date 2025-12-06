@@ -1025,6 +1025,93 @@ export type Database = {
           },
         ]
       }
+      phonograms: {
+        Row: {
+          artist_id: string | null
+          created_at: string
+          created_by: string | null
+          duration: number | null
+          genre: string | null
+          id: string
+          is_remix: boolean | null
+          isrc: string | null
+          label: string | null
+          language: string | null
+          master_owner: string | null
+          participants: Json | null
+          recording_date: string | null
+          recording_location: string | null
+          recording_studio: string | null
+          remix_artist: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          version_type: string | null
+          work_id: string | null
+        }
+        Insert: {
+          artist_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          is_remix?: boolean | null
+          isrc?: string | null
+          label?: string | null
+          language?: string | null
+          master_owner?: string | null
+          participants?: Json | null
+          recording_date?: string | null
+          recording_location?: string | null
+          recording_studio?: string | null
+          remix_artist?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          version_type?: string | null
+          work_id?: string | null
+        }
+        Update: {
+          artist_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          is_remix?: boolean | null
+          isrc?: string | null
+          label?: string | null
+          language?: string | null
+          master_owner?: string | null
+          participants?: Json | null
+          recording_date?: string | null
+          recording_location?: string | null
+          recording_studio?: string | null
+          remix_artist?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          version_type?: string | null
+          work_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phonograms_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phonograms_work_id_fkey"
+            columns: ["work_id"]
+            isOneToOne: false
+            referencedRelation: "music_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
