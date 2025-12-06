@@ -246,50 +246,69 @@ export function PhonogramForm({
     let musicianProducers: any[] = [];
     let loadedAudioFile: { name: string; url: string; size: number } | null = null;
     
+    // Helper para parsear audio_files (pode ser string JSON ou objeto)
+    const parseAudioFiles = (audioFiles: any) => {
+      if (!audioFiles) return null;
+      if (typeof audioFiles === 'string') {
+        try {
+          return JSON.parse(audioFiles);
+        } catch {
+          return null;
+        }
+      }
+      return audioFiles;
+    };
+    
     // Buscar intérpretes, produtores e áudio do projeto relacionado
     const relatedProject = projects.find((p: any) => {
-      const audioFiles = p.audio_files as any;
-      if (!audioFiles || !audioFiles.songs) return false;
-      return audioFiles.songs.some((song: any) => 
+      const parsedAudioFiles = parseAudioFiles(p.audio_files);
+      if (!parsedAudioFiles || !parsedAudioFiles.songs) return false;
+      return parsedAudioFiles.songs.some((song: any) => 
         song.song_name?.toLowerCase() === work.title?.toLowerCase()
       );
     });
     
     if (relatedProject) {
-      const audioFiles = relatedProject.audio_files as any;
-      if (audioFiles?.songs) {
+      const parsedAudioFiles = parseAudioFiles(relatedProject.audio_files);
+      if (parsedAudioFiles?.songs) {
         // Encontrar a música específica dentro do projeto
-        const matchingSong = audioFiles.songs.find((song: any) => 
+        const matchingSong = parsedAudioFiles.songs.find((song: any) => 
           song.song_name?.toLowerCase() === work.title?.toLowerCase()
         );
       
         if (matchingSong) {
           // Preencher Intérpretes (performers do projeto)
           if (matchingSong.performers && matchingSong.performers.length > 0) {
-            interpreters = matchingSong.performers.map((p: any) => ({
-              name: p.name || '',
-              role: 'interprete',
-              percentage: p.percentage || 0
-            }));
+            interpreters = matchingSong.performers
+              .filter((p: any) => p.name && p.name.trim() !== '')
+              .map((p: any) => ({
+                name: p.name || '',
+                role: 'interprete',
+                percentage: p.percentage || 0
+              }));
           }
           
           // Preencher Músicos Acompanhantes (producers do projeto - sempre são produtores)
           if (matchingSong.producers && matchingSong.producers.length > 0) {
-            musicianProducers = matchingSong.producers.map((p: any) => ({
-              name: p.name || '',
-              role: 'musico',
-              percentage: p.percentage || 0
-            }));
+            musicianProducers = matchingSong.producers
+              .filter((p: any) => p.name && p.name.trim() !== '')
+              .map((p: any) => ({
+                name: p.name || '',
+                role: 'musico',
+                percentage: p.percentage || 0
+              }));
           }
           
           // Carregar arquivo de áudio do projeto
           if (matchingSong.audio_files && matchingSong.audio_files.length > 0) {
             const projectAudio = matchingSong.audio_files[0];
-            loadedAudioFile = {
-              name: projectAudio.name || 'Áudio do Projeto',
-              url: projectAudio.url || '',
-              size: projectAudio.size || 0
-            };
+            if (projectAudio.url) {
+              loadedAudioFile = {
+                name: projectAudio.name || 'Áudio do Projeto',
+                url: projectAudio.url || '',
+                size: projectAudio.size || 0
+              };
+            }
           }
         }
       }
@@ -300,6 +319,7 @@ export function PhonogramForm({
       const workParticipants = work.participants || [];
       interpreters = workParticipants
         .filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete'))
+        .filter((p: any) => p.name && p.name.trim() !== '')
         .map((p: any) => ({
           name: p.name || '',
           role: 'interprete',
@@ -311,6 +331,7 @@ export function PhonogramForm({
       const workParticipants = work.participants || [];
       musicianProducers = workParticipants
         .filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor'))
+        .filter((p: any) => p.name && p.name.trim() !== '')
         .map((p: any) => ({
           name: p.name || '',
           role: 'musico',
@@ -388,16 +409,29 @@ export function PhonogramForm({
       });
     }
   };
+  // Helper para parsear audio_files (pode ser string JSON ou objeto)
+  const parseAudioFiles = (audioFiles: any) => {
+    if (!audioFiles) return null;
+    if (typeof audioFiles === 'string') {
+      try {
+        return JSON.parse(audioFiles);
+      } catch {
+        return null;
+      }
+    }
+    return audioFiles;
+  };
+
   // Extrair performers únicos dos projetos para autocomplete de intérpretes
   const getProjectPerformers = (): Array<{ name: string; projectName: string }> => {
     const performersSet = new Map<string, { name: string; projectName: string }>();
     projects.forEach((project: any) => {
-      const audioFiles = project.audio_files as any;
-      if (audioFiles?.songs) {
-        audioFiles.songs.forEach((song: any) => {
+      const parsedAudioFiles = parseAudioFiles(project.audio_files);
+      if (parsedAudioFiles?.songs) {
+        parsedAudioFiles.songs.forEach((song: any) => {
           if (song.performers && Array.isArray(song.performers)) {
             song.performers.forEach((p: any) => {
-              if (p.name && !performersSet.has(p.name.toLowerCase())) {
+              if (p.name && p.name.trim() !== '' && !performersSet.has(p.name.toLowerCase())) {
                 performersSet.set(p.name.toLowerCase(), { 
                   name: p.name, 
                   projectName: project.name 
@@ -415,12 +449,12 @@ export function PhonogramForm({
   const getProjectProducers = (): Array<{ name: string; projectName: string }> => {
     const producersSet = new Map<string, { name: string; projectName: string }>();
     projects.forEach((project: any) => {
-      const audioFiles = project.audio_files as any;
-      if (audioFiles?.songs) {
-        audioFiles.songs.forEach((song: any) => {
+      const parsedAudioFiles = parseAudioFiles(project.audio_files);
+      if (parsedAudioFiles?.songs) {
+        parsedAudioFiles.songs.forEach((song: any) => {
           if (song.producers && Array.isArray(song.producers)) {
             song.producers.forEach((p: any) => {
-              if (p.name && !producersSet.has(p.name.toLowerCase())) {
+              if (p.name && p.name.trim() !== '' && !producersSet.has(p.name.toLowerCase())) {
                 producersSet.set(p.name.toLowerCase(), { 
                   name: p.name, 
                   projectName: project.name 
