@@ -439,7 +439,9 @@ const RegistroMusicas = () => {
                               <div className="text-center">
                                 <div className="text-muted-foreground text-xs">Cód Abramus</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).abramus_code || "-"}</div>
-                                <div className="text-muted-foreground text-xs mt-1">Cód ECAD</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-muted-foreground text-xs">Cód ECAD</div>
                                 <div className="font-medium text-foreground text-xs">{(phono as any).ecad_code || "-"}</div>
                               </div>
                               <div className="text-center">
@@ -459,9 +461,9 @@ const RegistroMusicas = () => {
                                 </div>
                               </div>
                               <div className="text-center flex-1">
-                                <div className="text-muted-foreground text-xs">Produtores</div>
+                                <div className="text-muted-foreground text-xs">Músicos</div>
                                 <div className="font-medium text-foreground text-xs truncate">
-                                  {phono.participants?.filter((p: any) => p.role === 'produtor_fonografico').map((p: any) => p.name).join(', ') || "-"}
+                                  {phono.participants?.filter((p: any) => p.role === 'musico' || p.role === 'musico_acompanhante').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
                               <div className="flex gap-2 ml-auto">
