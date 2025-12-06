@@ -187,21 +187,6 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               )}
             </div>
 
-            {/* Valor */}
-            <div className="space-y-2">
-              <Label htmlFor="amount">Valor (R$)</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                {...form.register('amount', { valueAsNumber: true })}
-              />
-              {form.formState.errors.amount && (
-                <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
-              )}
-            </div>
-
             {/* Categoria */}
             <div className="space-y-2">
               <Label>Categoria</Label>
@@ -222,6 +207,21 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               </Select>
               {form.formState.errors.category && (
                 <p className="text-sm text-destructive">{form.formState.errors.category.message}</p>
+              )}
+            </div>
+
+            {/* Valor */}
+            <div className="space-y-2">
+              <Label htmlFor="amount">Valor (R$)</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                placeholder="0,00"
+                {...form.register('amount', { valueAsNumber: true })}
+              />
+              {form.formState.errors.amount && (
+                <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
               )}
             </div>
 
