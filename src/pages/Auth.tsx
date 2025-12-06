@@ -274,6 +274,15 @@ export default function Auth() {
           alt="Lander Records" 
           className="absolute inset-0 w-full h-full object-cover"
         />
+        {/* Text Overlay */}
+        <div className="absolute bottom-12 left-12 z-10">
+          <h2 className="text-3xl font-bold text-white mb-2">
+            Sistema de Gestão
+          </h2>
+          <p className="text-gray-300 text-lg">
+            Plataforma Musical Profissional
+          </p>
+        </div>
       </div>
     </div>;
 }
