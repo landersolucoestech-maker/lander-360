@@ -15,7 +15,8 @@ import {
   FileText,
   Globe,
   User,
-  FileAudio
+  FileAudio,
+  Clock
 } from "lucide-react";
 import { useArtists } from "@/hooks/useArtists";
 
@@ -161,7 +162,16 @@ export function ProjectViewModal({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {(song.duration_minutes !== undefined || song.duration_seconds !== undefined) && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Duração:</span>
+                          <span className="text-sm font-medium">
+                            {String(song.duration_minutes || 0).padStart(2, '0')}:{String(song.duration_seconds || 0).padStart(2, '0')}
+                          </span>
+                        </div>
+                      )}
                       {song.genre && (
                         <div className="flex items-center gap-2">
                           <Music className="h-4 w-4 text-muted-foreground" />

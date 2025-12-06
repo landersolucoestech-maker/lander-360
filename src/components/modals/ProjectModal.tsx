@@ -31,10 +31,17 @@ export function ProjectModal({ open, onOpenChange, project, mode }: ProjectModal
       }
       
       if (details) {
+        // Map songs with duration fields
+        const mappedSongs = (details.songs || []).map((song: any) => ({
+          ...song,
+          duration_minutes: song.duration_minutes ?? undefined,
+          duration_seconds: song.duration_seconds ?? undefined,
+        }));
+        
         return {
           ...project,
           release_type: details.release_type || 'single',
-          songs: details.songs || [],
+          songs: mappedSongs,
           observations: details.observations || '',
         };
       }
