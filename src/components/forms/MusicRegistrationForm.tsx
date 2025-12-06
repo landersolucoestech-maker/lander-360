@@ -197,6 +197,14 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const isAiCreated = form.watch('is_ai_created');
   const aiGenerationType = form.watch('ai_generation_type');
 
+  // Reset AI fields when is_ai_created becomes false
+  useEffect(() => {
+    if (!isAiCreated) {
+      form.setValue('ai_generation_type', undefined);
+      form.setValue('ai_elements', []);
+    }
+  }, [isAiCreated, form]);
+
   // Initialize AI elements when ai_generation_type is selected
   useEffect(() => {
     if (isAiCreated && aiGenerationType) {
