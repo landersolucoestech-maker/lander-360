@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ProjectInsert, ProjectUpdate } from '@/types/database';
 import { useCreateProject, useUpdateProject } from '@/hooks/useProjects';
+import { useArtists } from '@/hooks/useArtists';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { AudioUploader } from './AudioUploader';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,6 +39,7 @@ const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Itali
 
 const projectSchema = z.object({
   release_type: z.enum(['single', 'ep', 'album']).default('single'),
+  artist_id: z.string().optional(),
   songs: z.array(songSchema).min(1, 'Pelo menos uma música é obrigatória'),
   observations: z.string().optional(),
   // Campos originais para compatibilidade
@@ -58,6 +60,7 @@ interface ProjectFormProps {
 export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) {
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
+  const { data: artists = [] } = useArtists();
   const [userId, setUserId] = React.useState<string | null>(null);
 
   // Get current user ID
@@ -75,6 +78,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
     resolver: zodResolver(projectSchema),
     defaultValues: {
       release_type: project?.release_type || 'single',
+      artist_id: project?.artist_id || '',
       songs: project?.songs || [{
         song_name: '',
         collaboration_type: 'solo',
@@ -133,6 +137,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
         name: firstSong.song_name,
         description: `${data.release_type} - ${firstSong.song_name} (${firstSong.genre})`,
         status: data.status,
+        artist_id: data.artist_id || null,
         audio_files: JSON.stringify({
           release_type: data.release_type,
           songs: songsData,
@@ -203,6 +208,31 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                   <SelectItem value="single">Single</SelectItem>
                   <SelectItem value="ep">EP</SelectItem>
                   <SelectItem value="album">Álbum</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="artist_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Artista Responsável</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o artista" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {artists.map((artist) => (
+                    <SelectItem key={artist.id} value={artist.id}>
+                      {artist.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
