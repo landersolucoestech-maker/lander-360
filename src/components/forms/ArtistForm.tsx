@@ -10,13 +10,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Upload, X } from 'lucide-react';
+import { CalendarIcon, Upload, X, FileText, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Artist, ArtistInsert, ArtistUpdate } from '@/types/database';
 import { useCreateArtist, useUpdateArtist } from '@/hooks/useArtists';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
 // Validação para CPF/CNPJ (formato brasileiro)
 const cpfCnpjRegex = /^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{14})$/;
@@ -87,6 +88,10 @@ export function ArtistForm({
   const [showManagerFields, setShowManagerFields] = useState(false);
   const [selectedDistributors, setSelectedDistributors] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(artist?.image_url || null);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState<string | null>(artist?.documents_url ? 'Documento carregado' : null);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
     defaultValues: {
@@ -122,7 +127,7 @@ export function ArtistForm({
     }
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
     const file = e.target.files?.[0];
     if (file) {
       onChange(file);
@@ -134,9 +139,56 @@ export function ArtistForm({
     }
   };
 
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Arquivo muito grande',
+          description: 'O arquivo deve ter no máximo 5MB.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      setDocumentFile(file);
+      setDocumentName(file.name);
+      onChange(file);
+      toast({
+        title: 'Documento selecionado',
+        description: `Arquivo "${file.name}" pronto para upload.`
+      });
+    }
+  };
+
+  const removeDocument = (onChange: (value: any) => void) => {
+    setDocumentFile(null);
+    setDocumentName(null);
+    onChange(undefined);
+  };
+
   const removeImage = (onChange: (value: any) => void) => {
     onChange(undefined);
     setImagePreview(null);
+  };
+
+  const uploadFile = async (file: File, bucket: string, folder: string): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
+    
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+    return urlData.publicUrl;
   };
 
   // Watch profile_type to show/hide manager fields
@@ -153,6 +205,45 @@ export function ArtistForm({
   };
   const onSubmit = async (data: ArtistFormData) => {
     try {
+      let imageUrl = artist?.image_url || null;
+      let documentsUrl = artist?.documents_url || null;
+
+      // Upload imagem do artista se houver novo arquivo
+      if (data.artist_image instanceof File) {
+        setIsUploadingImage(true);
+        try {
+          imageUrl = await uploadFile(data.artist_image, 'avatars', 'artists');
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          toast({
+            title: 'Erro no upload da imagem',
+            description: 'Não foi possível fazer o upload da imagem. Tente novamente.',
+            variant: 'destructive'
+          });
+          setIsUploadingImage(false);
+          return;
+        }
+        setIsUploadingImage(false);
+      }
+
+      // Upload documento se houver novo arquivo
+      if (documentFile) {
+        setIsUploadingDocument(true);
+        try {
+          documentsUrl = await uploadFile(documentFile, 'artist-documents', 'documents');
+        } catch (error) {
+          console.error('Error uploading document:', error);
+          toast({
+            title: 'Erro no upload do documento',
+            description: 'Não foi possível fazer o upload do documento. Tente novamente.',
+            variant: 'destructive'
+          });
+          setIsUploadingDocument(false);
+          return;
+        }
+        setIsUploadingDocument(false);
+      }
+
       const artistData = {
         name: data.artistic_name,
         genre: data.genre,
@@ -181,6 +272,8 @@ export function ArtistForm({
         distributors: data.distributors || [],
         distributor_emails: data.distributor_emails || {},
         observations: data.observations || null,
+        image_url: imageUrl,
+        documents_url: documentsUrl,
       };
       
       if (artist) {
@@ -320,16 +413,40 @@ export function ArtistForm({
               }) => <FormItem>
                       <FormLabel>Documentos Pessoais (PDF)</FormLabel>
                       <FormControl>
-                        <div className="relative border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
-                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">
-                            Clique para fazer upload ou arraste arquivos aqui
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Aceita apenas PDF (CNH/Identidade - máx. 5MB)
-                          </p>
-                          <input type="file" accept=".pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={e => field.onChange(e.target.files?.[0])} />
-                        </div>
+                        {documentName ? (
+                          <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                            <FileText className="h-8 w-8 text-primary" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{documentName}</p>
+                              <p className="text-xs text-muted-foreground">Documento pronto para upload</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removeDocument(field.onChange)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Remover
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="relative border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors cursor-pointer">
+                            <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">
+                              Clique para fazer upload ou arraste arquivos aqui
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Aceita apenas PDF (CNH/Identidade - máx. 5MB)
+                            </p>
+                            <input 
+                              type="file" 
+                              accept=".pdf" 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                              onChange={e => handleDocumentChange(e, field.onChange)} 
+                            />
+                          </div>
+                        )}
                       </FormControl>
                       <FormMessage />
                     </FormItem>} />
@@ -701,8 +818,17 @@ export function ArtistForm({
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading} className="min-w-[120px]">
-              {isLoading ? 'Salvando...' : artist ? 'Atualizar' : 'Cadastrar'}
+            <Button 
+              type="submit" 
+              disabled={isLoading || isUploadingDocument || isUploadingImage} 
+              className="min-w-[120px]"
+            >
+              {(isLoading || isUploadingDocument || isUploadingImage) ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {isUploadingDocument ? 'Enviando documento...' : isUploadingImage ? 'Enviando imagem...' : 'Salvando...'}
+                </>
+              ) : artist ? 'Atualizar' : 'Cadastrar'}
             </Button>
           </div>
         </form>
