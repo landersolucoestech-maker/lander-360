@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe, Mail, ArrowLeft, CheckCircle, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MFAVerification } from '@/components/auth/MFAVerification';
-import authBackground from '@/assets/auth-background.jpeg';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -117,7 +116,6 @@ export default function Auth() {
           const remainingMinutes = Math.ceil(remainingMs / (1000 * 60));
           return { locked: true, remainingMinutes };
         } else {
-          // Lockout expired, reset attempts
           await supabase
             .from("login_attempts")
             .delete()
@@ -144,8 +142,6 @@ export default function Auth() {
       
       if (response.error) {
         console.error("Error sending lockout notification:", response.error);
-      } else {
-        console.log("Lockout notification sent to:", email);
       }
     } catch (error) {
       console.error("Error calling lockout notification function:", error);
@@ -178,7 +174,6 @@ export default function Auth() {
             })
             .eq("email", normalizedEmail);
           
-          // Send lockout notification email
           sendLockoutNotification(normalizedEmail);
           
           return { attemptsRemaining: 0, locked: true };
@@ -223,11 +218,9 @@ export default function Auth() {
 
   const checkMFARequired = async (userId: string, userEmail: string): Promise<boolean> => {
     try {
-      // Check TOTP factors
       const { data: factors } = await supabase.auth.mfa.listFactors();
       const hasTotp = factors?.totp?.some(f => f.status === "verified") || false;
 
-      // Check email 2FA settings
       const { data: settings } = await supabase
         .from("user_2fa_settings")
         .select("email_2fa_enabled")
@@ -259,7 +252,6 @@ export default function Auth() {
     setLockoutInfo(null);
     
     try {
-      // Check if account is locked
       const lockStatus = await checkAccountLocked(data.email);
       if (lockStatus.locked) {
         setLockoutInfo(lockStatus);
@@ -298,10 +290,8 @@ export default function Auth() {
           });
         }
       } else {
-        // Login successful, clear attempts
         await clearLoginAttempts(data.email);
         
-        // Get the current user to check MFA
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const mfaRequired = await checkMFARequired(user.id, user.email || data.email);
@@ -392,7 +382,6 @@ export default function Auth() {
   };
 
   const handleMFACancel = async () => {
-    // Sign out and reset state
     await supabase.auth.signOut();
     setMfaState({
       required: false,
@@ -444,7 +433,6 @@ export default function Auth() {
                 userId={mfaState.userId}
               />
             ) : authMode === "forgot-password" ? (
-              // Forgot Password Form
               resetEmailSent ? (
                 <div className="text-center space-y-6">
                   <div className="flex justify-center">
@@ -499,96 +487,113 @@ export default function Auth() {
                     />
                     <Button 
                       type="submit" 
-                      className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-sm tracking-wider rounded-lg" 
                       disabled={isLoading}
+                      className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold"
                     >
                       {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ENVIANDO...
-                        </>
+                        <Loader2 className="h-5 w-5 animate-spin" />
                       ) : (
-                        'ENVIAR LINK DE RECUPERAÇÃO'
+                        'Enviar Link de Recuperação'
                       )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setAuthMode("login")}
+                      className="w-full text-gray-400 hover:text-white"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Voltar ao Login
                     </Button>
                   </form>
                 </Form>
               )
             ) : authMode === "login" ? (
-              // Login Form
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                  {lockoutInfo?.locked && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3">
-                      <ShieldAlert className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-red-500">Conta temporariamente bloqueada</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Muitas tentativas de login falhas. Tente novamente em {lockoutInfo.remainingMinutes} minuto(s).
-                        </p>
-                      </div>
+              <>
+                {lockoutInfo?.locked && (
+                  <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center gap-3">
+                    <ShieldAlert className="h-5 w-5 text-red-500" />
+                    <p className="text-sm text-red-400">
+                      Conta bloqueada. Tente novamente em {lockoutInfo.remainingMinutes} minuto(s).
+                    </p>
+                  </div>
+                )}
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                    <FormField 
+                      control={loginForm.control} 
+                      name="email" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                              <Input 
+                                type="email" 
+                                placeholder="Digite seu e-mail" 
+                                className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} 
+                    />
+                    <FormField 
+                      control={loginForm.control} 
+                      name="password" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                              <Input 
+                                type="password" 
+                                placeholder="Digite sua senha" 
+                                className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} 
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("forgot-password")}
+                        className="text-sm text-gray-400 hover:text-white transition-colors"
+                      >
+                        Esqueceu sua senha?
+                      </button>
                     </div>
-                  )}
-                  <FormField 
-                    control={loginForm.control} 
-                    name="email" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Input 
-                              type="email" 
-                              placeholder="Digite o Usuário" 
-                              className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} 
-                  />
-                  <FormField 
-                    control={loginForm.control} 
-                    name="password" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Input 
-                              type="password" 
-                              placeholder="••••••" 
-                              className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} 
-                  />
-                  <Button 
-                    type="submit" 
-                    className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-sm tracking-wider rounded-lg" 
-                    disabled={isLoading || lockoutInfo?.locked}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ACESSANDO...
-                      </>
-                    ) : lockoutInfo?.locked ? (
-                      'CONTA BLOQUEADA'
-                    ) : (
-                      'ACESSAR O SISTEMA'
-                    )}
-                  </Button>
-                </form>
-              </Form>
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading || lockoutInfo?.locked}
+                      className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        'ACESSAR O SISTEMA'
+                      )}
+                    </Button>
+                    <p className="text-center text-sm text-gray-400">
+                      Não tem uma conta?{' '}
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("signup")}
+                        className="text-red-500 hover:text-red-400 font-medium"
+                      >
+                        Cadastre-se
+                      </button>
+                    </p>
+                  </form>
+                </Form>
+              </>
             ) : (
-              // Signup Form
               <Form {...signupForm}>
                 <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                   <FormField 
@@ -600,7 +605,8 @@ export default function Auth() {
                           <div className="relative">
                             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <Input 
-                              placeholder="Nome Completo" 
+                              type="text" 
+                              placeholder="Nome completo" 
                               className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
                               {...field} 
                             />
@@ -617,10 +623,10 @@ export default function Auth() {
                       <FormItem>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <Input 
                               type="email" 
-                              placeholder="Digite o Email" 
+                              placeholder="Digite seu e-mail" 
                               className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
                               {...field} 
                             />
@@ -640,7 +646,7 @@ export default function Auth() {
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <Input 
                               type="password" 
-                              placeholder="Senha" 
+                              placeholder="Crie uma senha" 
                               className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
                               {...field} 
                             />
@@ -660,7 +666,7 @@ export default function Auth() {
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <Input 
                               type="password" 
-                              placeholder="Confirmar Senha" 
+                              placeholder="Confirme sua senha" 
                               className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" 
                               {...field} 
                             />
@@ -672,114 +678,66 @@ export default function Auth() {
                   />
                   <Button 
                     type="submit" 
-                    className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-sm tracking-wider rounded-lg" 
                     disabled={isLoading}
+                    className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-bold"
                   >
                     {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        CADASTRANDO...
-                      </>
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       'CRIAR CONTA'
                     )}
                   </Button>
+                  <p className="text-center text-sm text-gray-400">
+                    Já tem uma conta?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode("login")}
+                      className="text-red-500 hover:text-red-400 font-medium"
+                    >
+                      Entrar
+                    </button>
+                  </p>
                 </form>
               </Form>
             )}
           </div>
 
-          {/* Toggle Mode & Forgot Password - Hide during MFA */}
-          {!mfaState.required && authMode !== "forgot-password" && (
-            <div className="text-center space-y-3">
-              {authMode === "login" ? (
-                <>
-                  <button 
-                    type="button" 
-                    onClick={() => setAuthMode("forgot-password")} 
-                    className="text-sm font-medium underline text-primary-foreground"
-                  >
-                    Esqueci minha senha
-                  </button>
-                  <div>
-                    <button 
-                      type="button" 
-                      onClick={() => setAuthMode("signup")} 
-                      className="text-red-600 hover:text-red-700 text-sm font-medium"
-                    >
-                      Criar nova conta
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <button 
-                  type="button" 
-                  onClick={() => setAuthMode("login")} 
-                  className="text-sm font-medium underline text-primary-foreground"
-                >
-                  Já tenho uma conta
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Back to login for forgot password */}
-          {authMode === "forgot-password" && !resetEmailSent && (
-            <div className="text-center">
-              <button 
-                type="button" 
-                onClick={() => setAuthMode("login")} 
-                className="text-sm font-medium underline text-primary-foreground"
-              >
-                Voltar ao login
-              </button>
-            </div>
-          )}
-
           {/* Social Icons */}
           <div className="flex justify-center gap-6 pt-4">
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <Facebook className="h-5 w-5" />
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <Facebook className="h-6 w-6" />
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <Instagram className="h-5 w-5" />
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <Instagram className="h-6 w-6" />
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <MessageCircle className="h-5 w-5" />
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <MessageCircle className="h-6 w-6" />
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <Globe className="h-5 w-5" />
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <Globe className="h-6 w-6" />
             </a>
           </div>
-        </div>
 
-        {/* Copyright Footer */}
-        <div className="absolute bottom-6 left-0 right-0 text-center">
-          <p className="text-xs text-gray-500">
-            Copyright © GESTÃO 360. Todos os direitos reservados.
+          {/* Copyright */}
+          <p className="text-center text-sm text-gray-500">
+            © 2024 LANDER RECORDS - Todos os direitos reservados
           </p>
         </div>
       </div>
 
       {/* Right Side - Background Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
-          style={{
-            backgroundImage: `url(${authBackground})`,
-            backgroundPosition: 'right center'
-          }} 
-        />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-900/30" />
-        
-        {/* Text Overlay */}
-        <div className="absolute bottom-12 left-12 z-10">
-          <h2 className="text-3xl font-bold text-white mb-2">
-            Sistema de Gestão
-          </h2>
-          <p className="text-gray-300 text-lg">
-            Plataforma Musical Profissional
-          </p>
+      <div 
+        className="hidden lg:flex lg:w-1/2 relative items-center justify-center"
+        style={{
+          backgroundImage: `url('/lovable-uploads/fc4eaf4a-7745-4f5c-bb66-7ebd6ad546d0.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="relative z-10 text-center text-white p-8">
+          <h2 className="text-4xl font-bold mb-4">Sistema de Gestão</h2>
+          <p className="text-xl text-gray-300">Plataforma Musical Profissional</p>
         </div>
       </div>
     </div>
