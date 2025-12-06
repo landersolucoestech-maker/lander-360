@@ -9,7 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { MusicViewModal } from "@/components/modals/MusicViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, FileText, CheckCircle, DollarSign, Clock } from "lucide-react";
+import { Music, Plus, FileText, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { useArtists } from "@/hooks/useArtists";
@@ -144,35 +144,30 @@ const RegistroMusicas = () => {
                 value={allSongs.length}
                 description="registradas no sistema"
                 icon={Music}
-                trend={{ value: 15, isPositive: true }}
               />
               <DashboardCard
                 title="Pendentes de Registro"
-                value={allSongs.filter(s => s.status === "Pendente").length}
-                description="aguardando aprovação"
+                value={allSongs.filter(s => s.statusDisplay === "Pendente").length}
+                description="aguardando análise"
                 icon={FileText}
-                trend={{ value: 3, isPositive: false }}
               />
               <DashboardCard
                 title="Em Revisão"
-                value={allSongs.filter(s => s.status === "Revisão").length}
+                value={allSongs.filter(s => s.statusDisplay === "Em Análise").length}
                 description="em análise"
                 icon={Clock}
-                trend={{ value: 2, isPositive: true }}
+              />
+              <DashboardCard
+                title="Registro Aceito"
+                value={allSongs.filter(s => s.statusDisplay === "Aceita").length}
+                description="obras aprovadas"
+                icon={CheckCircle}
               />
               <DashboardCard
                 title="Taxa de Aprovação"
-                value={allSongs.length > 0 ? `${Math.round((allSongs.filter(s => s.status === "Registrado" || s.status === "Aprovado").length / allSongs.length) * 100)}%` : "0%"}
+                value={allSongs.length > 0 ? `${Math.round((allSongs.filter(s => s.statusDisplay === "Aceita").length / allSongs.length) * 100)}%` : "0%"}
                 description="músicas aprovadas"
                 icon={CheckCircle}
-                trend={{ value: 8, isPositive: true }}
-              />
-              <DashboardCard
-                title="Receita Estimada"
-                value={`R$ ${(allSongs.length * 1250).toLocaleString('pt-BR')}`}
-                description="projeção de direitos"
-                icon={DollarSign}
-                trend={{ value: 12, isPositive: true }}
               />
             </div>
 
