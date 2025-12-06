@@ -61,12 +61,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password
     });
     
-    // Record login history if successful
-    if (!error && data.user) {
+    // Record login history and session if successful
+    if (!error && data.user && data.session) {
       recordLoginHistory(data.user.id, data.user.email || email);
+      recordSession(data.user.id, data.session.access_token);
     }
     
     return { error: error as Error | null };
+  };
+
+  const recordSession = async (userId: string, accessToken: string) => {
+    try {
+      const userAgent = navigator.userAgent;
+      const browser = getBrowserName(userAgent);
+      const deviceType = getDeviceType(userAgent);
+      const sessionToken = accessToken.substring(0, 32); // Use first 32 chars as identifier
+
+      await supabase.from('user_sessions').insert({
+        user_id: userId,
+        session_token: sessionToken,
+        device_type: deviceType,
+        browser: browser,
+        user_agent: userAgent,
+        is_active: true,
+        last_activity_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error recording session:', error);
+    }
   };
 
   const recordLoginHistory = async (userId: string, userEmail: string) => {
@@ -154,6 +176,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Mark current session as inactive
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session) {
+      const sessionToken = sessionData.session.access_token.substring(0, 32);
+      await supabase
+        .from('user_sessions')
+        .update({
+          is_active: false,
+          terminated_at: new Date().toISOString(),
+          terminated_reason: 'user_logout'
+        })
+        .eq('session_token', sessionToken);
+    }
+    
     await supabase.auth.signOut();
   };
 
