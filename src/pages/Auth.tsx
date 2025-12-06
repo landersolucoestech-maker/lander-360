@@ -244,7 +244,7 @@ export default function Auth() {
           </div>
 
           {/* Social Icons */}
-          <div className="justify-center pt-4 py-0 gap-[15px] flex flex-row">
+          <div className="justify-center pt-4 gap-[15px] flex flex-row py-0">
             <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
               <Facebook className="h-5 w-5" />
             </a>
