@@ -207,8 +207,3 @@ export function useAuth() {
   }
   return context;
 }
-
-// Safe version that doesn't throw when used outside provider
-export function useAuthSafe() {
-  return useContext(AuthContext);
-}

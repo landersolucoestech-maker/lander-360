@@ -1,42 +1,21 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthSafe } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { getSessionSettings } from '@/hooks/useSessionSettings';
 
+// Session expires after 30 minutes of inactivity
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 // Update activity every 5 minutes
 const ACTIVITY_UPDATE_INTERVAL_MS = 5 * 60 * 1000;
 // Check for expired sessions every minute
 const EXPIRY_CHECK_INTERVAL_MS = 60 * 1000;
 
 export function useSessionActivity() {
-  const [sessionSettings, setSessionSettings] = useState(getSessionSettings);
-  const auth = useAuthSafe();
-  const user = auth?.user;
-  const signOut = auth?.signOut;
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const lastActivityRef = useRef<Date>(new Date());
   const sessionTokenRef = useRef<string | null>(null);
   const warningShownRef = useRef(false);
-
-  // Listen for settings changes
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setSessionSettings(getSessionSettings());
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also check periodically for same-tab changes
-    const interval = setInterval(() => {
-      setSessionSettings(getSessionSettings());
-    }, 10000);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
 
   // Update last activity timestamp
   const updateActivity = useCallback(() => {
@@ -63,20 +42,17 @@ export function useSessionActivity() {
   const checkSessionExpiry = useCallback(async () => {
     if (!user || !sessionTokenRef.current) return;
 
-    const SESSION_TIMEOUT_MS = sessionSettings.timeoutMinutes * 60 * 1000;
-    const WARNING_MINUTES = sessionSettings.warningMinutes;
-    
     const now = new Date();
     const timeSinceLastActivity = now.getTime() - lastActivityRef.current.getTime();
 
-    // Show warning before expiry
-    const WARNING_THRESHOLD_MS = SESSION_TIMEOUT_MS - (WARNING_MINUTES * 60 * 1000);
+    // Show warning 5 minutes before expiry
+    const WARNING_THRESHOLD_MS = SESSION_TIMEOUT_MS - (5 * 60 * 1000);
     
     if (timeSinceLastActivity >= WARNING_THRESHOLD_MS && !warningShownRef.current) {
       warningShownRef.current = true;
       toast({
         title: "Sessão expirando",
-        description: `Sua sessão irá expirar em ${WARNING_MINUTES} minutos por inatividade. Mova o mouse ou clique para continuar.`,
+        description: "Sua sessão irá expirar em 5 minutos por inatividade. Mova o mouse ou clique para continuar.",
         variant: "destructive"
       });
     }
@@ -101,12 +77,12 @@ export function useSessionActivity() {
         });
 
         // Sign out user
-        if (signOut) await signOut();
+        await signOut();
       } catch (error) {
         console.error('Error expiring session:', error);
       }
     }
-  }, [user, signOut, toast, sessionSettings]);
+  }, [user, signOut, toast]);
 
   // Get current session token
   useEffect(() => {

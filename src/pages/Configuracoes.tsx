@@ -10,14 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor, Clock, Shield } from "lucide-react";
+import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor } from "lucide-react";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { useToast } from "@/hooks/use-toast";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { useBackupData } from "@/hooks/useBackupData";
-import { useSessionSettings } from "@/hooks/useSessionSettings";
-import { useSecurityAuditLog } from "@/hooks/useSecurityAuditLog";
 import { RestoreBackupModal } from "@/components/modals/RestoreBackupModal";
 
 const Configuracoes = () => {
@@ -26,8 +24,6 @@ const Configuracoes = () => {
   const { settings: systemSettings, toggleAutoBackup, updateTimezone } = useSystemSettings();
   const { settings: notificationSettings, toggleNewContracts, toggleContractsExpiring, toggleNewReleases } = useNotificationSettings();
   const { exportData, createBackup, isExporting, isBackingUp } = useBackupData();
-  const { settings: sessionSettings, updateTimeoutMinutes, TIMEOUT_OPTIONS } = useSessionSettings();
-  const { logSecurityChange } = useSecurityAuditLog();
   const [showRestoreBackup, setShowRestoreBackup] = useState(false);
   const [showBankIntegration, setShowBankIntegration] = useState(false);
   const [timezoneInput, setTimezoneInput] = useState(systemSettings.timezone);
@@ -119,16 +115,7 @@ const Configuracoes = () => {
                         Escolha o tema da interface
                       </p>
                     </div>
-                    <Select value={theme} onValueChange={(value) => {
-                      const oldTheme = theme;
-                      setTheme(value);
-                      logSecurityChange({
-                        action: 'theme_changed',
-                        settingType: 'theme',
-                        oldValue: oldTheme,
-                        newValue: value
-                      });
-                    }}>
+                    <Select value={theme} onValueChange={setTheme}>
                       <SelectTrigger className="w-[140px]">
                         <SelectValue placeholder="Selecionar tema" />
                       </SelectTrigger>
@@ -164,15 +151,7 @@ const Configuracoes = () => {
                     </div>
                     <Switch 
                       checked={systemSettings.autoBackup}
-                      onCheckedChange={(checked) => {
-                        toggleAutoBackup();
-                        logSecurityChange({
-                          action: 'backup_setting_changed',
-                          settingType: 'backup',
-                          oldValue: checked ? 'Desativado' : 'Ativado',
-                          newValue: checked ? 'Ativado' : 'Desativado'
-                        });
-                      }}
+                      onCheckedChange={toggleAutoBackup}
                     />
                   </div>
                   <Separator />
@@ -195,62 +174,6 @@ const Configuracoes = () => {
                         Salvar
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Security Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Segurança
-                  </CardTitle>
-                  <CardDescription>
-                    Configure as opções de segurança da conta
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Tempo de Expiração da Sessão
-                    </Label>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Sua sessão será encerrada automaticamente após este período de inatividade
-                    </p>
-                    <Select 
-                      value={sessionSettings.timeoutMinutes.toString()} 
-                      onValueChange={(value) => {
-                        const oldValue = sessionSettings.timeoutMinutes.toString();
-                        const newValue = parseInt(value);
-                        updateTimeoutMinutes(newValue);
-                        
-                        // Log the security change
-                        logSecurityChange({
-                          action: 'session_timeout_changed',
-                          settingType: 'session_timeout',
-                          oldValue: `${oldValue} minutos`,
-                          newValue: `${newValue} minutos`
-                        });
-                        
-                        toast({
-                          title: "Configuração atualizada",
-                          description: `Sessão expirará após ${TIMEOUT_OPTIONS.find(o => o.value === newValue)?.label || newValue + ' minutos'} de inatividade`
-                        });
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecionar tempo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TIMEOUT_OPTIONS.map(option => (
-                          <SelectItem key={option.value} value={option.value.toString()}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </CardContent>
               </Card>
