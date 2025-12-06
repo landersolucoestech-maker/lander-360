@@ -52,24 +52,24 @@ export function ArtistCard({
     }
   };
   return <>
-      <Card className="py-3 px-4">
+      <Card className="py-4 px-5 md:py-5 md:px-6">
         <CardContent className="p-0">
-          <div className="grid grid-cols-12 gap-4 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
             {/* Left Section - Artist Info */}
-            <div className="col-span-3">
-              <div className="space-y-1">
-                <h3 className="text-base font-bold text-foreground truncate">{artist.name}</h3>
-                <p className="text-xs text-muted-foreground">{artist.genre}</p>
-                <Badge variant="default" className="bg-green-500 text-white hover:bg-green-600 text-xs">
+            <div className="md:col-span-3">
+              <div className="space-y-2">
+                <h3 className="text-lg md:text-xl font-bold text-foreground truncate">{artist.name}</h3>
+                <p className="text-sm md:text-base text-muted-foreground">{artist.genre}</p>
+                <Badge variant="default" className="bg-green-500 text-white hover:bg-green-600 text-xs md:text-sm">
                   {artist.status}
                 </Badge>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 flex-wrap">
-                  {artist.profile?.telefone && <div className="flex items-center gap-1">
-                      <Phone className="h-3 w-3 flex-shrink-0" />
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-3 flex-wrap">
+                  {artist.profile?.telefone && <div className="flex items-center gap-1.5">
+                      <Phone className="h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{artist.profile.telefone}</span>
                     </div>}
-                  <div className="flex items-center gap-1">
-                    <Mail className="h-3 w-3 flex-shrink-0" />
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{artist.email}</span>
                   </div>
                 </div>
@@ -77,41 +77,41 @@ export function ArtistCard({
             </div>
 
             {/* Middle Section - Social Media & Stats */}
-            <div className="col-span-3">
-              <div className="space-y-3">
+            <div className="md:col-span-3">
+              <div className="space-y-4">
                 <div>
-                  <h4 className="text-xs font-medium text-foreground mb-1">Redes Sociais</h4>
+                  <h4 className="text-sm md:text-base font-medium text-foreground mb-2">Redes Sociais</h4>
                   <div className="flex items-center gap-2">
-                    <Instagram className="h-3 w-3 text-muted-foreground" />
+                    <Instagram className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
                   </div>
                 </div>
 
-                <div className="flex justify-between text-center gap-2">
+                <div className="flex justify-between text-center gap-3">
                   <div>
-                    <div className="text-lg font-bold text-foreground">{artist.stats.projetos ?? 0}</div>
-                    <div className="text-[10px] text-muted-foreground">Projetos</div>
+                    <div className="text-xl md:text-2xl font-bold text-foreground">{artist.stats.projetos ?? 0}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Projetos</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-foreground">{artist.stats.obras}</div>
-                    <div className="text-[10px] text-muted-foreground">Obras</div>
+                    <div className="text-xl md:text-2xl font-bold text-foreground">{artist.stats.obras}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Obras</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-foreground">{artist.stats.lancamentos}</div>
-                    <div className="text-[10px] text-muted-foreground">Lançamentos</div>
+                    <div className="text-xl md:text-2xl font-bold text-foreground">{artist.stats.lancamentos}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Lançamentos</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Right Section - Profile & Actions */}
-            <div className="col-span-6">
-              <div className="space-y-2">
+            <div className="md:col-span-6">
+              <div className="space-y-3">
                 <div>
-                  <div className="mb-1">
-                    <span className="text-xs font-medium text-foreground">Perfil:</span>
-                    <span className="text-xs font-medium text-foreground ml-1">{artist.gravadora}</span>
+                  <div className="mb-2">
+                    <span className="text-sm md:text-base font-medium text-foreground">Perfil:</span>
+                    <span className="text-sm md:text-base font-medium text-foreground ml-1">{artist.gravadora}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground space-y-0.5">
+                  <div className="text-sm text-muted-foreground space-y-1">
                     <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.profile.nome}</div>
                     <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.profile.telefone}</div>
                     <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.profile.email}</div>
@@ -119,20 +119,20 @@ export function ArtistCard({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-1 flex-wrap">
-                  <Button variant="outline" size="sm" className="text-[10px] h-6 px-2" onClick={() => setProfileModalOpen(true)}>
+                <div className="flex gap-2 flex-wrap">
+                  <Button variant="outline" size="sm" className="text-xs md:text-sm h-8 px-3" onClick={() => setProfileModalOpen(true)}>
                     Ver Perfil
                   </Button>
-                  <Button variant="outline" size="sm" className="text-[10px] h-6 px-2" onClick={() => setHistoryModalOpen(true)}>
+                  <Button variant="outline" size="sm" className="text-xs md:text-sm h-8 px-3" onClick={() => setHistoryModalOpen(true)}>
                     Histórico
                   </Button>
-                  <Button variant="outline" size="sm" className="text-[10px] h-6 px-2" onClick={() => setContractModalOpen(true)}>
+                  <Button variant="outline" size="sm" className="text-xs md:text-sm h-8 px-3" onClick={() => setContractModalOpen(true)}>
                     Contrato
                   </Button>
-                  <Button variant="outline" size="sm" className="text-[10px] h-6 px-2" onClick={() => setEditModalOpen(true)}>
+                  <Button variant="outline" size="sm" className="text-xs md:text-sm h-8 px-3" onClick={() => setEditModalOpen(true)}>
                     Editar
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => setDeleteModalOpen(true)} className="text-[10px] h-6 px-2 text-primary-foreground">
+                  <Button variant="destructive" size="sm" onClick={() => setDeleteModalOpen(true)} className="text-xs md:text-sm h-8 px-3 text-primary-foreground">
                     Excluir
                   </Button>
                 </div>
