@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -10,18 +10,48 @@ import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { MusicViewModal } from "@/components/modals/MusicViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Music, Plus, FileText, CheckCircle, DollarSign, Clock } from "lucide-react";
-import { mockSongs } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
+import { useArtists } from "@/hooks/useArtists";
 
 const RegistroMusicas = () => {
-  const [allSongs, setAllSongs] = useState<any[]>([]);
+  const { data: musicRegistry = [], isLoading } = useMusicRegistry();
+  const { data: artists = [] } = useArtists();
+  const deleteMusicEntry = useDeleteMusicRegistryEntry();
   const [filteredSongs, setFilteredSongs] = useState<any[]>([]);
   const { toast } = useToast();
   const [newMusicModalOpen, setNewMusicModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedSong, setSelectedSong] = useState(null);
+  const [selectedSong, setSelectedSong] = useState<any>(null);
+
+  // Transform music registry data to display format
+  const allSongs = musicRegistry.map(music => {
+    const artist = artists.find(a => a.id === music.artist_id);
+    const durationMinutes = music.duration ? Math.floor(music.duration / 60) : 0;
+    const durationSeconds = music.duration ? music.duration % 60 : 0;
+    return {
+      id: music.id,
+      title: music.title,
+      artist: artist?.name || 'N/A',
+      artist_id: music.artist_id,
+      genre: music.genre || 'N/A',
+      isrc: music.isrc || '-',
+      iswc: music.iswc || '-',
+      ecad: '-',
+      duration: music.duration ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}` : '-',
+      status: music.status === 'draft' ? 'Pendente' : music.status === 'registered' ? 'Registrado' : music.status === 'approved' ? 'Aprovado' : 'Revisão',
+      composers: music.writers || [],
+      performers: [],
+      producers: music.publishers || [],
+      registrationDate: new Date(music.created_at).toLocaleDateString('pt-BR'),
+    };
+  });
+
+  useEffect(() => {
+    setFilteredSongs(allSongs);
+  }, [musicRegistry, artists]);
 
   const filterOptions = [
     {
@@ -274,17 +304,15 @@ const RegistroMusicas = () => {
             <DeleteConfirmationModal
               open={deleteModalOpen}
               onOpenChange={setDeleteModalOpen}
-              onConfirm={() => {
+              onConfirm={async () => {
                 if (selectedSong) {
-                  const updated = allSongs.filter(s => s.id !== selectedSong.id);
-                  setAllSongs(updated);
-                  setFilteredSongs(updated);
-                  setDeleteModalOpen(false);
-                  setSelectedSong(null);
-                  toast({
-                    title: "Música Excluída",
-                    description: "A música foi removida com sucesso.",
-                  });
+                  try {
+                    await deleteMusicEntry.mutateAsync(selectedSong.id);
+                    setDeleteModalOpen(false);
+                    setSelectedSong(null);
+                  } catch (error) {
+                    console.error('Error deleting music:', error);
+                  }
                 }
               }}
               title="Excluir Música"
