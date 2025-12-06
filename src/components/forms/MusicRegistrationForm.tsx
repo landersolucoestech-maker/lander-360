@@ -945,8 +945,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           <Collapsible open={lyricsOpen} onOpenChange={setLyricsOpen}>
             <CardHeader className="pb-4">
               <CollapsibleTrigger className="flex items-center justify-between w-full">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
+                <CardTitle className="text-lg">
                   Letra da Música
                 </CardTitle>
                 {lyricsOpen ? (
