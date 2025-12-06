@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,6 +11,7 @@ import { ProjectInsert, ProjectUpdate } from '@/types/database';
 import { useCreateProject, useUpdateProject } from '@/hooks/useProjects';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { AudioUploader } from './AudioUploader';
+import { supabase } from '@/integrations/supabase/client';
 
 const audioFileSchema = z.object({
   name: z.string().optional(),
@@ -57,6 +58,18 @@ interface ProjectFormProps {
 export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) {
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
+  const [userId, setUserId] = React.useState<string | null>(null);
+
+  // Get current user ID
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
@@ -80,7 +93,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
       name: project?.name || '',
       description: project?.description || '',
       status: project?.status || 'draft',
-      created_by: project?.created_by || '00000000-0000-0000-0000-000000000000',
+      created_by: project?.created_by || '',
     },
   });
 
@@ -127,9 +140,9 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
         }),
       };
 
-      // Apenas incluir created_by se for um novo projeto
-      if (!project) {
-        projectData.created_by = data.created_by;
+      // Apenas incluir created_by se for um novo projeto e tivermos o userId
+      if (!project && userId) {
+        projectData.created_by = userId;
       }
 
       if (project) {
