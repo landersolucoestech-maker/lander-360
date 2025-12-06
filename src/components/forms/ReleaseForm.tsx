@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
+import { useArtists } from '@/hooks/useArtists';
 
 const trackSchema = z.object({
   title: z.string().min(1, 'Título da faixa é obrigatório'),
@@ -136,6 +137,7 @@ function MultiStringField({ label, placeholder, values, onChange }: MultiStringF
 export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) {
   const { toast } = useToast();
   const { data: projects = [], isLoading: loadingProjects } = useProjects();
+  const { data: artists = [] } = useArtists();
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   
   const form = useForm<ReleaseFormData>({
@@ -196,6 +198,13 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         form.setValue('release_type', audioData.release_type as 'single' | 'ep' | 'album');
       }
       
+      // Get artist from project's artist_id - use stage_name first, then name
+      const projectArtist = artists.find(a => a.id === selectedProject.artist_id);
+      if (projectArtist) {
+        const artistDisplayName = projectArtist.stage_name || projectArtist.name || '';
+        form.setValue('artist_name', artistDisplayName);
+      }
+      
       // Get songs data
       const songs = audioData?.songs || [];
       if (songs.length > 0) {
@@ -217,16 +226,14 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
           form.setValue('language', langMap[firstSong.language] || firstSong.language.toLowerCase());
         }
         
-        // Get artist name from performers or composers
-        const artistName = firstSong.performers?.[0]?.name || firstSong.composers?.[0]?.name || '';
-        if (artistName) {
-          form.setValue('artist_name', artistName);
-        }
+        // Get artist display name for tracks
+        const trackArtistName = projectArtist?.stage_name || projectArtist?.name || 
+          firstSong.performers?.[0]?.name || firstSong.composers?.[0]?.name || '';
         
         // Create tracks from songs
         const tracks = songs.map((song: any) => ({
           title: song.song_name || '',
-          artist: song.performers?.[0]?.name || song.composers?.[0]?.name || '',
+          artist: trackArtistName,
           composers: (song.composers || []).map((c: any) => c.name).filter(Boolean),
           performers: (song.performers || []).map((p: any) => p.name).filter(Boolean),
           producers: (song.producers || []).map((p: any) => p.name).filter(Boolean),
@@ -245,7 +252,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         description: `Dados do projeto "${selectedProject.name}" carregados.`,
       });
     }
-  }, [selectedProject, form, toast]);
+  }, [selectedProject, artists, form, toast]);
 
   const releaseType = form.watch('release_type');
 
