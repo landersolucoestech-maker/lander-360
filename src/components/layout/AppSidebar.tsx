@@ -3,10 +3,11 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 const navigationItems = [{
   title: "Dashboard",
   url: "/",
@@ -86,12 +87,27 @@ export function AppSidebar({
   className
 }: AppSidebarProps) {
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut();
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Não foi possível encerrar a sessão",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const getUserInitials = () => {
@@ -208,10 +224,11 @@ export function AppSidebar({
           variant="ghost" 
           size="sm" 
           onClick={handleSignOut}
+          disabled={isLoggingOut}
           className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />
-          Sair
+          {isLoggingOut ? "Saindo..." : "Sair"}
         </Button>
       </SidebarFooter>
     </Sidebar>;
