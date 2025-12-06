@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Lock, Facebook, Instagram, MessageCircle, Globe } from 'lucide-react';
-import authBackground from '@/assets/auth-background.jpeg';
+
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres')
@@ -266,14 +266,10 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Right Side - Background Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <img 
-          src={authBackground} 
-          alt="Background" 
-          className="absolute inset-0 w-full h-full object-cover object-right"
-        />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/40" />
+      {/* Right Side - Gradient Background */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-black via-zinc-900 to-red-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(220,38,38,0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(220,38,38,0.1),transparent_40%)]" />
       </div>
     </div>;
 }
