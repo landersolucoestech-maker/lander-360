@@ -581,7 +581,7 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   )}
                 />
               </div>
-              <div className="col-span-6">
+              <div className="col-span-3">
                 <FormField
                   control={form.control}
                   name="genre"
@@ -612,7 +612,7 @@ export function PhonogramForm({ phonogram, onSuccess, onCancel }: PhonogramFormP
                   )}
                 />
               </div>
-              <div className="col-span-4">
+              <div className="col-span-3">
                 <FormField
                   control={form.control}
                   name="classification"
