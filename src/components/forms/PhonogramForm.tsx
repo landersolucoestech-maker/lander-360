@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useArtists } from '@/hooks/useArtists';
 import { useMusicRegistry } from '@/hooks/useMusicRegistry';
 import { useCreatePhonogram, useUpdatePhonogram } from '@/hooks/usePhonograms';
+import { useProjects } from '@/hooks/useProjects';
 import { ScrollArea } from '@/components/ui/scroll-area';
 const participantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -95,6 +96,7 @@ export function PhonogramForm({
   const {
     data: works = []
   } = useMusicRegistry();
+  const { data: projects = [] } = useProjects();
   const createPhonogram = useCreatePhonogram();
   const updatePhonogram = useUpdatePhonogram();
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
@@ -234,39 +236,85 @@ export function PhonogramForm({
       form.setValue('duration_seconds', work.duration % 60);
     }
     
-    // Auto-preencher Intérpretes da obra cadastrada
-    const workParticipants = work.participants || [];
-    const interpreters = workParticipants
-      .filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete'))
-      .map((p: any) => ({
-        name: p.name || '',
-        role: 'interprete',
-        percentage: p.percentage || 0
-      }));
+    let interpreters: any[] = [];
+    let musicianProducers: any[] = [];
+    
+    // Buscar intérpretes e produtores do projeto relacionado
+    // Primeiro, tentar encontrar o projeto pela correspondência do título ou pelo artist_id
+    const relatedProject = projects.find((p: any) => {
+      const audioFiles = p.audio_files as any;
+      if (!audioFiles || !audioFiles.songs) return false;
+      return audioFiles.songs.some((song: any) => 
+        song.song_name?.toLowerCase() === work.title?.toLowerCase()
+      );
+    });
+    
+    if (relatedProject) {
+      const audioFiles = relatedProject.audio_files as any;
+      if (audioFiles?.songs) {
+        // Encontrar a música específica dentro do projeto
+        const matchingSong = audioFiles.songs.find((song: any) => 
+          song.song_name?.toLowerCase() === work.title?.toLowerCase()
+        );
+      
+        if (matchingSong) {
+          // Preencher Intérpretes (performers do projeto)
+          if (matchingSong.performers && matchingSong.performers.length > 0) {
+            interpreters = matchingSong.performers.map((p: any) => ({
+              name: p.name || '',
+              role: 'interprete',
+              percentage: p.percentage || 0
+            }));
+          }
+          
+          // Preencher Músicos Acompanhantes (producers do projeto)
+          if (matchingSong.producers && matchingSong.producers.length > 0) {
+            musicianProducers = matchingSong.producers.map((p: any) => ({
+              name: p.name || '',
+              role: 'musico',
+              percentage: p.percentage || 0
+            }));
+          }
+        }
+      }
+    }
+    // Se não encontrou no projeto, tentar nos participantes da obra
+    if (interpreters.length === 0) {
+      const workParticipants = work.participants || [];
+      interpreters = workParticipants
+        .filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete'))
+        .map((p: any) => ({
+          name: p.name || '',
+          role: 'interprete',
+          percentage: p.percentage || 0
+        }));
+    }
+    
+    if (musicianProducers.length === 0) {
+      const workParticipants = work.participants || [];
+      musicianProducers = workParticipants
+        .filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor'))
+        .map((p: any) => ({
+          name: p.name || '',
+          role: 'musico',
+          percentage: p.percentage || 0
+        }));
+    }
     
     if (interpreters.length > 0) {
       form.setValue('performers', interpreters);
       setPerformersOpen(true);
     }
     
-    // Auto-preencher Músicos Acompanhantes (produtores da obra)
-    const producers = workParticipants
-      .filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor'))
-      .map((p: any) => ({
-        name: p.name || '',
-        role: 'musico',
-        percentage: p.percentage || 0
-      }));
-    
-    if (producers.length > 0) {
-      form.setValue('musicians', producers);
+    if (musicianProducers.length > 0) {
+      form.setValue('musicians', musicianProducers);
       setMusiciansOpen(true);
     }
     
     setWorkSearchOpen(false);
     toast({
       title: "Obra vinculada",
-      description: `Obra "${work.title}" foi vinculada ao fonograma.${interpreters.length > 0 ? ` ${interpreters.length} intérprete(s) carregado(s).` : ''}${producers.length > 0 ? ` ${producers.length} músico(s) acompanhante(s) carregado(s).` : ''}`
+      description: `Obra "${work.title}" foi vinculada ao fonograma.${interpreters.length > 0 ? ` ${interpreters.length} intérprete(s) carregado(s).` : ''}${musicianProducers.length > 0 ? ` ${musicianProducers.length} músico(s) acompanhante(s) carregado(s).` : ''}`
     });
   };
   const filteredWorks = works.filter(w => w.title?.toLowerCase().includes(workSearchTerm.toLowerCase()) || w.abramus_code?.toLowerCase().includes(workSearchTerm.toLowerCase()));
