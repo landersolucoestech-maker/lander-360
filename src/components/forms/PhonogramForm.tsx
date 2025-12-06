@@ -716,9 +716,21 @@ export function PhonogramForm({
     </Collapsible>
     );
   };
+  const onError = (errors: any) => {
+    console.log('Validation errors:', errors);
+    const errorMessages = Object.entries(errors)
+      .map(([field, error]: [string, any]) => `${field}: ${error?.message || 'Campo inválido'}`)
+      .join(', ');
+    
+    toast({
+      title: "Erro de validação",
+      description: errorMessages || "Por favor, preencha todos os campos obrigatórios.",
+      variant: "destructive"
+    });
+  };
 
   return <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
         {/* Vincular Obra */}
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
