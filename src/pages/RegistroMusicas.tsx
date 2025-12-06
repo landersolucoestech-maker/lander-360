@@ -70,11 +70,17 @@ const RegistroMusicas = () => {
   // Transform phonograms data
   const allPhonograms = phonograms.map(phono => {
     const artist = artists.find(a => a.id === phono.artist_id);
+    const linkedWork = musicRegistry.find(m => m.id === phono.work_id);
+    const workParticipants = linkedWork?.participants as any[] || [];
+    const composers = workParticipants
+      .filter((p: any) => p.role === 'compositor' || p.role === 'compositor_autor')
+      .map((p: any) => p.name);
     return {
       ...phono,
       artistName: artist?.name || 'N/A',
       statusDisplay: getStatusDisplay(phono.status),
       registrationDate: new Date(phono.created_at).toLocaleDateString('pt-BR'),
+      workComposers: composers.length > 0 ? composers : (linkedWork?.writers || []),
     };
   });
 
@@ -443,7 +449,7 @@ const RegistroMusicas = () => {
                               <div className="text-center flex-1">
                                 <div className="text-muted-foreground text-xs">Compositores</div>
                                 <div className="font-medium text-foreground text-xs truncate">
-                                  {phono.participants?.filter((p: any) => p.role === 'compositor' || p.role === 'compositor_autor').map((p: any) => p.name).join(', ') || "-"}
+                                  {(phono as any).workComposers?.join(', ') || "-"}
                                 </div>
                               </div>
                               <div className="text-center flex-1">
