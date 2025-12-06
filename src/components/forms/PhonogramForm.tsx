@@ -109,6 +109,7 @@ export function PhonogramForm({
   const [musiciansOpen, setMusiciansOpen] = useState(false);
   const [audioUploadOpen, setAudioUploadOpen] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [projectAudioInfo, setProjectAudioInfo] = useState<{ name: string; url: string; size: number } | null>(null);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [participantSearchTerms, setParticipantSearchTerms] = useState<Record<string, string>>({});
@@ -243,9 +244,9 @@ export function PhonogramForm({
     
     let interpreters: any[] = [];
     let musicianProducers: any[] = [];
+    let loadedAudioFile: { name: string; url: string; size: number } | null = null;
     
-    // Buscar intérpretes e produtores do projeto relacionado
-    // Primeiro, tentar encontrar o projeto pela correspondência do título ou pelo artist_id
+    // Buscar intérpretes, produtores e áudio do projeto relacionado
     const relatedProject = projects.find((p: any) => {
       const audioFiles = p.audio_files as any;
       if (!audioFiles || !audioFiles.songs) return false;
@@ -272,7 +273,7 @@ export function PhonogramForm({
             }));
           }
           
-          // Preencher Músicos Acompanhantes (producers do projeto)
+          // Preencher Músicos Acompanhantes (producers do projeto - sempre são produtores)
           if (matchingSong.producers && matchingSong.producers.length > 0) {
             musicianProducers = matchingSong.producers.map((p: any) => ({
               name: p.name || '',
@@ -280,9 +281,20 @@ export function PhonogramForm({
               percentage: p.percentage || 0
             }));
           }
+          
+          // Carregar arquivo de áudio do projeto
+          if (matchingSong.audio_files && matchingSong.audio_files.length > 0) {
+            const projectAudio = matchingSong.audio_files[0];
+            loadedAudioFile = {
+              name: projectAudio.name || 'Áudio do Projeto',
+              url: projectAudio.url || '',
+              size: projectAudio.size || 0
+            };
+          }
         }
       }
     }
+    
     // Se não encontrou no projeto, tentar nos participantes da obra
     if (interpreters.length === 0) {
       const workParticipants = work.participants || [];
@@ -316,10 +328,18 @@ export function PhonogramForm({
       setMusiciansOpen(true);
     }
     
+    // Definir áudio carregado do projeto
+    if (loadedAudioFile) {
+      setProjectAudioInfo(loadedAudioFile);
+      setAudioUploadOpen(true);
+    }
+    
     setWorkSearchOpen(false);
+    
+    const audioMessage = loadedAudioFile ? ' Áudio do projeto carregado.' : '';
     toast({
       title: "Obra vinculada",
-      description: `Obra "${work.title}" foi vinculada ao fonograma.${interpreters.length > 0 ? ` ${interpreters.length} intérprete(s) carregado(s).` : ''}${musicianProducers.length > 0 ? ` ${musicianProducers.length} músico(s) acompanhante(s) carregado(s).` : ''}`
+      description: `Obra "${work.title}" foi vinculada ao fonograma.${interpreters.length > 0 ? ` ${interpreters.length} intérprete(s) carregado(s).` : ''}${musicianProducers.length > 0 ? ` ${musicianProducers.length} músico(s) acompanhante(s) carregado(s).` : ''}${audioMessage}`
     });
   };
   const filteredWorks = works.filter(w => w.title?.toLowerCase().includes(workSearchTerm.toLowerCase()) || w.abramus_code?.toLowerCase().includes(workSearchTerm.toLowerCase()));
@@ -963,7 +983,7 @@ export function PhonogramForm({
               <CollapsibleTrigger asChild>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70">
                   <span className="font-medium">
-                    Upload de Áudio {audioFile ? `- ${audioFile.name}` : ''}
+                    Upload de Áudio {audioFile ? `- ${audioFile.name}` : projectAudioInfo ? `- ${projectAudioInfo.name}` : ''}
                   </span>
                   {audioUploadOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
@@ -971,11 +991,42 @@ export function PhonogramForm({
               <CollapsibleContent className="pt-4">
                 <div className="space-y-4">
                   <input type="file" ref={audioInputRef} accept="audio/*" onChange={handleAudioUpload} className="hidden" />
-                  {!audioFile ? <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => audioInputRef.current?.click()}>
+                  
+                  {/* Exibir áudio do projeto se carregado */}
+                  {projectAudioInfo && !audioFile && (
+                    <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileAudio className="h-8 w-8 text-primary" />
+                        <div>
+                          <p className="font-medium">{projectAudioInfo.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(projectAudioInfo.size / (1024 * 1024)).toFixed(2)} MB - Carregado do projeto
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => audioInputRef.current?.click()}>
+                          Substituir
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => setProjectAudioInfo(null)}>
+                          <X className="h-5 w-5 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Upload manual quando não há áudio */}
+                  {!audioFile && !projectAudioInfo && (
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => audioInputRef.current?.click()}>
                       <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">Clique para fazer upload do arquivo de áudio</p>
                       <p className="text-sm text-muted-foreground mt-1">MP3, WAV, FLAC, etc.</p>
-                    </div> : <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    </div>
+                  )}
+                  
+                  {/* Arquivo de áudio enviado manualmente */}
+                  {audioFile && (
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileAudio className="h-8 w-8 text-primary" />
                         <div>
@@ -988,7 +1039,8 @@ export function PhonogramForm({
                       <Button type="button" variant="ghost" size="icon" onClick={removeAudioFile}>
                         <X className="h-5 w-5 text-destructive" />
                       </Button>
-                    </div>}
+                    </div>
+                  )}
                 </div>
               </CollapsibleContent>
             </Collapsible>
