@@ -22,8 +22,8 @@ import { useProjects } from '@/hooks/useProjects';
 import { useCrmContacts } from '@/hooks/useCrm';
 import { ScrollArea } from '@/components/ui/scroll-area';
 const participantSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  role: z.string().min(1, 'Função é obrigatória'),
+  name: z.string().optional().default(''),
+  role: z.string().optional().default(''),
   percentage: z.number().min(0).max(100).optional()
 });
 const phonogramSchema = z.object({
@@ -371,17 +371,21 @@ export function PhonogramForm({
       const totalDuration = (data.duration_minutes || 0) * 60 + (data.duration_seconds || 0);
       const isrc = `${data.isrc_country || 'BR'}-${data.isrc_registrant || ''}-${data.isrc_year || ''}-${data.isrc_designation || ''}`;
 
-      // Combine all participants
-      const allParticipants = [...(data.phonographic_producers || []).map(p => ({
-        ...p,
-        role: 'produtor_fonografico'
-      })), ...(data.performers || []).map(p => ({
-        ...p,
-        role: 'interprete'
-      })), ...(data.musicians || []).map(p => ({
-        ...p,
-        role: 'musico'
-      }))];
+      // Combine all participants and filter out empty ones
+      const allParticipants = [
+        ...(data.phonographic_producers || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
+          ...p,
+          role: 'produtor_fonografico'
+        })), 
+        ...(data.performers || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
+          ...p,
+          role: 'interprete'
+        })), 
+        ...(data.musicians || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
+          ...p,
+          role: 'musico'
+        }))
+      ];
       const phonogramData = {
         title: data.work_title || 'Sem título',
         work_id: data.work_id || null,
