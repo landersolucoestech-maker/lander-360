@@ -135,7 +135,7 @@ export default function Auth() {
       {/* Left Side - Login Form */}
       <div style={{
       background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)'
-    }} className="w-full lg:w-[45%] flex flex-col items-center justify-center relative bg-black px-[3px] py-[32px]">
+    }} className="w-full lg:w-[45%] flex flex-col items-center justify-center relative bg-black py-[32px] px-[32px]">
         
         <div className="w-full max-w-md flex flex-col items-center">
           {/* Welcome Text */}
