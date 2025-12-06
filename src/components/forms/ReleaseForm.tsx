@@ -385,6 +385,13 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                 data.status === 'rejeitado' ? 'cancelled' : 
                 data.status === 'pausado' ? 'paused' : 'planning',
         cover_url: data.cover_art || null,
+        genre: data.genre || null,
+        language: data.language || null,
+        label: data.label || null,
+        copyright: data.copyright || null,
+        distributors: data.platforms || [],
+        tracks: data.tracks || [],
+        project_id: data.project_id || null,
       };
       
       if (release?.id) {

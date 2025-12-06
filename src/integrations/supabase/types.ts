@@ -1210,40 +1210,61 @@ export type Database = {
       releases: {
         Row: {
           artist_id: string | null
+          copyright: string | null
           cover_url: string | null
           created_at: string
           created_by: string | null
+          distributors: string[] | null
+          genre: string | null
           id: string
+          label: string | null
+          language: string | null
+          project_id: string | null
           release_date: string | null
           release_type: string | null
           status: string | null
           title: string
+          tracks: Json | null
           type: string | null
           updated_at: string
         }
         Insert: {
           artist_id?: string | null
+          copyright?: string | null
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          distributors?: string[] | null
+          genre?: string | null
           id?: string
+          label?: string | null
+          language?: string | null
+          project_id?: string | null
           release_date?: string | null
           release_type?: string | null
           status?: string | null
           title: string
+          tracks?: Json | null
           type?: string | null
           updated_at?: string
         }
         Update: {
           artist_id?: string | null
+          copyright?: string | null
           cover_url?: string | null
           created_at?: string
           created_by?: string | null
+          distributors?: string[] | null
+          genre?: string | null
           id?: string
+          label?: string | null
+          language?: string | null
+          project_id?: string | null
           release_date?: string | null
           release_type?: string | null
           status?: string | null
           title?: string
+          tracks?: Json | null
           type?: string | null
           updated_at?: string
         }
@@ -1253,6 +1274,13 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "releases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
