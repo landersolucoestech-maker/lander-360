@@ -19,11 +19,14 @@ import {
   FolderKanban,
   Rocket,
   BarChart3,
-  Instagram,
-  Facebook,
-  Youtube,
-  ExternalLink
+  ExternalLink,
+  User,
+  Building,
+  CreditCard,
+  FileText,
+  Users
 } from "lucide-react";
+import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud } from "react-icons/fa";
 
 interface ArtistProfileModalProps {
   open: boolean;
@@ -37,6 +40,15 @@ export function ArtistProfileModal({
   artist,
 }: ArtistProfileModalProps) {
   if (!artist) return null;
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Não informado';
+    try {
+      return new Date(dateString).toLocaleDateString('pt-BR');
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,39 +64,182 @@ export function ArtistProfileModal({
           {/* Header com foto e info básica */}
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex flex-col items-center">
-              <Avatar className="w-32 h-32 mb-4">
-                <AvatarImage src={artist.avatar} alt={artist.name} />
+              <Avatar className="w-32 h-32 mb-4 border-2 border-border">
+                <AvatarImage src={artist.avatar || artist.image_url} alt={artist.name} className="object-cover" />
                 <AvatarFallback className="text-2xl">
-                  {artist.name.split(' ').map((n: string) => n[0]).join('')}
+                  {artist.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Badge variant="secondary" className="mb-2">{artist.status}</Badge>
+              <Badge variant="secondary" className="mb-2">{artist.status || artist.contract_status || 'Ativo'}</Badge>
             </div>
             
             <div className="flex-1 space-y-4">
               <div>
                 <h2 className="text-2xl font-bold">{artist.name}</h2>
-                <p className="text-lg text-muted-foreground">{artist.genre}</p>
+                {artist.stage_name && artist.stage_name !== artist.name && (
+                  <p className="text-sm text-muted-foreground">Nome artístico: {artist.stage_name}</p>
+                )}
+                <p className="text-lg text-muted-foreground">{artist.genre || 'Gênero não informado'}</p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{artist.profile.email}</span>
+                  <span className="text-sm">{artist.email || 'Não informado'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{artist.profile.telefone}</span>
+                  <span className="text-sm">{artist.phone || artist.profile?.telefone || 'Não informado'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{artist.profile.cidade}, {artist.profile.estado}</span>
+                  <span className="text-sm">{artist.full_address || 'Não informado'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Nascimento: {artist.profile.dataNascimento}</span>
+                  <span className="text-sm">Nascimento: {formatDate(artist.birth_date)}</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Dados Pessoais */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Dados Pessoais
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-muted-foreground">Nome Completo:</span>
+                <p>{artist.full_name || artist.name || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Nome Artístico:</span>
+                <p>{artist.stage_name || artist.name || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">CPF/CNPJ:</span>
+                <p>{artist.cpf_cnpj || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">RG:</span>
+                <p>{artist.rg || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Data de Nascimento:</span>
+                <p>{formatDate(artist.birth_date)}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Tipo de Perfil:</span>
+                <p>{artist.profile_type || artist.gravadora || 'Não informado'}</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Contato e Endereço */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Contato e Endereço
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-muted-foreground">E-mail:</span>
+                <p>{artist.email || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Telefone:</span>
+                <p>{artist.phone || 'Não informado'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <span className="font-medium text-muted-foreground">Endereço Completo:</span>
+                <p>{artist.full_address || 'Não informado'}</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Dados Bancários */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Dados Bancários
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-muted-foreground">Banco:</span>
+                <p>{artist.bank || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Agência:</span>
+                <p>{artist.agency || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Conta:</span>
+                <p>{artist.account || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Titular:</span>
+                <p>{artist.account_holder || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Chave PIX:</span>
+                <p>{artist.pix_key || 'Não informado'}</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Responsável/Empresário */}
+          {(artist.manager_name || artist.manager_phone || artist.manager_email || artist.responsible) && (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Responsável / Empresário
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-muted-foreground">Nome:</span>
+                    <p>{artist.manager_name || artist.responsible?.nome || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Telefone:</span>
+                    <p>{artist.manager_phone || artist.responsible?.telefone || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">E-mail:</span>
+                    <p>{artist.manager_email || artist.responsible?.email || 'Não informado'}</p>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Distribuidoras */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Building className="h-5 w-5" />
+              Distribuidoras
+            </h3>
+            <div className="space-y-2 text-sm">
+              {artist.distributors && artist.distributors.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {artist.distributors.map((dist: string, index: number) => (
+                    <Badge key={index} variant="outline">{dist}</Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Nenhuma distribuidora cadastrada</p>
+              )}
             </div>
           </div>
 
@@ -93,30 +248,30 @@ export function ArtistProfileModal({
           {/* Estatísticas */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Estatísticas</h3>
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
                 <FolderKanban className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">{artist.stats.projetos || 0}</div>
+                <div className="text-2xl font-bold">{artist.stats?.projetos || 0}</div>
                 <div className="text-sm text-muted-foreground">Projetos</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <Music className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">{artist.stats.obras}</div>
+                <div className="text-2xl font-bold">{artist.stats?.obras || 0}</div>
                 <div className="text-sm text-muted-foreground">Obras</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <Disc3 className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">{artist.stats.fonogramas || 0}</div>
+                <div className="text-2xl font-bold">{artist.stats?.fonogramas || 0}</div>
                 <div className="text-sm text-muted-foreground">Fonogramas</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <Rocket className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">{artist.stats.lancamentos || 0}</div>
+                <div className="text-2xl font-bold">{artist.stats?.lancamentos || 0}</div>
                 <div className="text-sm text-muted-foreground">Lançamentos</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <BarChart3 className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">{artist.stats.streams || '0'}</div>
+                <div className="text-2xl font-bold">{artist.stats?.streams || '0'}</div>
                 <div className="text-sm text-muted-foreground">Streams</div>
               </div>
             </div>
@@ -127,48 +282,107 @@ export function ArtistProfileModal({
           {/* Redes Sociais */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Redes Sociais</h3>
-            <div className="flex gap-4">
-              {artist.socialMedia?.instagram && (
+            <div className="flex gap-4 flex-wrap">
+              {(artist.instagram || artist.instagram_url || artist.socialMedia?.instagram) && (
                 <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={artist.socialMedia.instagram} target="_blank" rel="noopener noreferrer">
-                    <Instagram className="h-4 w-4" />
+                  <a href={(() => {
+                    const url = artist.instagram_url || artist.instagram || artist.socialMedia?.instagram;
+                    return url?.startsWith('http') ? url : `https://instagram.com/${url?.replace('@', '')}`;
+                  })()} target="_blank" rel="noopener noreferrer">
+                    <FaInstagram className="h-4 w-4" />
                     Instagram
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </Button>
               )}
-              {artist.socialMedia?.facebook && (
+              {(artist.spotify_url || artist.socialMedia?.spotify) && (
                 <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={artist.socialMedia.facebook} target="_blank" rel="noopener noreferrer">
-                    <Facebook className="h-4 w-4" />
-                    Facebook
+                  <a href={(() => {
+                    const url = artist.spotify_url || artist.socialMedia?.spotify;
+                    return url?.startsWith('http') ? url : `https://open.spotify.com/artist/${url}`;
+                  })()} target="_blank" rel="noopener noreferrer">
+                    <FaSpotify className="h-4 w-4" />
+                    Spotify
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </Button>
               )}
-              {artist.socialMedia?.youtube && (
+              {(artist.youtube_url || artist.socialMedia?.youtube) && (
                 <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <a href={artist.socialMedia.youtube} target="_blank" rel="noopener noreferrer">
-                    <Youtube className="h-4 w-4" />
+                  <a href={(() => {
+                    const url = artist.youtube_url || artist.socialMedia?.youtube;
+                    return url?.startsWith('http') ? url : `https://youtube.com/${url}`;
+                  })()} target="_blank" rel="noopener noreferrer">
+                    <FaYoutube className="h-4 w-4" />
                     YouTube
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </Button>
+              )}
+              {(artist.tiktok || artist.socialMedia?.tiktok) && (
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <a href={(() => {
+                    const url = artist.tiktok || artist.socialMedia?.tiktok;
+                    return url?.startsWith('http') ? url : `https://tiktok.com/@${url?.replace('@', '')}`;
+                  })()} target="_blank" rel="noopener noreferrer">
+                    <FaTiktok className="h-4 w-4" />
+                    TikTok
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </Button>
+              )}
+              {(artist.soundcloud || artist.socialMedia?.soundcloud) && (
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <a href={(() => {
+                    const url = artist.soundcloud || artist.socialMedia?.soundcloud;
+                    return url?.startsWith('http') ? url : `https://soundcloud.com/${url}`;
+                  })()} target="_blank" rel="noopener noreferrer">
+                    <FaSoundcloud className="h-4 w-4" />
+                    SoundCloud
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </Button>
+              )}
+              {!artist.instagram && !artist.instagram_url && !artist.socialMedia?.instagram &&
+               !artist.spotify_url && !artist.socialMedia?.spotify &&
+               !artist.youtube_url && !artist.socialMedia?.youtube &&
+               !artist.tiktok && !artist.socialMedia?.tiktok &&
+               !artist.soundcloud && !artist.socialMedia?.soundcloud && (
+                <p className="text-muted-foreground text-sm">Nenhuma rede social cadastrada</p>
               )}
             </div>
           </div>
 
           <Separator />
 
-          {/* Informações Adicionais */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Informações Adicionais</h3>
-            <div className="space-y-2 text-sm">
-              <div><span className="font-medium">CPF:</span> {artist.profile.cpf}</div>
-              <div><span className="font-medium">RG:</span> {artist.profile.rg}</div>
-              <div><span className="font-medium">Gravadora:</span> {artist.gravadora}</div>
-              <div><span className="font-medium">Data de Cadastro:</span> {new Date().toLocaleDateString('pt-BR')}</div>
+          {/* Observações */}
+          {artist.observations && (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Observações
+                </h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{artist.observations}</p>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Biografia */}
+          {artist.bio && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Biografia
+              </h3>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{artist.bio}</p>
             </div>
+          )}
+
+          {/* Data de Cadastro */}
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Data de Cadastro:</span> {formatDate(artist.created_at)}
           </div>
         </div>
       </DialogContent>
