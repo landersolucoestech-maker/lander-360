@@ -28,7 +28,7 @@ const Contratos = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { data: dbContracts = [], isLoading } = useContracts();
-  const contracts: any[] = dbContracts.length > 0 ? dbContracts : mockContracts;
+  const contracts: any[] = dbContracts;
   const { data: activeContracts = [] } = useActiveContracts();
   const { data: expiringSoon = [] } = useContractsExpiringSoon(30);
   const deleteContract = useDeleteContract();
@@ -221,8 +221,14 @@ const Contratos = () => {
                       <p className="text-muted-foreground">Carregando contratos...</p>
                     </div>
                   ) : filteredContracts.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">Nenhum contrato encontrado.</p>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum contrato cadastrado</h3>
+                      <p className="text-muted-foreground mb-4">Comece criando seu primeiro contrato</p>
+                      <Button onClick={handleNewContract} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Criar Primeiro Contrato
+                      </Button>
                     </div>
                   ) : (
                     filteredContracts.map((contract) => {

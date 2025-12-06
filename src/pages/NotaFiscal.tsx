@@ -11,7 +11,7 @@ import { Receipt, Plus, FileText, DollarSign, Calendar } from "lucide-react";
 import { mockInvoices } from "@/data/mockData";
 
 const NotaFiscal = () => {
-  const allInvoices = mockInvoices;
+  const allInvoices: any[] = [];
 
   const [filteredInvoices, setFilteredInvoices] = useState(allInvoices);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);

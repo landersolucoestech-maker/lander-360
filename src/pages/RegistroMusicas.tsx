@@ -14,8 +14,8 @@ import { mockSongs } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
 const RegistroMusicas = () => {
-  const [allSongs, setAllSongs] = useState(mockSongs);
-  const [filteredSongs, setFilteredSongs] = useState(allSongs);
+  const [allSongs, setAllSongs] = useState<any[]>([]);
+  const [filteredSongs, setFilteredSongs] = useState<any[]>([]);
   const { toast } = useToast();
   const [newMusicModalOpen, setNewMusicModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);

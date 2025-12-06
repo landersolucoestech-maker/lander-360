@@ -26,8 +26,8 @@ interface Equipment {
 
 const Inventario = () => {
   const { toast } = useToast();
-  const [allEquipment, setAllEquipment] = useState<Equipment[]>(mockEquipment);
-  const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>(mockEquipment);
+  const [allEquipment, setAllEquipment] = useState<Equipment[]>([]);
+  const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -188,6 +188,17 @@ const Inventario = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {filteredEquipment.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Package className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum equipamento cadastrado</h3>
+                    <p className="text-muted-foreground mb-4">Comece adicionando seu primeiro item ao inventário</p>
+                    <Button onClick={() => setIsInventoryModalOpen(true)} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Adicionar Primeiro Item
+                    </Button>
+                  </div>
+                ) : (
                 <div className="space-y-4">
                   {filteredEquipment.map((item) => (
                     <div
@@ -252,6 +263,7 @@ const Inventario = () => {
                     </div>
                   ))}
                 </div>
+                )}
               </CardContent>
             </Card>
 

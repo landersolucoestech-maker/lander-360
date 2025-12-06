@@ -12,8 +12,8 @@ import { Megaphone, Plus, TrendingUp, Target, Eye, Users, BarChart3, Calendar } 
 import { mockCampaigns } from "@/data/mockData";
 
 const MarketingVisaoGeral = () => {
-  const allCampaigns = mockCampaigns;
-  const [filteredCampaigns, setFilteredCampaigns] = useState(allCampaigns);
+  const allCampaigns: any[] = [];
+  const [filteredCampaigns, setFilteredCampaigns] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const filterOptions = [{
     key: "type",
@@ -141,6 +141,17 @@ const MarketingVisaoGeral = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {filteredCampaigns.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Megaphone className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma campanha cadastrada</h3>
+                    <p className="text-muted-foreground mb-4">Comece criando sua primeira campanha de marketing</p>
+                    <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Criar Primeira Campanha
+                    </Button>
+                  </div>
+                ) : (
                 <div className="space-y-4">
                   {filteredCampaigns.map(campaign => <div key={campaign.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
                       <div className="flex items-center gap-4">
@@ -190,6 +201,7 @@ const MarketingVisaoGeral = () => {
                       </div>
                     </div>)}
                 </div>
+                )}
               </CardContent>
             </Card>
 

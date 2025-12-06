@@ -30,8 +30,8 @@ const Financeiro = () => {
   
   const { toast } = useToast();
 
-  // Use mock data
-  const transactions: any[] = mockTransactions;
+  // Use empty data (real data will come from database)
+  const transactions: any[] = [];
   const isLoading = false;
 
   const handleNewTransaction = () => {
@@ -297,8 +297,14 @@ const Financeiro = () => {
                       <p className="text-muted-foreground">Carregando transações...</p>
                     </div>
                   ) : filteredTransactions.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">Nenhuma transação encontrada.</p>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma transação cadastrada</h3>
+                      <p className="text-muted-foreground mb-4">Comece registrando sua primeira transação financeira</p>
+                      <Button onClick={handleNewTransaction} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Criar Primeira Transação
+                      </Button>
                     </div>
                   ) : (
                     filteredTransactions.map((transaction) => (

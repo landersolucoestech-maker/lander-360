@@ -43,7 +43,7 @@ const Agenda = () => {
   
   const { toast } = useToast();
 
-  const events: any[] = mockEvents;
+  const events: any[] = [];
 
   const isLoading = false;
 
@@ -258,8 +258,14 @@ const Agenda = () => {
                           <p className="text-muted-foreground">Carregando eventos...</p>
                         </div>
                       ) : todayEvents.length === 0 ? (
-                        <div className="text-center py-8">
-                          <p className="text-muted-foreground">Nenhum evento encontrado para hoje.</p>
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum evento cadastrado</h3>
+                          <p className="text-muted-foreground mb-4">Comece agendando seu primeiro evento</p>
+                          <Button onClick={handleNewEvent} className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Agendar Primeiro Evento
+                          </Button>
                         </div>
                       ) : (
                         todayEvents.map((event) => (
