@@ -1,5 +1,6 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, User } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -170,9 +171,21 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="text-sm text-muted-foreground text-center">
-          Lander 360º
-        </div>
+        <Link 
+          to="/perfil" 
+          className={cn(
+            "flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent transition-colors",
+            isActive("/perfil") && "bg-sidebar-accent"
+          )}
+        >
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs">AD</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">Administrador</p>
+            <p className="text-xs text-muted-foreground truncate">admin@lander360.com</p>
+          </div>
+        </Link>
       </SidebarFooter>
     </Sidebar>;
 }
