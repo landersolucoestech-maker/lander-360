@@ -1,10 +1,12 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, User } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, LogOut } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 const navigationItems = [{
   title: "Dashboard",
   url: "/",
@@ -86,6 +88,22 @@ export function AppSidebar({
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const getUserInitials = () => {
+    if (!user?.email) return 'U';
+    return user.email.substring(0, 2).toUpperCase();
+  };
+
+  const getUserDisplayName = () => {
+    if (user?.user_metadata?.full_name) return user.user_metadata.full_name;
+    if (user?.email) return user.email.split('@')[0];
+    return 'Usuário';
+  };
 
   const isActive = (url: string) => {
     if (url === "/") return currentPath === "/";
@@ -170,7 +188,7 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-2">
         <Link 
           to="/perfil" 
           className={cn(
@@ -179,13 +197,22 @@ export function AppSidebar({
           )}
         >
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs">AD</AvatarFallback>
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs">{getUserInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Administrador</p>
-            <p className="text-xs text-muted-foreground truncate">admin@lander360.com</p>
+            <p className="text-sm font-medium truncate">{getUserDisplayName()}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
           </div>
         </Link>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleSignOut}
+          className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="h-4 w-4" />
+          Sair
+        </Button>
       </SidebarFooter>
     </Sidebar>;
 }
