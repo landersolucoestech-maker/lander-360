@@ -10,6 +10,7 @@ import { ArtistModal } from "@/components/modals/ArtistModal";
 import { useArtists, useArtistsCount } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
+import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
 import { mockArtists } from "@/data/mockData";
 
@@ -19,16 +20,17 @@ const Artistas = () => {
   const { data: artistsCount } = useArtistsCount();
   const { data: projects = [] } = useProjects();
   const { data: releases = [] } = useReleases();
+  const { data: musicRegistry = [] } = useMusicRegistry();
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
 
-  // Count projects and releases per artist
+  // Count projects, releases and music per artist
   const artistStats = useMemo(() => {
-    const stats: Record<string, { projetos: number; lancamentos: number }> = {};
+    const stats: Record<string, { projetos: number; lancamentos: number; obras: number }> = {};
     
     projects.forEach((project: any) => {
       if (project.artist_id) {
         if (!stats[project.artist_id]) {
-          stats[project.artist_id] = { projetos: 0, lancamentos: 0 };
+          stats[project.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
         }
         stats[project.artist_id].projetos++;
       }
@@ -37,14 +39,23 @@ const Artistas = () => {
     releases.forEach((release: any) => {
       if (release.artist_id) {
         if (!stats[release.artist_id]) {
-          stats[release.artist_id] = { projetos: 0, lancamentos: 0 };
+          stats[release.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
         }
         stats[release.artist_id].lancamentos++;
       }
     });
+
+    musicRegistry.forEach((music: any) => {
+      if (music.artist_id) {
+        if (!stats[music.artist_id]) {
+          stats[music.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+        }
+        stats[music.artist_id].obras++;
+      }
+    });
     
     return stats;
-  }, [projects, releases]);
+  }, [projects, releases, musicRegistry]);
 
   // Transform database artists to match UI format - pass complete database data
   const transformDatabaseArtist = (dbArtist: any) => {
@@ -79,7 +90,7 @@ const Artistas = () => {
       },
       stats: {
         projetos: artistStats[dbArtist.id]?.projetos || 0,
-        obras: 0,
+        obras: artistStats[dbArtist.id]?.obras || 0,
         fonogramas: 0,
         lancamentos: artistStats[dbArtist.id]?.lancamentos || 0,
         streams: '0'
