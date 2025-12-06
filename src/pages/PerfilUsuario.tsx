@@ -13,6 +13,7 @@ import { User, Mail, Shield, Phone, Building2, Camera, Save, X, Edit2, Loader2 }
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
 
 interface ProfileData {
   name: string;
@@ -32,6 +33,7 @@ const PerfilUsuario = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     email: "",
@@ -496,7 +498,7 @@ const PerfilUsuario = () => {
                     <Button 
                       variant="outline" 
                       className="justify-start gap-2"
-                      onClick={() => toast({ title: "Em desenvolvimento", description: "Alteração de senha será implementada em breve" })}
+                      onClick={() => setIsPasswordModalOpen(true)}
                     >
                       <Shield className="h-4 w-4" />
                       Alterar Senha
@@ -524,6 +526,11 @@ const PerfilUsuario = () => {
           </div>
         </SidebarInset>
       </div>
+
+      <ChangePasswordModal 
+        open={isPasswordModalOpen} 
+        onOpenChange={setIsPasswordModalOpen} 
+      />
     </SidebarProvider>
   );
 };
