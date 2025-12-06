@@ -9,7 +9,9 @@ import { ArtistHistoryModal } from "@/components/modals/ArtistHistoryModal";
 import { ArtistContractModal } from "@/components/modals/ArtistContractModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useDeleteArtist } from "@/hooks/useArtists";
-import { Mail, Instagram, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
+import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud } from "react-icons/fa";
+
 interface ArtistCardProps {
   artist: {
     id: number;
@@ -20,6 +22,10 @@ interface ArtistCardProps {
     avatar?: string;
     socialMedia?: {
       instagram?: string;
+      spotify?: string;
+      youtube?: string;
+      tiktok?: string;
+      soundcloud?: string;
     };
     stats: {
       projetos?: number;
@@ -89,8 +95,35 @@ export function ArtistCard({
               <div className="space-y-4">
                 <div>
                   <h4 className="text-sm md:text-base font-medium text-foreground mb-2">Redes Sociais</h4>
-                  <div className="flex items-center gap-2">
-                    <Instagram className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {artist.socialMedia?.instagram && (
+                      <a href={artist.socialMedia.instagram.startsWith('http') ? artist.socialMedia.instagram : `https://instagram.com/${artist.socialMedia.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-pink-500 transition-colors">
+                        <FaInstagram className="h-5 w-5" />
+                      </a>
+                    )}
+                    {artist.socialMedia?.spotify && (
+                      <a href={artist.socialMedia.spotify.startsWith('http') ? artist.socialMedia.spotify : `https://open.spotify.com/artist/${artist.socialMedia.spotify}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-green-500 transition-colors">
+                        <FaSpotify className="h-5 w-5" />
+                      </a>
+                    )}
+                    {artist.socialMedia?.youtube && (
+                      <a href={artist.socialMedia.youtube.startsWith('http') ? artist.socialMedia.youtube : `https://youtube.com/${artist.socialMedia.youtube}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-red-500 transition-colors">
+                        <FaYoutube className="h-5 w-5" />
+                      </a>
+                    )}
+                    {artist.socialMedia?.tiktok && (
+                      <a href={artist.socialMedia.tiktok.startsWith('http') ? artist.socialMedia.tiktok : `https://tiktok.com/@${artist.socialMedia.tiktok.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                        <FaTiktok className="h-5 w-5" />
+                      </a>
+                    )}
+                    {artist.socialMedia?.soundcloud && (
+                      <a href={artist.socialMedia.soundcloud.startsWith('http') ? artist.socialMedia.soundcloud : `https://soundcloud.com/${artist.socialMedia.soundcloud}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-orange-500 transition-colors">
+                        <FaSoundcloud className="h-5 w-5" />
+                      </a>
+                    )}
+                    {!artist.socialMedia?.instagram && !artist.socialMedia?.spotify && !artist.socialMedia?.youtube && !artist.socialMedia?.tiktok && !artist.socialMedia?.soundcloud && (
+                      <span className="text-xs text-muted-foreground">Nenhuma rede cadastrada</span>
+                    )}
                   </div>
                 </div>
 

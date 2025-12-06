@@ -17,15 +17,23 @@ const Artistas = () => {
   const { data: artistsCount } = useArtistsCount();
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
 
-  // Transform database artists to match UI format
+  // Transform database artists to match UI format - pass complete database data
   const transformDatabaseArtist = (dbArtist: any) => ({
+    // Pass the raw database artist for edit mode
+    ...dbArtist,
     id: dbArtist.id,
     name: dbArtist.name || dbArtist.stage_name,
     genre: dbArtist.genre || 'Não informado',
-    status: dbArtist.status || 'ativo',
+    status: dbArtist.contract_status || 'ativo',
     email: dbArtist.email || 'Não informado',
-    avatar: dbArtist.avatar_url,
-    socialMedia: dbArtist.social_media || {},
+    avatar: dbArtist.image_url,
+    socialMedia: {
+      instagram: dbArtist.instagram,
+      spotify: dbArtist.spotify_url,
+      youtube: dbArtist.youtube_url,
+      tiktok: dbArtist.tiktok,
+      soundcloud: dbArtist.soundcloud,
+    },
     stats: {
       projetos: 0,
       obras: 0,
@@ -34,11 +42,11 @@ const Artistas = () => {
       streams: '0'
     },
     profile: {
-      nome: dbArtist.name || 'Não informado',
+      nome: dbArtist.full_name || dbArtist.name || 'Não informado',
       email: dbArtist.email || 'Não informado',
       telefone: dbArtist.phone || 'Não informado'
     },
-    gravadora: dbArtist.professional_profile?.company_name || 'Independente'
+    gravadora: dbArtist.profile_type || 'Independente'
   });
 
   // Use mock data when no database artists exist

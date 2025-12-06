@@ -95,37 +95,44 @@ export function ArtistForm({
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
     defaultValues: {
-      artistic_name: artist?.name || '',
-      genre: '',
+      artistic_name: artist?.name || artist?.stage_name || '',
+      genre: artist?.genre || '',
       music_language: '',
       artist_image: undefined,
-      biography: '',
-      full_name: '',
-      birth_date: undefined,
-      cpf_cnpj: '',
-      rg: '',
-      full_address: '',
-      phone: '',
-      email: '',
-      bank: '',
-      agency: '',
-      account: '',
-      pix_key: '',
-      account_holder: '',
-      spotify_profile: '',
-      instagram: '',
-      youtube: '',
-      tiktok: '',
-      soundcloud: '',
-      profile_type: '',
-      manager_name: '',
-      manager_phone: '',
-      manager_email: '',
-      distributors: [],
-      distributor_emails: {},
-      observations: ''
+      biography: artist?.bio || '',
+      full_name: artist?.full_name || '',
+      birth_date: artist?.birth_date ? new Date(artist.birth_date) : undefined,
+      cpf_cnpj: artist?.cpf_cnpj || '',
+      rg: artist?.rg || '',
+      full_address: artist?.full_address || '',
+      phone: artist?.phone || '',
+      email: artist?.email || '',
+      bank: artist?.bank || '',
+      agency: artist?.agency || '',
+      account: artist?.account || '',
+      pix_key: artist?.pix_key || '',
+      account_holder: artist?.account_holder || '',
+      spotify_profile: artist?.spotify_url || '',
+      instagram: artist?.instagram || '',
+      youtube: artist?.youtube_url || '',
+      tiktok: artist?.tiktok || '',
+      soundcloud: artist?.soundcloud || '',
+      profile_type: artist?.profile_type || '',
+      manager_name: artist?.manager_name || '',
+      manager_phone: artist?.manager_phone || '',
+      manager_email: artist?.manager_email || '',
+      distributors: artist?.distributors || [],
+      distributor_emails: (artist?.distributor_emails as Record<string, string>) || {},
+      observations: artist?.observations || ''
     }
   });
+
+  // Initialize selected distributors from artist data
+  React.useEffect(() => {
+    if (artist?.distributors && Array.isArray(artist.distributors)) {
+      setSelectedDistributors(artist.distributors);
+    }
+  }, [artist]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
     const file = e.target.files?.[0];
