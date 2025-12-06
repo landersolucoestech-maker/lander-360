@@ -220,23 +220,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [isAiCreated, aiGenerationType, form]);
 
-  // Build list of all available works (local + projects)
+  // Build list of available works from projects only
   const availableWorks = React.useMemo(() => {
     const works: any[] = [];
-    
-    // Add works from music_registry (local)
-    existingWorks.forEach(work => {
-      works.push({
-        id: work.id,
-        title: work.title || '',
-        genre: work.genre || '',
-        isrc: work.isrc || '',
-        iswc: work.iswc || '',
-        duration: work.duration,
-        source: 'local',
-        label: `${work.title} - Base Local`
-      });
-    });
     
     // Add works from projects audio_files
     projects.forEach(project => {
@@ -262,7 +248,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
               project_name: project.name,
               artist_id: project.artist_id,
               source: 'project',
-              label: `${songName} - Projeto: ${project.name}`
+              label: `${songName} - ${project.name}`
             });
           }
         });
@@ -506,8 +492,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           <div className="flex flex-col">
                             <span>{work.title}</span>
                             <span className="text-xs text-muted-foreground">
-                              {work.genre ? `${work.genre} • ` : ''}
-                              {work.source === 'local' ? 'Base Local' : `Projeto: ${work.project_name}`}
+                              {work.genre ? `${work.genre} • ` : ''}{work.project_name}
                             </span>
                           </div>
                         </CommandItem>
@@ -520,7 +505,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             
             {availableWorks.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Nenhuma obra cadastrada. Preencha os campos abaixo para criar uma nova.
+                Nenhuma obra cadastrada em projetos. Preencha os campos abaixo para criar uma nova.
               </p>
             )}
           </CardContent>
