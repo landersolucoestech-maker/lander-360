@@ -138,8 +138,8 @@ export default function Auth() {
           </div>
 
           {/* Logo */}
-          <div className="flex justify-center py-6">
-            <img src="/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander Records" className="h-28 w-auto" />
+          <div className="flex justify-center py-8">
+            <img src="/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander Records" className="h-48 w-auto" />
           </div>
 
           {/* Form */}
