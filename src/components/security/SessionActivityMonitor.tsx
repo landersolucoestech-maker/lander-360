@@ -1,3 +1,4 @@
+import React from 'react';
 import { useSessionActivity } from '@/hooks/useSessionActivity';
 
 export function SessionActivityMonitor({ children }: { children: React.ReactNode }) {
