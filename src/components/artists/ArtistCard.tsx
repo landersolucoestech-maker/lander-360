@@ -202,7 +202,6 @@ export function ArtistCard({
                     <span className="text-sm md:text-base font-medium text-foreground ml-1">{artist.gravadora}</span>
                   </div>
                   {artist.responsible ? <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="text-xs font-medium mb-1 text-primary-foreground">Responsável/Empresário:</div>
                       <div className="truncate"><span className="font-medium text-foreground">Nome:</span> {artist.responsible.nome}</div>
                       <div className="truncate"><span className="font-medium text-foreground">Tel:</span> {artist.responsible.telefone}</div>
                       <div className="truncate"><span className="font-medium text-foreground">Email:</span> {artist.responsible.email}</div>
