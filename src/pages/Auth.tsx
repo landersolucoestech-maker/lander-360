@@ -129,7 +129,7 @@ export default function Auth() {
   return <div className="min-h-screen flex">
       {/* Left Side - Login Form */}
       <div className="w-full lg:w-1/2 p-8 relative bg-black items-center justify-center px-0 py-0 flex flex-col">
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-0">
           {/* Welcome Text */}
           <div className="text-center">
             <h1 className="text-xl font-bold tracking-wider text-primary-foreground">
@@ -152,7 +152,7 @@ export default function Auth() {
                       <FormControl>
                         <div className="relative">
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <Input type="email" placeholder="Digite o Usuário" className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg" {...field} />
+                          <Input type="email" placeholder="Digite o Usuário" className="pl-12 h-14 bg-gray-100 border-0 text-gray-700 placeholder:text-gray-400 rounded-lg px-[40px]" />
                         </div>
                       </FormControl>
                       <FormMessage />
