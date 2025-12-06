@@ -8,7 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Bell, Database } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Settings, Bell, Database, Link2, Music, DollarSign, BarChart3, Mail, MessageSquare, Calendar, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
@@ -195,6 +196,218 @@ const Configuracoes = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Integrations */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="h-5 w-5" />
+                    Integrações
+                  </CardTitle>
+                  <CardDescription>
+                    Conecte suas plataformas e serviços externos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Distribuidoras */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Music className="h-4 w-4" />
+                      Distribuidoras
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <IntegrationItem 
+                        name="ONErpm" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar ONErpm", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="DistroKid" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar DistroKid", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Believe" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Believe", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="TuneCore" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar TuneCore", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="CD Baby" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar CD Baby", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="30por1" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar 30por1", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Plataformas de Streaming */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Plataformas de Streaming
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <IntegrationItem 
+                        name="Spotify for Artists" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Spotify", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="YouTube Music" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar YouTube", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Apple Music" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Apple Music", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Deezer" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Deezer", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Amazon Music" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Amazon Music", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Tidal" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Tidal", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Redes Sociais */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Redes Sociais
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <IntegrationItem 
+                        name="Instagram" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Instagram", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="TikTok" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar TikTok", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Facebook" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Facebook", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="X (Twitter)" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar X", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Financeiro */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Financeiro
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <IntegrationItem 
+                        name="Banco do Brasil" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Banco do Brasil", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Itaú" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Itaú", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Bradesco" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Bradesco", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Nubank" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Nubank", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="PayPal" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar PayPal", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Stripe" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Stripe", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Outros */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Outros Serviços
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <IntegrationItem 
+                        name="Google Calendar" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Google Calendar", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Google Drive" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Google Drive", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Dropbox" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Dropbox", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="Mailchimp" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar Mailchimp", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="WhatsApp Business" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar WhatsApp", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                      <IntegrationItem 
+                        name="ECAD/UBC" 
+                        connected={false}
+                        onConnect={() => toast({ title: "Conectar ECAD/UBC", description: "Funcionalidade em desenvolvimento" })}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </SidebarInset>
@@ -205,6 +418,39 @@ const Configuracoes = () => {
         onOpenChange={setShowRestoreBackup}
       />
     </SidebarProvider>
+  );
+};
+
+// Integration Item Component
+const IntegrationItem = ({ 
+  name, 
+  connected, 
+  onConnect 
+}: { 
+  name: string; 
+  connected: boolean; 
+  onConnect: () => void;
+}) => {
+  return (
+    <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors">
+      <div className="flex items-center gap-2">
+        {connected ? (
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+        ) : (
+          <XCircle className="h-4 w-4 text-muted-foreground" />
+        )}
+        <span className="text-sm font-medium">{name}</span>
+      </div>
+      {connected ? (
+        <Badge variant="outline" className="text-green-500 border-green-500">
+          Conectado
+        </Badge>
+      ) : (
+        <Button variant="outline" size="sm" onClick={onConnect}>
+          Conectar
+        </Button>
+      )}
+    </div>
   );
 };
 
