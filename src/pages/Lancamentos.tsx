@@ -324,14 +324,16 @@ const Lancamentos = () => {
                              selectedRelease.approvalStatus === 'pendente' ? 'Pendente' :
                              selectedRelease.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
                           </span>
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            selectedRelease.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
-                            selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' :
-                            'bg-green-500/10 text-green-500'
-                          }`}>
-                            Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : 
-                                         selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
-                          </span>
+                          {selectedRelease.hasMarketingPlan && (
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              selectedRelease.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
+                              selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' :
+                              'bg-green-500/10 text-green-500'
+                            }`}>
+                              Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : 
+                                           selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
