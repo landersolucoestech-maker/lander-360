@@ -47,7 +47,21 @@ export class InventoryService {
     return data;
   }
 
-  static async update(id: string, updates: Partial<{ name: string; description?: string; quantity?: number; category?: string; location?: string }>) {
+  static async update(id: string, updates: Partial<{ 
+    name: string; 
+    description?: string; 
+    quantity?: number; 
+    category?: string; 
+    location?: string;
+    status?: string;
+    sector?: string;
+    responsible?: string;
+    purchase_location?: string;
+    invoice_number?: string;
+    entry_date?: string;
+    unit_value?: number;
+    observations?: string;
+  }>) {
     const { data, error } = await supabase
       .from('inventory')
       .update(updates)

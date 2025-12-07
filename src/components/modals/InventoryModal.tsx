@@ -1,14 +1,17 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { InventoryForm } from "@/components/forms/InventoryForm";
-import { useCreateInventory } from "@/hooks/useInventory";
+import { InventoryForm, InventoryInitialData } from "@/components/forms/InventoryForm";
+import { useCreateInventory, useUpdateInventory } from "@/hooks/useInventory";
 
 interface InventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  equipment?: InventoryInitialData | null;
+  isEditMode?: boolean;
 }
 
-export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
+export function InventoryModal({ isOpen, onClose, equipment, isEditMode = false }: InventoryModalProps) {
   const createInventory = useCreateInventory();
+  const updateInventory = useUpdateInventory();
 
   const handleSubmit = async (data: any) => {
     const inventoryData = {
@@ -26,20 +29,28 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
       observations: data.observations || null,
     };
 
-    await createInventory.mutateAsync(inventoryData);
+    if (isEditMode && equipment?.id) {
+      await updateInventory.mutateAsync({ id: equipment.id, data: inventoryData });
+    } else {
+      await createInventory.mutateAsync(inventoryData);
+    }
     onClose();
   };
+
+  const isPending = createInventory.isPending || updateInventory.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Novo Item no Inventário</DialogTitle>
+          <DialogTitle>{isEditMode ? "Editar Item" : "Novo Item no Inventário"}</DialogTitle>
         </DialogHeader>
         <InventoryForm 
           onSubmit={handleSubmit} 
           onCancel={onClose}
-          isSubmitting={createInventory.isPending}
+          isSubmitting={isPending}
+          initialData={equipment}
+          isEditMode={isEditMode}
         />
       </DialogContent>
     </Dialog>

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { DateInput } from "@/components/ui/date-input";
+import { useEffect } from "react";
 
 const inventorySchema = z.object({
   // Basic Information
@@ -30,13 +31,31 @@ const inventorySchema = z.object({
 
 type InventoryFormData = z.infer<typeof inventorySchema>;
 
+export interface InventoryInitialData {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  quantity: number;
+  location: string;
+  unit_value: number | null;
+  sector: string | null;
+  responsible: string | null;
+  purchase_location: string | null;
+  invoice_number: string | null;
+  entry_date: string | null;
+  observations: string | null;
+}
+
 interface InventoryFormProps {
   onSubmit: (data: InventoryFormData) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
+  initialData?: InventoryInitialData | null;
+  isEditMode?: boolean;
 }
 
-export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: InventoryFormProps) {
+export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initialData, isEditMode = false }: InventoryFormProps) {
   const form = useForm<InventoryFormData>({
     resolver: zodResolver(inventorySchema),
     defaultValues: {
@@ -44,6 +63,26 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: Inve
       status: "Disponível",
     },
   });
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (initialData && isEditMode) {
+      form.reset({
+        name: initialData.name || '',
+        sector: initialData.sector || '',
+        category: initialData.category || '',
+        quantity: String(initialData.quantity || 1),
+        location: initialData.location || '',
+        responsible: initialData.responsible || '',
+        status: initialData.status || 'Disponível',
+        purchaseLocation: initialData.purchase_location || '',
+        invoiceNumber: initialData.invoice_number || '',
+        entryDate: initialData.entry_date ? new Date(initialData.entry_date) : new Date(),
+        unitValue: initialData.unit_value ? String(initialData.unit_value) : '',
+        observations: initialData.observations || '',
+      });
+    }
+  }, [initialData, isEditMode, form]);
 
   const watchedQuantity = form.watch("quantity");
   const watchedUnitValue = form.watch("unitValue");
@@ -73,7 +112,7 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: Inve
                 <FormItem>
                   <FormLabel>Setor</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o setor" />
                       </SelectTrigger>
@@ -109,7 +148,7 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: Inve
                 <FormItem>
                   <FormLabel>Categoria</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a categoria" />
                       </SelectTrigger>
@@ -197,7 +236,7 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: Inve
               <FormItem>
                 <FormLabel>Status</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
@@ -318,7 +357,7 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: Inve
 
         <div className="flex gap-3 pt-4">
           <Button type="submit" className="flex-1" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Cadastrar Item"}
+            {isSubmitting ? "Salvando..." : isEditMode ? "Salvar Alterações" : "Cadastrar Item"}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel} className="flex-1" disabled={isSubmitting}>
             Cancelar
