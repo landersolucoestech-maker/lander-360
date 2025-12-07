@@ -435,7 +435,18 @@ const Financeiro = () => {
                           </div>
                           <div className="space-y-1">
                             <h3 className="font-medium text-foreground">{transaction.description}</h3>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {transaction.artists && (
+                                <Badge variant="outline" className="text-xs">
+                                  {transaction.artists.stage_name || transaction.artists.name}
+                                </Badge>
+                              )}
+                              {transaction.crm_contacts && (
+                                <Badge variant="outline" className="text-xs">
+                                  {transaction.crm_contacts.name}
+                                  {transaction.crm_contacts.company && ` (${transaction.crm_contacts.company})`}
+                                </Badge>
+                              )}
                               {transaction.category && (
                                 <Badge variant="secondary">
                                   {categoryLabels[transaction.category] || transaction.category}
