@@ -1,1 +1,4 @@
 project_id = "dkrrfnpvqrpakngigxsb"
+
+[functions.belvo-integration]
+verify_jwt = true
