@@ -160,56 +160,57 @@ const CRM = () => {
                     {contacts.map((contact) => (
                       <div
                         key={contact.id}
-                        className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                       >
-                        {/* Avatar */}
-                        <Avatar className="h-10 w-10 flex-shrink-0">
-                          <AvatarImage src={contact.image_url || "/placeholder.svg"} alt={contact.name} />
-                          <AvatarFallback>
-                            {contact.name
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")
-                              .slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
+                        {/* Avatar e Info Principal */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={contact.image_url || "/placeholder.svg"} alt={contact.name} />
+                            <AvatarFallback>
+                              {contact.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")
+                                .slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
 
-                        {/* Nome e Badges */}
-                        <div className="min-w-0 flex-1 max-w-[275px]">
-                          <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
-                          <div className="flex items-center gap-1 mt-1 flex-wrap">
-                            <Badge variant="secondary" className="text-xs">
-                              {contact.contact_type?.replace(/_/g, " ") || "N/A"}
-                            </Badge>
-                            <Badge
-                              variant={
-                                (contact as any).status === "quente"
-                                  ? "destructive"
-                                  : (contact as any).status === "negociacao"
-                                    ? "outline"
-                                    : "secondary"
-                              }
-                              className="text-xs"
-                            >
-                              {(contact as any).status || "N/A"}
-                            </Badge>
-                            <Badge
-                              variant={
-                                (contact as any).priority === "alta"
-                                  ? "destructive"
-                                  : (contact as any).priority === "media"
-                                    ? "outline"
-                                    : "secondary"
-                              }
-                              className="text-xs"
-                            >
-                              {(contact as any).priority || "N/A"}
-                            </Badge>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                              <Badge variant="secondary" className="text-xs">
+                                {contact.contact_type?.replace(/_/g, " ") || "N/A"}
+                              </Badge>
+                              <Badge
+                                variant={
+                                  (contact as any).status === "quente"
+                                    ? "destructive"
+                                    : (contact as any).status === "negociacao"
+                                      ? "outline"
+                                      : "secondary"
+                                }
+                                className="text-xs"
+                              >
+                                {(contact as any).status || "N/A"}
+                              </Badge>
+                              <Badge
+                                variant={
+                                  (contact as any).priority === "alta"
+                                    ? "destructive"
+                                    : (contact as any).priority === "media"
+                                      ? "outline"
+                                      : "secondary"
+                                }
+                                className="text-xs"
+                              >
+                                {(contact as any).priority || "N/A"}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Telefone e Email */}
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {/* Contato - Telefone e Email */}
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground lg:flex-shrink-0">
                           {contact.phone && (
                             <div className="flex items-center gap-1">
                               <Phone className="h-3 w-3 shrink-0" />
@@ -219,40 +220,38 @@ const CRM = () => {
                           {contact.email && (
                             <div className="flex items-center gap-1">
                               <Mail className="h-3 w-3 shrink-0" />
-                              <span className="truncate max-w-[150px] text-xs">{contact.email}</span>
+                              <span className="truncate max-w-[200px] text-xs">{contact.email}</span>
                             </div>
                           )}
                         </div>
 
-                        {/* Empresa */}
-                        {contact.company && (
-                          <div className="text-sm flex-shrink-0">
-                            <div className="text-muted-foreground text-xs">Empresa</div>
-                            <div className="font-medium truncate max-w-[120px]">{contact.company}</div>
-                          </div>
-                        )}
-
-                        {/* Cargo */}
-                        {contact.position && (
-                          <div className="text-sm flex-shrink-0">
-                            <div className="text-muted-foreground text-xs">Cargo</div>
-                            <div className="font-medium truncate max-w-[100px]">{contact.position}</div>
-                          </div>
-                        )}
-
-                        {/* Cidade */}
-                        {contact.city && (
-                          <div className="text-sm flex-shrink-0">
-                            <div className="text-muted-foreground text-xs">Cidade</div>
-                            <div className="font-medium truncate max-w-[100px]">
-                              {contact.city}
-                              {contact.state ? `/${contact.state}` : ""}
+                        {/* Informações Adicionais */}
+                        <div className="flex flex-wrap gap-4 text-sm lg:flex-shrink-0">
+                          {contact.company && (
+                            <div>
+                              <div className="text-muted-foreground text-xs">Empresa</div>
+                              <div className="font-medium truncate max-w-[120px]">{contact.company}</div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                          {contact.position && (
+                            <div>
+                              <div className="text-muted-foreground text-xs">Cargo</div>
+                              <div className="font-medium truncate max-w-[100px]">{contact.position}</div>
+                            </div>
+                          )}
+                          {contact.city && (
+                            <div>
+                              <div className="text-muted-foreground text-xs">Cidade</div>
+                              <div className="font-medium truncate max-w-[120px]">
+                                {contact.city}
+                                {contact.state ? `/${contact.state}` : ""}
+                              </div>
+                            </div>
+                          )}
+                        </div>
 
                         {/* Ações */}
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                        <div className="flex items-center gap-2 flex-shrink-0 lg:ml-auto pt-2 lg:pt-0 border-t lg:border-t-0 border-border/50">
                           <Button
                             variant="outline"
                             size="sm"
