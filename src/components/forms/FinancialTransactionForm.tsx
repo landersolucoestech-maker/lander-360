@@ -111,8 +111,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     estudio: 'Estúdio',
     clipes: 'Clipes/Vídeos',
     turnê: 'Turnê',
-    capacitacao: 'Capacitação',
-    outros: 'Outros'
+    capacitacao: 'Capacitação'
   };
 
   const paymentMethods = [
