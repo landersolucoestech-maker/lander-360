@@ -297,7 +297,7 @@ const RegistroMusicas = () => {
               {/* Obras Tab */}
               <TabsContent value="obras" className="space-y-4">
                 <SearchFilter
-                  searchPlaceholder="Buscar obras por título, artista, ISRC ou ISWC..."
+                  searchPlaceholder="Buscar obras por título, artista ou ISWC..."
                   filters={filterOptions}
                   onSearch={handleSearchWorks}
                   onFilter={handleFilterWorks}
