@@ -6,10 +6,14 @@ type FinancialTransactionInsert = Database['public']['Tables']['financial_transa
 type FinancialTransactionUpdate = Database['public']['Tables']['financial_transactions']['Update'];
 
 export class FinancialService {
-  static async getAll(): Promise<FinancialTransaction[]> {
+  static async getAll(): Promise<any[]> {
     const { data, error } = await supabase
       .from('financial_transactions')
-      .select('*')
+      .select(`
+        *,
+        artists:artist_id (id, name, stage_name),
+        crm_contacts:crm_contact_id (id, name, company)
+      `)
       .order('transaction_date', { ascending: false });
 
     if (error) throw error;

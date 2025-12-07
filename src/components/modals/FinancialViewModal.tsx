@@ -139,16 +139,37 @@ export function FinancialViewModal({ open, onOpenChange, transaction }: Financia
                   <p className="font-medium">{transaction.payment_method}</p>
                 </div>
               )}
-              {transaction.artist && (
+              {transaction.artists && (
                 <div>
                   <label className="text-sm text-muted-foreground">Artista</label>
-                  <p className="font-medium">{transaction.artist}</p>
+                  <p className="font-medium">{transaction.artists.stage_name || transaction.artists.name}</p>
                 </div>
               )}
-              {transaction.project && (
+              {transaction.crm_contacts && (
                 <div>
-                  <label className="text-sm text-muted-foreground">Projeto</label>
-                  <p className="font-medium">{transaction.project}</p>
+                  <label className="text-sm text-muted-foreground">Contato CRM</label>
+                  <p className="font-medium">
+                    {transaction.crm_contacts.name}
+                    {transaction.crm_contacts.company && <span className="text-muted-foreground"> ({transaction.crm_contacts.company})</span>}
+                  </p>
+                </div>
+              )}
+              {transaction.responsible_by && (
+                <div>
+                  <label className="text-sm text-muted-foreground">Responsável</label>
+                  <p className="font-medium">{transaction.responsible_by}</p>
+                </div>
+              )}
+              {transaction.authorized_by && (
+                <div>
+                  <label className="text-sm text-muted-foreground">Autorizado por</label>
+                  <p className="font-medium">{transaction.authorized_by}</p>
+                </div>
+              )}
+              {transaction.observations && (
+                <div className="col-span-2">
+                  <label className="text-sm text-muted-foreground">Observações</label>
+                  <p className="font-medium">{transaction.observations}</p>
                 </div>
               )}
             </div>
