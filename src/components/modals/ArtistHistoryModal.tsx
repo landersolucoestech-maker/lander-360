@@ -166,6 +166,7 @@ export function ArtistHistoryModal({
       case "pending": return "Pendente";
       case "planning": return "Planejando";
       case "cancelled": return "Cancelado";
+      case "completed": return "Concluído";
       case "em_analise": return "Em Análise";
       case "registrado": return "Registrado";
       case "aprovado": return "Aprovado";
