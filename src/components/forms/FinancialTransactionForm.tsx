@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const financialTransactionSchema = z.object({
-  client_type: z.enum(['empresa', 'artista'], { required_error: 'Selecione empresa ou artista' }),
+  client_type: z.enum(['empresa', 'artista', 'pessoa'], { required_error: 'Selecione o tipo' }),
   client_id: z.string().optional(),
   crm_contact_id: z.string().optional(),
   description: z.string().min(1, 'Descrição é obrigatória'),
@@ -259,8 +259,9 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border border-border z-50">
-                  <SelectItem value="empresa">Empresa</SelectItem>
                   <SelectItem value="artista">Artista</SelectItem>
+                  <SelectItem value="empresa">Empresa</SelectItem>
+                  <SelectItem value="pessoa">Pessoa</SelectItem>
                 </SelectContent>
               </Select>
               {form.formState.errors.client_type && (
@@ -268,10 +269,10 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               )}
             </div>
 
-            {/* Fornecedor/Cliente (CRM) - quando empresa está selecionada */}
-            {watchedClientType === 'empresa' && (
+            {/* Fornecedor/Cliente (CRM) - quando empresa ou pessoa está selecionada */}
+            {(watchedClientType === 'empresa' || watchedClientType === 'pessoa') && (
               <div className="space-y-2">
-                <Label>Fornecedor/Cliente</Label>
+                <Label>{watchedClientType === 'empresa' ? 'Fornecedor/Cliente' : 'Pessoa'}</Label>
                 <Select
                   value={form.watch('crm_contact_id') || ''}
                   onValueChange={(value) => form.setValue('crm_contact_id', value || undefined)}
