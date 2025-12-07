@@ -73,7 +73,10 @@ Deno.serve(async (req) => {
       .from('profiles')
       .update({
         full_name: full_name,
-        phone: phone || null
+        phone: phone || null,
+        email: email,
+        role_display: role || 'Usuário',
+        roles: [role || 'Usuário']
       })
       .eq('id', userId)
 
