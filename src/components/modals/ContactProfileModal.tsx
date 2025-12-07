@@ -9,26 +9,36 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Mail, 
   Phone, 
   MapPin, 
-  Calendar, 
   Building,
   User,
-  Clock,
-  MessageSquare,
   FileText,
-  Target
+  Briefcase
 } from "lucide-react";
-import { formatDateBR } from "@/lib/utils";
 
 interface ContactProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contact: any;
 }
+
+const statusLabels: Record<string, string> = {
+  frio: "Frio",
+  morno: "Morno",
+  quente: "Quente",
+  negociacao: "Negociação",
+  fechado: "Fechado",
+  perdido: "Perdido",
+};
+
+const priorityLabels: Record<string, string> = {
+  baixa: "Baixa",
+  media: "Média",
+  alta: "Alta",
+};
 
 export function ContactProfileModal({
   open,
@@ -37,36 +47,13 @@ export function ContactProfileModal({
 }: ContactProfileModalProps) {
   if (!contact) return null;
 
-  const interactions = [
-    {
-      id: 1,
-      type: "call",
-      title: "Ligação realizada",
-      description: "Discussão sobre nova parceria musical",
-      date: "2024-01-15",
-      duration: "25 min"
-    },
-    {
-      id: 2,
-      type: "email",
-      title: "Email enviado",
-      description: "Proposta de contrato enviada",
-      date: "2024-01-12",
-      status: "Lido"
-    },
-    {
-      id: 3,
-      type: "meeting",
-      title: "Reunião presencial",
-      description: "Reunião no escritório para alinhamento",
-      date: "2024-01-08",
-      duration: "1h 30min"
-    }
-  ];
+  const formatContactType = (type: string) => {
+    return type?.replace(/_/g, ' ') || 'N/A';
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Perfil do Contato</DialogTitle>
           <DialogDescription>
@@ -81,150 +68,167 @@ export function ContactProfileModal({
               <Avatar className="w-24 h-24 mb-4">
                 <AvatarImage src="/placeholder.svg" alt={contact.name} />
                 <AvatarFallback className="text-xl">
-                  {contact.name.split(' ').map((n: string) => n[0]).join('')}
+                  {contact.name?.split(' ').map((n: string) => n[0]).join('') || '?'}
                 </AvatarFallback>
               </Avatar>
-              <Badge variant="secondary" className="mb-2">{contact.status}</Badge>
-              <Badge variant={contact.priority === "Alta" ? "destructive" : contact.priority === "Média" ? "warning" : "secondary"}>
-                {contact.priority}
-              </Badge>
+              {contact.status && (
+                <Badge 
+                  variant={
+                    contact.status === "quente" ? "destructive" :
+                    contact.status === "negociacao" ? "outline" : "secondary"
+                  }
+                  className="mb-2"
+                >
+                  {statusLabels[contact.status] || contact.status}
+                </Badge>
+              )}
+              {contact.priority && (
+                <Badge 
+                  variant={
+                    contact.priority === "alta" ? "destructive" : 
+                    contact.priority === "media" ? "outline" : "secondary"
+                  }
+                >
+                  {priorityLabels[contact.priority] || contact.priority}
+                </Badge>
+              )}
             </div>
             
             <div className="flex-1 space-y-4">
               <div>
                 <h2 className="text-2xl font-bold">{contact.name}</h2>
-                <p className="text-lg text-muted-foreground">{contact.type}</p>
+                <p className="text-lg text-muted-foreground capitalize">{formatContactType(contact.contact_type)}</p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{contact.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{contact.phone}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Indie Records</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">São Paulo, SP</span>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {contact.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{contact.email}</span>
+                  </div>
+                )}
+                {contact.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{contact.phone}</span>
+                  </div>
+                )}
+                {contact.company && (
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{contact.company}</span>
+                  </div>
+                )}
+                {contact.position && (
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{contact.position}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <Separator />
 
-          {/* Informações de Contato */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Último Contato
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-lg font-semibold">{contact.lastContact}</div>
-                <div className="text-sm text-muted-foreground">há 3 dias</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Próxima Ação
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-lg font-semibold">{contact.nextAction}</div>
-                <div className="text-sm text-muted-foreground">em 2 dias</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Interações
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-lg font-semibold">12</div>
-                <div className="text-sm text-muted-foreground">este mês</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Separator />
-
-          {/* Histórico de Interações */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Histórico de Interações</h3>
-            <div className="space-y-3">
-              {interactions.map((interaction) => (
-                <div key={interaction.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-primary/10">
-                      {interaction.type === "call" && <Phone className="h-4 w-4 text-primary" />}
-                      {interaction.type === "email" && <Mail className="h-4 w-4 text-primary" />}
-                      {interaction.type === "meeting" && <User className="h-4 w-4 text-primary" />}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium">{interaction.title}</h4>
-                        <p className="text-sm text-muted-foreground">{interaction.description}</p>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDateBR(interaction.date)}
-                      </div>
+          {/* Informações de Endereço */}
+          {(contact.address || contact.city || contact.state || contact.zip_code) && (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Endereço
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {contact.address && (
+                    <div>
+                      <span className="text-muted-foreground">Endereço: </span>
+                      <span>{contact.address}</span>
                     </div>
-                    
-                    {interaction.duration && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Duração: {interaction.duration}
-                      </div>
-                    )}
-                    
-                    {interaction.status && (
-                      <Badge variant="outline" className="mt-2 text-xs">
-                        {interaction.status}
-                      </Badge>
-                    )}
-                  </div>
+                  )}
+                  {contact.city && (
+                    <div>
+                      <span className="text-muted-foreground">Cidade: </span>
+                      <span>{contact.city}</span>
+                    </div>
+                  )}
+                  {contact.state && (
+                    <div>
+                      <span className="text-muted-foreground">Estado: </span>
+                      <span>{contact.state}</span>
+                    </div>
+                  )}
+                  {contact.zip_code && (
+                    <div>
+                      <span className="text-muted-foreground">CEP: </span>
+                      <span>{contact.zip_code}</span>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+              <Separator />
+            </>
+          )}
 
-          <Separator />
+          {/* Informações Adicionais */}
+          {(contact.document || contact.next_action) && (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Informações Adicionais
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {contact.document && (
+                    <div>
+                      <span className="text-muted-foreground">CPF/CNPJ: </span>
+                      <span>{contact.document}</span>
+                    </div>
+                  )}
+                  {contact.next_action && (
+                    <div>
+                      <span className="text-muted-foreground">Próxima Ação: </span>
+                      <span>{contact.next_action}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Observações */}
+          {contact.notes && (
+            <>
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Observações
+                </h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{contact.notes}</p>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Ações */}
-          <div className="flex gap-3">
-            <Button className="gap-2">
-              <Phone className="h-4 w-4" />
-              Ligar
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Mail className="h-4 w-4" />
-              Enviar Email
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              Agendar Reunião
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Ver Contratos
-            </Button>
+          <div className="flex gap-3 flex-wrap">
+            {contact.phone && (
+              <Button className="gap-2" asChild>
+                <a href={`tel:${contact.phone}`}>
+                  <Phone className="h-4 w-4" />
+                  Ligar
+                </a>
+              </Button>
+            )}
+            {contact.email && (
+              <Button variant="outline" className="gap-2" asChild>
+                <a href={`mailto:${contact.email}`}>
+                  <Mail className="h-4 w-4" />
+                  Enviar Email
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
