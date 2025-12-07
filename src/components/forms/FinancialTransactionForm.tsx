@@ -20,7 +20,7 @@ const financialTransactionSchema = z.object({
   client_id: z.string().optional(),
   crm_contact_id: z.string().optional(),
   description: z.string().min(1, 'Descrição é obrigatória'),
-  transaction_type: z.enum(['receitas', 'despesas'], { required_error: 'Selecione o tipo' }),
+  transaction_type: z.enum(['receitas', 'despesas', 'investimentos'], { required_error: 'Selecione o tipo' }),
   amount: z.number().positive('Valor deve ser positivo'),
   category: z.string().min(1, 'Categoria é obrigatória'),
   transaction_date: z.date({ required_error: 'Data é obrigatória' }),
@@ -104,6 +104,17 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     servicos: 'Serviços'
   };
 
+  const investimentosCategories = {
+    producao_musical: 'Produção Musical',
+    marketing_digital: 'Marketing Digital',
+    equipamentos: 'Equipamentos',
+    estudio: 'Estúdio',
+    clipes: 'Clipes/Vídeos',
+    turnê: 'Turnê',
+    capacitacao: 'Capacitação',
+    outros: 'Outros'
+  };
+
   const paymentMethods = [
     { value: 'pix', label: 'Pix' },
     { value: 'ted', label: 'TED' },
@@ -112,7 +123,11 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     { value: 'dinheiro', label: 'Dinheiro' },
   ];
 
-  const availableCategories = watchedType === 'receitas' ? receitasCategories : despesasCategories;
+  const availableCategories = watchedType === 'receitas' 
+    ? receitasCategories 
+    : watchedType === 'investimentos' 
+      ? investimentosCategories 
+      : despesasCategories;
 
   // Handle attachment upload
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,6 +296,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                 <SelectContent className="bg-background border border-border z-50">
                   <SelectItem value="receitas">Receitas</SelectItem>
                   <SelectItem value="despesas">Despesas</SelectItem>
+                  <SelectItem value="investimentos">Investimentos</SelectItem>
                 </SelectContent>
               </Select>
               {form.formState.errors.transaction_type && (
@@ -302,7 +318,6 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                   {Object.entries(availableCategories).map(([value, label]) => (
                     <SelectItem key={value} value={value}>{label}</SelectItem>
                   ))}
-                  <SelectItem value="investimentos">Investimentos</SelectItem>
                   <SelectItem value="outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
