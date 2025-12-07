@@ -3,11 +3,11 @@ import { Contract, ContractInsert, ContractUpdate, ContractWithDetails } from '@
 import { getTodayDateString, formatDateForDB } from '@/lib/utils';
 
 export class ContractsService {
-  // Get all contracts
-  static async getAll(): Promise<Contract[]> {
+  // Get all contracts with artist info
+  static async getAll(): Promise<(Contract & { artists?: { name: string; stage_name?: string } })[]> {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*')
+      .select('*, artists(name, stage_name)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
