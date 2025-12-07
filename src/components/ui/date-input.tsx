@@ -112,7 +112,9 @@ export function DateInput({
             mode="single"
             selected={value}
             onSelect={handleCalendarSelect}
+            locale={ptBR}
             initialFocus
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>
