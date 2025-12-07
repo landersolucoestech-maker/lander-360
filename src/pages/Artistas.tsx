@@ -263,9 +263,14 @@ const Artistas = () => {
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter((artist: any) => {
-          if (key === "genre") return artist.genre === value;
-          if (key === "status") return artist.status === value;
-          if (key === "perfil") return artist.perfil === value;
+          if (key === "genre") return artist.genre?.toLowerCase() === value.toLowerCase();
+          if (key === "status") {
+            // Compare translated status
+            const artistStatus = artist.status?.toLowerCase();
+            const filterValue = value.toLowerCase();
+            return artistStatus === filterValue;
+          }
+          if (key === "perfil") return artist.perfil?.toLowerCase() === value.toLowerCase();
           if (key === "contrato") {
             const hasActiveContract = artistContractStatusMap[artist.id] || false;
             if (value === "Com Contrato Ativo") return hasActiveContract;
