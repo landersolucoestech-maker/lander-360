@@ -33,9 +33,10 @@ type InventoryFormData = z.infer<typeof inventorySchema>;
 interface InventoryFormProps {
   onSubmit: (data: InventoryFormData) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export function InventoryForm({ onSubmit, onCancel }: InventoryFormProps) {
+export function InventoryForm({ onSubmit, onCancel, isSubmitting = false }: InventoryFormProps) {
   const form = useForm<InventoryFormData>({
     resolver: zodResolver(inventorySchema),
     defaultValues: {
@@ -316,10 +317,10 @@ export function InventoryForm({ onSubmit, onCancel }: InventoryFormProps) {
         </div>
 
         <div className="flex gap-3 pt-4">
-          <Button type="submit" className="flex-1">
-            Cadastrar Item
+          <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : "Cadastrar Item"}
           </Button>
-          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+          <Button type="button" variant="outline" onClick={onCancel} className="flex-1" disabled={isSubmitting}>
             Cancelar
           </Button>
         </div>

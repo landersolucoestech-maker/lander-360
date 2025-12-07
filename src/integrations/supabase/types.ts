@@ -633,11 +633,18 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          entry_date: string | null
           id: string
+          invoice_number: string | null
           location: string | null
           name: string
+          observations: string | null
+          purchase_location: string | null
           quantity: number | null
+          responsible: string | null
+          sector: string | null
           status: string | null
+          unit_value: number | null
           updated_at: string
         }
         Insert: {
@@ -645,11 +652,18 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          entry_date?: string | null
           id?: string
+          invoice_number?: string | null
           location?: string | null
           name: string
+          observations?: string | null
+          purchase_location?: string | null
           quantity?: number | null
+          responsible?: string | null
+          sector?: string | null
           status?: string | null
+          unit_value?: number | null
           updated_at?: string
         }
         Update: {
@@ -657,11 +671,18 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          entry_date?: string | null
           id?: string
+          invoice_number?: string | null
           location?: string | null
           name?: string
+          observations?: string | null
+          purchase_location?: string | null
           quantity?: number | null
+          responsible?: string | null
+          sector?: string | null
           status?: string | null
+          unit_value?: number | null
           updated_at?: string
         }
         Relationships: []
