@@ -28,7 +28,7 @@ const MarketingCampanhas = () => {
   const filterOptions = [{
     key: "status",
     label: "Status",
-    options: ["planning", "active", "paused", "completed"]
+    options: ["Planejada", "Ativa", "Pausada", "Finalizada"]
   }];
 
   const handleSearch = (searchTerm: string) => {
@@ -54,7 +54,15 @@ const MarketingCampanhas = () => {
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(campaign => {
-          if (key === "status") return campaign.status === value;
+          if (key === "status") {
+            const statusTranslation: Record<string, string> = {
+              'Planejada': 'planning',
+              'Ativa': 'active',
+              'Pausada': 'paused',
+              'Finalizada': 'completed'
+            };
+            return campaign.status === statusTranslation[value];
+          }
           return true;
         });
       }

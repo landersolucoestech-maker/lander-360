@@ -33,7 +33,7 @@ const Projetos = () => {
     {
       key: "status",
       label: "Status",
-      options: ["completed", "in_progress", "draft", "cancelled"]
+      options: ["Concluído", "Em Andamento", "Rascunho", "Cancelado"]
     },
   ];
 
@@ -91,7 +91,15 @@ const Projetos = () => {
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(project => {
-          if (key === "status") return project.status === value;
+          if (key === "status") {
+            const statusTranslation: Record<string, string> = {
+              'Concluído': 'completed',
+              'Em Andamento': 'in_progress',
+              'Rascunho': 'draft',
+              'Cancelado': 'cancelled'
+            };
+            return project.status === statusTranslation[value];
+          }
           return true;
         });
       }

@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, translateStatus } from "@/lib/utils";
 
 const RegistroMusicas = () => {
   const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
@@ -46,14 +46,7 @@ const RegistroMusicas = () => {
   const [selectedPhonogram, setSelectedPhonogram] = useState<any>(null);
 
   const getStatusDisplay = (status: string | null) => {
-    switch (status) {
-      case 'em_analise': return 'Em Análise';
-      case 'aceita': return 'Aceita';
-      case 'pendente': return 'Pendente';
-      case 'recusada': return 'Recusada';
-      case 'draft': return 'Pendente';
-      default: return 'Pendente';
-    }
+    return translateStatus(status) || 'Pendente';
   };
 
   // Transform music registry data
