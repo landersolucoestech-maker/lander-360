@@ -20,7 +20,7 @@ const inventorySchema = z.object({
   
   // Purchase Information
   purchaseLocation: z.string().min(1, "Local de compra é obrigatório"),
-  invoiceNumber: z.string().min(1, "Número da nota é obrigatório"),
+  invoiceNumber: z.string().optional(),
   entryDate: z.date({ required_error: "Data de entrada é obrigatória" }),
   unitValue: z.string().min(1, "Valor unitário é obrigatório"),
   
