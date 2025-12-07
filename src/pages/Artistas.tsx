@@ -13,56 +13,77 @@ import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
 import { mockArtists } from "@/data/mockData";
-
 const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const { data: artists, isLoading, error } = useArtists();
-  const { data: artistsCount } = useArtistsCount();
-  const { data: projects = [] } = useProjects();
-  const { data: releases = [] } = useReleases();
-  const { data: musicRegistry = [] } = useMusicRegistry();
+  const {
+    data: artists,
+    isLoading,
+    error
+  } = useArtists();
+  const {
+    data: artistsCount
+  } = useArtistsCount();
+  const {
+    data: projects = []
+  } = useProjects();
+  const {
+    data: releases = []
+  } = useReleases();
+  const {
+    data: musicRegistry = []
+  } = useMusicRegistry();
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
 
   // Count projects, releases and music per artist
   const artistStats = useMemo(() => {
-    const stats: Record<string, { projetos: number; lancamentos: number; obras: number }> = {};
-    
+    const stats: Record<string, {
+      projetos: number;
+      lancamentos: number;
+      obras: number;
+    }> = {};
     projects.forEach((project: any) => {
       if (project.artist_id) {
         if (!stats[project.artist_id]) {
-          stats[project.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          stats[project.artist_id] = {
+            projetos: 0,
+            lancamentos: 0,
+            obras: 0
+          };
         }
         stats[project.artist_id].projetos++;
       }
     });
-    
     releases.forEach((release: any) => {
       if (release.artist_id) {
         if (!stats[release.artist_id]) {
-          stats[release.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          stats[release.artist_id] = {
+            projetos: 0,
+            lancamentos: 0,
+            obras: 0
+          };
         }
         stats[release.artist_id].lancamentos++;
       }
     });
-
     musicRegistry.forEach((music: any) => {
       if (music.artist_id) {
         if (!stats[music.artist_id]) {
-          stats[music.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          stats[music.artist_id] = {
+            projetos: 0,
+            lancamentos: 0,
+            obras: 0
+          };
         }
         stats[music.artist_id].obras++;
       }
     });
-    
     return stats;
   }, [projects, releases, musicRegistry]);
 
   // Transform database artists to match UI format - pass complete database data
   const transformDatabaseArtist = (dbArtist: any) => {
     const profileType = dbArtist.profile_type?.trim() || '';
-    const hasManager = ['Com Empresário', 'Gravadora', 'Editora'].includes(profileType) && 
-                       (dbArtist.manager_name || dbArtist.manager_phone || dbArtist.manager_email);
-    
+    const hasManager = ['Com Empresário', 'Gravadora', 'Editora'].includes(profileType) && (dbArtist.manager_name || dbArtist.manager_phone || dbArtist.manager_email);
     console.log('Artist transform:', {
       name: dbArtist.name,
       profile_type: profileType,
@@ -71,7 +92,6 @@ const Artistas = () => {
       manager_phone: dbArtist.manager_phone,
       manager_email: dbArtist.manager_email
     });
-    
     return {
       // Pass the raw database artist for edit mode
       ...dbArtist,
@@ -86,7 +106,7 @@ const Artistas = () => {
         spotify: dbArtist.spotify_url,
         youtube: dbArtist.youtube_url,
         tiktok: dbArtist.tiktok,
-        soundcloud: dbArtist.soundcloud,
+        soundcloud: dbArtist.soundcloud
       },
       stats: {
         projetos: artistStats[dbArtist.id]?.projetos || 0,
@@ -112,52 +132,36 @@ const Artistas = () => {
   };
 
   // Use mock data when no database artists exist
-  const displayArtists = artists?.length 
-    ? artists.map(transformDatabaseArtist)
-    : mockArtists;
-  
+  const displayArtists = artists?.length ? artists.map(transformDatabaseArtist) : mockArtists;
   const currentArtists = filteredArtists.length ? filteredArtists : displayArtists;
-
-  const filterOptions = [
-    {
-      key: "genre",
-      label: "Gênero",
-      options: ["Funk", "Rock", "Pop", "MPB", "Sertanejo"]
-    },
-    {
-      key: "status",
-      label: "Status",
-      options: ["Ativo", "Inativo"]
-    },
-    {
-      key: "perfil",
-      label: "Perfil",
-      options: ["Independente", "Gravadora", "Produtor", "Compositor"]
-    }
-  ];
-
+  const filterOptions = [{
+    key: "genre",
+    label: "Gênero",
+    options: ["Funk", "Rock", "Pop", "MPB", "Sertanejo"]
+  }, {
+    key: "status",
+    label: "Status",
+    options: ["Ativo", "Inativo"]
+  }, {
+    key: "perfil",
+    label: "Perfil",
+    options: ["Independente", "Gravadora", "Produtor", "Compositor"]
+  }];
   const handleSearch = (searchTerm: string) => {
     filterArtists(searchTerm, {});
   };
-
   const handleFilter = (filters: Record<string, string>) => {
     filterArtists("", filters);
   };
-
   const handleClear = () => {
     setFilteredArtists(displayArtists);
   };
-
   const filterArtists = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = displayArtists;
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter((artist: any) =>
-        artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        artist.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        artist.genre.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter((artist: any) => artist.name.toLowerCase().includes(searchTerm.toLowerCase()) || artist.email.toLowerCase().includes(searchTerm.toLowerCase()) || artist.genre.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
     // Apply category filters
@@ -171,12 +175,9 @@ const Artistas = () => {
         });
       }
     });
-
     setFilteredArtists(filtered);
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
@@ -197,72 +198,45 @@ const Artistas = () => {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <DashboardCard
-                title="Total de Artistas"
-                value={isLoading ? '...' : artistsCount || displayArtists.length}
-                description="artistas cadastrados"
-                icon={Users}
-                trend={{ value: 8.5, isPositive: true }}
-              />
-              <DashboardCard
-                title="Artistas Ativos"
-                value={isLoading ? '...' : displayArtists.filter((a: any) => a.status === 'Ativo').length}
-                description="com contratos vigentes"
-                icon={Star}
-                trend={{ value: 12.3, isPositive: true }}
-              />
-              <DashboardCard
-                title="Obras Totais"
-                value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)}
-                description="músicas registradas"
-                icon={Music}
-                trend={{ value: 15.2, isPositive: true }}
-              />
-              <DashboardCard
-                title="Receita dos Artistas"
-                value="R$ 0"
-                description="este mês"
-                icon={DollarSign}
-                trend={{ value: 0, isPositive: true }}
-              />
+              <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} trend={{
+              value: 8.5,
+              isPositive: true
+            }} />
+              <DashboardCard title="Artistas Ativos" value={isLoading ? '...' : displayArtists.filter((a: any) => a.status === 'Ativo').length} description="com contratos vigentes" icon={Star} trend={{
+              value: 12.3,
+              isPositive: true
+            }} />
+              <DashboardCard title="Obras Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} trend={{
+              value: 15.2,
+              isPositive: true
+            }} />
+              <DashboardCard title="Receita dos Artistas" value="R$ 0" description="este mês" icon={DollarSign} trend={{
+              value: 0,
+              isPositive: true
+            }} />
             </div>
 
             {/* Search and Filters */}
-            <SearchFilter
-              searchPlaceholder="Buscar artistas por nome, email ou gênero..."
-              filters={filterOptions}
-              onSearch={handleSearch}
-              onFilter={handleFilter}
-              onClear={handleClear}
-            />
+            <SearchFilter searchPlaceholder="Buscar artistas por nome, email ou gênero..." filters={filterOptions} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
 
             {/* Artists List */}
             <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Lista de Artistas</CardTitle>
-                <CardDescription>
-                  Visão geral de todos os artistas gerenciados
-                </CardDescription>
+                <CardDescription>Visão geral de todos os artistas</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {isLoading ? (
-                    <div className="text-center py-8">
+                  {isLoading ? <div className="text-center py-8">
                       <div className="space-y-4">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="animate-pulse bg-muted h-32 rounded-lg" />
-                        ))}
+                        {[...Array(3)].map((_, i) => <div key={i} className="animate-pulse bg-muted h-32 rounded-lg" />)}
                       </div>
-                    </div>
-                  ) : error ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    </div> : error ? <div className="text-center py-8 text-muted-foreground">
                       <p className="mb-4">Erro ao carregar artistas</p>
                       <Button variant="outline" onClick={() => window.location.reload()}>
                         Tentar novamente
                       </Button>
-                    </div>
-                  ) : currentArtists.length === 0 ? (
-                    <div className="text-center py-12">
+                    </div> : currentArtists.length === 0 ? <div className="text-center py-12">
                       <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-semibold mb-2">Nenhum artista encontrado</h3>
                       <p className="text-muted-foreground mb-4">
@@ -272,16 +246,11 @@ const Artistas = () => {
                         <Plus className="h-4 w-4 mr-2" />
                         Adicionar Artista
                       </Button>
-                    </div>
-                  ) : null}
-                  {currentArtists.map((artist: any) => (
-                    <ArtistCard key={artist.id} artist={artist} />
-                  ))}
-                  {!currentArtists.length && !isLoading && (
-                    <div className="text-center py-8 text-muted-foreground">
+                    </div> : null}
+                  {currentArtists.map((artist: any) => <ArtistCard key={artist.id} artist={artist} />)}
+                  {!currentArtists.length && !isLoading && <div className="text-center py-8 text-muted-foreground">
                       Nenhum artista encontrado.
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </CardContent>
             </Card>
@@ -290,13 +259,7 @@ const Artistas = () => {
       </div>
 
       {/* Create Artist Modal */}
-      <ArtistModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        mode="create"
-      />
-    </SidebarProvider>
-  );
+      <ArtistModal open={createModalOpen} onOpenChange={setCreateModalOpen} mode="create" />
+    </SidebarProvider>;
 };
-
 export default Artistas;
