@@ -362,9 +362,10 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         // Atualizar usuário existente
         const result = await updateUser(user.id, {
           full_name: sanitizeInput(data.fullName),
+          email: sanitizeInput(data.email),
           phone: data.phone ? sanitizeInput(data.phone) : undefined,
           sector: data.sector ? sanitizeInput(data.sector) : undefined,
-          role: sanitizeInput(data.role),
+          role: sanitizeInput(data.role || ''),
           permissions: allPermissions,
         });
         
