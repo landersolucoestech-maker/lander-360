@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -9,9 +9,9 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { InventoryViewModal } from "@/components/modals/InventoryViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Package, Plus, Headphones, Mic, Speaker } from "lucide-react";
-import { mockEquipment } from "@/data/mockData";
+import { Package, Plus, Headphones, Mic, Speaker, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useInventory, useDeleteInventory } from "@/hooks/useInventory";
 
 interface Equipment {
   id: string;
@@ -20,19 +20,46 @@ interface Equipment {
   status: string;
   quantity: number;
   location: string;
-  value: string;
-  lastMaintenance: string;
+  unit_value: number | null;
+  sector: string | null;
+  responsible: string | null;
+  purchase_location: string | null;
+  invoice_number: string | null;
+  entry_date: string | null;
+  observations: string | null;
 }
 
 const Inventario = () => {
   const { toast } = useToast();
-  const [allEquipment, setAllEquipment] = useState<Equipment[]>([]);
+  const { data: inventoryData, isLoading } = useInventory();
+  const deleteInventory = useDeleteInventory();
+  
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+
+  const allEquipment: Equipment[] = (inventoryData || []).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    category: item.category || 'Outros',
+    status: item.status || 'Disponível',
+    quantity: item.quantity || 1,
+    location: item.location || '-',
+    unit_value: item.unit_value,
+    sector: item.sector,
+    responsible: item.responsible,
+    purchase_location: item.purchase_location,
+    invoice_number: item.invoice_number,
+    entry_date: item.entry_date,
+    observations: item.observations,
+  }));
+
+  useEffect(() => {
+    setFilteredEquipment(allEquipment);
+  }, [inventoryData]);
 
   const filterOptions = [
     {
@@ -104,19 +131,20 @@ const Inventario = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedEquipment) {
-      const updated = allEquipment.filter(e => e.id !== selectedEquipment.id);
-      setAllEquipment(updated);
-      setFilteredEquipment(updated);
-      toast({
-        title: "Item Excluído",
-        description: `${selectedEquipment.name} foi removido do inventário.`,
-      });
+      await deleteInventory.mutateAsync(selectedEquipment.id);
       setIsDeleteModalOpen(false);
       setSelectedEquipment(null);
     }
   };
+
+  const formatCurrency = (value: number | null) => {
+    if (!value) return 'R$ 0,00';
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
+
+  const totalValue = allEquipment.reduce((sum, item) => sum + ((item.unit_value || 0) * item.quantity), 0);
 
   return (
     <SidebarProvider>
@@ -149,7 +177,7 @@ const Inventario = () => {
               />
               <DashboardCard
                 title="Valor do Inventário"
-                value="R$ 0"
+                value={formatCurrency(totalValue)}
                 description="patrimônio total"
                 icon={Package}
                 trend={{ value: 0, isPositive: true }}
@@ -188,7 +216,11 @@ const Inventario = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {filteredEquipment.length === 0 ? (
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : filteredEquipment.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Package className="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum equipamento cadastrado</h3>
@@ -242,11 +274,11 @@ const Inventario = () => {
                         </div>
                         <div className="text-center">
                           <div className="text-muted-foreground">Valor</div>
-                          <div className="font-medium text-foreground">{item.value}</div>
+                          <div className="font-medium text-foreground">{formatCurrency(item.unit_value)}</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-muted-foreground">Última Manutenção</div>
-                          <div className="font-medium">{item.lastMaintenance}</div>
+                          <div className="text-muted-foreground">Responsável</div>
+                          <div className="font-medium">{item.responsible || '-'}</div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button variant="outline" size="sm" onClick={() => handleView(item)}>
