@@ -29,6 +29,18 @@ const CRM = () => {
   
   const contacts = crmContacts;
 
+  // Calculate KPIs from contacts data
+  const totalContacts = contacts.length;
+  const hotLeads = contacts.filter(c => c.status === 'quente').length;
+  const closedDeals = contacts.filter(c => c.status === 'fechado').length;
+  const conversionRate = totalContacts > 0 ? Math.round((closedDeals / totalContacts) * 100) : 0;
+  
+  // Pipeline counts
+  const prospects = contacts.filter(c => c.status === 'frio' || c.status === 'morno').length;
+  const qualified = contacts.filter(c => c.status === 'quente').length;
+  const negotiating = contacts.filter(c => c.status === 'negociacao').length;
+  const closed = contacts.filter(c => c.status === 'fechado').length;
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -56,28 +68,28 @@ const CRM = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard
                 title="Total de Contatos"
-                value={0}
+                value={totalContacts}
                 description="na base de dados"
                 icon={UserCheck}
                 trend={{ value: 0, isPositive: true }}
               />
               <DashboardCard
                 title="Leads Quentes"
-                value={0}
+                value={hotLeads}
                 description="alta probabilidade"
                 icon={Star}
                 trend={{ value: 0, isPositive: true }}
               />
               <DashboardCard
                 title="Conversões"
-                value={0}
+                value={closedDeals}
                 description="este mês"
                 icon={Calendar}
                 trend={{ value: 0, isPositive: true }}
               />
               <DashboardCard
                 title="Taxa de Conversão"
-                value="0%"
+                value={`${conversionRate}%`}
                 description="últimos 30 dias"
                 icon={Star}
                 trend={{ value: 0, isPositive: true }}
@@ -91,7 +103,7 @@ const CRM = () => {
                   <CardTitle className="text-sm font-medium">Prospects</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{prospects}</div>
                   <p className="text-xs text-muted-foreground">contatos iniciais</p>
                 </CardContent>
               </Card>
@@ -101,7 +113,7 @@ const CRM = () => {
                   <CardTitle className="text-sm font-medium">Qualificados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{qualified}</div>
                   <p className="text-xs text-muted-foreground">leads validados</p>
                 </CardContent>
               </Card>
@@ -111,7 +123,7 @@ const CRM = () => {
                   <CardTitle className="text-sm font-medium">Negociação</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{negotiating}</div>
                   <p className="text-xs text-muted-foreground">em andamento</p>
                 </CardContent>
               </Card>
@@ -121,7 +133,7 @@ const CRM = () => {
                   <CardTitle className="text-sm font-medium">Fechados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{closed}</div>
                   <p className="text-xs text-muted-foreground">contratos assinados</p>
                 </CardContent>
               </Card>
