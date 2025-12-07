@@ -183,66 +183,10 @@ export function ContactProfileModal({
               <Clock className="h-5 w-5" />
               Histórico de Interações
             </h3>
-            <div className="space-y-3">
-              <div className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/10">
-                    <Phone className="h-4 w-4 text-primary" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-medium">Ligação realizada</h4>
-                      <p className="text-sm text-muted-foreground">Discussão sobre nova parceria</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDateBR(new Date().toISOString())}
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">Duração: 25 min</div>
-                </div>
-              </div>
-
-              <div className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/10">
-                    <Mail className="h-4 w-4 text-primary" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-medium">Email enviado</h4>
-                      <p className="text-sm text-muted-foreground">Proposta de contrato enviada</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDateBR(new Date().toISOString())}
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="mt-2 text-xs">Lido</Badge>
-                </div>
-              </div>
-
-              <div className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/10">
-                    <Calendar className="h-4 w-4 text-primary" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-medium">Reunião presencial</h4>
-                      <p className="text-sm text-muted-foreground">Reunião no escritório para alinhamento</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDateBR(new Date().toISOString())}
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">Duração: 1h 30min</div>
-                </div>
-              </div>
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>Nenhuma interação registrada ainda.</p>
+              <p className="text-sm mt-1">As interações com este contato aparecerão aqui.</p>
             </div>
           </div>
 
