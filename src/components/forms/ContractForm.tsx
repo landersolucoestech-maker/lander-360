@@ -14,13 +14,13 @@ import { DateInput } from '@/components/ui/date-input';
 
 const contractSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
-  client_type: z.enum(['artista', 'empresa'], { required_error: 'Selecione o tipo de cliente' }),
-  service_type: z.enum(['empresariamento', 'gestao', 'agenciamento', 'edicao', 'distribuicao', 'marketing', 'producao_musical', 'producao_audiovisual', 'licenciamento', 'publicidade', 'parceria', 'shows', 'outros'], { required_error: 'Selecione o tipo de serviço' }),
+  client_type: z.enum(['artista', 'empresa']).optional(),
+  service_type: z.enum(['empresariamento', 'gestao', 'agenciamento', 'edicao', 'distribuicao', 'marketing', 'producao_musical', 'producao_audiovisual', 'licenciamento', 'publicidade', 'parceria', 'shows', 'outros']).optional(),
   artist_id: z.string().optional(),
   company_id: z.string().optional(),
   project_id: z.string().optional(),
   contractor_contact: z.string().optional(),
-  responsible_person: z.string().min(1, 'Responsável é obrigatório'),
+  responsible_person: z.string().optional(),
   status: z.enum(['pendente', 'assinado', 'expirado', 'rescindido', 'rascunho']).default('rascunho'),
   start_date: z.date().optional(),
   end_date: z.date().optional(),

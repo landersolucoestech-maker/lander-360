@@ -108,6 +108,7 @@ export const ContractModal: React.FC<ContractModalProps> = ({
         </DialogHeader>
         
         <ContractForm
+          key={contract?.id || 'new'}
           onSubmit={handleSubmit}
           onCancel={onClose}
           initialData={initialData}
