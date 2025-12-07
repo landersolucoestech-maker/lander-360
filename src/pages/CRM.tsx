@@ -200,10 +200,6 @@ const CRM = () => {
                             </div>
                           </div>
                           <div className="text-center text-sm">
-                            <div className="text-muted-foreground">Última Atualização</div>
-                            <div className="font-medium">{new Date(contact.updated_at).toLocaleDateString('pt-BR')}</div>
-                          </div>
-                          <div className="text-center text-sm">
                             <div className="text-muted-foreground">Empresa</div>
                             <div className="font-medium max-w-32 truncate">{contact.company || '-'}</div>
                           </div>
