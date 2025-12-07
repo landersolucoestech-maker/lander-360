@@ -49,6 +49,43 @@ const Artistas = () => {
     return artistIds.size;
   }, [activeContracts]);
 
+  // Calculate trends based on creation dates (last 30 days vs previous 30 days)
+  const kpiTrends = useMemo(() => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // Artists trend
+    const artistsLast30 = (artists || []).filter((a: any) => new Date(a.created_at) >= thirtyDaysAgo).length;
+    const artistsPrev30 = (artists || []).filter((a: any) => {
+      const date = new Date(a.created_at);
+      return date >= sixtyDaysAgo && date < thirtyDaysAgo;
+    }).length;
+    const artistsTrend = artistsPrev30 > 0 ? ((artistsLast30 - artistsPrev30) / artistsPrev30) * 100 : artistsLast30 > 0 ? 100 : 0;
+
+    // Contracts trend
+    const contractsLast30 = activeContracts.filter((c: any) => new Date(c.created_at) >= thirtyDaysAgo).length;
+    const contractsPrev30 = activeContracts.filter((c: any) => {
+      const date = new Date(c.created_at);
+      return date >= sixtyDaysAgo && date < thirtyDaysAgo;
+    }).length;
+    const contractsTrend = contractsPrev30 > 0 ? ((contractsLast30 - contractsPrev30) / contractsPrev30) * 100 : contractsLast30 > 0 ? 100 : 0;
+
+    // Music registry trend
+    const musicLast30 = musicRegistry.filter((m: any) => new Date(m.created_at) >= thirtyDaysAgo).length;
+    const musicPrev30 = musicRegistry.filter((m: any) => {
+      const date = new Date(m.created_at);
+      return date >= sixtyDaysAgo && date < thirtyDaysAgo;
+    }).length;
+    const musicTrend = musicPrev30 > 0 ? ((musicLast30 - musicPrev30) / musicPrev30) * 100 : musicLast30 > 0 ? 100 : 0;
+
+    return {
+      artists: { value: Math.abs(Number(artistsTrend.toFixed(1))), isPositive: artistsTrend >= 0 },
+      contracts: { value: Math.abs(Number(contractsTrend.toFixed(1))), isPositive: contractsTrend >= 0 },
+      music: { value: Math.abs(Number(musicTrend.toFixed(1))), isPositive: musicTrend >= 0 },
+    };
+  }, [artists, activeContracts, musicRegistry]);
+
   // Count projects, releases and music per artist
   const artistStats = useMemo(() => {
     const stats: Record<string, {
@@ -213,9 +250,9 @@ const Artistas = () => {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} />
-              <DashboardCard title="Contratos Vigentes" value={isLoading ? '...' : artistsWithActiveContracts} description="artistas com contratos ativos" icon={Star} />
-              <DashboardCard title="Obras Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} />
+              <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} trend={kpiTrends.artists} />
+              <DashboardCard title="Contratos Vigentes" value={isLoading ? '...' : artistsWithActiveContracts} description="artistas com contratos ativos" icon={Star} trend={kpiTrends.contracts} />
+              <DashboardCard title="Obras Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} trend={kpiTrends.music} />
               <DashboardCard title="Receita dos Artistas" value="R$ 0" description="este mês" icon={DollarSign} />
             </div>
 
