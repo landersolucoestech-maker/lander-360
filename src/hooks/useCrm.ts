@@ -64,6 +64,7 @@ interface CrmContactData {
   status?: string;
   priority?: string;
   next_action?: string;
+  image_url?: string;
 }
 
 // Create CRM contact mutation
