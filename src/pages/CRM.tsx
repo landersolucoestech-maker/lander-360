@@ -21,25 +21,25 @@ const CRM = () => {
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [contactToDelete, setContactToDelete] = useState<any>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  
+
   const { data: crmContacts = [], isLoading } = useCrmContacts();
   const createContact = useCreateCrmContact();
   const updateContact = useUpdateCrmContact();
   const deleteContact = useDeleteCrmContact();
-  
+
   const contacts = crmContacts;
 
   // Calculate KPIs from contacts data
   const totalContacts = contacts.length;
-  const hotLeads = contacts.filter(c => c.status === 'quente').length;
-  const closedDeals = contacts.filter(c => c.status === 'fechado').length;
+  const hotLeads = contacts.filter((c) => c.status === "quente").length;
+  const closedDeals = contacts.filter((c) => c.status === "fechado").length;
   const conversionRate = totalContacts > 0 ? Math.round((closedDeals / totalContacts) * 100) : 0;
-  
+
   // Pipeline counts
-  const prospects = contacts.filter(c => c.status === 'frio' || c.status === 'morno').length;
-  const qualified = contacts.filter(c => c.status === 'quente').length;
-  const negotiating = contacts.filter(c => c.status === 'negociacao').length;
-  const closed = contacts.filter(c => c.status === 'fechado').length;
+  const prospects = contacts.filter((c) => c.status === "frio" || c.status === "morno").length;
+  const qualified = contacts.filter((c) => c.status === "quente").length;
+  const negotiating = contacts.filter((c) => c.status === "negociacao").length;
+  const closed = contacts.filter((c) => c.status === "fechado").length;
 
   return (
     <SidebarProvider>
@@ -51,14 +51,9 @@ const CRM = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold text-foreground">CRM</h1>
-                <p className="text-muted-foreground">
-                  Gestão de relacionamento com clientes e prospects
-                </p>
+                <p className="text-muted-foreground">Gestão de relacionamento com clientes e prospects</p>
               </div>
-              <Button 
-                className="gap-2"
-                onClick={() => setIsContactModalOpen(true)}
-              >
+              <Button className="gap-2" onClick={() => setIsContactModalOpen(true)}>
                 <Plus className="h-4 w-4" />
                 Novo Contato
               </Button>
@@ -107,7 +102,7 @@ const CRM = () => {
                   <p className="text-xs text-muted-foreground">contatos iniciais</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Qualificados</CardTitle>
@@ -117,7 +112,7 @@ const CRM = () => {
                   <p className="text-xs text-muted-foreground">leads validados</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Negociação</CardTitle>
@@ -127,7 +122,7 @@ const CRM = () => {
                   <p className="text-xs text-muted-foreground">em andamento</p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Fechados</CardTitle>
@@ -143,9 +138,7 @@ const CRM = () => {
             <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Lista de Contatos</CardTitle>
-                <CardDescription>
-                  Todos os contatos e prospects em acompanhamento
-                </CardDescription>
+                <CardDescription>Todos os contatos e prospects em acompanhamento</CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -156,9 +149,7 @@ const CRM = () => {
                   <div className="text-center py-12">
                     <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">Nenhum contato cadastrado</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Comece criando seu primeiro contato no CRM
-                    </p>
+                    <p className="text-muted-foreground mb-4">Comece criando seu primeiro contato no CRM</p>
                     <Button onClick={() => setIsContactModalOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Criar Primeiro Contato
@@ -174,31 +165,45 @@ const CRM = () => {
                         {/* Avatar */}
                         <Avatar className="h-10 w-10 flex-shrink-0">
                           <AvatarImage src={contact.image_url || "/placeholder.svg"} alt={contact.name} />
-                          <AvatarFallback>{contact.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</AvatarFallback>
+                          <AvatarFallback>
+                            {contact.name
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </AvatarFallback>
                         </Avatar>
 
                         {/* Nome e Badges */}
-                        <div className="min-w-0 flex-1 max-w-[250px]">
+                        <div className="min-w-0 flex-1 max-w-[275px]">
                           <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
                           <div className="flex items-center gap-1 mt-1 flex-wrap">
-                            <Badge variant="secondary" className="text-xs">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
-                            <Badge 
-                              variant={
-                                (contact as any).status === "quente" ? "destructive" :
-                                (contact as any).status === "negociacao" ? "outline" : "secondary"
-                              }
-                              className="text-xs"
-                            >
-                              {(contact as any).status || 'N/A'}
+                            <Badge variant="secondary" className="text-xs">
+                              {contact.contact_type?.replace(/_/g, " ") || "N/A"}
                             </Badge>
-                            <Badge 
+                            <Badge
                               variant={
-                                (contact as any).priority === "alta" ? "destructive" :
-                                (contact as any).priority === "media" ? "outline" : "secondary"
+                                (contact as any).status === "quente"
+                                  ? "destructive"
+                                  : (contact as any).status === "negociacao"
+                                    ? "outline"
+                                    : "secondary"
                               }
                               className="text-xs"
                             >
-                              {(contact as any).priority || 'N/A'}
+                              {(contact as any).status || "N/A"}
+                            </Badge>
+                            <Badge
+                              variant={
+                                (contact as any).priority === "alta"
+                                  ? "destructive"
+                                  : (contact as any).priority === "media"
+                                    ? "outline"
+                                    : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {(contact as any).priority || "N/A"}
                             </Badge>
                           </div>
                         </div>
@@ -239,14 +244,17 @@ const CRM = () => {
                         {contact.city && (
                           <div className="text-sm flex-shrink-0">
                             <div className="text-muted-foreground text-xs">Cidade</div>
-                            <div className="font-medium truncate max-w-[100px]">{contact.city}{contact.state ? `/${contact.state}` : ''}</div>
+                            <div className="font-medium truncate max-w-[100px]">
+                              {contact.city}
+                              {contact.state ? `/${contact.state}` : ""}
+                            </div>
                           </div>
                         )}
 
                         {/* Ações */}
                         <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => {
                               setSelectedContact(contact);
@@ -255,8 +263,8 @@ const CRM = () => {
                           >
                             Ver
                           </Button>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => {
                               setSelectedContact(contact);
@@ -265,8 +273,8 @@ const CRM = () => {
                           >
                             Editar
                           </Button>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => {
                               setContactToDelete(contact);
@@ -285,7 +293,7 @@ const CRM = () => {
           </div>
         </SidebarInset>
       </div>
-      
+
       <ContactModal
         open={isContactModalOpen}
         onOpenChange={setIsContactModalOpen}
@@ -311,24 +319,24 @@ const CRM = () => {
             });
             setIsContactModalOpen(false);
           } catch (error) {
-            console.error('Error creating contact:', error);
+            console.error("Error creating contact:", error);
           }
         }}
       />
-      
-      <ContactProfileModal
-        open={isProfileModalOpen}
-        onOpenChange={setIsProfileModalOpen}
-        contact={selectedContact}
-      />
+
+      <ContactProfileModal open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen} contact={selectedContact} />
 
       <ContactModal
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
-        initialData={selectedContact ? {
-          ...selectedContact,
-          type: selectedContact.contact_type,
-        } : undefined}
+        initialData={
+          selectedContact
+            ? {
+                ...selectedContact,
+                type: selectedContact.contact_type,
+              }
+            : undefined
+        }
         onSubmit={async (data) => {
           try {
             await updateContact.mutateAsync({
@@ -352,7 +360,7 @@ const CRM = () => {
             });
             setIsEditModalOpen(false);
           } catch (error) {
-            console.error('Error updating contact:', error);
+            console.error("Error updating contact:", error);
           }
         }}
       />
@@ -367,7 +375,7 @@ const CRM = () => {
               setIsDeleteModalOpen(false);
               setContactToDelete(null);
             } catch (error) {
-              console.error('Error deleting contact:', error);
+              console.error("Error deleting contact:", error);
             }
           }
         }}
