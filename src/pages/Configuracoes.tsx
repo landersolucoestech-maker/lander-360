@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -12,11 +12,55 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor } from "lucide-react";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
+import { IntegrationModal } from "@/components/modals/IntegrationModal";
 import { useToast } from "@/hooks/use-toast";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { useBackupData } from "@/hooks/useBackupData";
 import { RestoreBackupModal } from "@/components/modals/RestoreBackupModal";
+
+// Integration configurations
+const integrationConfigs = {
+  onerpm: {
+    id: 'onerpm',
+    name: 'ONErpm',
+    type: 'distributor' as const,
+    description: 'Distribuidora global com presença na América Latina. Conecte para sincronizar lançamentos e métricas.',
+    website: 'https://onerpm.com',
+  },
+  distrokid: {
+    id: 'distrokid',
+    name: 'DistroKid',
+    type: 'distributor' as const,
+    description: 'Distribuidora digital com distribuição ilimitada. Conecte para gerenciar seus lançamentos.',
+    website: 'https://distrokid.com',
+  },
+  '30por1': {
+    id: '30por1',
+    name: '30por1',
+    type: 'distributor' as const,
+    description: 'Distribuidora brasileira independente. Conecte para sincronizar catálogo e relatórios.',
+    website: 'https://30por1.com.br',
+  },
+  abramus: {
+    id: 'abramus',
+    name: 'ABRAMUS',
+    type: 'rights' as const,
+    description: 'Associação Brasileira de Música e Artes. Conecte para consultar registros de obras e direitos autorais.',
+    website: 'https://abramus.org.br',
+    requiredFields: [
+      { key: 'codigo_socio', label: 'Código de Sócio ABRAMUS', placeholder: 'Ex: 123456', type: 'text' },
+      { key: 'cpf', label: 'CPF do Titular', placeholder: '000.000.000-00', type: 'text' },
+    ],
+  },
+  google_calendar: {
+    id: 'google_calendar',
+    name: 'Google Calendar',
+    type: 'calendar' as const,
+    description: 'Sincronize eventos e compromissos da agenda com o Google Calendar.',
+    website: 'https://calendar.google.com',
+  },
+};
 
 const Configuracoes = () => {
   const { toast } = useToast();
@@ -26,7 +70,32 @@ const Configuracoes = () => {
   const { exportData, createBackup, isExporting, isBackingUp } = useBackupData();
   const [showRestoreBackup, setShowRestoreBackup] = useState(false);
   const [showBankIntegration, setShowBankIntegration] = useState(false);
+  const [showIntegrationModal, setShowIntegrationModal] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<typeof integrationConfigs[keyof typeof integrationConfigs] | null>(null);
   const [timezoneInput, setTimezoneInput] = useState(systemSettings.timezone);
+  const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
+
+  // Load connected integrations from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('integrations');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const connected: Record<string, boolean> = {};
+      Object.keys(parsed).forEach(key => {
+        connected[key] = parsed[key].connected;
+      });
+      setConnectedIntegrations(connected);
+    }
+  }, [showIntegrationModal]);
+
+  const handleOpenIntegration = (integrationKey: keyof typeof integrationConfigs) => {
+    setSelectedIntegration(integrationConfigs[integrationKey]);
+    setShowIntegrationModal(true);
+  };
+
+  const handleIntegrationConnect = (integrationId: string) => {
+    setConnectedIntegrations(prev => ({ ...prev, [integrationId]: true }));
+  };
 
   return (
     <SidebarProvider>
@@ -242,18 +311,18 @@ const Configuracoes = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       <IntegrationItem 
                         name="ONErpm" 
-                        connected={false}
-                        onConnect={() => toast({ title: "Conectar ONErpm", description: "Funcionalidade em desenvolvimento" })}
+                        connected={connectedIntegrations['onerpm'] || false}
+                        onConnect={() => handleOpenIntegration('onerpm')}
                       />
                       <IntegrationItem 
                         name="DistroKid" 
-                        connected={false}
-                        onConnect={() => toast({ title: "Conectar DistroKid", description: "Funcionalidade em desenvolvimento" })}
+                        connected={connectedIntegrations['distrokid'] || false}
+                        onConnect={() => handleOpenIntegration('distrokid')}
                       />
                       <IntegrationItem 
                         name="30por1" 
-                        connected={false}
-                        onConnect={() => toast({ title: "Conectar 30por1", description: "Funcionalidade em desenvolvimento" })}
+                        connected={connectedIntegrations['30por1'] || false}
+                        onConnect={() => handleOpenIntegration('30por1')}
                       />
                     </div>
                   </div>
@@ -269,8 +338,8 @@ const Configuracoes = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       <IntegrationItem 
                         name="ABRAMUS" 
-                        connected={false}
-                        onConnect={() => toast({ title: "Conectar ABRAMUS", description: "Funcionalidade em desenvolvimento" })}
+                        connected={connectedIntegrations['abramus'] || false}
+                        onConnect={() => handleOpenIntegration('abramus')}
                       />
                     </div>
                   </div>
@@ -292,6 +361,8 @@ const Configuracoes = () => {
                     </div>
                   </div>
 
+                  <Separator />
+
                   {/* Calendário */}
                   <div>
                     <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -301,8 +372,8 @@ const Configuracoes = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       <IntegrationItem 
                         name="Google Calendar" 
-                        connected={false}
-                        onConnect={() => toast({ title: "Conectar Google Calendar", description: "Funcionalidade em desenvolvimento" })}
+                        connected={connectedIntegrations['google_calendar'] || false}
+                        onConnect={() => handleOpenIntegration('google_calendar')}
                       />
                     </div>
                   </div>
@@ -321,6 +392,13 @@ const Configuracoes = () => {
       <BankIntegrationModal
         open={showBankIntegration}
         onOpenChange={setShowBankIntegration}
+      />
+
+      <IntegrationModal
+        open={showIntegrationModal}
+        onOpenChange={setShowIntegrationModal}
+        integration={selectedIntegration}
+        onConnect={handleIntegrationConnect}
       />
     </SidebarProvider>
   );
