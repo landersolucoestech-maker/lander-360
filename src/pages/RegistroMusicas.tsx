@@ -359,8 +359,12 @@ const RegistroMusicas = () => {
                                 <div className="font-medium text-foreground">{song.ecad_code || "-"}</div>
                               </div>
                               <div className="text-center">
-                                <div className="text-muted-foreground">Participantes</div>
-                                <div className="font-medium text-foreground">{song.composers?.join(", ") || "-"}</div>
+                                <div className="text-muted-foreground">Compositores/Autor</div>
+                                <div className="font-medium text-foreground max-w-[150px] truncate">{song.composers?.join(", ") || "-"}</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-muted-foreground">Editora</div>
+                                <div className="font-medium text-foreground max-w-[120px] truncate">{song.publishers?.join(", ") || "-"}</div>
                               </div>
                               <div className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleViewSong(song)}>
