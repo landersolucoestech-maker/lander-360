@@ -444,17 +444,18 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
             </div>
 
             {/* Contrato Vinculado */}
+            {/* Contrato Vinculado */}
             <div className="space-y-2">
               <Label>Contrato Vinculado (opcional)</Label>
               <Select
-                value={form.watch('contract_id') || ''}
-                onValueChange={(value) => form.setValue('contract_id', value || undefined)}
+                value={form.watch('contract_id') || 'none'}
+                onValueChange={(value) => form.setValue('contract_id', value === 'none' ? undefined : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar contrato..." />
                 </SelectTrigger>
                 <SelectContent className="bg-background border border-border z-50">
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {contracts.map((contract) => (
                     <SelectItem key={contract.id} value={contract.id}>{contract.title}</SelectItem>
                   ))}
