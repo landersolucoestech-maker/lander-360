@@ -274,7 +274,6 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
 
           {/* Metadados */}
           <div className="text-xs text-muted-foreground pt-4 border-t border-border">
-            <p>ID: {contract.id}</p>
             {contract.created_at && (
               <p>Criado em: {format(new Date(contract.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
             )}
