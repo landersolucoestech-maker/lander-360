@@ -106,17 +106,85 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="type">Tipo *</Label>
-          <Select onValueChange={(value) => setValue("type", value)}>
+          <Select onValueChange={(value) => setValue("type", value)} defaultValue={initialData?.type}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o tipo" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="contratante">Contratante</SelectItem>
+            <SelectContent className="max-h-[300px]">
+              <SelectItem value="agencia_booking">Agência de booking</SelectItem>
+              <SelectItem value="agencia_branding">Agência de branding</SelectItem>
+              <SelectItem value="agencia_casting">Agência de casting</SelectItem>
+              <SelectItem value="agencia_marketing">Agência de marketing</SelectItem>
+              <SelectItem value="agencia_publicidade">Agência de publicidade</SelectItem>
+              <SelectItem value="agencia_sync">Agência de sync/licenciamento</SelectItem>
+              <SelectItem value="agencia_viagem">Agência de viagem</SelectItem>
+              <SelectItem value="artista">Artista</SelectItem>
+              <SelectItem value="assessoria_imprensa">Assessoria de imprensa</SelectItem>
+              <SelectItem value="associacoes_musicos">Associações de músicos</SelectItem>
+              <SelectItem value="bancos">Bancos</SelectItem>
+              <SelectItem value="barbeiro">Barbeiro</SelectItem>
+              <SelectItem value="cartorio">Cartório</SelectItem>
+              <SelectItem value="casa_show">Casa de show</SelectItem>
+              <SelectItem value="clientes_corporativos">Clientes corporativos</SelectItem>
               <SelectItem value="colaborador">Colaborador</SelectItem>
-              <SelectItem value="parceiro">Parceiro</SelectItem>
+              <SelectItem value="compositor">Compositor</SelectItem>
+              <SelectItem value="consultor_estrategia">Consultor de estratégia</SelectItem>
+              <SelectItem value="consultor_financeiro">Consultor financeiro</SelectItem>
+              <SelectItem value="consultor_marketing">Consultor de marketing</SelectItem>
+              <SelectItem value="contratantes">Contratantes</SelectItem>
+              <SelectItem value="correios">Correios</SelectItem>
+              <SelectItem value="criadores_conteudo">Criadores de conteúdo</SelectItem>
+              <SelectItem value="curadores_playlist">Curadores de playlist</SelectItem>
+              <SelectItem value="dancarina">Dançarino(a)</SelectItem>
+              <SelectItem value="designer_grafico">Designer gráfico</SelectItem>
+              <SelectItem value="diretor_socio">Diretor / Sócio</SelectItem>
+              <SelectItem value="distribuidora_digital">Distribuidora digital</SelectItem>
+              <SelectItem value="editora_musical">Editora musical</SelectItem>
+              <SelectItem value="empresario_artistico">Empresário artístico</SelectItem>
+              <SelectItem value="empresas_ecommerce">Empresas de e-commerce</SelectItem>
+              <SelectItem value="empresas_tecnologia">Empresas de tecnologia</SelectItem>
+              <SelectItem value="engenheiro_audio">Engenheiro de áudio</SelectItem>
+              <SelectItem value="engenheiro_masterizacao">Engenheiro de masterização</SelectItem>
+              <SelectItem value="engenheiro_mixagem">Engenheiro de mixagem</SelectItem>
+              <SelectItem value="equipe_limpeza">Equipe de limpeza</SelectItem>
+              <SelectItem value="escritorio_juridico">Escritório jurídico</SelectItem>
               <SelectItem value="fornecedor">Fornecedor</SelectItem>
-              <SelectItem value="investidor">Investidor</SelectItem>
-              <SelectItem value="influenciador">Influenciador</SelectItem>
+              <SelectItem value="fotografo">Fotógrafo</SelectItem>
+              <SelectItem value="funcionarios">Funcionários</SelectItem>
+              <SelectItem value="graficas">Gráficas</SelectItem>
+              <SelectItem value="gravadora_musical">Gravadora musical</SelectItem>
+              <SelectItem value="hoteis">Hotéis</SelectItem>
+              <SelectItem value="influenciador">Influenciador(a)</SelectItem>
+              <SelectItem value="instrutor_vocal">Instrutor vocal</SelectItem>
+              <SelectItem value="interprete">Intérprete</SelectItem>
+              <SelectItem value="jornalistas">Jornalistas</SelectItem>
+              <SelectItem value="leads">Leads</SelectItem>
+              <SelectItem value="locadores_equipamento">Locadores de equipamento</SelectItem>
+              <SelectItem value="maquiadores">Maquiadores</SelectItem>
+              <SelectItem value="marcas">Marcas</SelectItem>
+              <SelectItem value="marketplaces">Marketplaces</SelectItem>
+              <SelectItem value="motorista">Motorista</SelectItem>
+              <SelectItem value="parceiros">Parceiros</SelectItem>
+              <SelectItem value="patrocinadores">Patrocinadores</SelectItem>
+              <SelectItem value="plataformas_streaming">Plataformas de streaming</SelectItem>
+              <SelectItem value="prefeitura">Prefeitura</SelectItem>
+              <SelectItem value="produtor_artistico">Produtor artístico</SelectItem>
+              <SelectItem value="produtor_cultural">Produtor cultural</SelectItem>
+              <SelectItem value="produtor_fonografico">Produtor fonográfico</SelectItem>
+              <SelectItem value="produtor_musical">Produtor musical</SelectItem>
+              <SelectItem value="produtora_eventos">Produtora de eventos</SelectItem>
+              <SelectItem value="produtora_video">Produtora de vídeo</SelectItem>
+              <SelectItem value="sala_ensaio">Sala de ensaio</SelectItem>
+              <SelectItem value="salao_beleza">Salão de beleza</SelectItem>
+              <SelectItem value="secretaria_cultura">Secretaria de cultura</SelectItem>
+              <SelectItem value="seguranca">Segurança</SelectItem>
+              <SelectItem value="social_media">Social media</SelectItem>
+              <SelectItem value="tecnico_iluminacao">Técnico de iluminação</SelectItem>
+              <SelectItem value="tecnico_palco">Técnico de palco</SelectItem>
+              <SelectItem value="tecnico_som">Técnico de som</SelectItem>
+              <SelectItem value="tour_manager">Tour manager</SelectItem>
+              <SelectItem value="transportadoras">Transportadoras</SelectItem>
+              <SelectItem value="tv_radio">TV / Rádio</SelectItem>
             </SelectContent>
           </Select>
           {errors.type && (
