@@ -9,6 +9,7 @@ export interface User {
   phone?: string;
   sector?: string;
   roles: string[];
+  role_display?: string;
   permissions: string[];
   isActive: boolean;
   created_at: string;
@@ -67,12 +68,13 @@ export function useUsers() {
         profile.full_name !== 'Deyvisson Gestão 360 Andrade' || profile.role_display !== 'Administrador (Master)'
       ).map(profile => ({
         id: profile.id,
-        email: profile.id, // We don't store email in profiles table
+        email: profile.email || 'Email não disponível',
         full_name: profile.full_name || 'Usuário',
         phone: profile.phone,
         sector: profile.sector || 'N/A',
         roles: profile.roles || [profile.role_display || 'Membro'],
-        permissions: calculatePermissions(profile.roles || [profile.role_display || 'viewer']),
+        role_display: profile.role_display,
+        permissions: profile.permissions || calculatePermissions(profile.roles || [profile.role_display || 'viewer']),
         isActive: profile.is_active ?? true,
         created_at: profile.created_at,
         avatar_url: profile.avatar_url
