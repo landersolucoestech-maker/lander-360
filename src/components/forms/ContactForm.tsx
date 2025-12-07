@@ -336,7 +336,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="status">Status *</Label>
-          <Select onValueChange={(value) => setValue("status", value)}>
+          <Select onValueChange={(value) => setValue("status", value)} defaultValue={initialData?.status}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o status" />
             </SelectTrigger>
@@ -356,7 +356,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="priority">Prioridade *</Label>
-          <Select onValueChange={(value) => setValue("priority", value)}>
+          <Select onValueChange={(value) => setValue("priority", value)} defaultValue={initialData?.priority}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione a prioridade" />
             </SelectTrigger>
@@ -418,7 +418,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="state">Estado</Label>
-          <Select onValueChange={(value) => setValue("state", value)}>
+          <Select onValueChange={(value) => setValue("state", value)} defaultValue={initialData?.state}>
             <SelectTrigger>
               <SelectValue placeholder="UF" />
             </SelectTrigger>
