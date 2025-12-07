@@ -9,7 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingBriefingModal } from "@/components/modals/MarketingBriefingModal";
 import { FileText, Plus, Clock, CheckCircle, AlertTriangle, User } from "lucide-react";
 import { useMarketingBriefings } from "@/hooks/useMarketing";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, translateStatus, translatePriority } from "@/lib/utils";
 
 const MarketingBriefing = () => {
   const { data: briefingsData = [], isLoading: briefingsLoading } = useMarketingBriefings();
@@ -178,13 +178,13 @@ const MarketingBriefing = () => {
                               briefing.status === "Em Revisão" || briefing.status === "in_review" ? "secondary" : 
                               briefing.status === "Rejeitado" || briefing.status === "rejected" ? "destructive" : "outline"
                             }>
-                              {briefing.status}
+                              {translateStatus(briefing.status)}
                             </Badge>
                             <Badge variant={
                               briefing.priority === "Alta" || briefing.priority === "high" ? "destructive" : 
                               briefing.priority === "Média" || briefing.priority === "medium" ? "secondary" : "outline"
                             }>
-                              {briefing.priority}
+                              {translatePriority(briefing.priority)}
                             </Badge>
                           </div>
                         </div>

@@ -20,28 +20,13 @@ import {
   Clock,
   Calendar
 } from "lucide-react";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, translateStatus, translatePriority } from "@/lib/utils";
 
 interface ContactProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contact: any;
 }
-
-const statusLabels: Record<string, string> = {
-  frio: "Frio",
-  morno: "Morno",
-  quente: "Quente",
-  negociacao: "Negociação",
-  fechado: "Fechado",
-  perdido: "Perdido",
-};
-
-const priorityLabels: Record<string, string> = {
-  baixa: "Baixa",
-  media: "Média",
-  alta: "Alta",
-};
 
 export function ContactProfileModal({
   open,
@@ -82,7 +67,7 @@ export function ContactProfileModal({
                   }
                   className="mb-2"
                 >
-                  {statusLabels[contact.status] || contact.status}
+                  {translateStatus(contact.status)}
                 </Badge>
               )}
               {contact.priority && (
@@ -92,7 +77,7 @@ export function ContactProfileModal({
                     contact.priority === "media" ? "outline" : "secondary"
                   }
                 >
-                  {priorityLabels[contact.priority] || contact.priority}
+                  {translatePriority(contact.priority)}
                 </Badge>
               )}
             </div>

@@ -9,7 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingTaskModal } from "@/components/modals/MarketingTaskModal";
 import { CheckSquare, Plus, Clock, Users, CheckCircle, Calendar } from "lucide-react";
 import { useMarketingTasks } from "@/hooks/useMarketing";
-import { getTodayDateString } from "@/lib/utils";
+import { getTodayDateString, formatDateBR } from "@/lib/utils";
 
 const MarketingTarefas = () => {
   const { data: dbTasks = [], isLoading: tasksLoading } = useMarketingTasks();
@@ -262,7 +262,7 @@ const MarketingTarefas = () => {
                             {task.due_date && (
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span>{new Date(task.due_date).toLocaleDateString('pt-BR')}</span>
+                                <span>{formatDateBR(task.due_date)}</span>
                               </div>
                             )}
                             {task.category && (

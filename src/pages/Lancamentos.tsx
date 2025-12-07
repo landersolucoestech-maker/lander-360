@@ -13,7 +13,7 @@ import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, translateStatus } from "@/lib/utils";
 
 const Lancamentos = () => {
   const { toast } = useToast();

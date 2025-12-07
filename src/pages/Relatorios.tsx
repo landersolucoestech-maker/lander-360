@@ -13,7 +13,7 @@ import { ReportConfigModal } from "@/components/modals/ReportConfigModal";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Download, Users, Palette, Search, Filter, Calendar as CalendarIcon, Package, X, Loader2, Music, DollarSign, Disc, FileSignature, Warehouse, UserCheck } from "lucide-react";
 import { format } from "date-fns";
-import { cn, formatDateBR } from "@/lib/utils";
+import { cn, formatDateBR, translateStatus, translatePriority, translateCategory } from "@/lib/utils";
 import {
   useFinancialReport,
   useArtistsReport,
@@ -157,11 +157,11 @@ const Relatorios = () => {
         return financialData.map((t: any) => ({
           id: t.id?.slice(0, 8) || "N/A",
           descricao: t.description || "N/A",
-          tipo: t.type || "N/A",
+          tipo: translateStatus(t.type) || "N/A",
           valor: `R$ ${Number(t.amount || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-          categoria: t.category || "N/A",
+          categoria: translateCategory(t.category) || "N/A",
           data: t.date ? formatDateBR(t.date) : "N/A",
-          status: t.status || "N/A",
+          status: translateStatus(t.status) || "N/A",
           pagamento: t.payment_method || "N/A",
         }));
       case "Artistas":
@@ -173,7 +173,7 @@ const Relatorios = () => {
           email: a.email || "N/A",
           telefone: a.phone || "N/A",
           perfil: a.profile_type || "N/A",
-          status: a.contract_status || "Ativo",
+          status: translateStatus(a.contract_status) || "Ativo",
           instagram: a.instagram || "N/A",
         }));
       case "Músicas":
@@ -186,7 +186,7 @@ const Relatorios = () => {
           iswc: m.iswc || "N/A",
           abramus: m.abramus_code || "N/A",
           ecad: m.ecad_code || "N/A",
-          status: m.status || "N/A",
+          status: translateStatus(m.status) || "N/A",
         }));
       case "Fonogramas":
         return phonogramsData.map((p: any) => ({
@@ -196,7 +196,7 @@ const Relatorios = () => {
           isrc: p.isrc || "N/A",
           genero: p.genre || "N/A",
           label: p.label || "N/A",
-          status: p.status || "N/A",
+          status: translateStatus(p.status) || "N/A",
           gravacao: p.recording_date ? formatDateBR(p.recording_date) : "N/A",
         }));
       case "Lançamentos":
@@ -206,7 +206,7 @@ const Relatorios = () => {
           artista: r.artists?.stage_name || r.artists?.name || "N/A",
           tipo: r.release_type || r.type || "N/A",
           data_lancamento: r.release_date ? formatDateBR(r.release_date) : "N/A",
-          status: r.status || "N/A",
+          status: translateStatus(r.status) || "N/A",
           genero: r.genre || "N/A",
           label: r.label || "N/A",
           distribuidores: r.distributors?.join(", ") || "N/A",
@@ -218,7 +218,7 @@ const Relatorios = () => {
           artista: c.artists?.stage_name || c.artists?.name || "N/A",
           tipo_contrato: c.contract_type || "N/A",
           tipo_servico: c.service_type || "N/A",
-          status: c.status || "N/A",
+          status: translateStatus(c.status) || "N/A",
           inicio: c.start_date ? formatDateBR(c.start_date) : "N/A",
           fim: c.end_date ? formatDateBR(c.end_date) : "N/A",
           valor: c.value ? `R$ ${Number(c.value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "N/A",
@@ -229,7 +229,7 @@ const Relatorios = () => {
           item: i.name || "N/A",
           categoria: i.category || "N/A",
           quantidade: i.quantity?.toString() || "0",
-          status: i.status || "N/A",
+          status: translateStatus(i.status) || "N/A",
           localizacao: i.location || "N/A",
           setor: i.sector || "N/A",
           valor_unitario: i.unit_value ? `R$ ${Number(i.unit_value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "N/A",
@@ -244,8 +244,8 @@ const Relatorios = () => {
           empresa: c.company || "N/A",
           cargo: c.position || "N/A",
           tipo: c.contact_type || "N/A",
-          status: c.status || "N/A",
-          prioridade: c.priority || "N/A",
+          status: translateStatus(c.status) || "N/A",
+          prioridade: translatePriority(c.priority) || "N/A",
           cidade: c.city || "N/A",
         }));
       default:
