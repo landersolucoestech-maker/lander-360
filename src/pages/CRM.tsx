@@ -178,7 +178,7 @@ const CRM = () => {
                         </Avatar>
 
                         {/* Nome e Badges */}
-                        <div className="min-w-0 flex-1 max-w-[200px]">
+                        <div className="min-w-0 flex-1 max-w-[250px]">
                           <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
                           <div className="flex items-center gap-1 mt-1 flex-wrap">
                             <Badge variant="secondary" className="text-xs">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
@@ -190,6 +190,15 @@ const CRM = () => {
                               className="text-xs"
                             >
                               {(contact as any).status || 'N/A'}
+                            </Badge>
+                            <Badge 
+                              variant={
+                                (contact as any).priority === "alta" ? "destructive" :
+                                (contact as any).priority === "media" ? "outline" : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {(contact as any).priority || 'N/A'}
                             </Badge>
                           </div>
                         </div>
@@ -233,17 +242,6 @@ const CRM = () => {
                             <div className="font-medium truncate max-w-[100px]">{contact.city}{contact.state ? `/${contact.state}` : ''}</div>
                           </div>
                         )}
-
-                        {/* Prioridade */}
-                        <Badge 
-                          variant={
-                            (contact as any).priority === "alta" ? "destructive" :
-                            (contact as any).priority === "media" ? "outline" : "secondary"
-                          }
-                          className="text-xs flex-shrink-0"
-                        >
-                          {(contact as any).priority || 'N/A'}
-                        </Badge>
 
                         {/* Ações */}
                         <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
