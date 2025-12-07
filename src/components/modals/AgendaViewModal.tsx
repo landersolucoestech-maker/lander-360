@@ -1,12 +1,13 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatDateFullBR } from "@/lib/utils";
-import { MapPin, Clock, Calendar } from "lucide-react";
+import { MapPin, Clock, Calendar, Users, DollarSign, Building, Phone } from "lucide-react";
 
 interface AgendaViewModalProps {
   open: boolean;
@@ -38,11 +39,19 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
     confirmado: 'Confirmado'
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalhes do Evento</DialogTitle>
+          <DialogDescription>Visualize todas as informações do evento</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
@@ -71,7 +80,7 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
                       event.status === "cancelado" ? "destructive" : "secondary"
                     }
                   >
-                    {statusLabels[event.status] || event.status}
+                    {statusLabels[event.status] || event.status || 'Agendado'}
                   </Badge>
                 </p>
               </div>
@@ -84,35 +93,111 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-4 w-4" /> Data
+                  <Calendar className="h-4 w-4" /> Data de Início
                 </label>
                 <p className="font-medium">
                   {formatDateFullBR(event.start_date)}
                 </p>
               </div>
+              {event.end_date && (
+                <div>
+                  <label className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-4 w-4" /> Data de Fim
+                  </label>
+                  <p className="font-medium">
+                    {formatDateFullBR(event.end_date)}
+                  </p>
+                </div>
+              )}
               {event.start_time && (
                 <div>
                   <label className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-4 w-4" /> Horário
+                    <Clock className="h-4 w-4" /> Horário de Início
                   </label>
-                  <p className="font-medium">
-                    {event.start_time}
-                    {event.end_time && ` - ${event.end_time}`}
-                  </p>
+                  <p className="font-medium">{event.start_time}</p>
+                </div>
+              )}
+              {event.end_time && (
+                <div>
+                  <label className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-4 w-4" /> Horário de Fim
+                  </label>
+                  <p className="font-medium">{event.end_time}</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Local */}
-          {event.location && (
+          {(event.location || event.venue_name || event.venue_address) && (
             <div className="space-y-4">
               <h3 className="font-semibold text-lg border-b pb-2">Local</h3>
-              <div>
-                <label className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-4 w-4" /> Endereço
-                </label>
-                <p className="font-medium">{event.location}</p>
+              <div className="grid grid-cols-2 gap-4">
+                {event.location && (
+                  <div className="col-span-2">
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-4 w-4" /> Local
+                    </label>
+                    <p className="font-medium">{event.location}</p>
+                  </div>
+                )}
+                {event.venue_name && (
+                  <div>
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Building className="h-4 w-4" /> Nome do Local
+                    </label>
+                    <p className="font-medium">{event.venue_name}</p>
+                  </div>
+                )}
+                {event.venue_contact && (
+                  <div>
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Phone className="h-4 w-4" /> Contato
+                    </label>
+                    <p className="font-medium">{event.venue_contact}</p>
+                  </div>
+                )}
+                {event.venue_address && (
+                  <div className="col-span-2">
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-4 w-4" /> Endereço Completo
+                    </label>
+                    <p className="font-medium">{event.venue_address}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Informações do Show */}
+          {(event.venue_capacity || event.ticket_price || event.expected_audience) && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg border-b pb-2">Informações do Evento</h3>
+              <div className="grid grid-cols-3 gap-4">
+                {event.venue_capacity && (
+                  <div>
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Users className="h-4 w-4" /> Capacidade
+                    </label>
+                    <p className="font-medium">{event.venue_capacity.toLocaleString('pt-BR')} pessoas</p>
+                  </div>
+                )}
+                {event.expected_audience && (
+                  <div>
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Users className="h-4 w-4" /> Público Esperado
+                    </label>
+                    <p className="font-medium">{event.expected_audience.toLocaleString('pt-BR')} pessoas</p>
+                  </div>
+                )}
+                {event.ticket_price && (
+                  <div>
+                    <label className="text-sm text-muted-foreground flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" /> Cachê
+                    </label>
+                    <p className="font-medium">{formatCurrency(event.ticket_price)}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -121,7 +206,7 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
           {event.description && (
             <div className="space-y-4">
               <h3 className="font-semibold text-lg border-b pb-2">Descrição</h3>
-              <p className="text-muted-foreground">{event.description}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
             </div>
           )}
 
@@ -129,7 +214,7 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
           {event.observations && (
             <div className="space-y-4">
               <h3 className="font-semibold text-lg border-b pb-2">Observações</h3>
-              <p className="text-muted-foreground">{event.observations}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">{event.observations}</p>
             </div>
           )}
         </div>
