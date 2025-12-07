@@ -22,6 +22,7 @@ import Relatorios from "./pages/Relatorios";
 import CRM from "./pages/CRM";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
+import ConfirmEmailChange from "./pages/ConfirmEmailChange";
 // Marketing pages
 import MarketingVisaoGeral from "./pages/marketing/VisaoGeral";
 import MarketingCampanhas from "./pages/marketing/Campanhas";
@@ -49,6 +50,7 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
               <Route path="/perfil" element={<ProtectedRoute><PerfilUsuario /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/artistas" element={<ProtectedRoute><Artistas /></ProtectedRoute>} />
