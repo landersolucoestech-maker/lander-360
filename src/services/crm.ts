@@ -35,6 +35,9 @@ export class CrmService {
     state?: string;
     zip_code?: string;
     notes?: string;
+    status?: string;
+    priority?: string;
+    next_action?: string;
   }) {
     const { data, error } = await supabase
       .from('crm_contacts')
@@ -59,6 +62,9 @@ export class CrmService {
     state?: string;
     zip_code?: string;
     notes?: string;
+    status?: string;
+    priority?: string;
+    next_action?: string;
   }>) {
     const { data, error } = await supabase
       .from('crm_contacts')

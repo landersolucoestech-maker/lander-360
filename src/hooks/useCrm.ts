@@ -47,13 +47,32 @@ export const useSearchCrmContacts = (query: string) => {
   });
 };
 
+// CRM contact data type
+interface CrmContactData {
+  name: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  contact_type?: string;
+  position?: string;
+  document?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  notes?: string;
+  status?: string;
+  priority?: string;
+  next_action?: string;
+}
+
 // Create CRM contact mutation
 export const useCreateCrmContact = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: { name: string; email?: string; phone?: string; company?: string; contact_type?: string }) => CrmService.create(data),
+    mutationFn: (data: CrmContactData) => CrmService.create(data),
     onSuccess: (newContact) => {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists() });
       toast({
@@ -78,7 +97,7 @@ export const useUpdateCrmContact = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<{ name: string; email?: string; phone?: string; company?: string; contact_type?: string }> }) =>
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CrmContactData>) =>
       CrmService.update(id, data),
     onSuccess: (updatedContact) => {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists() });

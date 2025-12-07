@@ -10,8 +10,8 @@ import { ContactModal } from "@/components/modals/ContactModal";
 import { ContactProfileModal } from "@/components/modals/ContactProfileModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
-import { UserCheck, Plus, Phone, Mail, Calendar, Star } from "lucide-react";
-import { mockContacts } from "@/data/mockData";
+import { UserCheck, Plus, Phone, Mail, Calendar, Star, Loader2 } from "lucide-react";
+import { useCrmContacts, useCreateCrmContact, useUpdateCrmContact, useDeleteCrmContact } from "@/hooks/useCrm";
 
 const CRM = () => {
   const { toast } = useToast();
@@ -21,9 +21,13 @@ const CRM = () => {
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [contactToDelete, setContactToDelete] = useState<any>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [allContacts, setAllContacts] = useState(mockContacts);
   
-  const contacts = allContacts;
+  const { data: crmContacts = [], isLoading } = useCrmContacts();
+  const createContact = useCreateCrmContact();
+  const updateContact = useUpdateCrmContact();
+  const deleteContact = useDeleteCrmContact();
+  
+  const contacts = crmContacts;
 
   return (
     <SidebarProvider>
@@ -132,7 +136,11 @@ const CRM = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {contacts.length === 0 ? (
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : contacts.length === 0 ? (
                   <div className="text-center py-12">
                     <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">Nenhum contato cadastrado</h3>
@@ -159,22 +167,22 @@ const CRM = () => {
                           <div className="space-y-1">
                             <h3 className="font-medium text-foreground">{contact.name}</h3>
                             <div className="flex items-center gap-2">
-                              <Badge variant="secondary">{contact.type}</Badge>
+                              <Badge variant="secondary">{contact.contact_type || 'N/A'}</Badge>
                               <Badge 
                                 variant={
-                                  contact.status === "Quente" ? "destructive" :
-                                  contact.status === "Negociação" ? "outline" : "secondary"
+                                  (contact as any).status === "quente" ? "destructive" :
+                                  (contact as any).status === "negociacao" ? "outline" : "secondary"
                                 }
                               >
-                                {contact.status}
+                                {(contact as any).status || 'N/A'}
                               </Badge>
                               <Badge 
                                 variant={
-                                  contact.priority === "Alta" ? "destructive" :
-                                  contact.priority === "Média" ? "outline" : "secondary"
+                                  (contact as any).priority === "alta" ? "destructive" :
+                                  (contact as any).priority === "media" ? "outline" : "secondary"
                                 }
                               >
-                                {contact.priority}
+                                {(contact as any).priority || 'N/A'}
                               </Badge>
                             </div>
                           </div>
@@ -190,12 +198,12 @@ const CRM = () => {
                             <span>{contact.phone}</span>
                           </div>
                           <div className="text-center text-sm">
-                            <div className="text-muted-foreground">Último Contato</div>
-                            <div className="font-medium">{contact.lastContact}</div>
+                            <div className="text-muted-foreground">Última Atualização</div>
+                            <div className="font-medium">{new Date(contact.updated_at).toLocaleDateString('pt-BR')}</div>
                           </div>
                           <div className="text-center text-sm">
-                            <div className="text-muted-foreground">Próxima Ação</div>
-                            <div className="font-medium max-w-32 truncate">{contact.nextAction}</div>
+                            <div className="text-muted-foreground">Empresa</div>
+                            <div className="font-medium max-w-32 truncate">{contact.company || '-'}</div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Button 
@@ -245,20 +253,26 @@ const CRM = () => {
         onOpenChange={setIsContactModalOpen}
         onSubmit={async (data) => {
           try {
-            // TODO: Implement actual contact service
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
-            
-            toast({
-              title: "Contato Salvo",
-              description: "O contato foi salvo com sucesso!",
+            await createContact.mutateAsync({
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+              contact_type: data.type,
+              company: data.company,
+              position: data.position,
+              document: data.document,
+              address: data.address,
+              city: data.city,
+              state: data.state,
+              zip_code: data.zip_code,
+              notes: data.notes,
+              status: data.status,
+              priority: data.priority,
+              next_action: data.nextAction,
             });
             setIsContactModalOpen(false);
           } catch (error) {
-            toast({
-              title: "Erro",
-              description: "Erro ao salvar contato.",
-              variant: "destructive",
-            });
+            console.error('Error creating contact:', error);
           }
         }}
       />
@@ -272,20 +286,33 @@ const CRM = () => {
       <ContactModal
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
+        initialData={selectedContact ? {
+          ...selectedContact,
+          type: selectedContact.contact_type,
+        } : undefined}
         onSubmit={async (data) => {
           try {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            toast({
-              title: "Contato Atualizado",
-              description: "O contato foi atualizado com sucesso!",
+            await updateContact.mutateAsync({
+              id: selectedContact.id,
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+              contact_type: data.type,
+              company: data.company,
+              position: data.position,
+              document: data.document,
+              address: data.address,
+              city: data.city,
+              state: data.state,
+              zip_code: data.zip_code,
+              notes: data.notes,
+              status: data.status,
+              priority: data.priority,
+              next_action: data.nextAction,
             });
             setIsEditModalOpen(false);
           } catch (error) {
-            toast({
-              title: "Erro",
-              description: "Erro ao atualizar contato.",
-              variant: "destructive",
-            });
+            console.error('Error updating contact:', error);
           }
         }}
       />
@@ -293,15 +320,15 @@ const CRM = () => {
       <DeleteConfirmationModal
         open={isDeleteModalOpen}
         onOpenChange={setIsDeleteModalOpen}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (contactToDelete) {
-            setAllContacts(prev => prev.filter(c => c.id !== contactToDelete.id));
-            setIsDeleteModalOpen(false);
-            setContactToDelete(null);
-            toast({
-              title: "Contato Excluído",
-              description: "O contato foi removido com sucesso.",
-            });
+            try {
+              await deleteContact.mutateAsync(contactToDelete.id);
+              setIsDeleteModalOpen(false);
+              setContactToDelete(null);
+            } catch (error) {
+              console.error('Error deleting contact:', error);
+            }
           }
         }}
         title="Excluir Contato"
