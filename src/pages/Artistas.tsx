@@ -144,6 +144,24 @@ const Artistas = () => {
   }, [projects, releases, musicRegistry]);
 
   // Transform database artists to match UI format - pass complete database data
+  // Translate status to Portuguese
+  const translateStatus = (status: string | null | undefined): string => {
+    const statusMap: Record<string, string> = {
+      'active': 'Ativo',
+      'ativo': 'Ativo',
+      'inactive': 'Inativo',
+      'inativo': 'Inativo',
+      'pending': 'Pendente',
+      'pendente': 'Pendente',
+      'suspended': 'Suspenso',
+      'suspenso': 'Suspenso',
+      'cancelled': 'Cancelado',
+      'cancelado': 'Cancelado',
+    };
+    const normalizedStatus = (status || 'ativo').toLowerCase();
+    return statusMap[normalizedStatus] || 'Ativo';
+  };
+
   const transformDatabaseArtist = (dbArtist: any) => {
     const profileType = dbArtist.profile_type?.trim() || '';
     const hasManager = ['Com Empresário', 'Gravadora', 'Editora'].includes(profileType) && (dbArtist.manager_name || dbArtist.manager_phone || dbArtist.manager_email);
@@ -161,7 +179,7 @@ const Artistas = () => {
       id: dbArtist.id,
       name: dbArtist.name || dbArtist.stage_name,
       genre: dbArtist.genre || 'Não informado',
-      status: dbArtist.contract_status || 'ativo',
+      status: translateStatus(dbArtist.contract_status),
       email: dbArtist.email || 'Não informado',
       avatar: dbArtist.image_url,
       socialMedia: {
