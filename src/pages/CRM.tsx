@@ -201,7 +201,7 @@ const CRM = () => {
                         </div>
                         
                         <div className="flex items-center gap-6">
-                          <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4" />
                               <span>{contact.phone}</span>
