@@ -14,7 +14,12 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { FinancialTransaction } from "@/types/database";
 import { formatDateBR } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { mockTransactions } from "@/data/mockData";
+import { 
+  useFinancialTransactions, 
+  useCreateFinancialTransaction, 
+  useUpdateFinancialTransaction,
+  useDeleteFinancialTransaction 
+} from "@/hooks/useFinancial";
 
 const Financeiro = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,9 +34,11 @@ const Financeiro = () => {
   
   const { toast } = useToast();
 
-  // Use empty data (real data will come from database)
-  const transactions: any[] = [];
-  const isLoading = false;
+  // Use real data from database
+  const { data: transactions = [], isLoading } = useFinancialTransactions();
+  const createTransaction = useCreateFinancialTransaction();
+  const updateTransaction = useUpdateFinancialTransaction();
+  const deleteTransaction = useDeleteFinancialTransaction();
 
   const handleNewTransaction = () => {
     setSelectedTransaction(undefined);
@@ -59,13 +66,13 @@ const Financeiro = () => {
       const transactionData = {
         description: data.description,
         amount: data.amount,
-        type: data.transaction_type === 'receitas' ? 'entrada' : 'saida',
-        transaction_type: data.transaction_type === 'receitas' ? 'entrada' : 'saida',
+        type: data.transaction_type,
+        transaction_type: data.transaction_type,
         date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
         transaction_date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
         category: data.category,
         status: data.status,
-        payment_method: data.payment_method,
+        payment_method: data.payment_method || null,
         artist_id: data.client_type === 'artista' ? data.client_id : null,
         crm_contact_id: data.client_type === 'empresa' ? data.crm_contact_id : null,
         contract_id: data.contract_id || null,
@@ -75,52 +82,42 @@ const Financeiro = () => {
         observations: data.observations || null,
       };
 
-      console.log('Transaction data to save:', transactionData);
-      // TODO: Implement actual API call when hooks are available
-      toast({
-        title: 'Sucesso',
-        description: 'Transação salva com sucesso.',
-      });
+      if (selectedTransaction) {
+        await updateTransaction.mutateAsync({ 
+          id: selectedTransaction.id, 
+          data: transactionData 
+        });
+      } else {
+        await createTransaction.mutateAsync(transactionData);
+      }
       setIsModalOpen(false);
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Falha ao salvar transação. Tente novamente.',
-        variant: 'destructive',
-      });
+      console.error('Error saving transaction:', error);
     }
   };
 
   const confirmDelete = async () => {
     if (transactionToDelete) {
       try {
-        // TODO: Implement actual delete API call
+        await deleteTransaction.mutateAsync(transactionToDelete.id);
         setIsDeleteModalOpen(false);
         setTransactionToDelete(null);
-        toast({
-          title: 'Sucesso',
-          description: 'Transação removida com sucesso.',
-        });
       } catch (error) {
         console.error('Error deleting transaction:', error);
-        toast({
-          title: 'Erro',
-          description: 'Falha ao remover transação. Tente novamente.',
-          variant: 'destructive',
-        });
       }
     }
   };
 
   // Categories for filtering
-  const receitasCategories = ['venda_musicas', 'onerpm', 'distrokid', '30por1', 'believe', 'tunecore', 'cd_baby', 'outras_distribuidoras', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
+  const receitasCategories = ['venda_musicas', 'streaming', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
   const despesasCategories = ['produtores', 'caches', 'marketing', 'equipe', 'infraestrutura', 'registros', 'juridicos', 'salarios', 'aluguel', 'manutencao', 'viagens', 'licencas', 'contabilidade', 'estudio', 'equipamentos', 'servicos'];
+  const investimentosCategories = ['producao_musical', 'marketing_digital', 'equipamentos', 'estudio', 'clipes', 'turnê', 'capacitacao'];
 
   const filterOptions = [
     {
       key: "transaction_type",
       label: "Tipo",
-      options: ["entrada", "saida"]
+      options: ["receitas", "despesas", "investimentos"]
     },
     {
       key: "status",
@@ -130,7 +127,7 @@ const Financeiro = () => {
     {
       key: "category",
       label: "Categoria",
-      options: [...receitasCategories, ...despesasCategories, "investimentos", "outros"]
+      options: [...receitasCategories, ...despesasCategories, ...investimentosCategories, "outros"]
     }
   ];
 
@@ -165,12 +162,12 @@ const Financeiro = () => {
   });
 
   // Calculate totals
-  const receitas = transactions.filter(t => t.transaction_type === 'entrada' && t.status === 'pago')
+  const receitas = transactions.filter(t => t.transaction_type === 'receitas' && t.status === 'pago')
     .reduce((sum, t) => sum + (t.amount || 0), 0);
-  const despesas = transactions.filter(t => t.transaction_type === 'saida' && t.status === 'pago')
+  const despesas = transactions.filter(t => t.transaction_type === 'despesas' && t.status === 'pago')
     .reduce((sum, t) => sum + (t.amount || 0), 0);
   const lucroLiquido = receitas - despesas;
-  const contasAReceber = transactions.filter(t => t.transaction_type === 'entrada' && t.status === 'pendente')
+  const contasAReceber = transactions.filter(t => t.transaction_type === 'receitas' && t.status === 'pendente')
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   const categoryLabels: Record<string, string> = {
