@@ -13,7 +13,7 @@ import { Upload } from 'lucide-react';
 import { DateInput } from '@/components/ui/date-input';
 
 const contractSchema = z.object({
-  title: z.string().min(1, 'Título é obrigatório'),
+  title: z.string().optional(),
   client_type: z.enum(['artista', 'empresa']).optional(),
   service_type: z.enum(['empresariamento', 'gestao', 'agenciamento', 'edicao', 'distribuicao', 'marketing', 'producao_musical', 'producao_audiovisual', 'licenciamento', 'publicidade', 'parceria', 'shows', 'outros']).optional(),
   artist_id: z.string().optional(),
@@ -21,10 +21,10 @@ const contractSchema = z.object({
   project_id: z.string().optional(),
   contractor_contact: z.string().optional(),
   responsible_person: z.string().optional(),
-  status: z.enum(['pendente', 'assinado', 'expirado', 'rescindido', 'rascunho']).default('rascunho'),
+  status: z.enum(['pendente', 'assinado', 'expirado', 'rescindido', 'rascunho']).optional(),
   start_date: z.date().optional(),
   end_date: z.date().optional(),
-  registry_office: z.boolean().default(false),
+  registry_office: z.boolean().optional(),
   registry_date: z.date().optional(),
   payment_type: z.enum(['valor_fixo', 'royalties']).optional(),
   fixed_value: z.number().optional(),
