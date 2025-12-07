@@ -1,18 +1,16 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useBelvoIntegration } from "@/hooks/useBelvoIntegration";
 import { formatDateBR } from "@/lib/utils";
 import { 
   Building2, 
-  CreditCard, 
   Link, 
   Check, 
   AlertCircle, 
@@ -20,8 +18,9 @@ import {
   Shield,
   Plus,
   Eye,
-  Edit,
-  Trash2
+  Trash2,
+  RefreshCw,
+  Loader2
 } from "lucide-react";
 
 interface BankIntegrationModalProps {
@@ -31,76 +30,65 @@ interface BankIntegrationModalProps {
 
 export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModalProps) {
   const [activeTab, setActiveTab] = useState("accounts");
-  const [isConnecting, setIsConnecting] = useState(false);
   const { toast } = useToast();
+  const { 
+    isLoading, 
+    links, 
+    accounts,
+    listLinks, 
+    getAccounts,
+    deleteLink, 
+    syncAccount 
+  } = useBelvoIntegration();
 
-  // Connected accounts state - will be populated from API
-  const [connectedAccounts, setConnectedAccounts] = useState([]);
+  // Load connected accounts on mount
+  useEffect(() => {
+    if (open) {
+      loadConnectedAccounts();
+    }
+  }, [open]);
 
-  // Automation rules state - will be populated from API
-  const [automationRules, setAutomationRules] = useState([]);
+  const loadConnectedAccounts = async () => {
+    const loadedLinks = await listLinks();
+    // Get account details for each link
+    for (const link of loadedLinks) {
+      await getAccounts(link.id);
+    }
+  };
+
+  const handleConnectBank = async () => {
+    toast({
+      title: "Conexão via Belvo",
+      description: "Acesse o painel do Belvo Dashboard para conectar uma nova conta bancária. A sincronização será automática após a conexão.",
+    });
+    // In production, you would use Belvo Connect Widget here
+    // For now, we show instructions
+  };
+
+  const handleSyncAccount = async (linkId: string) => {
+    await syncAccount(linkId);
+  };
+
+  const handleDisconnectAccount = async (linkId: string) => {
+    await deleteLink(linkId);
+    await loadConnectedAccounts();
+  };
+
+  // Get account info for a link
+  const getAccountForLink = (linkId: string) => {
+    return accounts.find(acc => acc.link === linkId);
+  };
 
   const supportedBanks = [
-    { id: "bb", name: "Banco do Brasil", logo: "🏦" },
-    { id: "itau", name: "Itaú", logo: "🔶" },
-    { id: "bradesco", name: "Bradesco", logo: "🔴" },
-    { id: "santander", name: "Santander", logo: "🔴" },
-    { id: "caixa", name: "Caixa Econômica", logo: "🟦" },
-    { id: "nubank", name: "Nubank", logo: "🟣" },
-    { id: "inter", name: "Banco Inter", logo: "🟠" },
-    { id: "c6", name: "C6 Bank", logo: "⚫" }
+    { id: "bancodobrasil_br_retail", name: "Banco do Brasil", logo: "🏦" },
+    { id: "itau_br_retail", name: "Itaú", logo: "🔶" },
+    { id: "bradesco_br_retail", name: "Bradesco", logo: "🔴" },
+    { id: "santander_br_retail", name: "Santander", logo: "🔴" },
+    { id: "caixa_br_retail", name: "Caixa Econômica", logo: "🟦" },
+    { id: "nubank_br_retail", name: "Nubank", logo: "🟣" },
+    { id: "inter_br_retail", name: "Banco Inter", logo: "🟠" },
+    { id: "c6bank_br_retail", name: "C6 Bank", logo: "⚫" }
   ];
-
-  const handleConnectBank = async (bankId: string) => {
-    setIsConnecting(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast({
-        title: "Conta conectada",
-        description: "Sua conta bancária foi conectada com sucesso!",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro na conexão",
-        description: "Não foi possível conectar sua conta. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleSyncAccount = async (accountId: string) => {
-    try {
-      toast({
-        title: "Sincronização iniciada",
-        description: "Suas transações estão sendo atualizadas...",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro na sincronização",
-        description: "Não foi possível sincronizar a conta.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleToggleAutoSync = (accountId: string, enabled: boolean) => {
-    setConnectedAccounts(prev => 
-      prev.map(account => 
-        account.id === accountId 
-          ? { ...account, autoSync: enabled }
-          : account
-      )
-    );
-    toast({
-      title: enabled ? "Sincronização automática ativada" : "Sincronização automática desativada",
-      description: enabled 
-        ? "Suas transações serão sincronizadas automaticamente."
-        : "Você precisará sincronizar manualmente.",
-    });
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,10 +96,10 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Integração Bancária
+            Integração Bancária (Belvo)
           </DialogTitle>
           <DialogDescription>
-            Configure e gerencie suas conexões bancárias para sincronização automática de transações
+            Configure e gerencie suas conexões bancárias via Belvo Open Banking para sincronização automática de transações
           </DialogDescription>
         </DialogHeader>
         
@@ -119,18 +107,39 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="accounts">Contas Conectadas</TabsTrigger>
             <TabsTrigger value="connect">Conectar Nova Conta</TabsTrigger>
-            <TabsTrigger value="rules">Regras de Automação</TabsTrigger>
+            <TabsTrigger value="config">Configuração</TabsTrigger>
           </TabsList>
           
           <div className="mt-4 overflow-y-auto max-h-[70vh]">
             {/* Connected Accounts Tab */}
             <TabsContent value="accounts" className="space-y-4">
-              {connectedAccounts.length === 0 ? (
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadConnectedAccounts}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                  )}
+                  Atualizar
+                </Button>
+              </div>
+
+              {isLoading && links.length === 0 ? (
+                <div className="text-center py-12">
+                  <Loader2 className="h-16 w-16 text-muted-foreground mx-auto mb-4 animate-spin" />
+                  <p className="text-muted-foreground">Carregando contas conectadas...</p>
+                </div>
+              ) : links.length === 0 ? (
                 <div className="text-center py-12">
                   <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Nenhuma conta conectada</h3>
                   <p className="text-muted-foreground mb-4">
-                    Conecte suas contas bancárias para sincronizar transações automaticamente
+                    Conecte suas contas bancárias via Belvo para sincronizar transações automaticamente
                   </p>
                   <Button onClick={() => setActiveTab("connect")}>
                     <Plus className="h-4 w-4 mr-2" />
@@ -139,95 +148,96 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {connectedAccounts.map((account: any) => (
-                    <Card key={account.id} className="relative">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                              <Building2 className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <CardTitle className="text-lg">{account.bankName}</CardTitle>
-                              <CardDescription>
-                                {account.accountType} • {account.agency}-{account.accountNumber}
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <Badge 
-                            variant={account.status === "connected" ? "default" : "destructive"}
-                            className="flex items-center gap-1"
-                          >
-                            {account.status === "connected" ? (
-                              <>
-                                <Check className="h-3 w-3" />
-                                Conectado
-                              </>
-                            ) : (
-                              <>
-                                <AlertCircle className="h-3 w-3" />
-                                Erro
-                              </>
-                            )}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <Label className="text-sm text-muted-foreground">Saldo Atual</Label>
-                            <p className="text-lg font-semibold">
-                              {new Intl.NumberFormat('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL'
-                              }).format(account.balance)}
-                            </p>
-                          </div>
-                          <div>
-                            <Label className="text-sm text-muted-foreground">Última Sincronização</Label>
-                            <p className="text-sm">
-                              {formatDateBR(account.lastSync)}
-                            </p>
-                          </div>
+                  {links.map((link) => {
+                    const account = getAccountForLink(link.id);
+                    return (
+                      <Card key={link.id} className="relative">
+                        <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <Label className="text-sm text-muted-foreground">Sinc. Automática</Label>
-                              <div className="mt-1">
-                                <Switch
-                                  checked={account.autoSync}
-                                  onCheckedChange={(checked) => handleToggleAutoSync(account.id, checked)}
-                                />
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <Building2 className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg">{link.institution}</CardTitle>
+                                <CardDescription>
+                                  {account ? `${account.type} • ${account.number}` : 'Carregando...'}
+                                </CardDescription>
                               </div>
                             </div>
+                            <Badge 
+                              variant={link.status === "valid" ? "default" : "destructive"}
+                              className="flex items-center gap-1"
+                            >
+                              {link.status === "valid" ? (
+                                <>
+                                  <Check className="h-3 w-3" />
+                                  Conectado
+                                </>
+                              ) : (
+                                <>
+                                  <AlertCircle className="h-3 w-3" />
+                                  {link.status}
+                                </>
+                              )}
+                            </Badge>
                           </div>
-                        </div>
-                        
-                        <div className="flex gap-2 pt-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleSyncAccount(account.id)}
-                            disabled={account.status !== "connected"}
-                          >
-                            <Link className="h-4 w-4 mr-2" />
-                            Sincronizar Agora
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver Transações
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Settings className="h-4 w-4 mr-2" />
-                            Configurar
-                          </Button>
-                          <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Desconectar
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Saldo Atual</Label>
+                              <p className="text-lg font-semibold">
+                                {account ? new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL'
+                                }).format(account.balance?.current || 0) : '-'}
+                              </p>
+                            </div>
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Último Acesso</Label>
+                              <p className="text-sm">
+                                {formatDateBR(link.last_accessed_at)}
+                              </p>
+                            </div>
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Modo de Acesso</Label>
+                              <p className="text-sm capitalize">{link.access_mode}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2 pt-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleSyncAccount(link.id)}
+                              disabled={isLoading || link.status !== "valid"}
+                            >
+                              {isLoading ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                              )}
+                              Sincronizar Agora
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Transações
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleDisconnectAccount(link.id)}
+                              disabled={isLoading}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Desconectar
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
@@ -236,9 +246,9 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
             <TabsContent value="connect" className="space-y-6">
               <div className="text-center space-y-2">
                 <Shield className="h-12 w-12 text-muted-foreground mx-auto" />
-                <h3 className="text-lg font-semibold">Conexão Segura com Open Banking</h3>
+                <h3 className="text-lg font-semibold">Conexão Segura via Belvo</h3>
                 <p className="text-muted-foreground">
-                  Conecte suas contas bancárias de forma segura usando o padrão Open Banking.
+                  Conecte suas contas bancárias de forma segura usando o padrão Open Banking do Belvo.
                   Seus dados são criptografados e você pode revogar o acesso a qualquer momento.
                 </p>
               </div>
@@ -253,17 +263,17 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
                           <div>
                             <h4 className="font-medium">{bank.name}</h4>
                             <p className="text-sm text-muted-foreground">
-                              Suporte completo via Open Banking
+                              Suporte completo via Belvo Open Banking
                             </p>
                           </div>
                         </div>
                         <Button 
-                          onClick={() => handleConnectBank(bank.id)}
-                          disabled={isConnecting}
+                          onClick={handleConnectBank}
+                          disabled={isLoading}
                           className="gap-2"
                         >
                           <Link className="h-4 w-4" />
-                          {isConnecting ? "Conectando..." : "Conectar"}
+                          Conectar
                         </Button>
                       </div>
                     </CardContent>
@@ -278,9 +288,10 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
                     <div className="space-y-1">
                       <h4 className="font-medium">Sobre a Segurança</h4>
                       <p className="text-sm text-muted-foreground">
-                        • Utilizamos criptografia de ponta a ponta<br/>
+                        • Utilizamos Belvo, líder em Open Banking na América Latina<br/>
+                        • Criptografia de ponta a ponta em todas as transações<br/>
                         • Acesso somente leitura às suas transações<br/>
-                        • Conformidade com LGPD e regulamentações bancárias<br/>
+                        • Conformidade com LGPD e regulamentações do Banco Central<br/>
                         • Você pode revogar o acesso a qualquer momento
                       </p>
                     </div>
@@ -289,80 +300,59 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
               </Card>
             </TabsContent>
 
-            {/* Automation Rules Tab */}
-            <TabsContent value="rules" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">Regras de Automação</h3>
-                  <p className="text-muted-foreground">
-                    Configure regras para categorizar automaticamente suas transações
-                  </p>
-                </div>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Nova Regra
-                </Button>
-              </div>
+            {/* Configuration Tab */}
+            <TabsContent value="config" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Configuração do Belvo
+                  </CardTitle>
+                  <CardDescription>
+                    Gerencie suas credenciais e configurações de integração
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Status da Integração</Label>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Configurado
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        Credenciais Belvo configuradas
+                      </span>
+                    </div>
+                  </div>
 
-              {automationRules.length === 0 ? (
-                <div className="text-center py-12">
-                  <Settings className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Nenhuma regra configurada</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Crie regras para categorizar suas transações automaticamente
-                  </p>
-                  <Button className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Criar Primeira Regra
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {automationRules.map((rule: any) => (
-                    <Card key={rule.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <h4 className="font-medium">{rule.name}</h4>
-                              <Badge variant="outline">
-                                {rule.type === "entrada" ? "Receita" : "Despesa"}
-                              </Badge>
-                              <Badge variant="secondary">
-                                Prioridade {rule.priority}
-                              </Badge>
-                              <Switch checked={rule.enabled} />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              <strong>Condição:</strong> {rule.condition}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              <strong>Categoria:</strong> {rule.category} → {rule.subcategory}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="destructive" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                  <div className="space-y-2">
+                    <Label>Ambiente</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Sandbox (Testes) - Para produção, altere a URL da API na edge function
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Sincronização Automática</Label>
+                    <div className="flex items-center gap-3">
+                      <Switch defaultChecked />
+                      <span className="text-sm text-muted-foreground">
+                        Sincronizar transações automaticamente a cada 6 horas
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
-                  <h4 className="font-medium mb-2">Como funcionam as regras?</h4>
+                  <h4 className="font-medium mb-2">Próximos Passos</h4>
                   <div className="text-sm text-muted-foreground space-y-1">
-                    <p>• As regras são aplicadas automaticamente às novas transações sincronizadas</p>
-                    <p>• Use condições como "CONTAINS", "STARTS_WITH", "EQUALS" para criar filtros</p>
-                    <p>• Regras com prioridade menor são aplicadas primeiro</p>
-                    <p>• Uma transação pode corresponder a múltiplas regras</p>
+                    <p>1. Acesse o dashboard do Belvo para criar links de conexão</p>
+                    <p>2. Use o Belvo Connect Widget em produção para conexões diretas</p>
+                    <p>3. Configure webhooks para sincronização em tempo real</p>
+                    <p>4. Altere a URL da API para produção quando estiver pronto</p>
                   </div>
                 </CardContent>
               </Card>
