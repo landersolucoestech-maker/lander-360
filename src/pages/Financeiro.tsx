@@ -288,7 +288,8 @@ const Financeiro = () => {
   const lucroLiquido = receitas - despesas;
   const contasAReceber = transactions.filter(t => t.transaction_type === 'receitas' && t.status === 'pendente')
     .reduce((sum, t) => sum + (t.amount || 0), 0);
-
+  const contasAPagar = transactions.filter(t => t.transaction_type === 'despesas' && t.status === 'pendente')
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
   const categoryLabels: Record<string, string> = {
     // Receitas - Distribuidoras
     venda_musicas: 'Venda de Músicas',
@@ -367,7 +368,7 @@ const Financeiro = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <DashboardCard
                 title="Receita Mensal"
                 value={new Intl.NumberFormat('pt-BR', {
@@ -404,7 +405,17 @@ const Financeiro = () => {
                   style: 'currency',
                   currency: 'BRL'
                 }).format(contasAReceber)}
-                description="pendentes"
+                description="receitas pendentes"
+                icon={TrendingUp}
+                trend={{ value: 0, isPositive: true }}
+              />
+              <DashboardCard
+                title="Contas a Pagar"
+                value={new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                }).format(contasAPagar)}
+                description="despesas pendentes"
                 icon={TrendingDown}
                 trend={{ value: 0, isPositive: true }}
               />
