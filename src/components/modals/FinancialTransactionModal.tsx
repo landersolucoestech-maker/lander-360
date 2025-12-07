@@ -41,7 +41,7 @@ export const FinancialTransactionModal: React.FC<FinancialTransactionModalProps>
   };
 
   const initialData = transaction ? {
-    client_type: 'empresa' as 'empresa' | 'artista',
+    client_type: 'empresa' as 'empresa' | 'artista' | 'pessoa',
     description: transaction.description,
     transaction_type: (transaction.transaction_type === 'entrada' ? 'receitas' : 
       transaction.transaction_type === 'saida' ? 'despesas' : 
