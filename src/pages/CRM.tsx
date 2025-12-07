@@ -211,7 +211,7 @@ const CRM = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4 shrink-0" />
-                            <span className="truncate max-w-[160px]">{contact.email}</span>
+                            <span className="truncate max-w-[220px]">{contact.email}</span>
                           </div>
                         </div>
 
