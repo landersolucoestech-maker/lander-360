@@ -16,7 +16,9 @@ import {
   Trophy,
   Info,
   MapPin,
-  Disc3
+  Disc3,
+  FolderKanban,
+  Mic2
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,12 +71,13 @@ export function ArtistHistoryModal({
 
   // Buscar contratos do artista
   const { data: contracts, isLoading: contractsLoading } = useQuery({
-    queryKey: ['artist-contracts-count', artist.id],
+    queryKey: ['artist-contracts', artist.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('contracts')
         .select('*')
-        .eq('artist_id', artist.id);
+        .eq('artist_id', artist.id)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -82,7 +85,55 @@ export function ArtistHistoryModal({
     enabled: open && !!artist.id
   });
 
-  const isLoading = releasesLoading || showsLoading || contractsLoading;
+  // Buscar projetos do artista
+  const { data: projects, isLoading: projectsLoading } = useQuery({
+    queryKey: ['artist-projects', artist.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('artist_id', artist.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: open && !!artist.id
+  });
+
+  // Buscar obras musicais do artista
+  const { data: musicRegistry, isLoading: musicLoading } = useQuery({
+    queryKey: ['artist-music', artist.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('music_registry')
+        .select('*')
+        .eq('artist_id', artist.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: open && !!artist.id
+  });
+
+  // Buscar fonogramas do artista
+  const { data: phonograms, isLoading: phonogramsLoading } = useQuery({
+    queryKey: ['artist-phonograms', artist.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('phonograms')
+        .select('*')
+        .eq('artist_id', artist.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: open && !!artist.id
+  });
+
+  const isLoading = releasesLoading || showsLoading || contractsLoading || projectsLoading || musicLoading || phonogramsLoading;
 
   const formatHistoryDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Não informado';
@@ -178,18 +229,26 @@ export function ArtistHistoryModal({
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   <div className="text-center">
-                    <Music className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <div className="text-xl font-bold">{releases?.length || 0}</div>
-                    <div className="text-sm text-muted-foreground">Lançamentos</div>
+                    <FolderKanban className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-xl font-bold">{projects?.length || 0}</div>
+                    <div className="text-sm text-muted-foreground">Projetos</div>
                   </div>
                   <div className="text-center">
-                    <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <div className="text-xl font-bold">
-                      {shows?.filter(s => s.event_type === 'show').length || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Shows</div>
+                    <Music className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-xl font-bold">{musicRegistry?.length || 0}</div>
+                    <div className="text-sm text-muted-foreground">Obras</div>
+                  </div>
+                  <div className="text-center">
+                    <Mic2 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-xl font-bold">{phonograms?.length || 0}</div>
+                    <div className="text-sm text-muted-foreground">Fonogramas</div>
+                  </div>
+                  <div className="text-center">
+                    <Disc3 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-xl font-bold">{releases?.length || 0}</div>
+                    <div className="text-sm text-muted-foreground">Lançamentos</div>
                   </div>
                   <div className="text-center">
                     <FileText className="h-6 w-6 mx-auto mb-2 text-primary" />
@@ -197,7 +256,7 @@ export function ArtistHistoryModal({
                     <div className="text-sm text-muted-foreground">Contratos</div>
                   </div>
                   <div className="text-center">
-                    <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <div className="text-xl font-bold">{shows?.length || 0}</div>
                     <div className="text-sm text-muted-foreground">Eventos</div>
                   </div>
@@ -227,6 +286,178 @@ export function ArtistHistoryModal({
             </CardContent>
           </Card>
 
+          {/* Projetos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FolderKanban className="h-5 w-5" />
+                Projetos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {projectsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : projects && projects.length > 0 ? (
+                <div className="space-y-3">
+                  {projects.map((project) => (
+                    <div key={project.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary/10">
+                          <FolderKanban className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{project.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {project.description || 'Sem descrição'} • {formatHistoryDate(project.created_at)}
+                        </p>
+                      </div>
+                      <Badge className={`${getStatusColor(project.status || '')} text-white`}>
+                        {getStatusLabel(project.status || '')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                  <FolderKanban className="h-8 w-8 mb-2" />
+                  <p className="text-sm">Nenhum projeto registrado</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Obras Musicais */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Music className="h-5 w-5" />
+                Obras Musicais
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {musicLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : musicRegistry && musicRegistry.length > 0 ? (
+                <div className="space-y-3">
+                  {musicRegistry.map((music) => (
+                    <div key={music.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary/10">
+                          <Music className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{music.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {music.genre || 'Gênero não informado'} • ISRC: {music.isrc || 'N/A'} • ISWC: {music.iswc || 'N/A'}
+                        </p>
+                      </div>
+                      <Badge className={`${getStatusColor(music.status || '')} text-white`}>
+                        {getStatusLabel(music.status || '')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                  <Music className="h-8 w-8 mb-2" />
+                  <p className="text-sm">Nenhuma obra musical registrada</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Fonogramas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Mic2 className="h-5 w-5" />
+                Fonogramas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {phonogramsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : phonograms && phonograms.length > 0 ? (
+                <div className="space-y-3">
+                  {phonograms.map((phonogram) => (
+                    <div key={phonogram.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary/10">
+                          <Mic2 className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{phonogram.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          ISRC: {phonogram.isrc || 'N/A'} • {phonogram.label || 'Sem gravadora'} • {formatHistoryDate(phonogram.recording_date)}
+                        </p>
+                      </div>
+                      <Badge className={`${getStatusColor(phonogram.status || '')} text-white`}>
+                        {getStatusLabel(phonogram.status || '')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                  <Mic2 className="h-8 w-8 mb-2" />
+                  <p className="text-sm">Nenhum fonograma registrado</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Contratos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Contratos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {contractsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : contracts && contracts.length > 0 ? (
+                <div className="space-y-3">
+                  {contracts.map((contract) => (
+                    <div key={contract.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary/10">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{contract.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {contract.contract_type || 'Tipo não informado'} • {formatHistoryDate(contract.start_date)} a {formatHistoryDate(contract.end_date)}
+                        </p>
+                      </div>
+                      <Badge className={`${getStatusColor(contract.status || '')} text-white`}>
+                        {getStatusLabel(contract.status || '')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                  <FileText className="h-8 w-8 mb-2" />
+                  <p className="text-sm">Nenhum contrato registrado</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Lançamentos */}
           <Card>
             <CardHeader>
@@ -246,7 +477,7 @@ export function ArtistHistoryModal({
                     <div key={release.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                       <Avatar className="h-10 w-10">
                         <AvatarFallback className="bg-primary/10">
-                          <Music className="h-5 w-5 text-primary" />
+                          <Disc3 className="h-5 w-5 text-primary" />
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
@@ -263,7 +494,7 @@ export function ArtistHistoryModal({
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-                  <Music className="h-8 w-8 mb-2" />
+                  <Disc3 className="h-8 w-8 mb-2" />
                   <p className="text-sm">Nenhum lançamento registrado</p>
                 </div>
               )}
