@@ -267,6 +267,11 @@ const Contratos = () => {
                             </div>
                             <div className="space-y-1">
                               <h3 className="font-medium text-foreground">{(contract as any).title || contract.contract_type}</h3>
+                              {(contract as any).artists && (
+                                <p className="text-sm text-muted-foreground">
+                                  Artista: {(contract as any).artists.stage_name || (contract as any).artists.name}
+                                </p>
+                              )}
                               <div className="flex items-center gap-2">
                                 {(contract as any).service_type && (
                                   <Badge variant="secondary">
