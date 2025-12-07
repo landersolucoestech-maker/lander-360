@@ -246,7 +246,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="type">Tipo *</Label>
-          <Select onValueChange={(value) => setValue("type", value)} defaultValue={initialData?.type}>
+          <Select onValueChange={(value) => setValue("type", value)} value={watch("type")} defaultValue={initialData?.type}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o tipo" />
             </SelectTrigger>
@@ -336,7 +336,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="status">Status *</Label>
-          <Select onValueChange={(value) => setValue("status", value)} defaultValue={initialData?.status}>
+          <Select onValueChange={(value) => setValue("status", value)} value={watch("status")} defaultValue={initialData?.status}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o status" />
             </SelectTrigger>
@@ -356,7 +356,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="priority">Prioridade *</Label>
-          <Select onValueChange={(value) => setValue("priority", value)} defaultValue={initialData?.priority}>
+          <Select onValueChange={(value) => setValue("priority", value)} value={watch("priority")} defaultValue={initialData?.priority}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione a prioridade" />
             </SelectTrigger>
@@ -418,7 +418,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="state">Estado</Label>
-          <Select onValueChange={(value) => setValue("state", value)} defaultValue={initialData?.state}>
+          <Select onValueChange={(value) => setValue("state", value)} value={watch("state")} defaultValue={initialData?.state}>
             <SelectTrigger>
               <SelectValue placeholder="UF" />
             </SelectTrigger>
