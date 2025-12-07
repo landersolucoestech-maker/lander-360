@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Music, Calendar, User, Clock, MapPin, Building, Disc } from "lucide-react";
+import { formatDateBR } from "@/lib/utils";
 
 interface PhonogramViewModalProps {
   open: boolean;
@@ -103,7 +104,7 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
                 <label className="text-sm font-medium text-muted-foreground">Data de Gravação</label>
                 <p className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  {phonogram.recording_date ? new Date(phonogram.recording_date).toLocaleDateString('pt-BR') : "Não informado"}
+                  {formatDateBR(phonogram.recording_date)}
                 </p>
               </div>
               <div>
@@ -169,7 +170,7 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
                 <label className="text-sm font-medium text-muted-foreground">Data de Registro</label>
                 <p className="flex items-center gap-2 mt-1">
                   <Calendar className="h-4 w-4" />
-                  {new Date(phonogram.created_at).toLocaleDateString('pt-BR')}
+                  {formatDateBR(phonogram.created_at)}
                 </p>
               </div>
             </div>

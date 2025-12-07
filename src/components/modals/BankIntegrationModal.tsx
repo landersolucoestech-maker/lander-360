@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { formatDateBR } from "@/lib/utils";
 import { 
   Building2, 
   CreditCard, 
@@ -185,7 +186,7 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
                           <div>
                             <Label className="text-sm text-muted-foreground">Última Sincronização</Label>
                             <p className="text-sm">
-                              {new Date(account.lastSync).toLocaleDateString('pt-BR')}
+                              {formatDateBR(account.lastSync)}
                             </p>
                           </div>
                           <div className="flex items-center justify-between">

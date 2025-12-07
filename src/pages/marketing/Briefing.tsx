@@ -9,6 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingBriefingModal } from "@/components/modals/MarketingBriefingModal";
 import { FileText, Plus, Clock, CheckCircle, AlertTriangle, User } from "lucide-react";
 import { useMarketingBriefings } from "@/hooks/useMarketing";
+import { formatDateBR } from "@/lib/utils";
 
 const MarketingBriefing = () => {
   const { data: briefingsData = [], isLoading: briefingsLoading } = useMarketingBriefings();
@@ -216,7 +217,7 @@ const MarketingBriefing = () => {
                             {briefing.deadline && (
                               <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
-                                <span>Prazo: {new Date(briefing.deadline).toLocaleDateString('pt-BR')}</span>
+                                <span>Prazo: {formatDateBR(briefing.deadline)}</span>
                               </div>
                             )}
                             {briefing.budget && (

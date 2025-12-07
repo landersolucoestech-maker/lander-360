@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateBR } from "@/lib/utils";
 
 interface ArtistContractModalProps {
   open: boolean;
@@ -89,13 +90,9 @@ export function ArtistContractModal({
     return diffDays;
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatContractDate = (dateString: string | null) => {
     if (!dateString) return 'Não informado';
-    try {
-      return new Date(dateString).toLocaleDateString('pt-BR');
-    } catch {
-      return dateString;
-    }
+    return formatDateBR(dateString);
   };
 
   const formatCurrency = (value: number | null) => {
@@ -186,11 +183,11 @@ export function ArtistContractModal({
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="font-medium text-muted-foreground">Início:</span>
-                          <div>{formatDate(contract.start_date)}</div>
+                          <div>{formatContractDate(contract.start_date)}</div>
                         </div>
                         <div>
                           <span className="font-medium text-muted-foreground">Fim:</span>
-                          <div>{formatDate(contract.end_date)}</div>
+                          <div>{formatContractDate(contract.end_date)}</div>
                         </div>
                         <div>
                           <span className="font-medium text-muted-foreground">Valor:</span>

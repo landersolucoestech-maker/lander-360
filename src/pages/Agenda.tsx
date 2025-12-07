@@ -11,9 +11,8 @@ import { AgendaEventModal } from "@/components/modals/AgendaEventModal";
 import { AgendaViewModal } from "@/components/modals/AgendaViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns";
+import { cn, formatDateFullBR } from "@/lib/utils";
 import { mockEvents } from "@/data/mockData";
 
 interface AgendaEvent {
@@ -245,7 +244,7 @@ const Agenda = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      Eventos de Hoje - {format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      Eventos de Hoje - {formatDateFullBR(new Date())}
                     </CardTitle>
                     <CardDescription>
                       {todayEvents.length} evento(s) para hoje

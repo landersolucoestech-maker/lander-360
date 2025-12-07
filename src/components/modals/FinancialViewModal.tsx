@@ -5,8 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDateFullBR } from "@/lib/utils";
 
 interface FinancialViewModalProps {
   open: boolean;
@@ -127,7 +126,7 @@ export function FinancialViewModal({ open, onOpenChange, transaction }: Financia
               <div>
                 <label className="text-sm text-muted-foreground">Data da Transação</label>
                 <p className="font-medium">
-                  {format(new Date(transaction.transaction_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  {formatDateFullBR(transaction.transaction_date)}
                 </p>
               </div>
               {transaction.payment_method && (

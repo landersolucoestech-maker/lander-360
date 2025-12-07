@@ -27,6 +27,7 @@ import {
   Users
 } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud } from "react-icons/fa";
+import { formatDateBR } from "@/lib/utils";
 
 interface ArtistProfileModalProps {
   open: boolean;
@@ -41,13 +42,9 @@ export function ArtistProfileModal({
 }: ArtistProfileModalProps) {
   if (!artist) return null;
 
-  const formatDate = (dateString: string | null | undefined) => {
+  const formatArtistDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Não informado';
-    try {
-      return new Date(dateString).toLocaleDateString('pt-BR');
-    } catch {
-      return dateString;
-    }
+    return formatDateBR(dateString);
   };
 
   return (
@@ -97,7 +94,7 @@ export function ArtistProfileModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Nascimento: {formatDate(artist.birth_date)}</span>
+                  <span className="text-sm">Nascimento: {formatArtistDate(artist.birth_date)}</span>
                 </div>
               </div>
             </div>
@@ -130,7 +127,7 @@ export function ArtistProfileModal({
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Data de Nascimento:</span>
-                <p>{formatDate(artist.birth_date)}</p>
+                <p>{formatArtistDate(artist.birth_date)}</p>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Tipo de Perfil:</span>
@@ -402,7 +399,7 @@ export function ArtistProfileModal({
 
           {/* Data de Cadastro */}
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium">Data de Cadastro:</span> {formatDate(artist.created_at)}
+            <span className="font-medium">Data de Cadastro:</span> {formatArtistDate(artist.created_at)}
           </div>
         </div>
       </DialogContent>

@@ -12,8 +12,7 @@ import { FinancialViewModal } from "@/components/modals/FinancialViewModal";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { FinancialTransaction } from "@/types/database";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDateBR } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { mockTransactions } from "@/data/mockData";
 
@@ -351,7 +350,7 @@ const Financeiro = () => {
                           <div className="text-center">
                             <div className="text-sm text-muted-foreground">Data</div>
                             <div className="font-medium">
-                              {format(new Date(transaction.transaction_date), "dd/MM/yyyy", { locale: ptBR })}
+                              {formatDateBR(transaction.transaction_date)}
                             </div>
                           </div>
                           <div className="text-center">

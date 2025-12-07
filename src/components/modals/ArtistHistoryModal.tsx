@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateBR } from "@/lib/utils";
 
 interface ArtistHistoryModalProps {
   open: boolean;
@@ -83,13 +84,9 @@ export function ArtistHistoryModal({
 
   const isLoading = releasesLoading || showsLoading || contractsLoading;
 
-  const formatDate = (dateString: string | null | undefined) => {
+  const formatHistoryDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Não informado';
-    try {
-      return new Date(dateString).toLocaleDateString('pt-BR');
-    } catch {
-      return dateString;
-    }
+    return formatDateBR(dateString);
   };
 
   const getStatusColor = (status: string) => {
@@ -219,12 +216,12 @@ export function ArtistHistoryModal({
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Data de Cadastro:</span>
-                  <span>{formatDate(artist.created_at)}</span>
+                  <span>{formatHistoryDate(artist.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Última Atualização:</span>
-                  <span>{formatDate(artist.updated_at)}</span>
+                  <span>{formatHistoryDate(artist.updated_at)}</span>
                 </div>
               </div>
             </CardContent>
@@ -255,7 +252,7 @@ export function ArtistHistoryModal({
                       <div className="flex-1">
                         <h4 className="font-medium">{release.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {release.type || release.release_type || 'Lançamento'} • {formatDate(release.release_date)}
+                          {release.type || release.release_type || 'Lançamento'} • {formatHistoryDate(release.release_date)}
                         </p>
                       </div>
                       <Badge className={`${getStatusColor(release.status || '')} text-white`}>
@@ -303,7 +300,7 @@ export function ArtistHistoryModal({
                         <h4 className="font-medium">{show.title}</h4>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>{formatDate(show.start_date)}</span>
+                          <span>{formatHistoryDate(show.start_date)}</span>
                           {show.location && (
                             <>
                               <MapPin className="h-3 w-3 ml-2" />
@@ -353,7 +350,7 @@ export function ArtistHistoryModal({
                           <p className="text-sm text-muted-foreground">{item.description}</p>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {formatDate(item.date)}
+                          {formatHistoryDate(item.date)}
                         </div>
                       </div>
                     );

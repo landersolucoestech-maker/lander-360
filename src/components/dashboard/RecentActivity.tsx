@@ -6,6 +6,7 @@ import { Music, Upload, FileText, Calendar, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRecentActivities } from "@/hooks/useDashboard";
 import { mockActivities } from "@/data/mockData";
+import { formatDateBR } from "@/lib/utils";
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -70,7 +71,7 @@ export function RecentActivity() {
     if (diffInHours < 1) return "Agora há pouco";
     if (diffInHours < 24) return `${diffInHours}h atrás`;
     if (diffInHours < 48) return "Ontem";
-    return date.toLocaleDateString('pt-BR');
+    return formatDateBR(timestamp);
   };
 
   return (

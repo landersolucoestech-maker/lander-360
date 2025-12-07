@@ -9,6 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingCampaignModal } from "@/components/modals/MarketingCampaignModal";
 import { useMarketingCampaigns } from "@/hooks/useMarketing";
 import { Target, Plus, Calendar, DollarSign, TrendingUp, BarChart3, Megaphone } from "lucide-react";
+import { formatDateBR } from "@/lib/utils";
 
 const MarketingCampanhas = () => {
   const { data: dbCampaigns, isLoading } = useMarketingCampaigns();
@@ -185,7 +186,7 @@ const MarketingCampanhas = () => {
                               {campaign.start_date && campaign.end_date && (
                                 <span className="flex items-center">
                                   <Calendar className="h-3 w-3 mr-1" />
-                                  {new Date(campaign.start_date).toLocaleDateString('pt-BR')} - {new Date(campaign.end_date).toLocaleDateString('pt-BR')}
+                                  {formatDateBR(campaign.start_date)} - {formatDateBR(campaign.end_date)}
                                 </span>
                               )}
                             </div>

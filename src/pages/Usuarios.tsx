@@ -14,6 +14,7 @@ import { UserViewModal } from "@/components/modals/UserViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { mockUsers } from "@/data/mockData";
+import { formatDateBR } from "@/lib/utils";
 
 const Usuarios = () => {
   const { toast } = useToast();
@@ -229,7 +230,7 @@ const Usuarios = () => {
                               
                               <div className="flex items-center gap-1">
                                 <span className="font-medium">Criado em:</span>
-                                <span>{new Date(userData.created_at).toLocaleDateString('pt-BR')}</span>
+                                <span>{formatDateBR(userData.created_at)}</span>
                               </div>
                             </div>
                           </div>
