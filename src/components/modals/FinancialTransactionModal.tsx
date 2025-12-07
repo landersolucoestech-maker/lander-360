@@ -43,11 +43,13 @@ export const FinancialTransactionModal: React.FC<FinancialTransactionModalProps>
   const initialData = transaction ? {
     client_type: 'empresa' as 'empresa' | 'artista',
     description: transaction.description,
-    transaction_type: (transaction.transaction_type === 'entrada' ? 'receitas' : 'despesas') as 'receitas' | 'despesas',
+    transaction_type: (transaction.transaction_type === 'entrada' ? 'receitas' : 
+      transaction.transaction_type === 'saida' ? 'despesas' : 
+      (transaction.transaction_type || 'receitas')) as 'receitas' | 'despesas' | 'investimentos' | 'impostos' | 'transferencias',
     amount: transaction.amount,
     category: transaction.category || '',
     transaction_date: transaction.transaction_date ? new Date(transaction.transaction_date) : new Date(),
-    status: (transaction.status || 'pendente') as 'pendente' | 'aprovado' | 'pago' | 'cancelado',
+    status: (transaction.status || 'pendente') as 'pendente' | 'recebido' | 'pago' | 'cancelado' | 'atrasado',
     payment_method: (transaction as any).payment_method || undefined,
     contract_id: (transaction as any).contract_id || undefined,
     crm_contact_id: (transaction as any).crm_contact_id || undefined,
