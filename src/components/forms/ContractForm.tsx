@@ -80,8 +80,16 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   }, [initialData, form]);
 
   const handleSubmit = (data: ContractFormData) => {
+    console.log('ContractForm handleSubmit called with data:', data);
     onSubmit(data);
   };
+
+  // Debug: log form errors
+  React.useEffect(() => {
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log('ContractForm validation errors:', form.formState.errors);
+    }
+  }, [form.formState.errors]);
 
   const artistaServiceTypeLabels = {
     empresariamento: 'Empresariamento',
