@@ -164,6 +164,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="marcas">Marcas</SelectItem>
               <SelectItem value="marketplaces">Marketplaces</SelectItem>
               <SelectItem value="motorista">Motorista</SelectItem>
+              <SelectItem value="oficina_mecanica">Oficina mecânica</SelectItem>
               <SelectItem value="parceiros">Parceiros</SelectItem>
               <SelectItem value="patrocinadores">Patrocinadores</SelectItem>
               <SelectItem value="plataformas_streaming">Plataformas de streaming</SelectItem>
