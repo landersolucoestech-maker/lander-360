@@ -1135,6 +1135,39 @@ export type Database = {
           },
         ]
       }
+      pending_email_changes: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          current_email: string
+          expires_at: string
+          id: string
+          new_email: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          current_email: string
+          expires_at?: string
+          id?: string
+          new_email: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          current_email?: string
+          expires_at?: string
+          id?: string
+          new_email?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       phonograms: {
         Row: {
           artist_id: string | null

@@ -11,12 +11,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { User, Shield, Eye, Plus, Edit, Trash2, CheckCircle, Download, Settings } from 'lucide-react';
+import { User, Shield, Eye, Plus, Edit, Trash2, CheckCircle, Download, Settings, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUsers } from '@/hooks/useUsers';
 import { generateSecureToken, sanitizeInput } from '@/lib/security';
 import { useSecurePassword } from '@/hooks/useSecurePassword';
-
+import { supabase } from '@/integrations/supabase/client';
 const userSchema = z.object({
   fullName: z.string().min(2, 'Nome completo é obrigatório'),
   email: z.string().email('Email inválido'),
@@ -351,6 +351,39 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     setValue('permissionTemplate', '');
   };
 
+  const [emailChangeLoading, setEmailChangeLoading] = useState(false);
+
+  const requestEmailChange = async (userId: string, currentEmail: string, newEmail: string) => {
+    setEmailChangeLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-email-change', {
+        body: { userId, currentEmail, newEmail },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        toast.error(data.error);
+        return false;
+      }
+
+      toast.success(data.message, {
+        description: 'O usuário deve clicar no link enviado para confirmar a alteração.',
+        duration: 8000,
+        icon: <Mail className="h-5 w-5" />,
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Error requesting email change:', error);
+      toast.error('Erro ao solicitar alteração de email');
+      return false;
+    } finally {
+      setEmailChangeLoading(false);
+    }
+  };
+
   const onSubmit = async (data: UserFormData) => {
     try {
       if (user) {
@@ -358,11 +391,23 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         const allPermissions = Object.entries(data.permissions).flatMap(([moduleKey, actions]) => 
           actions.map(action => `${moduleKey}:${action}`)
         );
+
+        const newEmail = sanitizeInput(data.email);
+        const currentEmail = user.email;
+        const emailChanged = newEmail !== currentEmail;
         
-        // Atualizar usuário existente
+        // Se o email mudou, solicitar confirmação por email
+        if (emailChanged) {
+          const emailChangeRequested = await requestEmailChange(user.id, currentEmail, newEmail);
+          if (!emailChangeRequested) {
+            return; // Don't proceed if email change request failed
+          }
+        }
+        
+        // Atualizar usuário existente (sem alterar o email diretamente)
         const result = await updateUser(user.id, {
           full_name: sanitizeInput(data.fullName),
-          email: sanitizeInput(data.email),
+          // Não passar email aqui - será alterado via confirmação por email
           phone: data.phone ? sanitizeInput(data.phone) : undefined,
           sector: data.sector ? sanitizeInput(data.sector) : undefined,
           role: sanitizeInput(data.role || ''),
@@ -370,6 +415,11 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         });
         
         if (result.success) {
+          if (emailChanged) {
+            toast.info('Dados atualizados. Email pendente de confirmação.', {
+              description: 'O novo email só será ativado após confirmação.',
+            });
+          }
           onSuccess();
         }
       } else {

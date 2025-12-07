@@ -2,3 +2,9 @@ project_id = "dkrrfnpvqrpakngigxsb"
 
 [functions.belvo-integration]
 verify_jwt = true
+
+[functions.request-email-change]
+verify_jwt = true
+
+[functions.confirm-email-change]
+verify_jwt = false
