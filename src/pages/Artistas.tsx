@@ -233,14 +233,21 @@ const Artistas = () => {
     label: "Contrato",
     options: ["Com Contrato Ativo", "Sem Contrato Ativo"]
   }];
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
+
   const handleSearch = (searchTerm: string) => {
-    filterArtists(searchTerm, {});
+    setCurrentSearchTerm(searchTerm);
+    filterArtists(searchTerm, currentFilters);
   };
   const handleFilter = (filters: Record<string, string>) => {
-    filterArtists("", filters);
+    setCurrentFilters(filters);
+    filterArtists(currentSearchTerm, filters);
   };
   const handleClear = () => {
-    setFilteredArtists(displayArtists);
+    setCurrentSearchTerm("");
+    setCurrentFilters({});
+    setFilteredArtists([]);
   };
   const filterArtists = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = displayArtists;
