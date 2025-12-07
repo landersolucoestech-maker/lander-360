@@ -290,7 +290,7 @@ const Artistas = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} trend={kpiTrends.artists} />
               <DashboardCard title="Contratos Vigentes" value={isLoading ? '...' : artistsWithActiveContracts} description="artistas com contratos ativos" icon={Star} trend={kpiTrends.contracts} />
-              <DashboardCard title="Obras Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} trend={kpiTrends.music} />
+              <DashboardCard title="Obras e Fonogramas Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} trend={kpiTrends.music} />
               <DashboardCard title="Receita dos Artistas" value="R$ 0" description="este mês" icon={DollarSign} />
             </div>
 
