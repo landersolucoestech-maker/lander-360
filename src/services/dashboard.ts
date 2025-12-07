@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardStats, RecentActivity } from '@/types/database';
 import { ArtistsService } from './artists';
 import { ContractsService } from './contracts';
+import { formatDateForDB } from '@/lib/utils';
 
 export interface DashboardStatsWithTrends extends DashboardStats {
   trends: {
@@ -65,15 +66,15 @@ export class DashboardService {
           .from('financial_transactions')
           .select('amount')
           .eq('type', 'income')
-          .gte('date', startOfMonth.toISOString().split('T')[0])
+          .gte('date', formatDateForDB(startOfMonth) || '')
           .then(res => res.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0),
         // Last month revenue
         supabase
           .from('financial_transactions')
           .select('amount')
           .eq('type', 'income')
-          .gte('date', startOfLastMonth.toISOString().split('T')[0])
-          .lt('date', startOfMonth.toISOString().split('T')[0])
+          .gte('date', formatDateForDB(startOfLastMonth) || '')
+          .lt('date', formatDateForDB(startOfMonth) || '')
           .then(res => res.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0),
         // Recent activities
         DashboardService.getRecentActivities()
@@ -220,12 +221,12 @@ export class DashboardService {
           .from('financial_transactions')
           .select('amount')
           .eq('type', 'income')
-          .gte('date', startOfMonth.toISOString().split('T')[0]),
+          .gte('date', formatDateForDB(startOfMonth) || ''),
         supabase
           .from('financial_transactions')
           .select('amount')
           .eq('type', 'expense')
-          .gte('date', startOfMonth.toISOString().split('T')[0])
+          .gte('date', formatDateForDB(startOfMonth) || '')
       ]);
 
       const revenue = revenueResult.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
