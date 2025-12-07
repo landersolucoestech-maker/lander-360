@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -6,13 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X } from "lucide-react";
 import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
 import { FinancialViewModal } from "@/components/modals/FinancialViewModal";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { FinancialTransaction } from "@/types/database";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { 
   useFinancialTransactions, 
@@ -31,6 +35,8 @@ const Financeiro = () => {
   const [transactionToDelete, setTransactionToDelete] = useState<FinancialTransaction | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   
   const { toast } = useToast();
 
@@ -235,13 +241,15 @@ const Financeiro = () => {
   const handleClear = () => {
     setSearchTerm("");
     setFilters({});
+    setStartDate(undefined);
+    setEndDate(undefined);
   };
 
-  // Filter transactions based on search and filters
+  // Filter transactions based on search, filters, and date range
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = !searchTerm || 
       transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+      (transaction.category && transaction.category.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesFilters = Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
@@ -251,7 +259,25 @@ const Financeiro = () => {
       return true;
     });
 
-    return matchesSearch && matchesFilters;
+    // Date range filter
+    let matchesDateRange = true;
+    if (startDate || endDate) {
+      const transactionDate = transaction.transaction_date ? new Date(transaction.transaction_date) : null;
+      if (transactionDate) {
+        if (startDate) {
+          matchesDateRange = transactionDate >= startDate;
+        }
+        if (endDate && matchesDateRange) {
+          const endOfDay = new Date(endDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          matchesDateRange = transactionDate <= endOfDay;
+        }
+      } else {
+        matchesDateRange = false;
+      }
+    }
+
+    return matchesSearch && matchesFilters && matchesDateRange;
   });
 
   // Calculate totals
@@ -385,13 +411,98 @@ const Financeiro = () => {
             </div>
 
             {/* Search and Filters */}
-            <SearchFilter
-              searchPlaceholder="Buscar transações por descrição, categoria ou subcategoria..."
-              filters={filterOptions}
-              onSearch={handleSearch}
-              onFilter={handleFilter}
-              onClear={handleClear}
-            />
+            <div className="space-y-4">
+              <SearchFilter
+                searchPlaceholder="Buscar transações por descrição, categoria ou subcategoria..."
+                filters={filterOptions}
+                onSearch={handleSearch}
+                onFilter={handleFilter}
+                onClear={handleClear}
+              />
+              
+              {/* Date Range Filters */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Período:</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-[180px] justify-start text-left font-normal",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "Data início"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={startDate}
+                        onSelect={setStartDate}
+                        initialFocus
+                        locale={ptBR}
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <span className="text-muted-foreground">até</span>
+                  
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-[180px] justify-start text-left font-normal",
+                          !endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : "Data fim"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={endDate}
+                        onSelect={setEndDate}
+                        initialFocus
+                        locale={ptBR}
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {(startDate || endDate) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setStartDate(undefined);
+                        setEndDate(undefined);
+                      }}
+                      className="h-8 w-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                {(startDate || endDate) && (
+                  <Badge variant="secondary" className="text-xs">
+                    {startDate && endDate 
+                      ? `${format(startDate, "dd/MM/yyyy")} - ${format(endDate, "dd/MM/yyyy")}`
+                      : startDate 
+                        ? `A partir de ${format(startDate, "dd/MM/yyyy")}`
+                        : `Até ${format(endDate!, "dd/MM/yyyy")}`
+                    }
+                  </Badge>
+                )}
+              </div>
+            </div>
 
             {/* Transactions List */}
             <Card className="flex-1">
