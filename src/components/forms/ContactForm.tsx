@@ -11,6 +11,8 @@ import { Plus, Trash2, Upload, User } from "lucide-react";
 import { getTodayDateString } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { DateInput } from "@/components/ui/date-input";
+import { parse, format } from "date-fns";
 
 const interactionSchema = z.object({
   date: z.string().min(1, "Data é obrigatória"),
@@ -483,9 +485,16 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                   <div className="space-y-2">
                     <Label htmlFor={`interactions.${index}.date`}>Data</Label>
-                    <Input
-                      type="date"
-                      {...register(`interactions.${index}.date`)}
+                    <DateInput
+                      value={field.date ? parse(field.date, "yyyy-MM-dd", new Date()) : undefined}
+                      onChange={(date) => {
+                        if (date) {
+                          setValue(`interactions.${index}.date`, format(date, "yyyy-MM-dd"));
+                        } else {
+                          setValue(`interactions.${index}.date`, "");
+                        }
+                      }}
+                      placeholder="DD/MM/AAAA"
                     />
                   </div>
                   <div className="space-y-2">
