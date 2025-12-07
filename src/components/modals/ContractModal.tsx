@@ -36,6 +36,15 @@ export const ContractModal: React.FC<ContractModalProps> = ({
   const isEditing = !!contract;
   const isLoading = createContract.isPending || updateContract.isPending;
 
+  // Helper function to format date without timezone conversion
+  const formatDateForDB = (date: Date | undefined | null): string | null => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSubmit = async (data: any) => {
     console.log('ContractModal handleSubmit called with data:', data);
     try {
@@ -49,12 +58,12 @@ export const ContractModal: React.FC<ContractModalProps> = ({
         contractor_contact: data.contractor_contact || null,
         responsible_person: data.responsible_person || null,
         status: data.status || 'rascunho',
-        effective_from: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
-        effective_to: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
-        start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
-        end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+        effective_from: formatDateForDB(data.start_date),
+        effective_to: formatDateForDB(data.end_date),
+        start_date: formatDateForDB(data.start_date),
+        end_date: formatDateForDB(data.end_date),
         registry_office: data.registry_office || false,
-        registry_date: data.registry_date ? data.registry_date.toISOString().split('T')[0] : null,
+        registry_date: formatDateForDB(data.registry_date),
         payment_type: data.payment_type || null,
         fixed_value: data.fixed_value || null,
         value: data.fixed_value || null,
