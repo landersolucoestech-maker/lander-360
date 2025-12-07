@@ -1171,6 +1171,7 @@ export type Database = {
       phonograms: {
         Row: {
           artist_id: string | null
+          audio_url: string | null
           created_at: string
           created_by: string | null
           duration: number | null
@@ -1194,6 +1195,7 @@ export type Database = {
         }
         Insert: {
           artist_id?: string | null
+          audio_url?: string | null
           created_at?: string
           created_by?: string | null
           duration?: number | null
@@ -1217,6 +1219,7 @@ export type Database = {
         }
         Update: {
           artist_id?: string | null
+          audio_url?: string | null
           created_at?: string
           created_by?: string | null
           duration?: number | null
