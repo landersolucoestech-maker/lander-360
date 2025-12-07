@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -139,6 +140,7 @@ function MultiStringField({ label, placeholder, values, onChange }: MultiStringF
 
 export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { data: projects = [], isLoading: loadingProjects } = useProjects();
   const { data: artists = [] } = useArtists();
   const { data: musicRegistry = [] } = useMusicRegistry();
@@ -1124,7 +1126,11 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                             type="button" 
                             className="flex-1 bg-primary hover:bg-primary/90"
                             onClick={() => {
-                              // TODO: Implement connection logic
+                              toast({
+                                title: "Conectar Distribuidora",
+                                description: `Redirecionando para configurar conexão com ${selectedDistributor.label}...`,
+                              });
+                              navigate('/configuracoes');
                             }}
                           >
                             <LogIn className="h-4 w-4 mr-2" />
