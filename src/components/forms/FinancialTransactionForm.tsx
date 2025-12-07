@@ -20,11 +20,11 @@ const financialTransactionSchema = z.object({
   client_id: z.string().optional(),
   crm_contact_id: z.string().optional(),
   description: z.string().min(1, 'Descrição é obrigatória'),
-  transaction_type: z.enum(['receitas', 'despesas', 'investimentos'], { required_error: 'Selecione o tipo' }),
+  transaction_type: z.enum(['receitas', 'despesas', 'investimentos', 'impostos', 'transferencias'], { required_error: 'Selecione o tipo' }),
   amount: z.number().positive('Valor deve ser positivo'),
   category: z.string().min(1, 'Categoria é obrigatória'),
   transaction_date: z.date({ required_error: 'Data é obrigatória' }),
-  status: z.enum(['pendente', 'aprovado', 'pago', 'cancelado']).default('pendente'),
+  status: z.enum(['pendente', 'recebido', 'pago', 'cancelado', 'atrasado']).default('pendente'),
   payment_method: z.string().optional(),
   payment_type: z.string().optional(),
   // Campos para parcelamento
@@ -124,6 +124,29 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     capacitacao: 'Capacitação'
   };
 
+  const impostosCategories = {
+    irpj: 'IRPJ',
+    csll: 'CSLL',
+    pis: 'PIS',
+    cofins: 'COFINS',
+    iss: 'ISS',
+    icms: 'ICMS',
+    inss: 'INSS',
+    fgts: 'FGTS',
+    irrf: 'IRRF',
+    simples: 'Simples Nacional',
+    outros: 'Outros Impostos'
+  };
+
+  const transferenciasCategories = {
+    entre_contas: 'Entre Contas',
+    para_artista: 'Para Artista',
+    para_fornecedor: 'Para Fornecedor',
+    recebimento: 'Recebimento',
+    aplicacao: 'Aplicação',
+    resgate: 'Resgate'
+  };
+
   const paymentMethods = [
     { value: 'pix', label: 'Pix' },
     { value: 'ted', label: 'TED' },
@@ -142,7 +165,11 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     ? receitasCategories 
     : watchedType === 'investimentos' 
       ? investimentosCategories 
-      : despesasCategories;
+      : watchedType === 'impostos'
+        ? impostosCategories
+        : watchedType === 'transferencias'
+          ? transferenciasCategories
+          : despesasCategories;
 
   // Handle attachment upload
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -312,6 +339,8 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                   <SelectItem value="receitas">Receitas</SelectItem>
                   <SelectItem value="despesas">Despesas</SelectItem>
                   <SelectItem value="investimentos">Investimentos</SelectItem>
+                  <SelectItem value="impostos">Impostos</SelectItem>
+                  <SelectItem value="transferencias">Transferências</SelectItem>
                 </SelectContent>
               </Select>
               {form.formState.errors.transaction_type && (
