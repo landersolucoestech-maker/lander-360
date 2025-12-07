@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, User } from "lucide-react";
 import { getTodayDateString } from "@/lib/utils";
+import { useState, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const interactionSchema = z.object({
   date: z.string().min(1, "Data é obrigatória"),
@@ -30,8 +32,7 @@ const contactSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  notes: z.string().optional(),
-  nextAction: z.string().optional(),
+  image_url: z.string().optional(),
   interactions: z.array(interactionSchema).optional(),
 });
 
@@ -45,6 +46,9 @@ interface ContactFormProps {
 
 export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProps) {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null);
+  const [isUploading, setIsUploading] = useState(false);
   
   const {
     register,
@@ -74,6 +78,63 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
     });
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma imagem válida.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `contacts/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("crm-contacts")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("crm-contacts")
+        .getPublicUrl(filePath);
+
+      setImagePreview(publicUrl);
+      setValue("image_url", publicUrl);
+      
+      toast({
+        title: "Sucesso",
+        description: "Imagem enviada com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao enviar imagem:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao enviar imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleFormSubmit = async (data: ContactFormData) => {
     try {
       await onSubmit(data);
@@ -90,8 +151,59 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
     }
   };
 
+
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      {/* Upload de Imagem */}
+      <div className="flex items-center gap-6">
+        <div 
+          className="w-24 h-24 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {imagePreview ? (
+            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+          ) : (
+            <User className="h-10 w-10 text-muted-foreground" />
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label>Foto do Contato</Label>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {isUploading ? "Enviando..." : "Selecionar Imagem"}
+            </Button>
+            {imagePreview && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setImagePreview(null);
+                  setValue("image_url", "");
+                }}
+              >
+                Remover
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">JPG, PNG ou WebP. Máximo 5MB.</p>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Nome *</Label>
@@ -348,25 +460,6 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
             placeholder="00000-000"
           />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="nextAction">Próxima Ação</Label>
-        <Input
-          id="nextAction"
-          {...register("nextAction")}
-          placeholder="Ex: Reunião agendada, Follow-up, Enviar proposta"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">Observações</Label>
-        <Textarea
-          id="notes"
-          {...register("notes")}
-          placeholder="Observações sobre o contato..."
-          rows={4}
-        />
       </div>
 
       {/* Histórico de Interações */}
