@@ -128,6 +128,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="clientes_corporativos">Clientes corporativos</SelectItem>
               <SelectItem value="colaborador">Colaborador</SelectItem>
               <SelectItem value="compositor">Compositor</SelectItem>
+              <SelectItem value="concessionaria">Concessionária</SelectItem>
               <SelectItem value="consultor_estrategia">Consultor de estratégia</SelectItem>
               <SelectItem value="consultor_financeiro">Consultor financeiro</SelectItem>
               <SelectItem value="consultor_marketing">Consultor de marketing</SelectItem>
