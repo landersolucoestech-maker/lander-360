@@ -264,14 +264,14 @@ const Agenda = () => {
                   onClear={handleClear}
                 />
 
-                {/* Eventos de Hoje */}
+                {/* Todos os Eventos */}
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      Eventos de Hoje - {formatDateFullBR(new Date())}
+                      Todos os Eventos
                     </CardTitle>
                     <CardDescription>
-                      {todayEvents.length} evento(s) para hoje
+                      {filteredEvents.length} evento(s) cadastrado(s)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -280,7 +280,7 @@ const Agenda = () => {
                         <div className="text-center py-8">
                           <p className="text-muted-foreground">Carregando eventos...</p>
                         </div>
-                      ) : todayEvents.length === 0 ? (
+                      ) : filteredEvents.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
                           <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
                           <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum evento cadastrado</h3>
@@ -291,7 +291,7 @@ const Agenda = () => {
                           </Button>
                         </div>
                       ) : (
-                        todayEvents.map((event) => (
+                        filteredEvents.map((event) => (
                           <div
                             key={event.id}
                             className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
@@ -338,16 +338,13 @@ const Agenda = () => {
                              </div>
                             
                             <div className="flex items-center gap-6">
-                              {event.start_time && (
-                                <div className="text-center">
-                                  <div className="text-sm text-muted-foreground">Horário</div>
-                                  <div className="font-medium flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    {event.start_time}
-                                    {event.end_time && ` - ${event.end_time}`}
-                                  </div>
+                              <div className="text-center">
+                                <div className="text-sm text-muted-foreground">Data</div>
+                                <div className="font-medium flex items-center gap-1">
+                                  <CalendarIcon className="h-3 w-3" />
+                                  {formatDateFullBR(new Date(event.start_date))}
                                 </div>
-                              )}
+                              </div>
                               
                               <div className="flex items-center gap-2">
                                 <Button 
