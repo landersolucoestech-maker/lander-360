@@ -227,7 +227,7 @@ const Artistas = () => {
   }, {
     key: "perfil",
     label: "Perfil",
-    options: ["Independente", "Gravadora", "Produtor", "Compositor"]
+    options: ["Independente", "Com Empresário", "Gravadora", "Editora", "Produtor", "Compositor"]
   }, {
     key: "contrato",
     label: "Contrato",
