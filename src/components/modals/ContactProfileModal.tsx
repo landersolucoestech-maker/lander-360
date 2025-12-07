@@ -69,7 +69,7 @@ export function ContactProfileModal({
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex flex-col items-center">
               <Avatar className="w-24 h-24 mb-4">
-                <AvatarImage src="/placeholder.svg" alt={contact.name} />
+                <AvatarImage src={contact.image_url || "/placeholder.svg"} alt={contact.name} />
                 <AvatarFallback className="text-xl">
                   {contact.name?.split(' ').map((n: string) => n[0]).join('') || '?'}
                 </AvatarFallback>
