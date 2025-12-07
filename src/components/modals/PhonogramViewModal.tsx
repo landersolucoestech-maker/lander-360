@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Music, Calendar, User, Clock, MapPin, Building, Disc } from "lucide-react";
+import { Music, Calendar, User, Clock, MapPin, Building, Disc, FileAudio } from "lucide-react";
 import { formatDateBR } from "@/lib/utils";
 
 interface PhonogramViewModalProps {
@@ -144,6 +144,23 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Áudio */}
+          {phonogram.audio_url && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold border-b pb-2">Arquivo de Áudio</h3>
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <FileAudio className="h-6 w-6 text-primary" />
+                  <span className="font-medium">Áudio do Fonograma</span>
+                </div>
+                <audio controls className="w-full">
+                  <source src={phonogram.audio_url} />
+                  Seu navegador não suporta o elemento de áudio.
+                </audio>
               </div>
             </div>
           )}
