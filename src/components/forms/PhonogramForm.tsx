@@ -106,9 +106,13 @@ export function PhonogramForm({
   const updatePhonogram = useUpdatePhonogram();
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
   const [workSearchTerm, setWorkSearchTerm] = useState('');
-  const [producersOpen, setProducersOpen] = useState(true);
-  const [performersOpen, setPerformersOpen] = useState(false);
-  const [musiciansOpen, setMusiciansOpen] = useState(false);
+  // Abrir seções se houver participantes ao editar
+  const hasProducers = phonogram?.participants?.some((p: any) => p.role === 'produtor_fonografico');
+  const hasPerformers = phonogram?.participants?.some((p: any) => p.role === 'interprete');
+  const hasMusicians = phonogram?.participants?.some((p: any) => p.role === 'musico');
+  const [producersOpen, setProducersOpen] = useState(hasProducers || true);
+  const [performersOpen, setPerformersOpen] = useState(!!hasPerformers);
+  const [musiciansOpen, setMusiciansOpen] = useState(!!hasMusicians);
   const [audioUploadOpen, setAudioUploadOpen] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [projectAudioInfo, setProjectAudioInfo] = useState<{ name: string; url: string; size: number } | null>(null);
@@ -142,15 +146,18 @@ export function PhonogramForm({
     };
   };
   const parsedIsrc = parseIsrc(phonogram?.isrc);
+  // Buscar obra vinculada para preencher work_title e work_abramus_code
+  const linkedWork = works.find((w: any) => w.id === phonogram?.work_id);
+
   const form = useForm<PhonogramFormData>({
     resolver: zodResolver(phonogramSchema),
     defaultValues: {
       work_id: phonogram?.work_id || '',
-      work_abramus_code: '',
-      work_title: '',
-      abramus_code: phonogram?.abramus_code || '',
-      ecad_code: phonogram?.ecad_code || '',
-      aggregator: phonogram?.aggregator || '',
+      work_abramus_code: linkedWork?.abramus_code || phonogram?.abramus_code || '',
+      work_title: phonogram?.title || linkedWork?.title || '',
+      abramus_code: phonogram?.abramus_code || linkedWork?.abramus_code || '',
+      ecad_code: phonogram?.ecad_code || linkedWork?.ecad_code || '',
+      aggregator: phonogram?.aggregator || phonogram?.label || '',
       isrc_country: parsedIsrc.country,
       isrc_registrant: parsedIsrc.registrant,
       isrc_year: parsedIsrc.year,
@@ -161,19 +168,20 @@ export function PhonogramForm({
       release_date: phonogram?.release_date || '',
       duration_minutes: phonogram?.duration ? Math.floor(phonogram.duration / 60) : 0,
       duration_seconds: phonogram?.duration ? phonogram.duration % 60 : 0,
-      is_instrumental: phonogram?.is_instrumental || false,
+      is_instrumental: phonogram?.language === 'instrumental' || phonogram?.is_instrumental || false,
       genre: phonogram?.genre || '',
-      classification: phonogram?.classification || 'studio',
+      classification: phonogram?.classification || phonogram?.version_type || 'studio',
       media: phonogram?.media || 'todos',
-      is_national: phonogram?.is_national ?? true,
+      is_national: phonogram?.is_national ?? (phonogram?.language === 'portugues' || true),
       simultaneous_publication: phonogram?.simultaneous_publication || false,
-      origin_country: phonogram?.origin_country || 'brazil',
+      origin_country: phonogram?.origin_country || phonogram?.recording_location || 'brazil',
       publication_country: phonogram?.publication_country || 'brazil',
       status: phonogram?.status || 'pendente',
       phonographic_producers: phonogram?.participants?.filter((p: any) => p.role === 'produtor_fonografico') || [],
       performers: phonogram?.participants?.filter((p: any) => p.role === 'interprete') || [],
       musicians: phonogram?.participants?.filter((p: any) => p.role === 'musico') || [],
-      accept_terms: false
+      // Se está editando, já aceitou os termos antes
+      accept_terms: !!phonogram?.id
     }
   });
   const handleAudioUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
