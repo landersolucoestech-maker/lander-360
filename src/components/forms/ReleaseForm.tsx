@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle, Loader2 } from 'lucide-react';
+import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle, Loader2, ExternalLink, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
@@ -69,13 +69,13 @@ interface ReleaseFormProps {
 }
 
 const distributorOptions = [
-  { id: 'onerpm', label: 'ONErpm' },
-  { id: 'distrokid', label: 'DistroKid' },
-  { id: '30por1', label: '30por1' },
-  { id: 'believe', label: 'Believe' },
-  { id: 'tunecore', label: 'TuneCore' },
-  { id: 'cd_baby', label: 'CD Baby' },
-  { id: 'outras_distribuidoras', label: 'Outras' },
+  { id: 'onerpm', label: 'ONErpm', description: 'Distribuidora global com presença na América Latina', website: 'https://onerpm.com' },
+  { id: 'distrokid', label: 'DistroKid', description: 'Distribuidora digital com distribuição ilimitada', website: 'https://distrokid.com' },
+  { id: '30por1', label: '30por1', description: 'Distribuidora brasileira independente', website: 'https://30por1.com.br' },
+  { id: 'believe', label: 'Believe', description: 'Distribuidora global com serviços completos', website: 'https://believe.com' },
+  { id: 'tunecore', label: 'TuneCore', description: 'Distribuidora com retenção de 100% dos royalties', website: 'https://tunecore.com' },
+  { id: 'cd_baby', label: 'CD Baby', description: 'Distribuidora pioneira no mercado digital', website: 'https://cdbaby.com' },
+  { id: 'outras_distribuidoras', label: 'Outras', description: 'Outras distribuidoras digitais', website: '' },
 ];
 
 // Componente para gerenciar lista de strings múltiplas
@@ -1063,54 +1063,94 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         <Card>
           <CardHeader>
             <CardTitle>Distribuição</CardTitle>
+            <CardDescription>Selecione a distribuidora para envio às plataformas digitais</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
               name="platforms"
-              render={() => (
-                <FormItem>
-                  <div className="mb-4">
-                    <FormLabel className="text-base">Distribuidoras</FormLabel>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {distributorOptions.map((distributor) => (
-                      <FormField
-                        key={distributor.id}
-                        control={form.control}
-                        name="platforms"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={distributor.id}
-                              className="flex flex-row items-start space-x-3 space-y-0"
+              render={({ field }) => {
+                const selectedDistributorId = field.value?.[0] || '';
+                const selectedDistributor = distributorOptions.find(d => d.id === selectedDistributorId);
+                
+                return (
+                  <FormItem>
+                    <FormLabel>Distribuidora *</FormLabel>
+                    <Select 
+                      value={selectedDistributorId} 
+                      onValueChange={(value) => field.onChange([value])}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a distribuidora">
+                            {selectedDistributor && (
+                              <div className="flex items-center gap-2">
+                                <MusicIcon className="h-4 w-4 text-primary" />
+                                {selectedDistributor.label}
+                              </div>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {distributorOptions.map((distributor) => (
+                          <SelectItem key={distributor.id} value={distributor.id}>
+                            <div className="flex items-center gap-2">
+                              <MusicIcon className="h-4 w-4 text-primary" />
+                              {distributor.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Card da distribuidora selecionada */}
+                    {selectedDistributor && (
+                      <div className="mt-4 border border-border rounded-lg p-4 bg-card">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <MusicIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-foreground">{selectedDistributor.label}</h4>
+                              <p className="text-sm text-muted-foreground">{selectedDistributor.description}</p>
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground border border-border rounded-full px-2 py-1 whitespace-nowrap">
+                            ✕ Não conectado
+                          </span>
+                        </div>
+                        
+                        <div className="flex gap-2 mt-4">
+                          <Button 
+                            type="button" 
+                            className="flex-1 bg-primary hover:bg-primary/90"
+                            onClick={() => {
+                              // TODO: Implement connection logic
+                            }}
+                          >
+                            <LogIn className="h-4 w-4 mr-2" />
+                            Conectar com {selectedDistributor.label}
+                          </Button>
+                          {selectedDistributor.website && (
+                            <Button 
+                              type="button" 
+                              variant="outline"
+                              onClick={() => window.open(selectedDistributor.website, '_blank')}
                             >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(distributor.id)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, distributor.id])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== distributor.id
-                                          )
-                                        );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                {distributor.label}
-                              </FormLabel>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Abrir site
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -1121,7 +1161,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                   <FormLabel>Notas de Distribuição</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Notas especiais sobre a distribuição..."
+                      placeholder="Notas especiais sobre a distribuição (ex: data preferencial, territórios, exclusividades...)"
                       className="min-h-[100px]"
                       {...field} 
                     />
