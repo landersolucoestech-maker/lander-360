@@ -361,32 +361,42 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
             {/* Data da Transação */}
             <div className="space-y-2">
               <Label>Data da Transação</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !form.watch('transaction_date') && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.watch('transaction_date') ? 
-                      formatDateBR(form.watch('transaction_date')!) : 
-                      "Selecionar data"
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="DD/MM/AAAA"
+                  value={form.watch('transaction_date') ? formatDateBR(form.watch('transaction_date')!) : ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Parse DD/MM/YYYY format
+                    const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                    if (match) {
+                      const [, day, month, year] = match;
+                      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                      if (!isNaN(date.getTime())) {
+                        form.setValue('transaction_date', date);
+                      }
                     }
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarComponent
-                    mode="single"
-                    selected={form.watch('transaction_date')}
-                    onSelect={(date) => form.setValue('transaction_date', date)}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
+                  }}
+                  className="flex-1"
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="icon" type="button">
+                      <CalendarIcon className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <CalendarComponent
+                      mode="single"
+                      selected={form.watch('transaction_date')}
+                      onSelect={(date) => form.setValue('transaction_date', date)}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
               {form.formState.errors.transaction_date && (
                 <p className="text-sm text-destructive">{form.formState.errors.transaction_date.message}</p>
               )}
