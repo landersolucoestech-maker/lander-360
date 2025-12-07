@@ -1,7 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Music, Calendar, User, Clock, MapPin, Building, Disc, FileAudio } from "lucide-react";
+import { Music, Calendar, User, Clock, MapPin, Building, Disc, FileAudio, FileText, Loader2 } from "lucide-react";
 import { formatDateBR } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PhonogramViewModalProps {
   open: boolean;
@@ -9,7 +11,53 @@ interface PhonogramViewModalProps {
   phonogram: any;
 }
 
+interface LinkedWork {
+  id: string;
+  title: string;
+  isrc?: string | null;
+  iswc?: string | null;
+  genre?: string | null;
+  writers?: string[] | null;
+  publishers?: string[] | null;
+  abramus_code?: string | null;
+  ecad_code?: string | null;
+  status?: string | null;
+}
+
 export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramViewModalProps) {
+  const [linkedWork, setLinkedWork] = useState<LinkedWork | null>(null);
+  const [loadingWork, setLoadingWork] = useState(false);
+
+  useEffect(() => {
+    async function fetchLinkedWork() {
+      if (!phonogram?.work_id) {
+        setLinkedWork(null);
+        return;
+      }
+
+      setLoadingWork(true);
+      try {
+        const { data, error } = await supabase
+          .from('music_registry')
+          .select('id, title, isrc, iswc, genre, writers, publishers, abramus_code, ecad_code, status')
+          .eq('id', phonogram.work_id)
+          .maybeSingle();
+
+        if (error) throw error;
+        setLinkedWork(data);
+      } catch (error) {
+        console.error('Error fetching linked work:', error);
+        setLinkedWork(null);
+      } finally {
+        setLoadingWork(false);
+      }
+    }
+
+    if (open && phonogram?.work_id) {
+      fetchLinkedWork();
+    }
+  }, [open, phonogram?.work_id]);
+
   if (!phonogram) return null;
 
   const formatDuration = (durationInSeconds: number | null | undefined) => {
@@ -25,6 +73,8 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
       case 'aceita': return 'Aceita';
       case 'pendente': return 'Pendente';
       case 'recusada': return 'Recusada';
+      case 'registrado': return 'Registrado';
+      case 'ativo': return 'Ativo';
       default: return 'Pendente';
     }
   };
@@ -49,7 +99,7 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Disc className="h-5 w-5" />
@@ -85,6 +135,87 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
                 <Badge variant="secondary">{phonogram.genre || "Não informado"}</Badge>
               </div>
             </div>
+          </div>
+
+          {/* Obra Vinculada */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold border-b pb-2 flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Obra Vinculada
+            </h3>
+            {loadingWork ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Carregando...</span>
+              </div>
+            ) : linkedWork ? (
+              <div className="p-4 bg-muted/30 rounded-lg space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Título da Obra</label>
+                    <p className="font-semibold flex items-center gap-2">
+                      <Music className="h-4 w-4" />
+                      {linkedWork.title}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Status</label>
+                    <div className="mt-1">
+                      <Badge variant="outline">{getStatusDisplay(linkedWork.status)}</Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">ISWC</label>
+                    <p className="font-mono text-sm">{linkedWork.iswc || "Não informado"}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Gênero</label>
+                    <p className="text-sm">{linkedWork.genre || "Não informado"}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Código ABRAMUS</label>
+                    <p className="font-mono text-sm">{linkedWork.abramus_code || "Não informado"}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Código ECAD</label>
+                    <p className="font-mono text-sm">{linkedWork.ecad_code || "Não informado"}</p>
+                  </div>
+                </div>
+                {linkedWork.writers && linkedWork.writers.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Compositores</label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {linkedWork.writers.map((writer, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {writer}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {linkedWork.publishers && linkedWork.publishers.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Editoras</label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {linkedWork.publishers.map((publisher, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {publisher}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 bg-muted/20 rounded-lg text-center text-muted-foreground">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhuma obra vinculada a este fonograma</p>
+              </div>
+            )}
           </div>
 
           {/* Códigos de Registro */}
