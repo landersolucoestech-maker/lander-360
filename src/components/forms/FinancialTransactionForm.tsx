@@ -26,6 +26,7 @@ const financialTransactionSchema = z.object({
   transaction_date: z.date({ required_error: 'Data é obrigatória' }),
   status: z.enum(['pendente', 'aprovado', 'pago', 'cancelado']).default('pendente'),
   payment_method: z.string().optional(),
+  payment_type: z.string().optional(),
   contract_id: z.string().optional(),
   attachment_url: z.string().optional(),
   responsible_by: z.string().optional(),
@@ -120,6 +121,12 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     { value: 'boleto', label: 'Boleto' },
     { value: 'cartao', label: 'Cartão' },
     { value: 'dinheiro', label: 'Dinheiro' },
+  ];
+
+  const paymentTypes = [
+    { value: 'a_vista', label: 'À Vista' },
+    { value: 'parcelado', label: 'Parcelado' },
+    { value: 'recorrente', label: 'Recorrente' },
   ];
 
   const availableCategories = watchedType === 'receitas' 
@@ -353,6 +360,24 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                 <SelectContent className="bg-background border border-border z-50">
                   {paymentMethods.map((method) => (
                     <SelectItem key={method.value} value={method.value}>{method.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tipo de Pagamento */}
+            <div className="space-y-2">
+              <Label>Tipo de Pagamento</Label>
+              <Select
+                value={form.watch('payment_type')}
+                onValueChange={(value) => form.setValue('payment_type', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de pagamento" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border z-50">
+                  {paymentTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
