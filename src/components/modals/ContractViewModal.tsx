@@ -104,17 +104,30 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
 
           {/* Contract Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tipo de Cliente e Cliente */}
+            {/* Tipo de Cliente */}
+            {contractData.client_type && (
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <Building className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tipo de Cliente</span>
+                </div>
+                <div className="font-medium capitalize">{contractData.client_type}</div>
+              </div>
+            )}
+
+            {/* Artista */}
             {contractData.client_type === 'artista' && artist && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
                   <User className="h-4 w-4" />
                   <span className="text-sm font-medium">Artista</span>
                 </div>
-                <div className="font-medium">{artist.name}</div>
+                <div className="font-medium">{artist.stage_name || artist.name}</div>
+                {artist.email && <div className="text-sm text-muted-foreground">{artist.email}</div>}
               </div>
             )}
 
+            {/* Contratante/Contato para Empresa */}
             {contractData.client_type === 'empresa' && contact && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
@@ -125,6 +138,20 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
                 {contact.company && (
                   <div className="text-sm text-muted-foreground">{contact.company}</div>
                 )}
+                {contact.email && (
+                  <div className="text-sm text-muted-foreground">{contact.email}</div>
+                )}
+              </div>
+            )}
+
+            {/* Tipo de Serviço */}
+            {contractData.service_type && (
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tipo de Serviço</span>
+                </div>
+                <div className="font-medium">{serviceTypeLabels[contractData.service_type] || contractData.service_type}</div>
               </div>
             )}
 
@@ -170,15 +197,28 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
             )}
 
             {/* Registro em Cartório */}
-            {contractData.registry_office && contractData.registry_date && (
+            {contractData.registry_office && (
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
                   <FileCheck className="h-4 w-4" />
-                  <span className="text-sm font-medium">Data de Registro</span>
+                  <span className="text-sm font-medium">Registro em Cartório</span>
                 </div>
                 <div className="font-medium">
-                  {format(new Date(contractData.registry_date), "dd/MM/yyyy", { locale: ptBR })}
+                  {contractData.registry_date 
+                    ? format(new Date(contractData.registry_date), "dd/MM/yyyy", { locale: ptBR })
+                    : 'Sim'}
                 </div>
+              </div>
+            )}
+
+            {/* Tipo de Contrato */}
+            {contract.contract_type && (
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tipo de Contrato</span>
+                </div>
+                <div className="font-medium capitalize">{contract.contract_type}</div>
               </div>
             )}
           </div>

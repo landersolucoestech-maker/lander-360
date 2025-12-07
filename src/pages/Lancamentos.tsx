@@ -67,15 +67,22 @@ const Lancamentos = () => {
     }
   ];
 
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
+
   const handleSearch = (searchTerm: string) => {
-    filterReleases(searchTerm, {});
+    setCurrentSearchTerm(searchTerm);
+    filterReleases(searchTerm, currentFilters);
   };
 
   const handleFilter = (filters: Record<string, string>) => {
-    filterReleases("", filters);
+    setCurrentFilters(filters);
+    filterReleases(currentSearchTerm, filters);
   };
 
   const handleClear = () => {
+    setCurrentSearchTerm("");
+    setCurrentFilters({});
     setFilteredReleases(allReleases);
   };
 
@@ -244,7 +251,7 @@ const Lancamentos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredReleases.map((release) => (
                       <ReleaseCard
                         key={release.id}

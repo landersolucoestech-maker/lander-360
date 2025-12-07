@@ -353,23 +353,44 @@ const Agenda = () => {
                                     {statusLabels[event.status]}
                                   </Badge>
                                 </div>
-                                {event.location && (
-                                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                     <MapPin className="h-3 w-3" />
-                                     {event.location}
-                                   </p>
-                                 )}
-                               </div>
-                             </div>
+                              </div>
+                            </div>
                             
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-6 text-sm">
+                              {event.location && (
+                                <div className="text-center">
+                                  <div className="text-muted-foreground">Local</div>
+                                  <div className="font-medium flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {event.location}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {event.venue_name && (
+                                <div className="text-center">
+                                  <div className="text-muted-foreground">Venue</div>
+                                  <div className="font-medium">{event.venue_name}</div>
+                                </div>
+                              )}
+                              
                               <div className="text-center">
-                                <div className="text-sm text-muted-foreground">Data</div>
+                                <div className="text-muted-foreground">Data</div>
                                 <div className="font-medium flex items-center gap-1">
                                   <CalendarIcon className="h-3 w-3" />
                                   {formatDateFullBR(new Date(event.start_date))}
                                 </div>
                               </div>
+                              
+                              {event.start_time && (
+                                <div className="text-center">
+                                  <div className="text-muted-foreground">Horário</div>
+                                  <div className="font-medium flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {event.start_time}
+                                  </div>
+                                </div>
+                              )}
                               
                               <div className="flex items-center gap-2">
                                 <Button 

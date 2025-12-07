@@ -263,24 +263,36 @@ const Inventario = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="text-center">
-                          <div className="text-muted-foreground">Quantidade</div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="text-center min-w-[60px]">
+                          <div className="text-muted-foreground text-xs">Qtd</div>
                           <div className="font-medium text-foreground">{item.quantity} un</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-muted-foreground">Local</div>
-                          <div className="font-medium">{item.location}</div>
+                        <div className="text-center min-w-[80px]">
+                          <div className="text-muted-foreground text-xs">Local</div>
+                          <div className="font-medium truncate">{item.location}</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-muted-foreground">Valor</div>
+                        <div className="text-center min-w-[90px]">
+                          <div className="text-muted-foreground text-xs">Valor Unit.</div>
                           <div className="font-medium text-foreground">{formatCurrency(item.unit_value)}</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-muted-foreground">Responsável</div>
-                          <div className="font-medium">{item.responsible || '-'}</div>
+                        {item.sector && (
+                          <div className="text-center min-w-[80px]">
+                            <div className="text-muted-foreground text-xs">Setor</div>
+                            <div className="font-medium truncate">{item.sector}</div>
+                          </div>
+                        )}
+                        <div className="text-center min-w-[80px]">
+                          <div className="text-muted-foreground text-xs">Responsável</div>
+                          <div className="font-medium truncate">{item.responsible || '-'}</div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        {item.invoice_number && (
+                          <div className="text-center min-w-[80px]">
+                            <div className="text-muted-foreground text-xs">NF</div>
+                            <div className="font-medium truncate">{item.invoice_number}</div>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 ml-auto">
                           <Button variant="outline" size="sm" onClick={() => handleView(item)}>
                             Ver
                           </Button>

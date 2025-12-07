@@ -238,23 +238,25 @@ const Artistas = () => {
 
   const handleSearch = (searchTerm: string) => {
     setCurrentSearchTerm(searchTerm);
-    filterArtists(searchTerm, currentFilters);
+    applyFilters(searchTerm, currentFilters);
   };
   const handleFilter = (filters: Record<string, string>) => {
     setCurrentFilters(filters);
-    filterArtists(currentSearchTerm, filters);
+    applyFilters(currentSearchTerm, filters);
   };
-  const handleClear = () => {
-    setCurrentSearchTerm("");
-    setCurrentFilters({});
-    setFilteredArtists([]);
-  };
-  const filterArtists = (searchTerm: string, filters: Record<string, string>) => {
+  
+  const applyFilters = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = displayArtists;
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter((artist: any) => artist.name.toLowerCase().includes(searchTerm.toLowerCase()) || artist.email.toLowerCase().includes(searchTerm.toLowerCase()) || artist.genre.toLowerCase().includes(searchTerm.toLowerCase()));
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter((artist: any) => 
+        artist.name?.toLowerCase().includes(term) || 
+        artist.email?.toLowerCase().includes(term) || 
+        artist.genre?.toLowerCase().includes(term) ||
+        artist.stage_name?.toLowerCase().includes(term)
+      );
     }
 
     // Apply category filters
@@ -274,6 +276,11 @@ const Artistas = () => {
       }
     });
     setFilteredArtists(filtered);
+  };
+  const handleClear = () => {
+    setCurrentSearchTerm("");
+    setCurrentFilters({});
+    setFilteredArtists([]);
   };
   return <SidebarProvider>
       <div className="min-h-screen flex w-full">
