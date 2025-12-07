@@ -104,16 +104,16 @@ export function ContactProfileModal({
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {contact.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.email}</span>
-                  </div>
-                )}
                 {contact.phone && (
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{contact.phone}</span>
+                  </div>
+                )}
+                {contact.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{contact.email}</span>
                   </div>
                 )}
                 {contact.company && (
@@ -128,73 +128,36 @@ export function ContactProfileModal({
                     <span className="text-sm">{contact.position}</span>
                   </div>
                 )}
+                {contact.document && (
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{contact.document}</span>
+                  </div>
+                )}
+                {(contact.address || contact.city || contact.state) && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      {[contact.address, contact.city, contact.state].filter(Boolean).join(', ')}
+                      {contact.zip_code && ` - ${contact.zip_code}`}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <Separator />
 
-          {/* Informações de Endereço */}
-          {(contact.address || contact.city || contact.state || contact.zip_code) && (
+          {/* Próxima Ação */}
+          {contact.next_action && (
             <>
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Endereço
+                  <Calendar className="h-5 w-5" />
+                  Próxima Ação
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  {contact.address && (
-                    <div>
-                      <span className="text-muted-foreground">Endereço: </span>
-                      <span>{contact.address}</span>
-                    </div>
-                  )}
-                  {contact.city && (
-                    <div>
-                      <span className="text-muted-foreground">Cidade: </span>
-                      <span>{contact.city}</span>
-                    </div>
-                  )}
-                  {contact.state && (
-                    <div>
-                      <span className="text-muted-foreground">Estado: </span>
-                      <span>{contact.state}</span>
-                    </div>
-                  )}
-                  {contact.zip_code && (
-                    <div>
-                      <span className="text-muted-foreground">CEP: </span>
-                      <span>{contact.zip_code}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
-
-          {/* Informações Adicionais */}
-          {(contact.document || contact.next_action) && (
-            <>
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Informações Adicionais
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  {contact.document && (
-                    <div>
-                      <span className="text-muted-foreground">CPF/CNPJ: </span>
-                      <span>{contact.document}</span>
-                    </div>
-                  )}
-                  {contact.next_action && (
-                    <div>
-                      <span className="text-muted-foreground">Próxima Ação: </span>
-                      <span>{contact.next_action}</span>
-                    </div>
-                  )}
-                </div>
+                <p className="text-sm">{contact.next_action}</p>
               </div>
               <Separator />
             </>
