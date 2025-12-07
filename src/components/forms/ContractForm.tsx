@@ -475,7 +475,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit">
           {isLoading ? 'Salvando...' : 'Salvar Contrato'}
         </Button>
       </div>
