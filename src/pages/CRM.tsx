@@ -169,7 +169,7 @@ const CRM = () => {
                     {contacts.map((contact) => (
                       <div
                         key={contact.id}
-                        className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                       >
                         {/* Avatar */}
                         <Avatar className="h-10 w-10">
@@ -178,7 +178,7 @@ const CRM = () => {
                         </Avatar>
 
                         {/* Nome e Badges */}
-                        <div className="min-w-0 max-w-[250px]">
+                        <div className="min-w-0 flex-1 max-w-[220px]">
                           <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <Badge variant="secondary" className="text-xs">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
@@ -216,13 +216,13 @@ const CRM = () => {
                         </div>
 
                         {/* Empresa */}
-                        <div className="text-sm min-w-[100px]">
+                        <div className="text-sm flex-shrink-0">
                           <div className="text-muted-foreground text-xs">Empresa</div>
                           <div className="font-medium truncate">{contact.company || '-'}</div>
                         </div>
 
                         {/* Ações */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
                           <Button 
                             variant="outline" 
                             size="sm"
