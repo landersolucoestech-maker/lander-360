@@ -72,9 +72,6 @@ const distributorOptions = [
   { id: 'onerpm', label: 'ONErpm', description: 'Distribuidora global com presença na América Latina', website: 'https://onerpm.com' },
   { id: 'distrokid', label: 'DistroKid', description: 'Distribuidora digital com distribuição ilimitada', website: 'https://distrokid.com' },
   { id: '30por1', label: '30por1', description: 'Distribuidora brasileira independente', website: 'https://30por1.com.br' },
-  { id: 'believe', label: 'Believe', description: 'Distribuidora global com serviços completos', website: 'https://believe.com' },
-  { id: 'tunecore', label: 'TuneCore', description: 'Distribuidora com retenção de 100% dos royalties', website: 'https://tunecore.com' },
-  { id: 'cd_baby', label: 'CD Baby', description: 'Distribuidora pioneira no mercado digital', website: 'https://cdbaby.com' },
   { id: 'outras_distribuidoras', label: 'Outras', description: 'Outras distribuidoras digitais', website: '' },
 ];
 
