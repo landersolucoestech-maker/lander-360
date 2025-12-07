@@ -160,8 +160,11 @@ export function useUsers() {
         .from('profiles')
         .update({
           full_name: userData.full_name,
-          phone: userData.phone,
-          role_display: userData.role
+          phone: userData.phone || null,
+          sector: userData.sector || null,
+          role_display: userData.role,
+          roles: [userData.role],
+          permissions: userData.permissions,
         })
         .eq('id', userId);
 
