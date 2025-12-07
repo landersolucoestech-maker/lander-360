@@ -5,8 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDateFullBR } from "@/lib/utils";
 import { MapPin, Clock, Calendar } from "lucide-react";
 
 interface AgendaViewModalProps {
@@ -88,7 +87,7 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
                   <Calendar className="h-4 w-4" /> Data
                 </label>
                 <p className="font-medium">
-                  {format(new Date(event.start_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  {formatDateFullBR(event.start_date)}
                 </p>
               </div>
               {event.start_time && (

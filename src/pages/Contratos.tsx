@@ -14,8 +14,7 @@ import { mockContracts } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Contract } from "@/types/database";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDateBR } from "@/lib/utils";
 
 const Contratos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -280,7 +279,7 @@ const Contratos = () => {
                               <div className="text-center">
                                 <div className="text-muted-foreground">Período</div>
                                 <div className="font-medium">
-                                  {((contract as any).start_date || contract.effective_from) ? format(new Date((contract as any).start_date || contract.effective_from), "dd/MM/yyyy", { locale: ptBR }) : "N/A"} - {((contract as any).end_date || contract.effective_to) ? format(new Date((contract as any).end_date || contract.effective_to), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
+                                  {formatDateBR((contract as any).start_date || contract.effective_from)} - {formatDateBR((contract as any).end_date || contract.effective_to)}
                                 </div>
                               </div>
                             )}

@@ -12,7 +12,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Upload, X, FileText, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { ptBR } from 'date-fns/locale';
+import { cn, formatDateForDB } from '@/lib/utils';
 import { Artist, ArtistInsert, ArtistUpdate } from '@/types/database';
 import { useCreateArtist, useUpdateArtist } from '@/hooks/useArtists';
 import { useToast } from '@/hooks/use-toast';
@@ -256,7 +257,7 @@ export function ArtistForm({
         genre: data.genre,
         bio: data.biography,
         full_name: data.full_name,
-        birth_date: data.birth_date ? format(data.birth_date, 'yyyy-MM-dd') : null,
+        birth_date: formatDateForDB(data.birth_date),
         cpf_cnpj: data.cpf_cnpj,
         rg: data.rg,
         full_address: data.full_address,

@@ -11,9 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn, formatDateBR } from '@/lib/utils';
 
 const financialTransactionSchema = z.object({
   client_type: z.enum(['empresa', 'artista'], { required_error: 'Selecione empresa ou artista' }),
@@ -239,7 +237,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {form.watch('transaction_date') ? 
-                      format(form.watch('transaction_date')!, "dd/MM/yyyy", { locale: ptBR }) : 
+                      formatDateBR(form.watch('transaction_date')!) : 
                       "Selecionar data"
                     }
                   </Button>

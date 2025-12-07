@@ -22,6 +22,7 @@ import {
   FileText,
   Target
 } from "lucide-react";
+import { formatDateBR } from "@/lib/utils";
 
 interface ContactProfileModalProps {
   open: boolean;
@@ -183,7 +184,7 @@ export function ContactProfileModal({
                         <p className="text-sm text-muted-foreground">{interaction.description}</p>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(interaction.date).toLocaleDateString('pt-BR')}
+                        {formatDateBR(interaction.date)}
                       </div>
                     </div>
                     

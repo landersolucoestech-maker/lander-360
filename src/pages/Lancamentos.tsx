@@ -13,6 +13,7 @@ import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
+import { formatDateBR } from "@/lib/utils";
 
 const Lancamentos = () => {
   const { toast } = useToast();
@@ -366,9 +367,7 @@ const Lancamentos = () => {
                         <label className="text-sm font-medium text-muted-foreground">Data de Lançamento</label>
                         <p className="font-medium flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          {selectedRelease.releaseDate || selectedRelease.release_date 
-                            ? new Date(selectedRelease.releaseDate || selectedRelease.release_date).toLocaleDateString('pt-BR') 
-                            : '-'}
+                          {formatDateBR(selectedRelease.releaseDate || selectedRelease.release_date)}
                         </p>
                       </div>
                       <div>

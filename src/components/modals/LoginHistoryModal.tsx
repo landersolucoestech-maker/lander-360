@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { History, Monitor, Smartphone, Tablet, MapPin, Calendar, Clock, RefreshCw, Globe } from "lucide-react";
+import { formatDateTimeBR } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

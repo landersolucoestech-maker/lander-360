@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
+import { formatDateBR } from "@/lib/utils";
 
 const RegistroMusicas = () => {
   const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
@@ -63,7 +64,7 @@ const RegistroMusicas = () => {
       artist: artist?.name || 'N/A',
       statusDisplay: getStatusDisplay(music.status),
       composers: music.writers || [],
-      registrationDate: new Date(music.created_at).toLocaleDateString('pt-BR'),
+      registrationDate: formatDateBR(music.created_at),
     };
   });
 
@@ -81,7 +82,7 @@ const RegistroMusicas = () => {
       ...phono,
       artistName: artist?.name || 'N/A',
       statusDisplay: getStatusDisplay(phono.status),
-      registrationDate: new Date(phono.created_at).toLocaleDateString('pt-BR'),
+      registrationDate: formatDateBR(phono.created_at),
       workComposers: composers.length > 0 ? composers : (linkedWork?.writers || []),
       abramus_code: linkedWork?.abramus_code || null,
       ecad_code: linkedWork?.ecad_code || null,

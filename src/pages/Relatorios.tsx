@@ -14,7 +14,7 @@ import { ReportConfigModal } from "@/components/modals/ReportConfigModal";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Download, DollarSign, Users, Music, Palette, BarChart3, Plus, TrendingUp, Search, Filter, Calendar as CalendarIcon, Package, X } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
 import { mockReports } from "@/data/mockData";
 
 const Relatorios = () => {
@@ -401,7 +401,7 @@ const Relatorios = () => {
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <span>📅</span>
-                                {new Date(report.createdAt).toLocaleDateString('pt-BR')}
+                                {formatDateBR(report.createdAt)}
                               </div>
                               <div className="flex items-center gap-1">
                                 <Users className="h-3 w-3" />
@@ -493,7 +493,7 @@ const Relatorios = () => {
                 </div>
                 <div className="p-2 bg-muted/30 rounded border">
                   <p className="text-muted-foreground mb-1">Criado em</p>
-                  <p className="font-medium">{new Date(selectedReport.createdAt).toLocaleDateString('pt-BR')}</p>
+                  <p className="font-medium">{formatDateBR(selectedReport.createdAt)}</p>
                 </div>
                 <div className="p-2 bg-muted/30 rounded border">
                   <p className="text-muted-foreground mb-1">Autor</p>
