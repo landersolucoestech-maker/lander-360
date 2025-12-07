@@ -223,9 +223,9 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       fullName: user?.full_name || '',
       email: user?.email || '',
       phone: user?.phone || '',
-      role: user?.roles?.[0] || '',
+      role: user?.roles?.[0] || user?.role_display || '',
       sector: user?.sector || '',
-      status: user?.status || 'active',
+      status: user?.isActive === false ? 'inactive' : 'active',
       permissionMode: 'automatic',
       permissionTemplate: '',
       permissions: {
@@ -249,19 +249,11 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       setValue('email', user.email || '');
       setValue('phone', user.phone || '');
       setValue('sector', user.sector || '');
-      setValue('status', user.status === 'Ativo' ? 'active' : 'inactive');
+      setValue('status', user.isActive === false ? 'inactive' : 'active');
       
-      // Mapear roles para labels corretas
-      const roleMapping: { [key: string]: string } = {
-        'master': 'Master',
-        'admin': 'Administrador',
-        'manager': 'Gerente',
-        'producer': 'Produtor Musical',
-        'artist': 'Artista',
-      };
-      
-      const mappedRole = roleMapping[user.roles?.[0]] || user.roles?.[0] || '';
-      setValue('role', mappedRole);
+      // Use role_display or first role from roles array
+      const userRole = user.role_display || user.roles?.[0] || '';
+      setValue('role', userRole);
 
       // Carregar permissões detalhadas existentes
       if (user.permissions && user.permissions.length > 0) {
@@ -277,7 +269,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           usuarios: [],
         };
 
-        user.permissions.forEach(permission => {
+        user.permissions.forEach((permission: string) => {
           if (permission.includes(':')) {
             const [module, action] = permission.split(':');
             if (modulePermissions[module]) {
