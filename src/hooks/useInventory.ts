@@ -91,7 +91,21 @@ export const useUpdateInventory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<{ name: string; description?: string; quantity?: number; category?: string; location?: string }> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ 
+      name: string; 
+      description?: string; 
+      quantity?: number; 
+      category?: string; 
+      location?: string;
+      status?: string;
+      sector?: string;
+      responsible?: string;
+      purchase_location?: string;
+      invoice_number?: string;
+      entry_date?: string;
+      unit_value?: number;
+      observations?: string;
+    }> }) =>
       InventoryService.update(id, data),
     onSuccess: (updatedItem) => {
       queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.lists() });

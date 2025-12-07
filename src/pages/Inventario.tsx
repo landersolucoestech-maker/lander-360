@@ -322,6 +322,8 @@ const Inventario = () => {
                 setIsEditModalOpen(false);
                 setSelectedEquipment(null);
               }}
+              equipment={selectedEquipment}
+              isEditMode={true}
             />
 
             {/* Modal Excluir */}
