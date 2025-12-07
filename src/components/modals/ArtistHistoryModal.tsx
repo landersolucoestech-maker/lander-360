@@ -166,7 +166,15 @@ export function ArtistHistoryModal({
       case "pending": return "Pendente";
       case "planning": return "Planejando";
       case "cancelled": return "Cancelado";
-      default: return status || "Não informado";
+      case "em_analise": return "Em Análise";
+      case "registrado": return "Registrado";
+      case "aprovado": return "Aprovado";
+      case "rejeitado": return "Rejeitado";
+      case "ativo": return "Ativo";
+      case "inativo": return "Inativo";
+      case "concluido": return "Concluído";
+      case "em_andamento": return "Em Andamento";
+      default: return status?.replace(/_/g, ' ') || "Não informado";
     }
   };
 
