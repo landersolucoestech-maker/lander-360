@@ -266,24 +266,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               </div>
             )}
 
-            {projects.length > 0 && (
-              <div className="space-y-2">
-                <Label>Projeto</Label>
-                <Select
-                  value={form.watch('project_id')}
-                  onValueChange={(value) => form.setValue('project_id', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um projeto" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border z-50">
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="responsible_person">Responsável</Label>
