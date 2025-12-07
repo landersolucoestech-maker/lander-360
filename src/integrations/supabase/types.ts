@@ -415,6 +415,7 @@ export type Database = {
           document: string | null
           email: string | null
           id: string
+          image_url: string | null
           name: string
           next_action: string | null
           notes: string | null
@@ -436,6 +437,7 @@ export type Database = {
           document?: string | null
           email?: string | null
           id?: string
+          image_url?: string | null
           name: string
           next_action?: string | null
           notes?: string | null
@@ -457,6 +459,7 @@ export type Database = {
           document?: string | null
           email?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           next_action?: string | null
           notes?: string | null
