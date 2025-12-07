@@ -22,7 +22,21 @@ export class InventoryService {
     return data;
   }
 
-  static async create(inventory: { name: string; description?: string; quantity?: number; category?: string; location?: string }) {
+  static async create(inventory: { 
+    name: string; 
+    description?: string; 
+    quantity?: number; 
+    category?: string; 
+    location?: string;
+    status?: string;
+    sector?: string;
+    responsible?: string;
+    purchase_location?: string;
+    invoice_number?: string;
+    entry_date?: string;
+    unit_value?: number;
+    observations?: string;
+  }) {
     const { data, error } = await supabase
       .from('inventory')
       .insert(inventory)

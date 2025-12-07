@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InventoryForm } from "@/components/forms/InventoryForm";
-import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useCreateInventory } from "@/hooks/useInventory";
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -9,29 +8,26 @@ interface InventoryModalProps {
 }
 
 export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createInventory = useCreateInventory();
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Implement actual inventory service
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
-      
-      toast({
-        title: "Item Cadastrado",
-        description: "O item foi cadastrado no inventário com sucesso!",
-      });
-      onClose();
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao cadastrar item no inventário.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    const inventoryData = {
+      name: data.name,
+      quantity: data.quantity ? parseInt(data.quantity, 10) : 1,
+      category: data.category || null,
+      location: data.location || null,
+      status: data.status || 'Disponível',
+      sector: data.sector || null,
+      responsible: data.responsible || null,
+      purchase_location: data.purchaseLocation || null,
+      invoice_number: data.invoiceNumber || null,
+      entry_date: data.entryDate ? data.entryDate.toISOString().split('T')[0] : null,
+      unit_value: data.unitValue ? parseFloat(data.unitValue.replace(/[^\d.,]/g, '').replace(',', '.')) : null,
+      observations: data.observations || null,
+    };
+
+    await createInventory.mutateAsync(inventoryData);
+    onClose();
   };
 
   return (
@@ -43,6 +39,7 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
         <InventoryForm 
           onSubmit={handleSubmit} 
           onCancel={onClose}
+          isSubmitting={createInventory.isPending}
         />
       </DialogContent>
     </Dialog>

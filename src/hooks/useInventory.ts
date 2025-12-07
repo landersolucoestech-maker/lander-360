@@ -52,7 +52,21 @@ export const useCreateInventory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: { name: string; description?: string; quantity?: number; category?: string; location?: string }) => InventoryService.create(data),
+    mutationFn: (data: { 
+      name: string; 
+      description?: string; 
+      quantity?: number; 
+      category?: string; 
+      location?: string;
+      status?: string;
+      sector?: string;
+      responsible?: string;
+      purchase_location?: string;
+      invoice_number?: string;
+      entry_date?: string;
+      unit_value?: number;
+      observations?: string;
+    }) => InventoryService.create(data),
     onSuccess: (newItem) => {
       queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.lists() });
       toast({
