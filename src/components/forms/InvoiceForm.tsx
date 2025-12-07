@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Search, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { useCrmContacts } from "@/hooks/useCrm";
 
 const invoiceSchema = z.object({
   // Cliente Information
@@ -46,12 +49,30 @@ const invoiceSchema = z.object({
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
+interface CrmContact {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  company?: string | null;
+  document?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+}
+
 interface InvoiceFormProps {
   onSubmit: (data: InvoiceFormData) => void;
   onCancel: () => void;
 }
 
 export function InvoiceForm({ onSubmit, onCancel }: InvoiceFormProps) {
+  const [contactPopoverOpen, setContactPopoverOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<string>("");
+  
+  const { data: crmContacts = [] } = useCrmContacts();
+  
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
@@ -65,6 +86,18 @@ export function InvoiceForm({ onSubmit, onCancel }: InvoiceFormProps) {
     },
   });
 
+  const handleContactSelect = (contact: CrmContact) => {
+    setSelectedContactId(contact.id);
+    form.setValue("recipientName", contact.name || "");
+    form.setValue("recipientDocument", contact.document || "");
+    form.setValue("recipientEmail", contact.email || "");
+    form.setValue("recipientAddress", contact.address || "");
+    form.setValue("recipientCity", contact.city || "");
+    form.setValue("recipientState", contact.state || "");
+    form.setValue("recipientZip", contact.zip_code || "");
+    setContactPopoverOpen(false);
+  };
+
   return (
     <Form {...form}>
       <div className="space-y-6 max-h-[80vh] overflow-y-auto">
@@ -74,6 +107,59 @@ export function InvoiceForm({ onSubmit, onCancel }: InvoiceFormProps) {
             <CardTitle className="text-lg">Dados do Cliente</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* CRM Contact Search */}
+            <div className="mb-4">
+              <FormLabel>Buscar Contato do CRM</FormLabel>
+              <Popover open={contactPopoverOpen} onOpenChange={setContactPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={contactPopoverOpen}
+                    className="w-full justify-between mt-1"
+                  >
+                    {selectedContactId
+                      ? (crmContacts as CrmContact[]).find((c) => c.id === selectedContactId)?.name || "Selecione um contato"
+                      : "Buscar contato cadastrado..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar por nome, empresa ou documento..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
+                      <CommandGroup heading="Contatos do CRM">
+                        {(crmContacts as CrmContact[]).map((contact) => (
+                          <CommandItem
+                            key={contact.id}
+                            value={`${contact.name} ${contact.company || ''} ${contact.document || ''}`}
+                            onSelect={() => handleContactSelect(contact)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-medium">{contact.name}</span>
+                              {contact.company && (
+                                <span className="text-xs text-muted-foreground">{contact.company}</span>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground mt-1">
+                Selecione um contato para preencher automaticamente os campos abaixo
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}

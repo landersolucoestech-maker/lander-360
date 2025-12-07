@@ -22,7 +22,20 @@ export class CrmService {
     return data;
   }
 
-  static async create(contact: { name: string; email?: string; phone?: string; company?: string; contact_type?: string }) {
+  static async create(contact: { 
+    name: string; 
+    email?: string; 
+    phone?: string; 
+    company?: string; 
+    contact_type?: string;
+    position?: string;
+    document?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    notes?: string;
+  }) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .insert(contact)
@@ -33,7 +46,20 @@ export class CrmService {
     return data;
   }
 
-  static async update(id: string, updates: Partial<{ name: string; email?: string; phone?: string; company?: string; contact_type?: string }>) {
+  static async update(id: string, updates: Partial<{ 
+    name: string; 
+    email?: string; 
+    phone?: string; 
+    company?: string; 
+    contact_type?: string;
+    position?: string;
+    document?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    notes?: string;
+  }>) {
     const { data, error } = await supabase
       .from('crm_contacts')
       .update(updates)

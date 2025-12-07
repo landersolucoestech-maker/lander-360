@@ -17,6 +17,11 @@ const contactSchema = z.object({
   priority: z.string().min(1, "Selecione a prioridade"),
   company: z.string().optional(),
   position: z.string().optional(),
+  document: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zip_code: z.string().optional(),
   notes: z.string().optional(),
   nextAction: z.string().optional(),
 });
@@ -171,6 +176,80 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
             id="position"
             {...register("position")}
             placeholder="Cargo na empresa"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="document">CPF/CNPJ</Label>
+          <Input
+            id="document"
+            {...register("document")}
+            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="address">Endereço</Label>
+          <Input
+            id="address"
+            {...register("address")}
+            placeholder="Rua, número, complemento"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="city">Cidade</Label>
+          <Input
+            id="city"
+            {...register("city")}
+            placeholder="Cidade"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="state">Estado</Label>
+          <Select onValueChange={(value) => setValue("state", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="UF" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="AC">AC</SelectItem>
+              <SelectItem value="AL">AL</SelectItem>
+              <SelectItem value="AP">AP</SelectItem>
+              <SelectItem value="AM">AM</SelectItem>
+              <SelectItem value="BA">BA</SelectItem>
+              <SelectItem value="CE">CE</SelectItem>
+              <SelectItem value="DF">DF</SelectItem>
+              <SelectItem value="ES">ES</SelectItem>
+              <SelectItem value="GO">GO</SelectItem>
+              <SelectItem value="MA">MA</SelectItem>
+              <SelectItem value="MT">MT</SelectItem>
+              <SelectItem value="MS">MS</SelectItem>
+              <SelectItem value="MG">MG</SelectItem>
+              <SelectItem value="PA">PA</SelectItem>
+              <SelectItem value="PB">PB</SelectItem>
+              <SelectItem value="PR">PR</SelectItem>
+              <SelectItem value="PE">PE</SelectItem>
+              <SelectItem value="PI">PI</SelectItem>
+              <SelectItem value="RJ">RJ</SelectItem>
+              <SelectItem value="RN">RN</SelectItem>
+              <SelectItem value="RS">RS</SelectItem>
+              <SelectItem value="RO">RO</SelectItem>
+              <SelectItem value="RR">RR</SelectItem>
+              <SelectItem value="SC">SC</SelectItem>
+              <SelectItem value="SP">SP</SelectItem>
+              <SelectItem value="SE">SE</SelectItem>
+              <SelectItem value="TO">TO</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="zip_code">CEP</Label>
+          <Input
+            id="zip_code"
+            {...register("zip_code")}
+            placeholder="00000-000"
           />
         </div>
       </div>

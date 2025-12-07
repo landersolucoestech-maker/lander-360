@@ -406,43 +406,58 @@ export type Database = {
       }
       crm_contacts: {
         Row: {
+          address: string | null
+          city: string | null
           company: string | null
           contact_type: string | null
           created_at: string
           created_by: string | null
+          document: string | null
           email: string | null
           id: string
           name: string
           notes: string | null
           phone: string | null
           position: string | null
+          state: string | null
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           company?: string | null
           contact_type?: string | null
           created_at?: string
           created_by?: string | null
+          document?: string | null
           email?: string | null
           id?: string
           name: string
           notes?: string | null
           phone?: string | null
           position?: string | null
+          state?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           company?: string | null
           contact_type?: string | null
           created_at?: string
           created_by?: string | null
+          document?: string | null
           email?: string | null
           id?: string
           name?: string
           notes?: string | null
           phone?: string | null
           position?: string | null
+          state?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
