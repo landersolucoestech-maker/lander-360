@@ -57,16 +57,16 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
 
   return (
     <div 
-      className="relative overflow-hidden rounded-xl bg-card border border-border group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
+      className="relative overflow-hidden rounded-xl bg-card border border-border group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 h-full"
       onClick={() => onViewDetails(release)}
     >
-      {/* Background Image */}
-      <div className="relative aspect-[3/4] w-full min-h-[350px] sm:min-h-[400px] lg:min-h-[450px]">
+      {/* Background Image - fills the entire card */}
+      <div className="relative w-full h-full min-h-[400px]">
         {release.cover ? (
           <img 
             src={release.cover} 
             alt={release.title}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           />
         ) : (
           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 via-background to-primary/10 flex items-center justify-center">
