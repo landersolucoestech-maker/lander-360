@@ -149,6 +149,7 @@ export function useUsers() {
 
   const updateUser = async (userId: string, userData: {
     full_name: string;
+    email?: string;
     phone?: string;
     sector?: string;
     role: string;
@@ -162,6 +163,7 @@ export function useUsers() {
         .from('profiles')
         .update({
           full_name: userData.full_name,
+          email: userData.email || null,
           phone: userData.phone || null,
           sector: userData.sector || null,
           role_display: userData.role,
