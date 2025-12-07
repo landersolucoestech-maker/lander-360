@@ -84,6 +84,12 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     onSubmit(data);
   };
 
+  const handleManualSubmit = () => {
+    const values = form.getValues();
+    console.log('Manual submit with values:', values);
+    onSubmit(values);
+  };
+
   // Debug: log form errors
   React.useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) {
@@ -494,7 +500,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit">
+        <Button type="button" onClick={handleManualSubmit}>
           {isLoading ? 'Salvando...' : 'Salvar Contrato'}
         </Button>
       </div>
