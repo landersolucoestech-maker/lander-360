@@ -60,16 +60,32 @@ const Financeiro = () => {
     setIsDeleteModalOpen(true);
   };
 
+  // Helper function to add interval to date
+  const addIntervalToDate = (date: Date, interval: string, multiplier: number): Date => {
+    const result = new Date(date);
+    switch (interval) {
+      case 'semanal':
+        result.setDate(result.getDate() + (7 * multiplier));
+        break;
+      case 'quinzenal':
+        result.setDate(result.getDate() + (15 * multiplier));
+        break;
+      case 'mensal':
+        result.setMonth(result.getMonth() + multiplier);
+        break;
+      case 'anual':
+        result.setFullYear(result.getFullYear() + multiplier);
+        break;
+    }
+    return result;
+  };
+
   const handleSubmitTransaction = async (data: any) => {
     try {
-      // Map form data to database format
-      const transactionData = {
+      const baseTransactionData = {
         description: data.description,
-        amount: data.amount,
         type: data.transaction_type,
         transaction_type: data.transaction_type,
-        date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-        transaction_date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
         category: data.category,
         status: data.status,
         payment_method: data.payment_method || null,
@@ -83,12 +99,89 @@ const Financeiro = () => {
       };
 
       if (selectedTransaction) {
+        // Editing existing - simple update
+        const transactionData = {
+          ...baseTransactionData,
+          amount: data.amount,
+          date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+          transaction_date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        };
         await updateTransaction.mutateAsync({ 
           id: selectedTransaction.id, 
           data: transactionData 
         });
       } else {
-        await createTransaction.mutateAsync(transactionData);
+        // Creating new - check payment type
+        const paymentType = data.payment_type;
+
+        if (paymentType === 'parcelado' && data.installment_count && data.installment_count >= 2) {
+          // Generate multiple installment transactions
+          const installmentCount = data.installment_count;
+          const installmentAmount = data.amount / installmentCount;
+          const interval = data.installment_interval || 'mensal';
+          const startDate = data.first_installment_date || data.transaction_date || new Date();
+
+          const installmentPromises = [];
+          for (let i = 0; i < installmentCount; i++) {
+            const installmentDate = addIntervalToDate(new Date(startDate), interval, i);
+            const installmentData = {
+              ...baseTransactionData,
+              description: `${data.description} (Parcela ${i + 1}/${installmentCount})`,
+              amount: installmentAmount,
+              date: installmentDate.toISOString().split('T')[0],
+              transaction_date: installmentDate.toISOString().split('T')[0],
+              status: 'pendente' as const,
+            };
+            installmentPromises.push(createTransaction.mutateAsync(installmentData));
+          }
+          await Promise.all(installmentPromises);
+          toast({
+            title: 'Sucesso',
+            description: `${installmentCount} parcelas criadas com sucesso.`,
+          });
+        } else if (paymentType === 'recorrente' && data.recurring_frequency) {
+          // Generate recurring transactions (generate next 12 occurrences or until end date)
+          const frequency = data.recurring_frequency;
+          const startDate = data.recurring_start_date || data.transaction_date || new Date();
+          const endDate = data.recurring_end_date;
+          const maxOccurrences = 12; // Generate up to 12 by default
+
+          const recurringPromises = [];
+          let currentDate = new Date(startDate);
+          let count = 0;
+
+          while (count < maxOccurrences) {
+            if (endDate && currentDate > new Date(endDate)) break;
+
+            const recurringData = {
+              ...baseTransactionData,
+              description: `${data.description} (Recorrência ${count + 1})`,
+              amount: data.amount,
+              date: currentDate.toISOString().split('T')[0],
+              transaction_date: currentDate.toISOString().split('T')[0],
+              status: 'pendente' as const,
+            };
+            recurringPromises.push(createTransaction.mutateAsync(recurringData));
+            
+            currentDate = addIntervalToDate(currentDate, frequency, 1);
+            count++;
+          }
+
+          await Promise.all(recurringPromises);
+          toast({
+            title: 'Sucesso',
+            description: `${count} lançamentos recorrentes criados.`,
+          });
+        } else {
+          // À vista or no payment type - single transaction
+          const transactionData = {
+            ...baseTransactionData,
+            amount: data.amount,
+            date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+            transaction_date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+          };
+          await createTransaction.mutateAsync(transactionData);
+        }
       }
       setIsModalOpen(false);
     } catch (error) {

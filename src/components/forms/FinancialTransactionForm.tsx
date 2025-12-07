@@ -27,6 +27,14 @@ const financialTransactionSchema = z.object({
   status: z.enum(['pendente', 'aprovado', 'pago', 'cancelado']).default('pendente'),
   payment_method: z.string().optional(),
   payment_type: z.string().optional(),
+  // Campos para parcelamento
+  installment_count: z.number().min(2).optional(),
+  installment_interval: z.enum(['mensal', 'quinzenal', 'semanal']).optional(),
+  first_installment_date: z.date().optional(),
+  // Campos para recorrência
+  recurring_frequency: z.enum(['mensal', 'quinzenal', 'semanal', 'anual']).optional(),
+  recurring_start_date: z.date().optional(),
+  recurring_end_date: z.date().optional(),
   contract_id: z.string().optional(),
   attachment_url: z.string().optional(),
   responsible_by: z.string().optional(),
@@ -73,6 +81,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
 
   const watchedType = form.watch('transaction_type');
   const watchedClientType = form.watch('client_type');
+  const watchedPaymentType = form.watch('payment_type');
 
   const receitasCategories = {
     venda_musicas: 'Venda de Músicas',
@@ -370,7 +379,20 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               <Label>Tipo de Pagamento</Label>
               <Select
                 value={form.watch('payment_type')}
-                onValueChange={(value) => form.setValue('payment_type', value)}
+                onValueChange={(value) => {
+                  form.setValue('payment_type', value);
+                  // Reset conditional fields when payment type changes
+                  if (value !== 'parcelado') {
+                    form.setValue('installment_count', undefined);
+                    form.setValue('installment_interval', undefined);
+                    form.setValue('first_installment_date', undefined);
+                  }
+                  if (value !== 'recorrente') {
+                    form.setValue('recurring_frequency', undefined);
+                    form.setValue('recurring_start_date', undefined);
+                    form.setValue('recurring_end_date', undefined);
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo de pagamento" />
@@ -382,6 +404,217 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Campos Parcelamento - exibir quando for parcelado */}
+          {watchedPaymentType === 'parcelado' && (
+            <Card className="border-dashed border-primary/30 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Configuração do Parcelamento</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Número de Parcelas */}
+                  <div className="space-y-2">
+                    <Label htmlFor="installment_count">Nº de Parcelas</Label>
+                    <Input
+                      id="installment_count"
+                      type="number"
+                      min="2"
+                      max="60"
+                      placeholder="Ex: 5"
+                      {...form.register('installment_count', { valueAsNumber: true })}
+                    />
+                  </div>
+
+                  {/* Intervalo */}
+                  <div className="space-y-2">
+                    <Label>Intervalo</Label>
+                    <Select
+                      value={form.watch('installment_interval')}
+                      onValueChange={(value) => form.setValue('installment_interval', value as any)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border z-50">
+                        <SelectItem value="mensal">Mensal</SelectItem>
+                        <SelectItem value="quinzenal">Quinzenal</SelectItem>
+                        <SelectItem value="semanal">Semanal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Data da 1ª Parcela */}
+                  <div className="space-y-2">
+                    <Label>Data da 1ª Parcela</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="DD/MM/AAAA"
+                        value={form.watch('first_installment_date') ? formatDateBR(form.watch('first_installment_date')!) : ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                          if (match) {
+                            const [, day, month, year] = match;
+                            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                            if (!isNaN(date.getTime())) {
+                              form.setValue('first_installment_date', date);
+                            }
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="icon" type="button">
+                            <CalendarIcon className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <CalendarComponent
+                            mode="single"
+                            selected={form.watch('first_installment_date')}
+                            onSelect={(date) => form.setValue('first_installment_date', date)}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview das parcelas */}
+                {form.watch('installment_count') && form.watch('amount') && (
+                  <div className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
+                    <strong>Prévia:</strong> {form.watch('installment_count')} parcelas de{' '}
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                      (form.watch('amount') || 0) / (form.watch('installment_count') || 1)
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Campos Recorrência - exibir quando for recorrente */}
+          {watchedPaymentType === 'recorrente' && (
+            <Card className="border-dashed border-primary/30 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Configuração da Recorrência</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Frequência */}
+                  <div className="space-y-2">
+                    <Label>Frequência</Label>
+                    <Select
+                      value={form.watch('recurring_frequency')}
+                      onValueChange={(value) => form.setValue('recurring_frequency', value as any)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border z-50">
+                        <SelectItem value="semanal">Semanal</SelectItem>
+                        <SelectItem value="quinzenal">Quinzenal</SelectItem>
+                        <SelectItem value="mensal">Mensal</SelectItem>
+                        <SelectItem value="anual">Anual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Data Inicial */}
+                  <div className="space-y-2">
+                    <Label>Data Inicial</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="DD/MM/AAAA"
+                        value={form.watch('recurring_start_date') ? formatDateBR(form.watch('recurring_start_date')!) : ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                          if (match) {
+                            const [, day, month, year] = match;
+                            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                            if (!isNaN(date.getTime())) {
+                              form.setValue('recurring_start_date', date);
+                            }
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="icon" type="button">
+                            <CalendarIcon className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <CalendarComponent
+                            mode="single"
+                            selected={form.watch('recurring_start_date')}
+                            onSelect={(date) => form.setValue('recurring_start_date', date)}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+
+                  {/* Data Final (opcional) */}
+                  <div className="space-y-2">
+                    <Label>Data Final (opcional)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="DD/MM/AAAA"
+                        value={form.watch('recurring_end_date') ? formatDateBR(form.watch('recurring_end_date')!) : ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                          if (match) {
+                            const [, day, month, year] = match;
+                            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                            if (!isNaN(date.getTime())) {
+                              form.setValue('recurring_end_date', date);
+                            }
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="icon" type="button">
+                            <CalendarIcon className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <CalendarComponent
+                            mode="single"
+                            selected={form.watch('recurring_end_date')}
+                            onSelect={(date) => form.setValue('recurring_end_date', date)}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
+                  <strong>Info:</strong> Lançamentos serão gerados automaticamente conforme a frequência selecionada até a data final (ou indefinidamente se não especificada).
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             {/* Data da Transação */}
             <div className="space-y-2">
