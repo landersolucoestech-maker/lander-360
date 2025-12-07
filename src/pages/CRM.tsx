@@ -285,6 +285,7 @@ const CRM = () => {
               status: data.status,
               priority: data.priority,
               next_action: data.nextAction,
+              image_url: data.image_url,
             });
             setIsContactModalOpen(false);
           } catch (error) {
@@ -325,6 +326,7 @@ const CRM = () => {
               status: data.status,
               priority: data.priority,
               next_action: data.nextAction,
+              image_url: data.image_url,
             });
             setIsEditModalOpen(false);
           } catch (error) {
