@@ -12,8 +12,8 @@ import { AgendaViewModal } from "@/components/modals/AgendaViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
 import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns";
-import { cn, formatDateFullBR } from "@/lib/utils";
-import { mockEvents } from "@/data/mockData";
+import { cn, formatDateFullBR, formatDateForDB } from "@/lib/utils";
+import { useAgenda, useCreateAgendaEvent, useUpdateAgendaEvent, useDeleteAgendaEvent } from "@/hooks/useAgenda";
 
 interface AgendaEvent {
   id: string;
@@ -42,9 +42,24 @@ const Agenda = () => {
   
   const { toast } = useToast();
 
-  const events: any[] = [];
+  // Fetch events from backend
+  const { data: agendaEvents = [], isLoading } = useAgenda();
+  const createEvent = useCreateAgendaEvent();
+  const updateEvent = useUpdateAgendaEvent();
+  const deleteEvent = useDeleteAgendaEvent();
 
-  const isLoading = false;
+  // Map backend data to frontend format
+  const events: AgendaEvent[] = agendaEvents.map((e: any) => ({
+    id: e.id,
+    event_name: e.title,
+    start_date: e.start_date,
+    end_date: e.end_date,
+    location: e.location,
+    event_type: e.event_type || 'reunioes',
+    status: 'agendado',
+    artist_id: e.artist_id,
+    description: e.description,
+  }));
 
   const handleNewEvent = () => {
     setSelectedEvent(undefined);
@@ -68,36 +83,45 @@ const Agenda = () => {
 
   const handleSubmitEvent = async (data: any) => {
     try {
-      toast({
-        title: 'Sucesso',
-        description: 'Evento salvo com sucesso.',
-      });
+      // Map form data to database format
+      const eventData = {
+        title: data.event_name,
+        start_date: data.start_date instanceof Date 
+          ? data.start_date.toISOString() 
+          : new Date(data.start_date).toISOString(),
+        end_date: data.end_date instanceof Date 
+          ? data.end_date.toISOString() 
+          : data.end_date ? new Date(data.end_date).toISOString() : null,
+        location: data.location || null,
+        event_type: data.event_type || 'reunioes',
+        artist_id: data.artist_id || null,
+        description: data.description || null,
+      };
+
+      if (selectedEvent) {
+        await updateEvent.mutateAsync({ 
+          id: selectedEvent.id, 
+          data: eventData 
+        });
+      } else {
+        await createEvent.mutateAsync(eventData);
+      }
+      
+      setIsModalOpen(false);
+      setSelectedEvent(undefined);
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Falha ao salvar evento. Tente novamente.',
-        variant: 'destructive',
-      });
+      console.error('Error saving event:', error);
     }
   };
 
   const confirmDelete = async () => {
     if (eventToDelete) {
       try {
-        // TODO: Implement actual delete API call
+        await deleteEvent.mutateAsync(eventToDelete.id);
         setIsDeleteModalOpen(false);
         setEventToDelete(null);
-        toast({
-          title: 'Sucesso',
-          description: 'Evento removido com sucesso.',
-        });
       } catch (error) {
         console.error('Error deleting event:', error);
-        toast({
-          title: 'Erro',
-          description: 'Falha ao remover evento. Tente novamente.',
-          variant: 'destructive',
-        });
       }
     }
   };
