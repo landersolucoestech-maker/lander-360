@@ -83,8 +83,8 @@ export const SearchFilter = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos {filter.label}</SelectItem>
-                  {filter.options.map((option) => (
-                    <SelectItem key={option} value={option}>
+                  {filter.options.map((option, index) => (
+                    <SelectItem key={`${filter.key}-${option}-${index}`} value={option}>
                       {option}
                     </SelectItem>
                   ))}

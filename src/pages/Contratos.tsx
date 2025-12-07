@@ -85,12 +85,12 @@ const Contratos = () => {
     {
       key: "service_type",
       label: "Tipo de Serviço",
-      options: Object.keys(serviceTypeLabels)
+      options: ["empresariamento", "gestao", "agenciamento", "edicao", "distribuicao", "marketing", "producao_musical", "producao_audiovisual", "licenciamento", "publicidade", "parceria", "shows", "outros"]
     },
     {
       key: "status",
       label: "Status",
-      options: Object.keys(statusLabels)
+      options: ["pendente", "assinado", "expirado", "rescindido", "rascunho"]
     },
     {
       key: "client_type",
