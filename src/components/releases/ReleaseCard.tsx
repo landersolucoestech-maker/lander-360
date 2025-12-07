@@ -61,7 +61,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
       onClick={() => onViewDetails(release)}
     >
       {/* Background Image */}
-      <div className="relative aspect-[3/4] w-full min-h-[350px] sm:min-h-[400px] lg:min-h-[450px]">
+      <div className="relative aspect-square w-full">
         {release.cover ? (
           <img 
             src={release.cover} 
