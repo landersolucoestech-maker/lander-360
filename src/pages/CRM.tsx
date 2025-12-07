@@ -178,7 +178,7 @@ const CRM = () => {
                         </Avatar>
 
                         {/* Nome e Badges */}
-                        <div className="min-w-0">
+                        <div className="min-w-0 max-w-[250px]">
                           <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <Badge variant="secondary" className="text-xs">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
