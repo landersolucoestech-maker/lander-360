@@ -208,6 +208,7 @@ const Artistas = () => {
         email: dbArtist.email || 'Não informado',
         telefone: dbArtist.phone || 'Não informado'
       },
+      perfil: profileType || 'Independente',
       gravadora: profileType || 'Independente'
     };
   };
@@ -255,7 +256,7 @@ const Artistas = () => {
         filtered = filtered.filter((artist: any) => {
           if (key === "genre") return artist.genre === value;
           if (key === "status") return artist.status === value;
-          if (key === "perfil") return artist.gravadora === value || artist.profile_type === value;
+          if (key === "perfil") return artist.perfil === value;
           if (key === "contrato") {
             const hasActiveContract = artistContractStatusMap[artist.id] || false;
             if (value === "Com Contrato Ativo") return hasActiveContract;
