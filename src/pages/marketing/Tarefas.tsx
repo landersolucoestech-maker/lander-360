@@ -9,6 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { MarketingTaskModal } from "@/components/modals/MarketingTaskModal";
 import { CheckSquare, Plus, Clock, Users, CheckCircle, Calendar } from "lucide-react";
 import { useMarketingTasks } from "@/hooks/useMarketing";
+import { getTodayDateString } from "@/lib/utils";
 
 const MarketingTarefas = () => {
   const { data: dbTasks = [], isLoading: tasksLoading } = useMarketingTasks();
@@ -140,7 +141,7 @@ const MarketingTarefas = () => {
                   <CardTitle className="text-sm font-medium">Urgentes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-destructive">{filteredTasks.filter(t => t.due_date === new Date().toISOString().split('T')[0]).length}</div>
+                  <div className="text-2xl font-bold text-destructive">{filteredTasks.filter(t => t.due_date === getTodayDateString()).length}</div>
                   <p className="text-xs text-muted-foreground">vencendo hoje</p>
                 </CardContent>
               </Card>

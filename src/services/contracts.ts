@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Contract, ContractInsert, ContractUpdate, ContractWithDetails } from '@/types/database';
+import { getTodayDateString, formatDateForDB } from '@/lib/utils';
 
 export class ContractsService {
   // Get all contracts
@@ -111,7 +112,7 @@ export class ContractsService {
 
     if (error) throw error;
     // Filter active contracts based on effective dates
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayDateString();
     return (data || []).filter(contract => 
       contract.effective_from <= today && 
       (!contract.effective_to || contract.effective_to >= today)
@@ -131,7 +132,7 @@ export class ContractsService {
     // Filter contracts expiring within the specified days
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + days);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
+    const futureDateStr = formatDateForDB(futureDate) || '';
     
     return (data || []).filter(contract => 
       contract.effective_to && contract.effective_to <= futureDateStr
