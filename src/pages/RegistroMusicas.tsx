@@ -250,7 +250,7 @@ const RegistroMusicas = () => {
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <DashboardCard
-                title={activeTab === "obras" ? "Total de Obras" : "Total de Fonogramas"}
+                title="Total de Obras e Fonogramas"
                 value={currentKPIs.total}
                 description="registrados no sistema"
                 icon={activeTab === "obras" ? Music : Disc}
