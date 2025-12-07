@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ReportConfigModal } from "@/components/modals/ReportConfigModal";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Download, DollarSign, Users, Music, Palette, BarChart3, Plus, TrendingUp, Search, Filter, Calendar as CalendarIcon, Package, X } from "lucide-react";
+import { FileText, Download, Users, Palette, Search, Filter, Calendar as CalendarIcon, Package, X, Loader2, Music, DollarSign, Disc, FileSignature, Warehouse, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { cn, formatDateBR } from "@/lib/utils";
-import { mockReports } from "@/data/mockData";
+import {
+  useFinancialReport,
+  useArtistsReport,
+  useMusicReport,
+  useReleasesReport,
+  useInventoryReport,
+  useCrmReport,
+  usePhonogramsReport,
+  useContractsReport,
+} from "@/hooks/useReports";
 
 const Relatorios = () => {
   const [reportConfigOpen, setReportConfigOpen] = useState(false);
@@ -25,11 +33,98 @@ const Relatorios = () => {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const { toast } = useToast();
-  
+
+  // Fetch real data from database
+  const { data: financialData = [], isLoading: loadingFinancial } = useFinancialReport();
+  const { data: artistsData = [], isLoading: loadingArtists } = useArtistsReport();
+  const { data: musicData = [], isLoading: loadingMusic } = useMusicReport();
+  const { data: releasesData = [], isLoading: loadingReleases } = useReleasesReport();
+  const { data: inventoryData = [], isLoading: loadingInventory } = useInventoryReport();
+  const { data: crmData = [], isLoading: loadingCrm } = useCrmReport();
+  const { data: phonogramsData = [], isLoading: loadingPhonograms } = usePhonogramsReport();
+  const { data: contractsData = [], isLoading: loadingContracts } = useContractsReport();
+
+  const isLoading = loadingFinancial || loadingArtists || loadingMusic || loadingReleases || loadingInventory || loadingCrm || loadingPhonograms || loadingContracts;
+
+  // Generate report types based on real data
+  const reportTypes = useMemo(() => [
+    {
+      id: "financeiro",
+      name: "Relatório Financeiro",
+      description: "Transações financeiras, receitas e despesas",
+      type: "Financeiro",
+      icon: DollarSign,
+      count: financialData.length,
+      status: financialData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "artistas",
+      name: "Catálogo de Artistas",
+      description: "Lista completa de artistas cadastrados",
+      type: "Artistas",
+      icon: Users,
+      count: artistsData.length,
+      status: artistsData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "musicas",
+      name: "Registro de Obras Musicais",
+      description: "Todas as obras registradas no sistema",
+      type: "Músicas",
+      icon: Music,
+      count: musicData.length,
+      status: musicData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "fonogramas",
+      name: "Registro de Fonogramas",
+      description: "Todos os fonogramas registrados",
+      type: "Fonogramas",
+      icon: Disc,
+      count: phonogramsData.length,
+      status: phonogramsData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "lancamentos",
+      name: "Lançamentos",
+      description: "Resumo de lançamentos musicais",
+      type: "Lançamentos",
+      icon: Music,
+      count: releasesData.length,
+      status: releasesData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "contratos",
+      name: "Contratos",
+      description: "Lista de contratos ativos e histórico",
+      type: "Contratos",
+      icon: FileSignature,
+      count: contractsData.length,
+      status: contractsData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "inventario",
+      name: "Inventário de Equipamentos",
+      description: "Lista de equipamentos e patrimônio",
+      type: "Inventário",
+      icon: Warehouse,
+      count: inventoryData.length,
+      status: inventoryData.length > 0 ? "Disponível" : "Sem dados",
+    },
+    {
+      id: "crm",
+      name: "Contatos CRM",
+      description: "Lista de contatos e clientes",
+      type: "CRM",
+      icon: UserCheck,
+      count: crmData.length,
+      status: crmData.length > 0 ? "Disponível" : "Sem dados",
+    },
+  ], [financialData, artistsData, musicData, releasesData, inventoryData, crmData, phonogramsData, contractsData]);
+
   const handleCustomReport = (reportType: string, data: any[] = []) => {
     setSelectedReportType(reportType);
     setSelectedData(data);
@@ -41,7 +136,6 @@ const Relatorios = () => {
       title: "Download iniciado",
       description: `Baixando ${report.name} em formato PDF...`,
     });
-    // Aqui seria implementada a lógica real de download do PDF
   };
 
   const handleDownloadExcel = (report: any) => {
@@ -49,7 +143,6 @@ const Relatorios = () => {
       title: "Download iniciado",
       description: `Baixando ${report.name} em formato Excel...`,
     });
-    // Aqui seria implementada a lógica real de download do Excel
   };
 
   const handleViewReport = (report: any) => {
@@ -57,190 +150,121 @@ const Relatorios = () => {
     setViewReportOpen(true);
   };
 
-  // Função para gerar dados realistas do relatório baseado no tipo
+  // Get real data for report view
   const getReportData = (report: any) => {
     switch (report.type) {
       case "Financeiro":
-        return [
-          {
-            id: "FIN001",
-            descricao: "Receita com Streams - Spotify",
-            tipo: "receitas",
-            valor: "R$ 15.230,00",
-            categoria: "streaming",
-            data: "2024-01-15",
-            status: "pago",
-            cliente: "Spotify Brasil",
-            observacoes: "Pagamento mensal de streams"
-          },
-          {
-            id: "FIN002",
-            descricao: "Show em São Paulo - Festa Junina",
-            tipo: "receitas",
-            valor: "R$ 82.500,00",
-            categoria: "shows",
-            data: "2024-01-20",
-            status: "aprovado",
-            cliente: "Empresa XYZ",
-            observacoes: "Cachê do show + transporte"
-          },
-          {
-            id: "FIN003",
-            descricao: "Produção Musical - Estúdio ABC",
-            tipo: "despesas",
-            valor: "R$ 8.450,00",
-            categoria: "producao",
-            data: "2024-01-10",
-            status: "pago",
-            cliente: "Estúdio ABC",
-            observacoes: "Gravação e mixagem"
-          },
-        ];
+        return financialData.map((t: any) => ({
+          id: t.id?.slice(0, 8) || "N/A",
+          descricao: t.description || "N/A",
+          tipo: t.type || "N/A",
+          valor: `R$ ${Number(t.amount || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+          categoria: t.category || "N/A",
+          data: t.date ? formatDateBR(t.date) : "N/A",
+          status: t.status || "N/A",
+          pagamento: t.payment_method || "N/A",
+        }));
       case "Artistas":
-        return [
-          {
-            id: "ART001",
-            nome_artistico: "João Silva",
-            nome_completo: "João da Silva Santos",
-            genero: "Sertanejo",
-            email: "joao@email.com",
-            telefone: "(11) 99999-1111",
-            cpf_cnpj: "123.456.789-00",
-            banco: "Nubank",
-            agencia: "0001",
-            conta: "12345-6",
-            status: "Ativo",
-            spotify: "3.2M streams",
-            instagram: "@joaosilva",
-            data_cadastro: "2023-06-15"
-          },
-          {
-            id: "ART002",
-            nome_artistico: "Maria Santos",
-            nome_completo: "Maria Santos Oliveira",
-            genero: "Pop",
-            email: "maria@email.com",
-            telefone: "(11) 99999-2222",
-            cpf_cnpj: "987.654.321-00",
-            banco: "Itaú",
-            agencia: "0234",
-            conta: "67890-1",
-            status: "Ativo",
-            spotify: "1.8M streams",
-            instagram: "@mariasantos",
-            data_cadastro: "2023-07-20"
-          },
-        ];
+        return artistsData.map((a: any) => ({
+          id: a.id?.slice(0, 8) || "N/A",
+          nome_artistico: a.stage_name || a.name || "N/A",
+          nome_completo: a.full_name || a.name || "N/A",
+          genero: a.genre || "N/A",
+          email: a.email || "N/A",
+          telefone: a.phone || "N/A",
+          perfil: a.profile_type || "N/A",
+          status: a.contract_status || "Ativo",
+          instagram: a.instagram || "N/A",
+        }));
       case "Músicas":
-        return [
-          {
-            id: "MUS001",
-            titulo: "Verão 2024",
-            artista: "João Silva",
-            genero: "Sertanejo",
-            isrc: "BRXXX2401234",
-            compositores: "João Silva, Pedro Costa",
-            produtores: "Studio XYZ",
-            data_lancamento: "2024-01-15",
-            plataformas: "Spotify, Apple Music, YouTube",
-            streams: "850K",
-            status: "Ativo",
-            duracao: "3:45",
-            album: "EP Verão Total"
-          },
-          {
-            id: "MUS002",
-            titulo: "Noite Perdida",
-            artista: "Maria Santos",
-            genero: "Pop",
-            isrc: "BRXXX2401235",
-            compositores: "Maria Santos",
-            produtores: "Beat Factory",
-            data_lancamento: "2024-01-20",
-            plataformas: "Spotify, Apple Music, Deezer",
-            streams: "650K",
-            status: "Ativo",
-            duracao: "4:12",
-            album: "Single"
-          },
-        ];
+        return musicData.map((m: any) => ({
+          id: m.id?.slice(0, 8) || "N/A",
+          titulo: m.title || "N/A",
+          artista: m.artists?.stage_name || m.artists?.name || "N/A",
+          genero: m.genre || "N/A",
+          isrc: m.isrc || "N/A",
+          iswc: m.iswc || "N/A",
+          abramus: m.abramus_code || "N/A",
+          ecad: m.ecad_code || "N/A",
+          status: m.status || "N/A",
+        }));
+      case "Fonogramas":
+        return phonogramsData.map((p: any) => ({
+          id: p.id?.slice(0, 8) || "N/A",
+          titulo: p.title || "N/A",
+          artista: p.artists?.stage_name || p.artists?.name || "N/A",
+          isrc: p.isrc || "N/A",
+          genero: p.genre || "N/A",
+          label: p.label || "N/A",
+          status: p.status || "N/A",
+          gravacao: p.recording_date ? formatDateBR(p.recording_date) : "N/A",
+        }));
       case "Lançamentos":
-        return [
-          {
-            id: "REL001",
-            titulo: "EP Verão Total",
-            artista: "João Silva",
-            tipo: "EP",
-            data_lancamento: "2024-01-15",
-            status: "Lançado",
-            plataformas: "Spotify, Apple Music, YouTube Music, Deezer",
-            distribuidor: "CD Baby",
-            total_faixas: "4",
-            genero: "Sertanejo",
-            label: "Indie Records",
-            observacoes: "Lançamento promocional de verão"
-          },
-          {
-            id: "REL002", 
-            titulo: "Noite Perdida",
-            artista: "Maria Santos",
-            tipo: "Single",
-            data_lancamento: "2024-02-01",
-            status: "Em produção",
-            plataformas: "Spotify, Apple Music, Deezer",
-            distribuidor: "DistroKid",
-            total_faixas: "1",
-            genero: "Pop",
-            label: "Universal Music",
-            observacoes: "Single promocional para novo álbum"
-          },
-        ];
+        return releasesData.map((r: any) => ({
+          id: r.id?.slice(0, 8) || "N/A",
+          titulo: r.title || "N/A",
+          artista: r.artists?.stage_name || r.artists?.name || "N/A",
+          tipo: r.release_type || r.type || "N/A",
+          data_lancamento: r.release_date ? formatDateBR(r.release_date) : "N/A",
+          status: r.status || "N/A",
+          genero: r.genre || "N/A",
+          label: r.label || "N/A",
+          distribuidores: r.distributors?.join(", ") || "N/A",
+        }));
+      case "Contratos":
+        return contractsData.map((c: any) => ({
+          id: c.id?.slice(0, 8) || "N/A",
+          titulo: c.title || "N/A",
+          artista: c.artists?.stage_name || c.artists?.name || "N/A",
+          tipo_contrato: c.contract_type || "N/A",
+          tipo_servico: c.service_type || "N/A",
+          status: c.status || "N/A",
+          inicio: c.start_date ? formatDateBR(c.start_date) : "N/A",
+          fim: c.end_date ? formatDateBR(c.end_date) : "N/A",
+          valor: c.value ? `R$ ${Number(c.value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "N/A",
+        }));
       case "Inventário":
-        return [
-          {
-            id: "INV001",
-            item: "Microfone Shure SM58",
-            categoria: "Microfones",
-            quantidade: "5",
-            status: "Disponível",
-            localizacao: "Estúdio A",
-            data_aquisicao: "2023-05-10",
-            valor_unitario: "R$ 850,00",
-            valor_total: "R$ 4.250,00",
-            fornecedor: "Music Store",
-            observacoes: "Estado excelente"
-          },
-          {
-            id: "INV002",
-            item: "Guitarra Fender Stratocaster",
-            categoria: "Instrumentos",
-            quantidade: "2",
-            status: "1 disponível, 1 em manutenção",
-            localizacao: "Sala de Instrumentos",
-            data_aquisicao: "2023-03-15",
-            valor_unitario: "R$ 3.200,00",
-            valor_total: "R$ 6.400,00",
-            fornecedor: "Musical Brasil",
-            observacoes: "Uma unidade necessita troca de cordas"
-          },
-        ];
+        return inventoryData.map((i: any) => ({
+          id: i.id?.slice(0, 8) || "N/A",
+          item: i.name || "N/A",
+          categoria: i.category || "N/A",
+          quantidade: i.quantity?.toString() || "0",
+          status: i.status || "N/A",
+          localizacao: i.location || "N/A",
+          setor: i.sector || "N/A",
+          valor_unitario: i.unit_value ? `R$ ${Number(i.unit_value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "N/A",
+          responsavel: i.responsible || "N/A",
+        }));
+      case "CRM":
+        return crmData.map((c: any) => ({
+          id: c.id?.slice(0, 8) || "N/A",
+          nome: c.name || "N/A",
+          email: c.email || "N/A",
+          telefone: c.phone || "N/A",
+          empresa: c.company || "N/A",
+          cargo: c.position || "N/A",
+          tipo: c.contact_type || "N/A",
+          status: c.status || "N/A",
+          prioridade: c.priority || "N/A",
+          cidade: c.city || "N/A",
+        }));
       default:
         return [];
     }
   };
 
-  // Use mock reports
-  const reports = mockReports;
-  
-  // Calcular estatísticas para o resumo
-  const totalReports = reports.length;
-  const completedReports = reports.filter(r => r.status === "Concluído").length;
-  const inProgressReports = reports.filter(r => r.status === "Em andamento").length;
-  const reportsByType = {};
-  const mostUsedType = "Financeiro";
-  const totalSize = "7.4 MB";
-  const filteredReports = reports;
-  return <SidebarProvider>
+  // Filter reports
+  const filteredReports = useMemo(() => {
+    return reportTypes.filter((report) => {
+      const matchesSearch = report.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        report.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === "all" || report.type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [reportTypes, searchTerm, filterType]);
+
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
@@ -248,9 +272,9 @@ const Relatorios = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold text-foreground">Relatórios Personalizáveis</h1>
+                <h1 className="text-3xl font-bold text-foreground">Relatórios</h1>
                 <p className="text-muted-foreground">
-                  Configure e gere relatórios com visual totalmente personalizável
+                  Gere relatórios com dados reais do sistema
                 </p>
               </div>
               <Button className="gap-2" onClick={() => handleCustomReport("custom", [])}>
@@ -265,64 +289,14 @@ const Relatorios = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar relatórios por nome, descrição ou autor..."
+                    placeholder="Buscar relatórios..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2">
-                  {/* Data Inicial */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-[160px] justify-start text-left font-normal",
-                          !startDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {startDate ? format(startDate, "dd/MM/yyyy") : "Data inicial"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={startDate}
-                        onSelect={setStartDate}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Data Final */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-[160px] justify-start text-left font-normal",
-                          !endDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {endDate ? format(endDate, "dd/MM/yyyy") : "Data final"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={endDate}
-                        onSelect={setEndDate}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-
                   <Select value={filterType} onValueChange={setFilterType}>
                     <SelectTrigger className="w-[180px]">
                       <Filter className="h-4 w-4 mr-2" />
@@ -333,139 +307,108 @@ const Relatorios = () => {
                       <SelectItem value="Financeiro">Financeiro</SelectItem>
                       <SelectItem value="Artistas">Artistas</SelectItem>
                       <SelectItem value="Músicas">Músicas</SelectItem>
+                      <SelectItem value="Fonogramas">Fonogramas</SelectItem>
                       <SelectItem value="Lançamentos">Lançamentos</SelectItem>
+                      <SelectItem value="Contratos">Contratos</SelectItem>
                       <SelectItem value="Inventário">Inventário</SelectItem>
                       <SelectItem value="CRM">CRM</SelectItem>
                     </SelectContent>
                   </Select>
-                  
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filtrar por status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os status</SelectItem>
-                      <SelectItem value="Concluído">Concluído</SelectItem>
-                      <SelectItem value="Em andamento">Em andamento</SelectItem>
-                      <SelectItem value="Pendente">Pendente</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {/* Limpar filtros de data */}
-                  {(startDate || endDate) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setStartDate(undefined);
-                        setEndDate(undefined);
-                      }}
-                      className="h-10 px-2"
-                      title="Limpar filtros de data"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>
 
-            {/* Reports List */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-semibold text-foreground">
-                  Relatórios ({filteredReports.length})
-                </h2>
-                <Badge variant="outline" className="text-sm">
-                  {filteredReports.length} de {reports.length} relatórios
-                </Badge>
+            {/* Loading State */}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Carregando dados...</span>
               </div>
-              
-              {filteredReports.length > 0 ? (
-                <div className="grid gap-4">
-                  {filteredReports.map((report) => (
-                    <Card key={report.id} className="hover:shadow-md transition-all">
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <CardTitle className="text-lg">{report.name}</CardTitle>
-                              <Badge variant={report.status === "Concluído" ? "default" : "secondary"}>
-                                {report.status}
-                              </Badge>
-                              <Badge variant="outline">{report.type}</Badge>
-                            </div>
-                            <CardDescription className="text-sm mb-2">
-                              {report.description}
-                            </CardDescription>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <span>📅</span>
-                                {formatDateBR(report.createdAt)}
+            ) : (
+              /* Reports Grid */
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-semibold text-foreground">
+                    Relatórios Disponíveis ({filteredReports.length})
+                  </h2>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredReports.map((report) => {
+                    const Icon = report.icon;
+                    return (
+                      <Card key={report.id} className="hover:shadow-md transition-all">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-primary/10 rounded-lg">
+                                <Icon className="h-5 w-5 text-primary" />
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {report.author}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Package className="h-3 w-3" />
-                                {report.size}
+                              <div>
+                                <CardTitle className="text-base">{report.name}</CardTitle>
+                                <CardDescription className="text-xs mt-1">
+                                  {report.description}
+                                </CardDescription>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleDownloadPDF(report)}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Baixar PDF
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleDownloadExcel(report)}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Baixar Excel
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            onClick={() => handleViewReport(report)}
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Visualizar
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <Badge variant={report.count > 0 ? "default" : "secondary"}>
+                                {report.count} registros
+                              </Badge>
+                              <Badge variant="outline">{report.type}</Badge>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={report.count === 0}
+                              onClick={() => handleViewReport(report)}
+                              className="flex-1"
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              Visualizar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={report.count === 0}
+                              onClick={() => handleDownloadExcel(report)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
-              ) : (
-                <Card className="text-center py-8">
-                  <CardContent>
-                    <div className="flex flex-col items-center gap-3">
-                      <Search className="h-12 w-12 text-muted-foreground" />
-                      <h3 className="text-lg font-medium">Nenhum relatório encontrado</h3>
-                      <p className="text-muted-foreground">
-                        Tente ajustar os filtros ou criar um novo relatório.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+
+                {filteredReports.length === 0 && (
+                  <Card className="text-center py-8">
+                    <CardContent>
+                      <div className="flex flex-col items-center gap-3">
+                        <Search className="h-12 w-12 text-muted-foreground" />
+                        <h3 className="text-lg font-medium">Nenhum relatório encontrado</h3>
+                        <p className="text-muted-foreground">
+                          Tente ajustar os filtros de busca.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
           </div>
         </SidebarInset>
       </div>
 
       <ReportConfigModal open={reportConfigOpen} onOpenChange={setReportConfigOpen} reportType={selectedReportType} data={selectedData} />
-      
+
       {/* Modal de Visualização do Relatório */}
       <Dialog open={viewReportOpen} onOpenChange={setViewReportOpen}>
         <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden">
@@ -478,76 +421,82 @@ const Relatorios = () => {
               {selectedReport?.description}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedReport && (
             <div className="space-y-4">
-              {/* Informações do relatório - compactas */}
-              <div className="grid grid-cols-4 gap-2 text-xs">
+              {/* Informações do relatório */}
+              <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="p-2 bg-muted/30 rounded border">
                   <p className="text-muted-foreground mb-1">Tipo</p>
                   <p className="font-medium">{selectedReport.type}</p>
                 </div>
                 <div className="p-2 bg-muted/30 rounded border">
-                  <p className="text-muted-foreground mb-1">Status</p>
-                  <p className="font-medium">{selectedReport.status}</p>
+                  <p className="text-muted-foreground mb-1">Total de Registros</p>
+                  <p className="font-medium">{selectedReport.count}</p>
                 </div>
                 <div className="p-2 bg-muted/30 rounded border">
-                  <p className="text-muted-foreground mb-1">Criado em</p>
-                  <p className="font-medium">{formatDateBR(selectedReport.createdAt)}</p>
-                </div>
-                <div className="p-2 bg-muted/30 rounded border">
-                  <p className="text-muted-foreground mb-1">Autor</p>
-                  <p className="font-medium">{selectedReport.author}</p>
+                  <p className="text-muted-foreground mb-1">Gerado em</p>
+                  <p className="font-medium">{formatDateBR(new Date().toISOString())}</p>
                 </div>
               </div>
 
               {/* Tabela estilo planilha */}
               <div className="overflow-auto max-h-[60vh] border border-border rounded-md bg-background">
                 <div className="min-w-full">
-                  {/* Cabeçalho dinâmico baseado no tipo de relatório */}
                   {(() => {
                     const data = getReportData(selectedReport);
-                    if (data.length === 0) return null;
-                    
+                    if (data.length === 0) {
+                      return (
+                        <div className="p-8 text-center text-muted-foreground">
+                          Nenhum dado disponível para este relatório.
+                        </div>
+                      );
+                    }
+
                     const columns = Object.keys(data[0]);
-                    const columnCount = columns.length;
-                    
+
                     return (
                       <>
                         {/* Cabeçalho estilo Excel */}
-                        <div className={`grid grid-cols-${columnCount + 1} border-b bg-muted/50 sticky top-0`} 
-                             style={{ gridTemplateColumns: `50px repeat(${columnCount}, 1fr)` }}>
+                        <div
+                          className="border-b bg-muted/50 sticky top-0"
+                          style={{ display: "grid", gridTemplateColumns: `50px repeat(${columns.length}, minmax(100px, 1fr))` }}
+                        >
                           <div className="p-2 border-r text-xs font-semibold text-center bg-muted/70">#</div>
                           {columns.map((column) => (
-                            <div key={column} className="p-2 border-r text-xs font-semibold bg-muted/70 capitalize">
-                              {column.replace(/_/g, ' ')}
+                            <div key={column} className="p-2 border-r text-xs font-semibold bg-muted/70 capitalize truncate">
+                              {column.replace(/_/g, " ")}
                             </div>
                           ))}
                         </div>
-                        
+
                         {/* Dados estilo planilha */}
                         {data.map((row, index) => (
-                          <div key={index} 
-                               className={`grid grid-cols-${columnCount + 1} border-b hover:bg-muted/30 transition-colors`}
-                               style={{ gridTemplateColumns: `50px repeat(${columnCount}, 1fr)` }}>
+                          <div
+                            key={index}
+                            className="border-b hover:bg-muted/30 transition-colors"
+                            style={{ display: "grid", gridTemplateColumns: `50px repeat(${columns.length}, minmax(100px, 1fr))` }}
+                          >
                             <div className="p-2 border-r text-xs text-center font-mono bg-muted/20 text-muted-foreground">
-                              {String(index + 1).padStart(2, '0')}
+                              {String(index + 1).padStart(2, "0")}
                             </div>
                             {columns.map((column) => (
-                              <div key={column} className="p-2 border-r text-xs">
+                              <div key={column} className="p-2 border-r text-xs truncate" title={String(row[column as keyof typeof row])}>
                                 {row[column as keyof typeof row]}
                               </div>
                             ))}
                           </div>
                         ))}
-                        
+
                         {/* Linha de totais/resumo */}
-                        <div className={`grid grid-cols-${columnCount + 1} border-t-2 bg-muted/40 font-semibold`}
-                             style={{ gridTemplateColumns: `50px repeat(${columnCount}, 1fr)` }}>
+                        <div
+                          className="border-t-2 bg-muted/40 font-semibold"
+                          style={{ display: "grid", gridTemplateColumns: `50px repeat(${columns.length}, minmax(100px, 1fr))` }}
+                        >
                           <div className="p-2 border-r text-xs text-center bg-muted/60"></div>
                           <div className="p-2 border-r text-xs">TOTAL DE REGISTROS</div>
                           <div className="p-2 border-r text-xs font-mono">{data.length} itens</div>
-                          {Array.from({ length: columnCount - 2 }).map((_, i) => (
+                          {Array.from({ length: columns.length - 2 }).map((_, i) => (
                             <div key={i} className="p-2 border-r text-xs"></div>
                           ))}
                         </div>
@@ -560,10 +509,10 @@ const Relatorios = () => {
               {/* Ações do relatório */}
               <div className="flex justify-between items-center pt-2 border-t">
                 <div className="text-xs text-muted-foreground">
-                  Relatório gerado automaticamente • {getReportData(selectedReport).length} registros
+                  Relatório gerado em tempo real • {getReportData(selectedReport).length} registros
                 </div>
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleDownloadPDF(selectedReport)}
@@ -571,7 +520,7 @@ const Relatorios = () => {
                     <Download className="h-4 w-4 mr-2" />
                     PDF
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleDownloadExcel(selectedReport)}
@@ -579,9 +528,9 @@ const Relatorios = () => {
                     <Download className="h-4 w-4 mr-2" />
                     Excel
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
-                    variant="ghost" 
+                    variant="ghost"
                     onClick={() => setViewReportOpen(false)}
                   >
                     Fechar
@@ -592,6 +541,8 @@ const Relatorios = () => {
           )}
         </DialogContent>
       </Dialog>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
+
 export default Relatorios;
