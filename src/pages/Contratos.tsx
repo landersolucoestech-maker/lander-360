@@ -165,36 +165,58 @@ const Contratos = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <DashboardCard
-                title="Contratos Vigentes"
-                value={0}
-                description="ativos no momento"
-                icon={FileText}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Vencendo em 30 dias"
-                value={0}
-                description="precisam renovação"
-                icon={AlertTriangle}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Renovados este ano"
-                value={0}
-                description="contratos renovados"
-                icon={CheckCircle}
-                trend={{ value: 0, isPositive: true }}
-              />
-              <DashboardCard
-                title="Valor Total"
-                value="R$ 0"
-                description="contratos vigentes"
-                icon={Calendar}
-                trend={{ value: 0, isPositive: true }}
-              />
-            </div>
+            {(() => {
+              // Calculate KPIs from real data
+              const totalContracts = contracts.length;
+              const activeCount = activeContracts.length;
+              const expiringCount = expiringSoon.length;
+              
+              // Calculate signed contracts this year
+              const currentYear = new Date().getFullYear();
+              const signedThisYear = contracts.filter((c: any) => {
+                const createdAt = new Date(c.created_at);
+                return createdAt.getFullYear() === currentYear && c.status === 'assinado';
+              }).length;
+              
+              // Calculate total value of active contracts
+              const totalValue = activeContracts.reduce((sum: number, c: any) => {
+                const value = c.fixed_value || c.advance_amount || c.value || 0;
+                return sum + Number(value);
+              }, 0);
+              
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <DashboardCard
+                    title="Contratos Vigentes"
+                    value={activeCount}
+                    description="ativos no momento"
+                    icon={FileText}
+                    trend={{ value: totalContracts, isPositive: true }}
+                  />
+                  <DashboardCard
+                    title="Vencendo em 30 dias"
+                    value={expiringCount}
+                    description="precisam renovação"
+                    icon={AlertTriangle}
+                    trend={{ value: expiringCount > 0 ? -expiringCount : 0, isPositive: expiringCount === 0 }}
+                  />
+                  <DashboardCard
+                    title="Assinados este ano"
+                    value={signedThisYear}
+                    description="contratos assinados"
+                    icon={CheckCircle}
+                    trend={{ value: signedThisYear, isPositive: true }}
+                  />
+                  <DashboardCard
+                    title="Valor Total"
+                    value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
+                    description="contratos vigentes"
+                    icon={Calendar}
+                    trend={{ value: 0, isPositive: true }}
+                  />
+                </div>
+              );
+            })()}
 
             {/* Search and Filters */}
             <SearchFilter
