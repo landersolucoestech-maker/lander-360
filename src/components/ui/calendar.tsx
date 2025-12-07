@@ -46,6 +46,7 @@ function Calendar({
 
   return (
     <DayPicker
+      locale={props.locale || ptBR}
       month={displayMonth}
       onMonthChange={setDisplayMonth}
       showOutsideDays={showOutsideDays}
