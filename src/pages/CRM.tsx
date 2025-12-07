@@ -165,88 +165,94 @@ const CRM = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {contacts.map((contact) => (
                       <div
                         key={contact.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                       >
-                        <div className="flex items-center gap-4">
-                          <Avatar>
-                            <AvatarImage src="/placeholder.svg" alt={contact.name} />
-                            <AvatarFallback>{contact.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
-                          </Avatar>
-                          <div className="space-y-1">
-                            <h3 className="font-medium text-foreground">{contact.name}</h3>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
-                              <Badge 
-                                variant={
-                                  (contact as any).status === "quente" ? "destructive" :
-                                  (contact as any).status === "negociacao" ? "outline" : "secondary"
-                                }
-                              >
-                                {(contact as any).status || 'N/A'}
-                              </Badge>
-                              <Badge 
-                                variant={
-                                  (contact as any).priority === "alta" ? "destructive" :
-                                  (contact as any).priority === "media" ? "outline" : "secondary"
-                                }
-                              >
-                                {(contact as any).priority || 'N/A'}
-                              </Badge>
-                            </div>
+                        {/* Avatar */}
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={contact.image_url || "/placeholder.svg"} alt={contact.name} />
+                          <AvatarFallback>{contact.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+
+                        {/* Nome e Badges */}
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-foreground truncate">{contact.name}</h3>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <Badge variant="secondary" className="text-xs">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
+                            <Badge 
+                              variant={
+                                (contact as any).status === "quente" ? "destructive" :
+                                (contact as any).status === "negociacao" ? "outline" : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {(contact as any).status || 'N/A'}
+                            </Badge>
+                            <Badge 
+                              variant={
+                                (contact as any).priority === "alta" ? "destructive" :
+                                (contact as any).priority === "media" ? "outline" : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {(contact as any).priority || 'N/A'}
+                            </Badge>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4" />
-                              <span>{contact.phone}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4" />
-                              <span className="max-w-32 truncate">{contact.email}</span>
-                            </div>
-                          </div>
-                          <div className="text-center text-sm">
-                            <div className="text-muted-foreground">Empresa</div>
-                            <div className="font-medium max-w-32 truncate">{contact.company || '-'}</div>
+
+                        {/* Telefone e Email */}
+                        <div className="flex items-center gap-6 text-sm text-muted-foreground min-w-[280px]">
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 shrink-0" />
+                            <span className="whitespace-nowrap">{contact.phone}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedContact(contact);
-                                setIsProfileModalOpen(true);
-                              }}
-                            >
-                              Ver
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedContact(contact);
-                                setIsEditModalOpen(true);
-                              }}
-                            >
-                              Editar
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setContactToDelete(contact);
-                                setIsDeleteModalOpen(true);
-                              }}
-                            >
-                              Excluir
-                            </Button>
+                            <Mail className="h-4 w-4 shrink-0" />
+                            <span className="truncate max-w-[160px]">{contact.email}</span>
                           </div>
+                        </div>
+
+                        {/* Empresa */}
+                        <div className="text-sm min-w-[100px]">
+                          <div className="text-muted-foreground text-xs">Empresa</div>
+                          <div className="font-medium truncate">{contact.company || '-'}</div>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedContact(contact);
+                              setIsProfileModalOpen(true);
+                            }}
+                          >
+                            Ver
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedContact(contact);
+                              setIsEditModalOpen(true);
+                            }}
+                          >
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setContactToDelete(contact);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            Excluir
+                          </Button>
                         </div>
                       </div>
                     ))}
