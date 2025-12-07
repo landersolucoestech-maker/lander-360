@@ -485,14 +485,20 @@ export type Database = {
         Row: {
           amount: number
           artist_id: string | null
+          attachment_url: string | null
+          authorized_by: string | null
           category: string | null
+          contract_id: string | null
           created_at: string
           created_by: string | null
+          crm_contact_id: string | null
           date: string
           description: string
           id: string
+          observations: string | null
           payment_method: string | null
           project_id: string | null
+          responsible_by: string | null
           status: string | null
           transaction_date: string | null
           transaction_type: string | null
@@ -502,14 +508,20 @@ export type Database = {
         Insert: {
           amount: number
           artist_id?: string | null
+          attachment_url?: string | null
+          authorized_by?: string | null
           category?: string | null
+          contract_id?: string | null
           created_at?: string
           created_by?: string | null
+          crm_contact_id?: string | null
           date: string
           description: string
           id?: string
+          observations?: string | null
           payment_method?: string | null
           project_id?: string | null
+          responsible_by?: string | null
           status?: string | null
           transaction_date?: string | null
           transaction_type?: string | null
@@ -519,14 +531,20 @@ export type Database = {
         Update: {
           amount?: number
           artist_id?: string | null
+          attachment_url?: string | null
+          authorized_by?: string | null
           category?: string | null
+          contract_id?: string | null
           created_at?: string
           created_by?: string | null
+          crm_contact_id?: string | null
           date?: string
           description?: string
           id?: string
+          observations?: string | null
           payment_method?: string | null
           project_id?: string | null
+          responsible_by?: string | null
           status?: string | null
           transaction_date?: string | null
           transaction_type?: string | null
@@ -539,6 +557,20 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_crm_contact_id_fkey"
+            columns: ["crm_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
             referencedColumns: ["id"]
           },
           {

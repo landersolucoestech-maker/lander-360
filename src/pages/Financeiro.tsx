@@ -55,11 +55,33 @@ const Financeiro = () => {
 
   const handleSubmitTransaction = async (data: any) => {
     try {
+      // Map form data to database format
+      const transactionData = {
+        description: data.description,
+        amount: data.amount,
+        type: data.transaction_type === 'receitas' ? 'entrada' : 'saida',
+        transaction_type: data.transaction_type === 'receitas' ? 'entrada' : 'saida',
+        date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        transaction_date: data.transaction_date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        category: data.category,
+        status: data.status,
+        payment_method: data.payment_method,
+        artist_id: data.client_type === 'artista' ? data.client_id : null,
+        crm_contact_id: data.client_type === 'empresa' ? data.crm_contact_id : null,
+        contract_id: data.contract_id || null,
+        attachment_url: data.attachment_url || null,
+        responsible_by: data.responsible_by || null,
+        authorized_by: data.authorized_by || null,
+        observations: data.observations || null,
+      };
+
+      console.log('Transaction data to save:', transactionData);
       // TODO: Implement actual API call when hooks are available
       toast({
         title: 'Sucesso',
         description: 'Transação salva com sucesso.',
       });
+      setIsModalOpen(false);
     } catch (error) {
       toast({
         title: 'Erro',

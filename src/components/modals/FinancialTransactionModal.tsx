@@ -7,6 +7,8 @@ import {
 } from '@/components/ui/dialog';
 import { FinancialTransactionForm } from '@/components/forms/FinancialTransactionForm';
 import { useArtists } from '@/hooks/useArtists';
+import { useCrmContacts } from '@/hooks/useCrm';
+import { useContracts } from '@/hooks/useContracts';
 import { FinancialTransaction } from '@/types/database';
 
 interface FinancialTransactionModalProps {
@@ -25,11 +27,9 @@ export const FinancialTransactionModal: React.FC<FinancialTransactionModalProps>
   isLoading = false
  }) => {
   const { data: artists = [] } = useArtists();
+  const { data: crmContacts = [] } = useCrmContacts();
+  const { data: contracts = [] } = useContracts();
   const isEditing = !!transaction;
-
-  const companies = [
-    // Companies will be loaded from database
-  ];
 
   const handleSubmit = async (data: any) => {
     try {
@@ -41,13 +41,20 @@ export const FinancialTransactionModal: React.FC<FinancialTransactionModalProps>
   };
 
   const initialData = transaction ? {
-    client_type: 'empresa' as 'empresa' | 'artista', // Default since field doesn't exist in current DB
+    client_type: 'empresa' as 'empresa' | 'artista',
     description: transaction.description,
     transaction_type: (transaction.transaction_type === 'entrada' ? 'receitas' : 'despesas') as 'receitas' | 'despesas',
     amount: transaction.amount,
     category: transaction.category || '',
     transaction_date: transaction.transaction_date ? new Date(transaction.transaction_date) : new Date(),
     status: (transaction.status || 'pendente') as 'pendente' | 'aprovado' | 'pago' | 'cancelado',
+    payment_method: (transaction as any).payment_method || undefined,
+    contract_id: (transaction as any).contract_id || undefined,
+    crm_contact_id: (transaction as any).crm_contact_id || undefined,
+    attachment_url: (transaction as any).attachment_url || undefined,
+    responsible_by: (transaction as any).responsible_by || undefined,
+    authorized_by: (transaction as any).authorized_by || undefined,
+    observations: (transaction as any).observations || undefined,
   } : undefined;
 
   return (
@@ -68,7 +75,16 @@ export const FinancialTransactionModal: React.FC<FinancialTransactionModalProps>
             id: artist.id,
             name: artist.name
           }))}
-          companies={companies}
+          companies={[]}
+          crmContacts={crmContacts.map(contact => ({
+            id: contact.id,
+            name: contact.name,
+            company: contact.company
+          }))}
+          contracts={contracts.map(contract => ({
+            id: contract.id,
+            title: contract.title
+          }))}
         />
       </DialogContent>
     </Dialog>

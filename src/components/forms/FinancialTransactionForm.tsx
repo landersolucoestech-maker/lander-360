@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,20 +8,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Upload, X, Search } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn, formatDateBR } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const financialTransactionSchema = z.object({
   client_type: z.enum(['empresa', 'artista'], { required_error: 'Selecione empresa ou artista' }),
   client_id: z.string().optional(),
+  crm_contact_id: z.string().optional(),
   description: z.string().min(1, 'Descrição é obrigatória'),
   transaction_type: z.enum(['receitas', 'despesas'], { required_error: 'Selecione o tipo' }),
   amount: z.number().positive('Valor deve ser positivo'),
   category: z.string().min(1, 'Categoria é obrigatória'),
   transaction_date: z.date({ required_error: 'Data é obrigatória' }),
   status: z.enum(['pendente', 'aprovado', 'pago', 'cancelado']).default('pendente'),
+  payment_method: z.string().optional(),
+  contract_id: z.string().optional(),
+  attachment_url: z.string().optional(),
+  responsible_by: z.string().optional(),
+  authorized_by: z.string().optional(),
+  observations: z.string().optional(),
 });
 
 type FinancialTransactionFormData = z.infer<typeof financialTransactionSchema>;
@@ -33,6 +43,8 @@ interface FinancialTransactionFormProps {
   isLoading?: boolean;
   artists?: Array<{ id: string; name: string }>;
   companies?: Array<{ id: string; name: string }>;
+  crmContacts?: Array<{ id: string; name: string; company?: string | null }>;
+  contracts?: Array<{ id: string; title: string }>;
 }
 
 export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> = ({
@@ -41,8 +53,16 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
   initialData,
   isLoading = false,
   artists = [],
-  companies = []
+  companies = [],
+  crmContacts = [],
+  contracts = []
 }) => {
+  const { toast } = useToast();
+  const [contactSearch, setContactSearch] = useState('');
+  const [isContactPopoverOpen, setIsContactPopoverOpen] = useState(false);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [attachmentName, setAttachmentName] = useState<string | null>(null);
+
   const form = useForm<FinancialTransactionFormData>({
     resolver: zodResolver(financialTransactionSchema),
     defaultValues: {
@@ -55,6 +75,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
 
   const watchedType = form.watch('transaction_type');
   const watchedClientType = form.watch('client_type');
+  const watchedCrmContactId = form.watch('crm_contact_id');
 
   const receitasCategories = {
     venda_musicas: 'Venda de Músicas',
@@ -87,7 +108,97 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
     servicos: 'Serviços'
   };
 
+  const paymentMethods = [
+    { value: 'pix', label: 'Pix' },
+    { value: 'ted', label: 'TED' },
+    { value: 'boleto', label: 'Boleto' },
+    { value: 'cartao', label: 'Cartão' },
+    { value: 'dinheiro', label: 'Dinheiro' },
+  ];
+
   const availableCategories = watchedType === 'receitas' ? receitasCategories : despesasCategories;
+
+  // Filter CRM contacts based on search
+  const filteredContacts = useMemo(() => {
+    if (!contactSearch) return crmContacts;
+    const lowerSearch = contactSearch.toLowerCase();
+    return crmContacts.filter(
+      c => c.name.toLowerCase().includes(lowerSearch) || 
+           (c.company && c.company.toLowerCase().includes(lowerSearch))
+    );
+  }, [crmContacts, contactSearch]);
+
+  // Get selected contact display
+  const selectedContactDisplay = useMemo(() => {
+    if (!watchedCrmContactId) return null;
+    const contact = crmContacts.find(c => c.id === watchedCrmContactId);
+    return contact ? `${contact.name}${contact.company ? ` - ${contact.company}` : ''}` : null;
+  }, [watchedCrmContactId, crmContacts]);
+
+  // Handle attachment upload
+  const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Tipo de arquivo inválido',
+        description: 'Apenas PDF, JPG, PNG e WebP são permitidos.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'Arquivo muito grande',
+        description: 'O arquivo deve ter no máximo 10MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingAttachment(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `financial-attachments/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('artist-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('artist-documents')
+        .getPublicUrl(filePath);
+
+      form.setValue('attachment_url', publicUrl);
+      setAttachmentName(file.name);
+      toast({
+        title: 'Upload concluído',
+        description: 'Comprovante anexado com sucesso.',
+      });
+    } catch (error) {
+      console.error('Error uploading attachment:', error);
+      toast({
+        title: 'Erro no upload',
+        description: 'Falha ao anexar comprovante. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const removeAttachment = () => {
+    form.setValue('attachment_url', undefined);
+    setAttachmentName(null);
+  };
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -102,7 +213,11 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               <Label>Tipo</Label>
               <Select
                 value={form.watch('client_type')}
-                onValueChange={(value) => form.setValue('client_type', value as any)}
+                onValueChange={(value) => {
+                  form.setValue('client_type', value as any);
+                  form.setValue('client_id', undefined);
+                  form.setValue('crm_contact_id', undefined);
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
@@ -117,26 +232,57 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               )}
             </div>
 
-            {/* Dropdown condicional: Empresa ou Artista */}
-            {watchedClientType === 'empresa' && companies.length > 0 && (
+            {/* Fornecedor/Cliente (CRM) - quando empresa está selecionada */}
+            {watchedClientType === 'empresa' && (
               <div className="space-y-2">
-                <Label>Nome da Empresa/Cliente</Label>
-                <Select
-                  value={form.watch('client_id')}
-                  onValueChange={(value) => form.setValue('client_id', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma empresa" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border z-50">
-                    {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Fornecedor/Cliente</Label>
+                <Popover open={isContactPopoverOpen} onOpenChange={setIsContactPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between font-normal"
+                    >
+                      {selectedContactDisplay || "Buscar contato..."}
+                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Buscar por nome ou empresa..." 
+                        value={contactSearch}
+                        onValueChange={setContactSearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredContacts.map((contact) => (
+                            <CommandItem
+                              key={contact.id}
+                              value={contact.id}
+                              onSelect={() => {
+                                form.setValue('crm_contact_id', contact.id);
+                                setIsContactPopoverOpen(false);
+                              }}
+                            >
+                              <div className="flex flex-col">
+                                <span>{contact.name}</span>
+                                {contact.company && (
+                                  <span className="text-xs text-muted-foreground">{contact.company}</span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
 
+            {/* Artista dropdown */}
             {watchedClientType === 'artista' && (
               <div className="space-y-2">
                 <Label>Nome do Artista</Label>
@@ -169,7 +315,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                 value={form.watch('transaction_type')}
                 onValueChange={(value) => {
                   form.setValue('transaction_type', value as any);
-                  form.setValue('category', ''); // Reset category when type changes
+                  form.setValue('category', '');
                 }}
               >
                 <SelectTrigger>
@@ -221,6 +367,24 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
               {form.formState.errors.amount && (
                 <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
               )}
+            </div>
+
+            {/* Forma de Pagamento */}
+            <div className="space-y-2">
+              <Label>Forma de Pagamento</Label>
+              <Select
+                value={form.watch('payment_method')}
+                onValueChange={(value) => form.setValue('payment_method', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a forma de pagamento" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border z-50">
+                  {paymentMethods.map((method) => (
+                    <SelectItem key={method.value} value={method.value}>{method.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Data da Transação */}
@@ -278,19 +442,102 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
                 <p className="text-sm text-destructive">{form.formState.errors.status.message}</p>
               )}
             </div>
+
+            {/* Contrato Vinculado */}
+            <div className="space-y-2">
+              <Label>Contrato Vinculado (opcional)</Label>
+              <Select
+                value={form.watch('contract_id') || ''}
+                onValueChange={(value) => form.setValue('contract_id', value || undefined)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar contrato..." />
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border z-50">
+                  <SelectItem value="">Nenhum</SelectItem>
+                  {contracts.map((contract) => (
+                    <SelectItem key={contract.id} value={contract.id}>{contract.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Responsável pelo lançamento */}
+            <div className="space-y-2">
+              <Label htmlFor="responsible_by">Responsável pelo Lançamento</Label>
+              <Input
+                id="responsible_by"
+                placeholder="Nome do responsável"
+                {...form.register('responsible_by')}
+              />
+            </div>
+
+            {/* Autorizado por */}
+            <div className="space-y-2">
+              <Label htmlFor="authorized_by">Autorizado por (opcional)</Label>
+              <Input
+                id="authorized_by"
+                placeholder="Nome de quem autorizou"
+                {...form.register('authorized_by')}
+              />
+            </div>
           </div>
 
-          {/* Descrição */}
+          {/* Descrição curta */}
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
-            <Textarea
+            <Input
               id="description"
-              placeholder="Descreva a transação"
+              placeholder="Ex.: Pagamento de mix/mastering, Receita Spotify mês de julho"
               {...form.register('description')}
             />
             {form.formState.errors.description && (
               <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
             )}
+          </div>
+
+          {/* Anexo de Comprovante */}
+          <div className="space-y-2">
+            <Label>Anexo de Comprovante (PDF, JPG, PNG)</Label>
+            <div className="flex items-center gap-4">
+              {!form.watch('attachment_url') ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    onChange={handleAttachmentUpload}
+                    disabled={uploadingAttachment}
+                    className="max-w-xs"
+                  />
+                  {uploadingAttachment && (
+                    <span className="text-sm text-muted-foreground">Carregando...</span>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                  <Upload className="h-4 w-4" />
+                  <span className="text-sm">{attachmentName || 'Arquivo anexado'}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeAttachment}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Observações */}
+          <div className="space-y-2">
+            <Label htmlFor="observations">Observações</Label>
+            <Textarea
+              id="observations"
+              placeholder="Observações adicionais sobre a transação"
+              {...form.register('observations')}
+            />
           </div>
         </CardContent>
       </Card>
