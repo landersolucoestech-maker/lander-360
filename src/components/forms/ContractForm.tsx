@@ -68,6 +68,17 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     },
   });
 
+  // Reset form when initialData changes (for edit mode)
+  React.useEffect(() => {
+    if (initialData) {
+      form.reset({
+        status: 'rascunho',
+        registry_office: false,
+        ...initialData,
+      });
+    }
+  }, [initialData, form]);
+
   const handleSubmit = (data: ContractFormData) => {
     onSubmit(data);
   };
