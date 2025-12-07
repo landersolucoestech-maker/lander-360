@@ -167,7 +167,7 @@ const CRM = () => {
                           <div className="space-y-1">
                             <h3 className="font-medium text-foreground">{contact.name}</h3>
                             <div className="flex items-center gap-2">
-                              <Badge variant="secondary">{contact.contact_type || 'N/A'}</Badge>
+                              <Badge variant="secondary">{contact.contact_type?.replace(/_/g, ' ') || 'N/A'}</Badge>
                               <Badge 
                                 variant={
                                   (contact as any).status === "quente" ? "destructive" :
