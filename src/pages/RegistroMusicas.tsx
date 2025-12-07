@@ -329,13 +329,13 @@ const RegistroMusicas = () => {
                         {filteredSongs.map((song) => (
                           <div
                             key={song.id}
-                            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="grid grid-cols-[1fr_auto] gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <Music className="h-6 w-6 text-primary" />
                               </div>
-                              <div className="space-y-1">
+                              <div className="space-y-1 min-w-0">
                                 <h3 className="font-medium text-foreground">{song.title}</h3>
                                 <Badge 
                                   variant={
@@ -349,24 +349,28 @@ const RegistroMusicas = () => {
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-6 text-sm">
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Cód. ABRAMUS</div>
+                            <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                              <div className="text-left min-w-[100px]">
+                                <div className="text-muted-foreground text-xs">Cód. ABRAMUS</div>
                                 <div className="font-medium text-foreground">{song.abramus_code || "-"}</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Cód. ECAD</div>
+                              <div className="text-left min-w-[100px]">
+                                <div className="text-muted-foreground text-xs">Cód. ECAD</div>
                                 <div className="font-medium text-foreground">{song.ecad_code || "-"}</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Compositores/Autor</div>
-                                <div className="font-medium text-foreground max-w-[150px] truncate">{song.composers?.join(", ") || "-"}</div>
+                              <div className="text-left min-w-[180px]">
+                                <div className="text-muted-foreground text-xs">Compositores/Autor</div>
+                                <div className="font-medium text-foreground" title={song.composers?.join(", ") || "-"}>
+                                  {song.composers?.join(", ") || "-"}
+                                </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-muted-foreground">Editora</div>
-                                <div className="font-medium text-foreground max-w-[120px] truncate">{song.publishers?.join(", ") || "-"}</div>
+                              <div className="text-left min-w-[120px]">
+                                <div className="text-muted-foreground text-xs">Editora</div>
+                                <div className="font-medium text-foreground" title={song.publishers?.join(", ") || "-"}>
+                                  {song.publishers?.join(", ") || "-"}
+                                </div>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-shrink-0">
                                 <Button variant="outline" size="sm" onClick={() => handleViewSong(song)}>
                                   Ver
                                 </Button>
