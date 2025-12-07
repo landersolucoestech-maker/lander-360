@@ -425,9 +425,9 @@ const Financeiro = () => {
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                            transaction.transaction_type === "entrada" ? "bg-green-100 dark:bg-green-900/20" : "bg-red-100 dark:bg-red-900/20"
+                            transaction.transaction_type === "receitas" ? "bg-green-100 dark:bg-green-900/20" : "bg-red-100 dark:bg-red-900/20"
                           }`}>
-                            {transaction.transaction_type === "entrada" ? (
+                            {transaction.transaction_type === "receitas" ? (
                               <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
                             ) : (
                               <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -468,9 +468,9 @@ const Financeiro = () => {
                           <div className="text-center">
                             <div className="text-sm text-muted-foreground">Valor</div>
                             <div className={`font-semibold ${
-                              transaction.transaction_type === "entrada" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                              transaction.transaction_type === "receitas" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                             }`}>
-                              {transaction.transaction_type === "entrada" ? "+" : "-"}
+                              {transaction.transaction_type === "receitas" ? "+" : "-"}
                               {new Intl.NumberFormat('pt-BR', {
                                 style: 'currency',
                                 currency: 'BRL'

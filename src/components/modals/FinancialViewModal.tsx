@@ -78,17 +78,21 @@ export function FinancialViewModal({ open, onOpenChange, transaction }: Financia
               <div>
                 <label className="text-sm text-muted-foreground">Tipo</label>
                 <p className="font-medium">
-                  <Badge variant={transaction.transaction_type === "entrada" ? "default" : "destructive"}>
-                    {transaction.transaction_type === "entrada" ? "Entrada" : "Saída"}
+                  <Badge variant={transaction.transaction_type === "receitas" ? "default" : "destructive"}>
+                    {transaction.transaction_type === "receitas" ? "Receita" : 
+                     transaction.transaction_type === "despesas" ? "Despesa" :
+                     transaction.transaction_type === "investimentos" ? "Investimento" :
+                     transaction.transaction_type === "impostos" ? "Imposto" :
+                     transaction.transaction_type === "transferencias" ? "Transferência" : transaction.transaction_type}
                   </Badge>
                 </p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Valor</label>
                 <p className={`font-semibold text-lg ${
-                  transaction.transaction_type === "entrada" ? "text-green-600" : "text-red-600"
+                  transaction.transaction_type === "receitas" ? "text-green-600" : "text-red-600"
                 }`}>
-                  {transaction.transaction_type === "entrada" ? "+" : "-"}
+                  {transaction.transaction_type === "receitas" ? "+" : "-"}
                   {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
