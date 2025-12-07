@@ -19,6 +19,7 @@ export interface Phonogram {
   label?: string | null;
   status?: string | null;
   participants?: any[] | null;
+  audio_url?: string | null;
   created_by?: string | null;
   created_at: string;
   updated_at: string;

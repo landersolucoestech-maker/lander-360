@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { PlusIcon, Trash2Icon, ChevronDown, ChevronUp, Search, Upload, FileAudio, X, Check } from 'lucide-react';
+import { PlusIcon, Trash2Icon, ChevronDown, ChevronUp, Search, Upload, FileAudio, X, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useArtists } from '@/hooks/useArtists';
@@ -21,6 +21,7 @@ import { useCreatePhonogram, useUpdatePhonogram } from '@/hooks/usePhonograms';
 import { useProjects } from '@/hooks/useProjects';
 import { useCrmContacts } from '@/hooks/useCrm';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
 const participantSchema = z.object({
   name: z.string().optional().default(''),
   role: z.string().optional().default(''),
@@ -115,6 +116,8 @@ export function PhonogramForm({
   const [musiciansOpen, setMusiciansOpen] = useState(!!hasMusicians);
   const [audioUploadOpen, setAudioUploadOpen] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [existingAudioUrl, setExistingAudioUrl] = useState<string | null>(phonogram?.audio_url || null);
   const [projectAudioInfo, setProjectAudioInfo] = useState<{ name: string; url: string; size: number } | null>(null);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -382,6 +385,7 @@ export function PhonogramForm({
   const filteredWorks = works.filter(w => w.title?.toLowerCase().includes(workSearchTerm.toLowerCase()) || w.abramus_code?.toLowerCase().includes(workSearchTerm.toLowerCase()));
   const onSubmit = async (data: PhonogramFormData) => {
     try {
+      setIsUploadingAudio(true);
       const totalDuration = (data.duration_minutes || 0) * 60 + (data.duration_seconds || 0);
       const isrc = `${data.isrc_country || 'BR'}-${data.isrc_registrant || ''}-${data.isrc_year || ''}-${data.isrc_designation || ''}`;
 
@@ -400,6 +404,34 @@ export function PhonogramForm({
           role: 'musico'
         }))
       ];
+
+      // Handle audio upload
+      let audioUrl = existingAudioUrl || projectAudioInfo?.url || null;
+      
+      if (audioFile) {
+        const fileExt = audioFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `phonograms/${fileName}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('project-audio')
+          .upload(filePath, audioFile);
+        
+        if (uploadError) {
+          console.error('Error uploading audio:', uploadError);
+          toast({
+            title: "Erro no upload",
+            description: "Falha ao fazer upload do áudio. O fonograma será salvo sem áudio.",
+            variant: "destructive"
+          });
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('project-audio')
+            .getPublicUrl(filePath);
+          audioUrl = urlData.publicUrl;
+        }
+      }
+
       const phonogramData = {
         title: data.work_title || 'Sem título',
         work_id: data.work_id || null,
@@ -409,7 +441,8 @@ export function PhonogramForm({
         genre: data.genre || null,
         language: data.is_instrumental ? 'instrumental' : 'portugues',
         status: data.status || 'pendente',
-        participants: allParticipants
+        participants: allParticipants,
+        audio_url: audioUrl
       };
       if (phonogram?.id) {
         await updatePhonogram.mutateAsync({
@@ -427,6 +460,8 @@ export function PhonogramForm({
         description: "Falha ao registrar fonograma. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
+      setIsUploadingAudio(false);
     }
   };
   // Helper para parsear audio_files (pode ser string JSON ou objeto)
