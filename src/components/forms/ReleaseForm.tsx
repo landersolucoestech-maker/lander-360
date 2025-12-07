@@ -156,24 +156,66 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
     return {};
   });
   
+  // Map release artist to get display name
+  const releaseArtist = release?.artist_id 
+    ? artists.find(a => a.id === release.artist_id) 
+    : null;
+  const artistDisplayName = releaseArtist?.stage_name || releaseArtist?.name || '';
+
+  // Map database status to form status
+  const mapDbStatusToFormStatus = (dbStatus: string | undefined): 'em_analise' | 'aprovado' | 'rejeitado' | 'pausado' => {
+    if (!dbStatus) return 'em_analise';
+    switch (dbStatus) {
+      case 'released': return 'aprovado';
+      case 'cancelled': return 'rejeitado';
+      case 'paused': return 'pausado';
+      case 'planning':
+      default: return 'em_analise';
+    }
+  };
+
+  // Parse tracks from database JSON
+  const parseTracks = (tracksData: any) => {
+    if (!tracksData) return null;
+    if (Array.isArray(tracksData) && tracksData.length > 0) {
+      return tracksData.map((track: any) => ({
+        title: track.title || '',
+        artist: track.artist || artistDisplayName || '',
+        composers: Array.isArray(track.composers) ? track.composers : [],
+        performers: Array.isArray(track.performers) ? track.performers : [],
+        producers: Array.isArray(track.producers) ? track.producers : [],
+        isrc: track.isrc || '',
+        audio_file: track.audio_file || '',
+        lyrics: track.lyrics || '',
+      }));
+    }
+    return null;
+  };
+
+  const parsedTracks = parseTracks(release?.tracks);
+
   const form = useForm<ReleaseFormData>({
     resolver: zodResolver(releaseSchema),
     defaultValues: {
       project_id: release?.project_id || '',
-      release_title: release?.release_title || '',
-      artist_name: release?.artist_name || '',
-      release_type: release?.release_type || undefined,
+      // Map database field 'title' to form field 'release_title'
+      release_title: release?.title || release?.release_title || '',
+      // Get artist name from artist_id or stored value
+      artist_name: artistDisplayName || release?.artist_name || '',
+      release_type: release?.release_type || release?.type || undefined,
       release_date: release?.release_date || '',
-      status: release?.status || 'em_analise',
-      platforms: release?.platforms || ['onerpm'],
+      status: mapDbStatusToFormStatus(release?.status),
+      // Map database field 'distributors' to form field 'platforms'
+      platforms: release?.distributors || release?.platforms || ['onerpm'],
       distribution_notes: release?.distribution_notes || '',
       genre: release?.genre || '',
       language: release?.language || '',
       label: release?.label || '',
       copyright: release?.copyright || '',
-      cover_art: release?.cover_art || '',
+      // Map database field 'cover_url' to form field 'cover_art'
+      cover_art: release?.cover_url || release?.cover_art || '',
       additional_images: release?.additional_images || [],
-      tracks: release?.tracks || [{ 
+      tracks: parsedTracks || [{ 
         title: '', 
         artist: '', 
         composers: [], 
