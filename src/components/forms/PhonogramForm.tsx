@@ -114,7 +114,7 @@ export function PhonogramForm({
   const [producersOpen, setProducersOpen] = useState(hasProducers || true);
   const [performersOpen, setPerformersOpen] = useState(!!hasPerformers);
   const [musiciansOpen, setMusiciansOpen] = useState(!!hasMusicians);
-  const [audioUploadOpen, setAudioUploadOpen] = useState(false);
+  const [audioUploadOpen, setAudioUploadOpen] = useState(!!phonogram?.audio_url);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [existingAudioUrl, setExistingAudioUrl] = useState<string | null>(phonogram?.audio_url || null);
@@ -1150,6 +1150,33 @@ export function PhonogramForm({
                 <div className="space-y-4">
                   <input type="file" ref={audioInputRef} accept="audio/*" onChange={handleAudioUpload} className="hidden" />
                   
+                  {/* Exibir áudio existente do banco (ao editar) */}
+                  {existingAudioUrl && !audioFile && !projectAudioInfo && (
+                    <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileAudio className="h-8 w-8 text-green-600" />
+                        <div>
+                          <p className="font-medium">Áudio salvo</p>
+                          <p className="text-sm text-muted-foreground">
+                            Arquivo de áudio já cadastrado
+                          </p>
+                          <audio controls className="mt-2 h-8">
+                            <source src={existingAudioUrl} />
+                            Seu navegador não suporta o elemento de áudio.
+                          </audio>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => audioInputRef.current?.click()}>
+                          Substituir
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => setExistingAudioUrl(null)}>
+                          <X className="h-5 w-5 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Exibir áudio do projeto se carregado */}
                   {projectAudioInfo && !audioFile && (
                     <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg">
@@ -1174,7 +1201,7 @@ export function PhonogramForm({
                   )}
                   
                   {/* Upload manual quando não há áudio */}
-                  {!audioFile && !projectAudioInfo && (
+                  {!audioFile && !projectAudioInfo && !existingAudioUrl && (
                     <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => audioInputRef.current?.click()}>
                       <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">Clique para fazer upload do arquivo de áudio</p>
