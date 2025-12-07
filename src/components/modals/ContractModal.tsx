@@ -37,19 +37,22 @@ export const ContractModal: React.FC<ContractModalProps> = ({
   const isLoading = createContract.isPending || updateContract.isPending;
 
   const handleSubmit = async (data: any) => {
+    console.log('ContractModal handleSubmit called with data:', data);
     try {
       // Map form data to database columns
       const contractData = {
         title: data.title,
-        client_type: data.client_type,
-        service_type: data.service_type,
+        client_type: data.client_type || null,
+        service_type: data.service_type || null,
         artist_id: data.artist_id || null,
         project_id: data.project_id || null,
         contractor_contact: data.contractor_contact || null,
-        responsible_person: data.responsible_person,
-        status: data.status,
+        responsible_person: data.responsible_person || null,
+        status: data.status || 'rascunho',
         effective_from: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
         effective_to: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+        start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
+        end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
         registry_office: data.registry_office || false,
         registry_date: data.registry_date ? data.registry_date.toISOString().split('T')[0] : null,
         payment_type: data.payment_type || null,
@@ -63,13 +66,20 @@ export const ContractModal: React.FC<ContractModalProps> = ({
         terms: data.terms || null,
       };
 
-      if (isEditing) {
+      console.log('ContractModal contractData to save:', contractData);
+      console.log('isEditing:', isEditing, 'contract.id:', contract?.id);
+
+      if (isEditing && contract) {
+        console.log('Calling updateContract.mutateAsync');
         await updateContract.mutateAsync({
           id: contract.id,
           data: contractData,
         });
+        console.log('updateContract completed successfully');
       } else {
+        console.log('Calling createContract.mutateAsync');
         await createContract.mutateAsync(contractData);
+        console.log('createContract completed successfully');
       }
       onClose();
     } catch (error) {
