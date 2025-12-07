@@ -87,12 +87,22 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
             </div>
           </div>
 
-          {/* Código ISRC */}
+          {/* Códigos de Registro */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Código de Registro</h3>
-            <div className="p-3 bg-muted/30 rounded-lg">
-              <label className="text-sm font-medium text-muted-foreground">ISRC (International Standard Recording Code)</label>
-              <p className="font-mono text-lg">{phonogram.isrc || "Não informado"}</p>
+            <h3 className="text-lg font-semibold border-b pb-2">Códigos de Registro</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <label className="text-sm font-medium text-muted-foreground">ISRC</label>
+                <p className="font-mono text-base">{phonogram.isrc || "Não informado"}</p>
+              </div>
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <label className="text-sm font-medium text-muted-foreground">Código ABRAMUS</label>
+                <p className="font-mono text-base">{phonogram.abramus_code || "Não informado"}</p>
+              </div>
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <label className="text-sm font-medium text-muted-foreground">Código ECAD</label>
+                <p className="font-mono text-base">{phonogram.ecad_code || "Não informado"}</p>
+              </div>
             </div>
           </div>
 
