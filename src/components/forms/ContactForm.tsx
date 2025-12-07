@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Plus, Trash2 } from "lucide-react";
+import { getTodayDateString } from "@/lib/utils";
+
+const interactionSchema = z.object({
+  date: z.string().min(1, "Data é obrigatória"),
+  description: z.string().min(1, "Descrição é obrigatória"),
+  type: z.string().optional(),
+});
 
 const contactSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -24,6 +32,7 @@ const contactSchema = z.object({
   zip_code: z.string().optional(),
   notes: z.string().optional(),
   nextAction: z.string().optional(),
+  interactions: z.array(interactionSchema).optional(),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -42,11 +51,28 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      ...initialData,
+      interactions: initialData?.interactions || [],
+    },
   });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "interactions",
+  });
+
+  const addInteraction = () => {
+    append({
+      date: getTodayDateString(),
+      description: "",
+      type: "nota",
+    });
+  };
 
   const handleFormSubmit = async (data: ContactFormData) => {
     try {
@@ -341,6 +367,75 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
           placeholder="Observações sobre o contato..."
           rows={4}
         />
+      </div>
+
+      {/* Histórico de Interações */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-semibold">Histórico de Interações</Label>
+          <Button type="button" variant="outline" size="sm" onClick={addInteraction}>
+            <Plus className="h-4 w-4 mr-1" />
+            Adicionar Interação
+          </Button>
+        </div>
+
+        {fields.length === 0 && (
+          <p className="text-sm text-muted-foreground">Nenhuma interação registrada.</p>
+        )}
+
+        <div className="space-y-4">
+          {fields.map((field, index) => (
+            <div key={field.id} className="p-4 border rounded-lg space-y-3 bg-muted/30">
+              <div className="flex items-start justify-between gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                  <div className="space-y-2">
+                    <Label htmlFor={`interactions.${index}.date`}>Data</Label>
+                    <Input
+                      type="date"
+                      {...register(`interactions.${index}.date`)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`interactions.${index}.type`}>Tipo</Label>
+                    <Select 
+                      onValueChange={(value) => setValue(`interactions.${index}.type`, value)}
+                      defaultValue={field.type || "nota"}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="nota">Nota</SelectItem>
+                        <SelectItem value="ligacao">Ligação</SelectItem>
+                        <SelectItem value="email">E-mail</SelectItem>
+                        <SelectItem value="reuniao">Reunião</SelectItem>
+                        <SelectItem value="visita">Visita</SelectItem>
+                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => remove(index)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`interactions.${index}.description`}>Descrição</Label>
+                <Textarea
+                  {...register(`interactions.${index}.description`)}
+                  placeholder="Descreva a interação..."
+                  rows={2}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex justify-end gap-4">
