@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,10 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarIcon, Upload, X, Search } from 'lucide-react';
+import { CalendarIcon, Upload, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn, formatDateBR } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -58,8 +57,6 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
   contracts = []
 }) => {
   const { toast } = useToast();
-  const [contactSearch, setContactSearch] = useState('');
-  const [isContactPopoverOpen, setIsContactPopoverOpen] = useState(false);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentName, setAttachmentName] = useState<string | null>(null);
 
@@ -75,7 +72,6 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
 
   const watchedType = form.watch('transaction_type');
   const watchedClientType = form.watch('client_type');
-  const watchedCrmContactId = form.watch('crm_contact_id');
 
   const receitasCategories = {
     venda_musicas: 'Venda de Músicas',
@@ -117,23 +113,6 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
   ];
 
   const availableCategories = watchedType === 'receitas' ? receitasCategories : despesasCategories;
-
-  // Filter CRM contacts based on search
-  const filteredContacts = useMemo(() => {
-    if (!contactSearch) return crmContacts;
-    const lowerSearch = contactSearch.toLowerCase();
-    return crmContacts.filter(
-      c => c.name.toLowerCase().includes(lowerSearch) || 
-           (c.company && c.company.toLowerCase().includes(lowerSearch))
-    );
-  }, [crmContacts, contactSearch]);
-
-  // Get selected contact display
-  const selectedContactDisplay = useMemo(() => {
-    if (!watchedCrmContactId) return null;
-    const contact = crmContacts.find(c => c.id === watchedCrmContactId);
-    return contact ? `${contact.name}${contact.company ? ` - ${contact.company}` : ''}` : null;
-  }, [watchedCrmContactId, crmContacts]);
 
   // Handle attachment upload
   const handleAttachmentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,49 +215,27 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
             {watchedClientType === 'empresa' && (
               <div className="space-y-2">
                 <Label>Fornecedor/Cliente</Label>
-                <Popover open={isContactPopoverOpen} onOpenChange={setIsContactPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="w-full justify-between font-normal"
-                    >
-                      {selectedContactDisplay || "Buscar contato..."}
-                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0" align="start">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Buscar por nome ou empresa..." 
-                        value={contactSearch}
-                        onValueChange={setContactSearch}
-                      />
-                      <CommandList>
-                        <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
-                        <CommandGroup>
-                          {filteredContacts.map((contact) => (
-                            <CommandItem
-                              key={contact.id}
-                              value={contact.id}
-                              onSelect={() => {
-                                form.setValue('crm_contact_id', contact.id);
-                                setIsContactPopoverOpen(false);
-                              }}
-                            >
-                              <div className="flex flex-col">
-                                <span>{contact.name}</span>
-                                {contact.company && (
-                                  <span className="text-xs text-muted-foreground">{contact.company}</span>
-                                )}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <Select
+                  value={form.watch('crm_contact_id') || ''}
+                  onValueChange={(value) => form.setValue('crm_contact_id', value || undefined)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={crmContacts.length > 0 ? "Selecione um contato" : "Nenhum contato cadastrado"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {crmContacts.length > 0 ? (
+                      crmContacts.map((contact) => (
+                        <SelectItem key={contact.id} value={contact.id}>
+                          {contact.name}{contact.company ? ` - ${contact.company}` : ''}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-2 py-1 text-sm text-muted-foreground">
+                        Nenhum contato cadastrado
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
