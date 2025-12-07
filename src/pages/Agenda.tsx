@@ -23,6 +23,12 @@ interface AgendaEvent {
   end_date?: string;
   end_time?: string;
   location?: string;
+  venue_name?: string;
+  venue_address?: string;
+  venue_contact?: string;
+  venue_capacity?: number;
+  ticket_price?: number;
+  expected_audience?: number;
   event_type: 'sessoes_estudio' | 'ensaios' | 'sessoes_fotos' | 'shows' | 'entrevistas' | 'podcasts' | 'programas_tv' | 'radio' | 'producao_conteudo' | 'reunioes';
   status: 'agendado' | 'cancelado' | 'pendente' | 'concluido' | 'confirmado';
   artist_id?: string;
@@ -53,12 +59,21 @@ const Agenda = () => {
     id: e.id,
     event_name: e.title,
     start_date: e.start_date,
+    start_time: e.start_time,
     end_date: e.end_date,
+    end_time: e.end_time,
     location: e.location,
+    venue_name: e.venue_name,
+    venue_address: e.venue_address,
+    venue_contact: e.venue_contact,
+    venue_capacity: e.venue_capacity,
+    ticket_price: e.ticket_price,
+    expected_audience: e.expected_audience,
     event_type: e.event_type || 'reunioes',
-    status: 'agendado',
+    status: e.status || 'agendado',
     artist_id: e.artist_id,
     description: e.description,
+    observations: e.observations,
   }));
 
   const handleNewEvent = () => {
@@ -92,10 +107,20 @@ const Agenda = () => {
         end_date: data.end_date instanceof Date 
           ? data.end_date.toISOString() 
           : data.end_date ? new Date(data.end_date).toISOString() : null,
+        start_time: data.start_time || null,
+        end_time: data.end_time || null,
         location: data.location || null,
+        venue_name: data.venue_name || null,
+        venue_address: data.venue_address || null,
+        venue_contact: data.venue_contact || null,
+        venue_capacity: data.venue_capacity || null,
+        ticket_price: data.ticket_price || null,
+        expected_audience: data.expected_audience || null,
         event_type: data.event_type || 'reunioes',
+        status: data.status || 'agendado',
         artist_id: data.artist_id || null,
         description: data.description || null,
+        observations: data.observations || null,
       };
 
       if (selectedEvent) {

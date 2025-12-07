@@ -21,12 +21,22 @@ export type Database = {
           created_by: string | null
           description: string | null
           end_date: string | null
+          end_time: string | null
           event_type: string | null
+          expected_audience: number | null
           id: string
           location: string | null
+          observations: string | null
           start_date: string
+          start_time: string | null
+          status: string | null
+          ticket_price: number | null
           title: string
           updated_at: string
+          venue_address: string | null
+          venue_capacity: number | null
+          venue_contact: string | null
+          venue_name: string | null
         }
         Insert: {
           artist_id?: string | null
@@ -34,12 +44,22 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          end_time?: string | null
           event_type?: string | null
+          expected_audience?: number | null
           id?: string
           location?: string | null
+          observations?: string | null
           start_date: string
+          start_time?: string | null
+          status?: string | null
+          ticket_price?: number | null
           title: string
           updated_at?: string
+          venue_address?: string | null
+          venue_capacity?: number | null
+          venue_contact?: string | null
+          venue_name?: string | null
         }
         Update: {
           artist_id?: string | null
@@ -47,12 +67,22 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
+          end_time?: string | null
           event_type?: string | null
+          expected_audience?: number | null
           id?: string
           location?: string | null
+          observations?: string | null
           start_date?: string
+          start_time?: string | null
+          status?: string | null
+          ticket_price?: number | null
           title?: string
           updated_at?: string
+          venue_address?: string | null
+          venue_capacity?: number | null
+          venue_contact?: string | null
+          venue_name?: string | null
         }
         Relationships: [
           {
