@@ -190,12 +190,12 @@ const CRM = () => {
                         
                         <div className="flex items-center gap-6">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="h-4 w-4" />
-                            <span className="max-w-32 truncate">{contact.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Phone className="h-4 w-4" />
                             <span>{contact.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Mail className="h-4 w-4" />
+                            <span className="max-w-32 truncate">{contact.email}</span>
                           </div>
                           <div className="text-center text-sm">
                             <div className="text-muted-foreground">Última Atualização</div>
