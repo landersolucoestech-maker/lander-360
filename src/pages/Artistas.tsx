@@ -86,6 +86,17 @@ const Artistas = () => {
     };
   }, [artists, activeContracts, musicRegistry]);
 
+  // Map of artists with active contracts
+  const artistContractStatusMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    activeContracts.forEach((contract: any) => {
+      if (contract.artist_id) {
+        map[contract.artist_id] = true;
+      }
+    });
+    return map;
+  }, [activeContracts]);
+
   // Count projects, releases and music per artist
   const artistStats = useMemo(() => {
     const stats: Record<string, {
@@ -198,6 +209,10 @@ const Artistas = () => {
     key: "perfil",
     label: "Perfil",
     options: ["Independente", "Gravadora", "Produtor", "Compositor"]
+  }, {
+    key: "contrato",
+    label: "Contrato",
+    options: ["Com Contrato Ativo", "Sem Contrato Ativo"]
   }];
   const handleSearch = (searchTerm: string) => {
     filterArtists(searchTerm, {});
@@ -223,6 +238,11 @@ const Artistas = () => {
           if (key === "genre") return artist.genre === value;
           if (key === "status") return artist.status === value;
           if (key === "perfil") return artist.perfil === value;
+          if (key === "contrato") {
+            const hasActiveContract = artistContractStatusMap[artist.id] || false;
+            if (value === "Com Contrato Ativo") return hasActiveContract;
+            if (value === "Sem Contrato Ativo") return !hasActiveContract;
+          }
           return true;
         });
       }
