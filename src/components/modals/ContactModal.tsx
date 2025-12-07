@@ -43,6 +43,7 @@ export function ContactModal({
           </DialogDescription>
         </DialogHeader>
         <ContactForm
+          key={initialData?.id || 'new'}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           initialData={initialData}
