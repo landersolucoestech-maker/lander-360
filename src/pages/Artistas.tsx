@@ -11,6 +11,7 @@ import { useArtists, useArtistsCount } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
+import { useActiveContracts } from "@/hooks/useContracts";
 import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
 import { mockArtists } from "@/data/mockData";
 const Artistas = () => {
@@ -32,7 +33,21 @@ const Artistas = () => {
   const {
     data: musicRegistry = []
   } = useMusicRegistry();
+  const {
+    data: activeContracts = []
+  } = useActiveContracts();
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
+
+  // Count artists with active contracts
+  const artistsWithActiveContracts = useMemo(() => {
+    const artistIds = new Set<string>();
+    activeContracts.forEach((contract: any) => {
+      if (contract.artist_id) {
+        artistIds.add(contract.artist_id);
+      }
+    });
+    return artistIds.size;
+  }, [activeContracts]);
 
   // Count projects, releases and music per artist
   const artistStats = useMemo(() => {
@@ -202,7 +217,7 @@ const Artistas = () => {
               value: 8.5,
               isPositive: true
             }} />
-              <DashboardCard title="Artistas Ativos" value={isLoading ? '...' : displayArtists.filter((a: any) => a.status === 'Ativo').length} description="com contratos vigentes" icon={Star} trend={{
+              <DashboardCard title="Contratos Vigentes" value={isLoading ? '...' : artistsWithActiveContracts} description="artistas com contratos ativos" icon={Star} trend={{
               value: 12.3,
               isPositive: true
             }} />
