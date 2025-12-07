@@ -416,10 +416,13 @@ export type Database = {
           email: string | null
           id: string
           name: string
+          next_action: string | null
           notes: string | null
           phone: string | null
           position: string | null
+          priority: string | null
           state: string | null
+          status: string | null
           updated_at: string
           zip_code: string | null
         }
@@ -434,10 +437,13 @@ export type Database = {
           email?: string | null
           id?: string
           name: string
+          next_action?: string | null
           notes?: string | null
           phone?: string | null
           position?: string | null
+          priority?: string | null
           state?: string | null
+          status?: string | null
           updated_at?: string
           zip_code?: string | null
         }
@@ -452,10 +458,13 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
+          next_action?: string | null
           notes?: string | null
           phone?: string | null
           position?: string | null
+          priority?: string | null
           state?: string | null
+          status?: string | null
           updated_at?: string
           zip_code?: string | null
         }
