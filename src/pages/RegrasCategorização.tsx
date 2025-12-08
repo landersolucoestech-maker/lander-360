@@ -168,7 +168,7 @@ const RegrasCategorização = () => {
       'licenciamento', 'merchandising', 'publicidade', 'producao', 'outros'
     ],
     despesas: [
-      'caches', 'marketing', 'salarios', 'aluguel', 'manutencao', 
+      'caches', 'comissao', 'marketing', 'salarios', 'aluguel', 'manutencao', 
       'viagens', 'juridicos', 'contabilidade', 'estudio', 'equipamentos', 
       'registros', 'licencas', 'infraestrutura', 'servicos', 'equipe', 'outros'
     ],
