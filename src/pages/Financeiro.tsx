@@ -11,7 +11,8 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X, Upload, Download, FileSpreadsheet, FileText } from "lucide-react";
+import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X, Upload, Download, FileSpreadsheet, FileText, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
 import { FinancialViewModal } from "@/components/modals/FinancialViewModal";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
@@ -39,6 +40,8 @@ const Financeiro = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
@@ -207,6 +210,47 @@ const Financeiro = () => {
       } catch (error) {
         console.error('Error deleting transaction:', error);
       }
+    }
+  };
+
+  // Selection functions
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredTransactions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredTransactions.map(t => t.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const confirmBulkDelete = async () => {
+    try {
+      const promises = Array.from(selectedIds).map(id => 
+        deleteTransaction.mutateAsync(id)
+      );
+      await Promise.all(promises);
+      toast({
+        title: 'Sucesso',
+        description: `${selectedIds.size} transações excluídas com sucesso.`,
+      });
+      setSelectedIds(new Set());
+      setIsBulkDeleteModalOpen(false);
+    } catch (error) {
+      console.error('Error deleting transactions:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao excluir algumas transações.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -633,10 +677,25 @@ const Financeiro = () => {
             {/* Transactions List */}
             <Card className="flex-1">
               <CardHeader>
-                <CardTitle>Transações</CardTitle>
-                <CardDescription>
-                  Histórico de movimentações financeiras
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Transações</CardTitle>
+                    <CardDescription>
+                      Histórico de movimentações financeiras
+                    </CardDescription>
+                  </div>
+                  {selectedIds.size > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => setIsBulkDeleteModalOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir {selectedIds.size} selecionada{selectedIds.size > 1 ? 's' : ''}
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -655,12 +714,35 @@ const Financeiro = () => {
                       </Button>
                     </div>
                   ) : (
-                    filteredTransactions.map((transaction) => (
+                    <>
+                      {/* Select All Header */}
+                      <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border">
+                        <Checkbox
+                          checked={selectedIds.size === filteredTransactions.length && filteredTransactions.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {selectedIds.size > 0 
+                            ? `${selectedIds.size} de ${filteredTransactions.length} selecionada${selectedIds.size > 1 ? 's' : ''}`
+                            : 'Selecionar todas'
+                          }
+                        </span>
+                      </div>
+                      
+                      {filteredTransactions.map((transaction) => (
                       <div
                         key={transaction.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        className={cn(
+                          "flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors",
+                          selectedIds.has(transaction.id) ? "border-primary bg-primary/5" : "border-border"
+                        )}
                       >
                         <div className="flex items-center gap-4">
+                          <Checkbox
+                            checked={selectedIds.has(transaction.id)}
+                            onCheckedChange={() => toggleSelect(transaction.id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
                           <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                             transaction.transaction_type === "receitas" ? "bg-green-100 dark:bg-green-900/20" : "bg-red-100 dark:bg-red-900/20"
                           }`}>
@@ -750,7 +832,8 @@ const Financeiro = () => {
                           </div>
                         </div>
                       </div>
-                    ))
+                    ))}
+                    </>
                   )}
                 </div>
               </CardContent>
@@ -785,6 +868,15 @@ const Financeiro = () => {
         onConfirm={confirmDelete}
         title="Excluir Transação"
         description={`Tem certeza que deseja excluir a transação "${transactionToDelete?.description}"? Esta ação não pode ser desfeita.`}
+        isLoading={false}
+      />
+
+      <DeleteConfirmationModal
+        open={isBulkDeleteModalOpen}
+        onOpenChange={setIsBulkDeleteModalOpen}
+        onConfirm={confirmBulkDelete}
+        title="Excluir Transações Selecionadas"
+        description={`Tem certeza que deseja excluir ${selectedIds.size} transação(ões)? Esta ação não pode ser desfeita.`}
         isLoading={false}
       />
     </SidebarProvider>
