@@ -237,7 +237,7 @@ const Lancamentos = () => {
                   Acompanhe todos os seus lançamentos musicais
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6">
                 {allReleases.length === 0 ? (
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
