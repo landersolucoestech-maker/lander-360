@@ -44,9 +44,32 @@ export const categorizationRules: CategorizationRule[] = [
   { keywords: ['curso', 'capacitacao', 'capacitação', 'treinamento', 'workshop'], category: 'capacitacao', type: 'investimentos' },
 ];
 
+// Load custom rules from localStorage
+function getCustomRules(): CategorizationRule[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem('customCategorizationRules');
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+}
+
 export function categorizeByRules(description: string): { category: string; type: 'receitas' | 'despesas' | 'investimentos' } | null {
   const lowerDesc = description.toLowerCase();
   
+  // Check custom rules first (higher priority)
+  const customRules = getCustomRules();
+  for (const rule of customRules) {
+    for (const keyword of rule.keywords) {
+      if (lowerDesc.includes(keyword.toLowerCase())) {
+        return { category: rule.category, type: rule.type };
+      }
+    }
+  }
+  
+  // Then check built-in rules
   for (const rule of categorizationRules) {
     for (const keyword of rule.keywords) {
       if (lowerDesc.includes(keyword.toLowerCase())) {
