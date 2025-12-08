@@ -21,6 +21,8 @@ import { FinancialTransaction } from "@/types/database";
 import { formatDateBR, cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { parseOFX, exportToCSV, exportToOFX, downloadFile } from "@/lib/ofx-parser";
+import { categorizeByRules } from "@/lib/categorization-rules";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   useFinancialTransactions, 
   useCreateFinancialTransaction, 
@@ -254,12 +256,17 @@ const Financeiro = () => {
     }
   };
 
-  // Import OFX file
+  // Import OFX file with auto-categorization
   const handleImportOFX = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
+      toast({
+        title: 'Processando',
+        description: 'Lendo arquivo e categorizando transações...',
+      });
+
       const content = await file.text();
       const ofxData = parseOFX(content);
       
@@ -272,26 +279,65 @@ const Financeiro = () => {
         return;
       }
 
-      // Create transactions from OFX data
-      const promises = ofxData.transactions.map(t => {
+      // Step 1: Apply manual rules first
+      const categorizedTransactions = ofxData.transactions.map(t => {
+        const ruleResult = categorizeByRules(t.description);
+        return {
+          ...t,
+          category: ruleResult?.category || null,
+          categorizedType: ruleResult?.type || null,
+          needsAI: !ruleResult,
+        };
+      });
+
+      // Step 2: Get AI categorization for uncategorized transactions
+      const uncategorized = categorizedTransactions.filter(t => t.needsAI);
+      
+      if (uncategorized.length > 0) {
+        try {
+          const { data: aiResult, error: aiError } = await supabase.functions.invoke('categorize-transaction', {
+            body: { descriptions: uncategorized.map(t => t.description) }
+          });
+
+          if (!aiError && aiResult?.categorizations) {
+            // Apply AI categorizations
+            aiResult.categorizations.forEach((cat: { index: number; category: string; type: string }) => {
+              const transaction = uncategorized[cat.index];
+              if (transaction) {
+                transaction.category = cat.category;
+                transaction.categorizedType = cat.type as 'receitas' | 'despesas' | 'investimentos';
+              }
+            });
+          }
+        } catch (aiError) {
+          console.warn('AI categorization failed, using defaults:', aiError);
+        }
+      }
+
+      // Step 3: Create transactions with categorizations
+      const promises = categorizedTransactions.map(t => {
+        const finalType = t.categorizedType || (t.type === 'credit' ? 'receitas' : 'despesas');
         const transactionData = {
           description: t.description,
-          type: t.type === 'credit' ? 'receitas' : 'despesas',
-          transaction_type: t.type === 'credit' ? 'receitas' : 'despesas',
+          type: finalType,
+          transaction_type: finalType,
           amount: t.amount,
           date: t.date.toISOString().split('T')[0],
           transaction_date: t.date.toISOString().split('T')[0],
           status: 'pendente' as const,
-          category: 'outros',
+          category: t.category || 'outros',
         };
         return createTransaction.mutateAsync(transactionData);
       });
 
       await Promise.all(promises);
       
+      const rulesCount = categorizedTransactions.filter(t => !t.needsAI).length;
+      const aiCount = uncategorized.length;
+      
       toast({
         title: 'Sucesso',
-        description: `${ofxData.transactions.length} transações importadas com sucesso.`,
+        description: `${ofxData.transactions.length} transações importadas. ${rulesCount} por regras, ${aiCount} por IA.`,
       });
     } catch (error) {
       console.error('Error importing OFX:', error);
