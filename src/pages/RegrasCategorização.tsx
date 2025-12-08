@@ -43,13 +43,18 @@ const RegrasCategorização = () => {
   const [category, setCategory] = useState("");
   const [type, setType] = useState<'receitas' | 'despesas' | 'investimentos'>('despesas');
 
-  // Combine built-in and custom rules
+  // Get deleted system rules
+  const deletedSystemRules: string[] = JSON.parse(localStorage.getItem('deletedSystemRules') || '[]');
+
+  // Combine built-in and custom rules (excluding deleted system rules)
   const allRules: CustomRule[] = [
-    ...categorizationRules.map((rule, index) => ({
-      ...rule,
-      id: `builtin-${index}`,
-      isCustom: false,
-    })),
+    ...categorizationRules
+      .map((rule, index) => ({
+        ...rule,
+        id: `builtin-${index}`,
+        isCustom: false,
+      }))
+      .filter(rule => !deletedSystemRules.includes(rule.id)),
     ...customRules,
   ];
 
@@ -132,17 +137,17 @@ const RegrasCategorização = () => {
   };
 
   const handleDeleteRule = (rule: CustomRule) => {
-    if (!rule.isCustom) {
-      toast({
-        title: "Atenção",
-        description: "Regras do sistema não podem ser excluídas.",
-        variant: "destructive",
-      });
-      return;
+    if (rule.isCustom) {
+      const updatedRules = customRules.filter(r => r.id !== rule.id);
+      saveCustomRules(updatedRules);
+    } else {
+      // For system rules, save to deleted list
+      const deletedSystemRules = JSON.parse(localStorage.getItem('deletedSystemRules') || '[]');
+      deletedSystemRules.push(rule.id);
+      localStorage.setItem('deletedSystemRules', JSON.stringify(deletedSystemRules));
+      // Force re-render
+      setCustomRules([...customRules]);
     }
-
-    const updatedRules = customRules.filter(r => r.id !== rule.id);
-    saveCustomRules(updatedRules);
     
     toast({
       title: "Sucesso",
@@ -346,16 +351,14 @@ const RegrasCategorização = () => {
                           >
                             Editar
                           </Button>
-                          {rule.isCustom && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => handleDeleteRule(rule)}
-                            >
-                              Excluir
-                            </Button>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteRule(rule)}
+                          >
+                            Excluir
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
