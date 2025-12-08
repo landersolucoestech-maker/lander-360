@@ -4,6 +4,26 @@ import { ArtistsService } from './artists';
 import { ContractsService } from './contracts';
 import { formatDateForDB } from '@/lib/utils';
 
+// Tradução de tipos de contrato
+const translateContractType = (type: string | null): string => {
+  const translations: Record<string, string> = {
+    'recording': 'Gravação',
+    'publishing': 'Edição',
+    'distribution': 'Distribuição',
+    'management': 'Gestão',
+    'agency': 'Agenciamento',
+    'license': 'Licenciamento',
+    'sync': 'Sincronização',
+    'production': 'Produção',
+    'audiovisual': 'Audiovisual',
+    'marketing': 'Marketing',
+    'partnership': 'Parceria',
+    'shows': 'Shows',
+    'other': 'Outro'
+  };
+  return translations[type?.toLowerCase() || ''] || type || 'Contrato';
+};
+
 export interface DashboardStatsWithTrends extends DashboardStats {
   trends: {
     works: { value: number; isPositive: boolean };
@@ -166,11 +186,12 @@ export class DashboardService {
 
       if (recentContracts.data) {
         recentContracts.data.forEach(contract => {
+          const translatedType = translateContractType(contract.contract_type);
           activities.push({
             id: contract.id,
             type: 'contract',
             title: 'Novo Contrato',
-            description: `Contrato "${contract.contract_type}" foi criado`,
+            description: `Contrato de ${translatedType} foi criado`,
             timestamp: contract.created_at || new Date().toISOString()
           });
         });
