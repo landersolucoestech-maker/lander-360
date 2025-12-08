@@ -100,6 +100,7 @@ export function getCategoryLabel(category: string): string {
     gestao: 'Gestão',
     // Despesas
     caches: 'Cachês',
+    comissao: 'Comissão',
     marketing: 'Marketing',
     salarios: 'Salários',
     aluguel: 'Aluguel',

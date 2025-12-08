@@ -98,6 +98,7 @@ export const FinancialTransactionForm: React.FC<FinancialTransactionFormProps> =
   const despesasCategories = {
     produtores: 'Produtores',
     caches: 'Cachês',
+    comissao: 'Comissão',
     marketing: 'Marketing',
     equipe: 'Equipe',
     infraestrutura: 'Infraestrutura',
