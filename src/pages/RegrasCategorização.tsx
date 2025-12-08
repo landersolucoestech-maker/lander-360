@@ -70,7 +70,7 @@ const RegrasCategorização = () => {
   };
 
   const handleOpenModal = (rule?: CustomRule) => {
-    if (rule && rule.isCustom) {
+    if (rule) {
       setEditingRule(rule);
       setKeywords(rule.keywords.join(", "));
       setCategory(rule.category);
@@ -106,7 +106,7 @@ const RegrasCategorização = () => {
     }
 
     const newRule: CustomRule = {
-      id: editingRule?.id || `custom-${Date.now()}`,
+      id: editingRule?.isCustom ? editingRule.id : `custom-${Date.now()}`,
       keywords: keywordList,
       category: category.toLowerCase().replace(/\s+/g, '_'),
       type,
@@ -114,9 +114,11 @@ const RegrasCategorização = () => {
     };
 
     let updatedRules: CustomRule[];
-    if (editingRule) {
+    if (editingRule && editingRule.isCustom) {
+      // Editing existing custom rule
       updatedRules = customRules.map(r => r.id === editingRule.id ? newRule : r);
     } else {
+      // Creating new rule or converting system rule to custom
       updatedRules = [...customRules, newRule];
     }
 
@@ -336,15 +338,15 @@ const RegrasCategorização = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {rule.isCustom ? (
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenModal(rule)}
-                            >
-                              Editar
-                            </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenModal(rule)}
+                          >
+                            Editar
+                          </Button>
+                          {rule.isCustom && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -353,10 +355,8 @@ const RegrasCategorização = () => {
                             >
                               Excluir
                             </Button>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
