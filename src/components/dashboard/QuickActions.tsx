@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Upload, Calendar, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 const quickActions = [{
   title: "Cadastrar Artista",
   description: "Adicionar novo artista",
@@ -45,13 +46,13 @@ export function QuickActions() {
       </CardHeader>
       <CardContent className="grid grid-cols-5 gap-3">
         {quickActions.map(action => <Button key={action.title} variant={action.variant} className="h-auto p-4 flex flex-col items-center gap-2 hover:scale-105 transition-transform text-center" asChild>
-            <a href={action.href}>
+            <Link to={action.href}>
               <div className="flex flex-col items-center gap-2">
                 <action.icon className="h-5 w-5" />
                 <span className="font-medium text-sm">{action.title}</span>
                 <span className="text-xs text-muted-foreground text-center">{action.description}</span>
               </div>
-            </a>
+            </Link>
           </Button>)}
       </CardContent>
     </Card>;
