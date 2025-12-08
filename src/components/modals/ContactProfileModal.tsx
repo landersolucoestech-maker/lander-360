@@ -26,12 +26,14 @@ interface ContactProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contact: any;
+  onEdit?: (contact: any) => void;
 }
 
 export function ContactProfileModal({
   open,
   onOpenChange,
   contact,
+  onEdit,
 }: ContactProfileModalProps) {
   if (!contact) return null;
 
@@ -193,6 +195,12 @@ export function ContactProfileModal({
                   <Mail className="h-4 w-4" />
                   Enviar Email
                 </a>
+              </Button>
+            )}
+            {onEdit && (
+              <Button variant="outline" className="gap-2" onClick={() => onEdit(contact)}>
+                <User className="h-4 w-4" />
+                Atualizar Cadastro
               </Button>
             )}
           </div>

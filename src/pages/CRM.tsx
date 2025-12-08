@@ -323,7 +323,16 @@ const CRM = () => {
         }}
       />
 
-      <ContactProfileModal open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen} contact={selectedContact} />
+      <ContactProfileModal 
+        open={isProfileModalOpen} 
+        onOpenChange={setIsProfileModalOpen} 
+        contact={selectedContact}
+        onEdit={(contact) => {
+          setIsProfileModalOpen(false);
+          setSelectedContact(contact);
+          setIsEditModalOpen(true);
+        }}
+      />
 
       <ContactModal
         open={isEditModalOpen}
