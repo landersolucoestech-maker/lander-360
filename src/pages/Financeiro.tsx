@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X, Upload, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
 import { FinancialViewModal } from "@/components/modals/FinancialViewModal";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
@@ -18,6 +19,7 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { FinancialTransaction } from "@/types/database";
 import { formatDateBR, cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { parseOFX, exportToCSV, exportToOFX, downloadFile } from "@/lib/ofx-parser";
 import { 
   useFinancialTransactions, 
   useCreateFinancialTransaction, 
@@ -37,6 +39,7 @@ const Financeiro = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
 
@@ -207,6 +210,81 @@ const Financeiro = () => {
     }
   };
 
+  // Import OFX file
+  const handleImportOFX = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const content = await file.text();
+      const ofxData = parseOFX(content);
+      
+      if (ofxData.transactions.length === 0) {
+        toast({
+          title: 'Atenção',
+          description: 'Nenhuma transação encontrada no arquivo OFX.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Create transactions from OFX data
+      const promises = ofxData.transactions.map(t => {
+        const transactionData = {
+          description: t.description,
+          type: t.type === 'credit' ? 'receitas' : 'despesas',
+          transaction_type: t.type === 'credit' ? 'receitas' : 'despesas',
+          amount: t.amount,
+          date: t.date.toISOString().split('T')[0],
+          transaction_date: t.date.toISOString().split('T')[0],
+          status: 'pendente' as const,
+          category: 'outros',
+        };
+        return createTransaction.mutateAsync(transactionData);
+      });
+
+      await Promise.all(promises);
+      
+      toast({
+        title: 'Sucesso',
+        description: `${ofxData.transactions.length} transações importadas com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Error importing OFX:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao importar arquivo OFX. Verifique o formato do arquivo.',
+        variant: 'destructive',
+      });
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Export functions
+  const handleExportCSV = () => {
+    const csv = exportToCSV(filteredTransactions);
+    const filename = `transacoes_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    downloadFile(csv, filename, 'text/csv;charset=utf-8;');
+    toast({
+      title: 'Sucesso',
+      description: 'Arquivo CSV exportado com sucesso.',
+    });
+  };
+
+  const handleExportOFX = () => {
+    const ofx = exportToOFX(filteredTransactions);
+    const filename = `transacoes_${format(new Date(), 'yyyy-MM-dd')}.ofx`;
+    downloadFile(ofx, filename, 'application/x-ofx');
+    toast({
+      title: 'Sucesso',
+      description: 'Arquivo OFX exportado com sucesso.',
+    });
+  };
+
   // Categories for filtering
   const receitasCategories = ['venda_musicas', 'streaming', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
   const despesasCategories = ['produtores', 'caches', 'marketing', 'equipe', 'infraestrutura', 'registros', 'juridicos', 'salarios', 'aluguel', 'manutencao', 'viagens', 'licencas', 'contabilidade', 'estudio', 'equipamentos', 'servicos'];
@@ -351,7 +429,44 @@ const Financeiro = () => {
                   Controle financeiro e fluxo de caixa
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                {/* Hidden file input for OFX import */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".ofx"
+                  onChange={handleImportOFX}
+                  className="hidden"
+                />
+                
+                <Button 
+                  variant="outline" 
+                  className="gap-2" 
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4" />
+                  Importar OFX
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Exportar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV} className="gap-2 cursor-pointer">
+                      <FileSpreadsheet className="h-4 w-4" />
+                      Exportar CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportOFX} className="gap-2 cursor-pointer">
+                      <FileText className="h-4 w-4" />
+                      Exportar OFX
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <Button 
                   variant="outline" 
                   className="gap-2" 
