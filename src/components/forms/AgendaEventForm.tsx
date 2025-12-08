@@ -29,9 +29,9 @@ const agendaEventSchema = z.object({
   venue_name: z.string().optional(),
   venue_address: z.string().optional(),
   venue_contact: z.string().optional(),
-  venue_capacity: z.number().optional(),
-  ticket_price: z.number().optional(),
-  expected_audience: z.number().optional(),
+  venue_capacity: z.union([z.number(), z.nan()]).optional().transform(val => val && !isNaN(val) ? val : undefined),
+  ticket_price: z.union([z.number(), z.nan()]).optional().transform(val => val && !isNaN(val) ? val : undefined),
+  expected_audience: z.union([z.number(), z.nan()]).optional().transform(val => val && !isNaN(val) ? val : undefined),
   observations: z.string().optional(),
 });
 
