@@ -378,7 +378,7 @@ const Financeiro = () => {
 
   // Categories for filtering
   const receitasCategories = ['venda_musicas', 'streaming', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
-  const despesasCategories = ['produtores', 'caches', 'marketing', 'equipe', 'infraestrutura', 'registros', 'juridicos', 'salarios', 'aluguel', 'manutencao', 'viagens', 'licencas', 'contabilidade', 'estudio', 'equipamentos', 'servicos'];
+  const despesasCategories = ['produtores', 'caches', 'comissao', 'marketing', 'equipe', 'infraestrutura', 'registros', 'juridicos', 'salarios', 'aluguel', 'manutencao', 'viagens', 'licencas', 'contabilidade', 'estudio', 'equipamentos', 'servicos'];
   const investimentosCategories = ['producao_musical', 'marketing_digital', 'equipamentos', 'estudio', 'clipes', 'turnê', 'capacitacao'];
 
   const filterOptions = [
