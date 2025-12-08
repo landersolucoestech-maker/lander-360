@@ -32,7 +32,14 @@ const RegrasCategorização = () => {
     return stored ? JSON.parse(stored) : [];
   };
 
+  // Load deleted system rules from localStorage
+  const loadDeletedSystemRules = (): string[] => {
+    const stored = localStorage.getItem('deletedSystemRules');
+    return stored ? JSON.parse(stored) : [];
+  };
+
   const [customRules, setCustomRules] = useState<CustomRule[]>(loadCustomRules);
+  const [deletedSystemRules, setDeletedSystemRules] = useState<string[]>(loadDeletedSystemRules);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<CustomRule | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,9 +49,6 @@ const RegrasCategorização = () => {
   const [keywords, setKeywords] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState<'receitas' | 'despesas' | 'investimentos'>('despesas');
-
-  // Get deleted system rules
-  const deletedSystemRules: string[] = JSON.parse(localStorage.getItem('deletedSystemRules') || '[]');
 
   // Combine built-in and custom rules (excluding deleted system rules)
   const allRules: CustomRule[] = [
@@ -141,12 +145,10 @@ const RegrasCategorização = () => {
       const updatedRules = customRules.filter(r => r.id !== rule.id);
       saveCustomRules(updatedRules);
     } else {
-      // For system rules, save to deleted list
-      const deletedSystemRules = JSON.parse(localStorage.getItem('deletedSystemRules') || '[]');
-      deletedSystemRules.push(rule.id);
-      localStorage.setItem('deletedSystemRules', JSON.stringify(deletedSystemRules));
-      // Force re-render
-      setCustomRules([...customRules]);
+      // For system rules, save to deleted list and update state
+      const updatedDeletedRules = [...deletedSystemRules, rule.id];
+      localStorage.setItem('deletedSystemRules', JSON.stringify(updatedDeletedRules));
+      setDeletedSystemRules(updatedDeletedRules);
     }
     
     toast({
