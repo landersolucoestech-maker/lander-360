@@ -251,7 +251,7 @@ const Lancamentos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                     {filteredReleases.map((release) => (
                       <ReleaseCard
                         key={release.id}
