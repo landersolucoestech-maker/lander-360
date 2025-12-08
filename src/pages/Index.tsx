@@ -77,19 +77,19 @@ const Index = () => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <div className="w-full h-full px-4 py-4 space-y-4">
+          <div className="w-full h-full px-4 py-3 space-y-3">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-                <p className="text-muted-foreground">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+                <p className="text-sm text-muted-foreground">
                   Visão geral do seu negócio musical
                 </p>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <DashboardCard
                 title="Obras e Fonogramas"
                 value={isLoading ? '...' : displayStats.totalWorks || 0}
@@ -121,7 +121,7 @@ const Index = () => {
             </div>
 
             {/* Recent Activity and Today's Schedule */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <RecentActivity />
               <Card>
                 <CardHeader>
