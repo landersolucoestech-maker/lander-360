@@ -21,12 +21,12 @@ const interactionSchema = z.object({
 });
 
 const contactSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
-  type: z.string().min(1, "Selecione o tipo de contato"),
-  status: z.string().min(1, "Selecione o status"),
-  priority: z.string().min(1, "Selecione a prioridade"),
+  name: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  type: z.string().optional(),
+  status: z.string().optional(),
+  priority: z.string().optional(),
   company: z.string().optional(),
   position: z.string().optional(),
   document: z.string().optional(),
