@@ -58,10 +58,10 @@ const getStatusColor = (type: string) => {
 };
 
 export function RecentActivity() {
-  const { data: dbActivities = [], isLoading, error } = useRecentActivities(3);
+  const { data: dbActivities = [], isLoading, error } = useRecentActivities(4);
   
-  // Use mock data when no database data exists, limit to 3 items
-  const activities = (dbActivities.length > 0 ? dbActivities : mockActivities).slice(0, 3);
+  // Use mock data when no database data exists, limit to 4 items
+  const activities = (dbActivities.length > 0 ? dbActivities : mockActivities).slice(0, 4);
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
