@@ -153,6 +153,31 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
     }
   };
 
+  const handleManualSubmit = async () => {
+    const formData = watch();
+    if (!formData.name || formData.name.trim() === "") {
+      toast({
+        title: "Erro",
+        description: "O campo Nome é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      await onSubmit(formData);
+      toast({
+        title: "Sucesso",
+        description: "Contato salvo com sucesso!",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar contato. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -544,7 +569,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="button" onClick={handleManualSubmit} disabled={isSubmitting}>
           {isSubmitting ? "Salvando..." : "Salvar Contato"}
         </Button>
       </div>
