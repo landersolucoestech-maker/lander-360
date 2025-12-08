@@ -11,7 +11,8 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X, Upload, Download, FileSpreadsheet, FileText, Trash2 } from "lucide-react";
+import { DollarSign, Plus, TrendingUp, TrendingDown, CreditCard, Building2, CalendarIcon, X, Upload, Download, FileSpreadsheet, FileText, Trash2, Settings2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
 import { FinancialViewModal } from "@/components/modals/FinancialViewModal";
@@ -537,6 +538,13 @@ const Financeiro = () => {
                   <Upload className="h-4 w-4" />
                   Importar OFX
                 </Button>
+                
+                <Link to="/financeiro/regras">
+                  <Button variant="outline" className="gap-2">
+                    <Settings2 className="h-4 w-4" />
+                    Regras
+                  </Button>
+                </Link>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

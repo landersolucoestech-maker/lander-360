@@ -14,6 +14,7 @@ import RegistroMusicas from "./pages/RegistroMusicas";
 import Lancamentos from "./pages/Lancamentos";
 import Contratos from "./pages/Contratos";
 import Financeiro from "./pages/Financeiro";
+import RegrasCategorização from "./pages/RegrasCategorização";
 import Agenda from "./pages/Agenda";
 import NotaFiscal from "./pages/NotaFiscal";
 import Inventario from "./pages/Inventario";
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/lancamentos" element={<ProtectedRoute><Lancamentos /></ProtectedRoute>} />
               <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
               <Route path="/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
+              <Route path="/financeiro/regras" element={<ProtectedRoute><RegrasCategorização /></ProtectedRoute>} />
               <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
               <Route path="/nota-fiscal" element={<ProtectedRoute><NotaFiscal /></ProtectedRoute>} />
               <Route path="/inventario" element={<ProtectedRoute><Inventario /></ProtectedRoute>} />
