@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface WorkflowNavigationProps {
   currentStep: "projeto" | "registro" | "lancamento" | "marketing";
@@ -39,10 +40,10 @@ export function WorkflowNavigation({ currentStep, projectId }: WorkflowNavigatio
         <div className="flex items-center gap-4">
           {step.prev && (
             <Button variant="outline" size="sm" asChild>
-              <a href={step.prev.href} className="flex items-center gap-2">
+              <Link to={step.prev.href} className="flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 {step.prev.title}
-              </a>
+              </Link>
             </Button>
           )}
           <div className="text-sm text-muted-foreground">
@@ -52,10 +53,10 @@ export function WorkflowNavigation({ currentStep, projectId }: WorkflowNavigatio
         
         {step.next && (
           <Button size="sm" asChild>
-            <a href={step.next.href} className="flex items-center gap-2">
+            <Link to={step.next.href} className="flex items-center gap-2">
               {step.next.title}
               <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </Button>
         )}
       </CardContent>

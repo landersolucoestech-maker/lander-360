@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface WorkflowStep {
   id: string;
@@ -98,9 +99,9 @@ export function WorkflowCard() {
               size="sm"
               asChild
             >
-              <a href={step.href}>
+              <Link to={step.href}>
                 {step.status === "current" ? "Continuar" : "Acessar"}
-              </a>
+              </Link>
             </Button>
             {index < workflowSteps.length - 1 && (
               <ArrowRight className="h-4 w-4 text-muted-foreground ml-2" />

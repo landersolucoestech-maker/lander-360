@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useRecentActivities } from "@/hooks/useDashboard";
 import { mockActivities } from "@/data/mockData";
 import { formatDateBR } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -78,9 +79,11 @@ export function RecentActivity() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-lg font-semibold">Atividades Recentes</CardTitle>
-        <Button variant="ghost" size="sm" onClick={() => window.location.href = '/relatorios'}>
-          Ver todas
-          <ArrowRight className="h-4 w-4 ml-1" />
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/relatorios">
+            Ver todas
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Link>
         </Button>
       </CardHeader>
       <CardContent>
