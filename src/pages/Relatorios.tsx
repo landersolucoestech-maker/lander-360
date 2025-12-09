@@ -233,6 +233,7 @@ const Relatorios = () => {
           localizacao: i.location || "N/A",
           setor: i.sector || "N/A",
           valor_unitario: i.unit_value ? `R$ ${Number(i.unit_value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "N/A",
+          valor_total: i.unit_value && i.quantity ? `R$ ${(Number(i.unit_value) * Number(i.quantity)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "N/A",
           responsavel: i.responsible || "N/A",
         }));
       case "CRM":
