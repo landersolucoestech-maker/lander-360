@@ -75,6 +75,15 @@ export function IntegrationModal({ open, onOpenChange, integration, onConnect }:
 
   const fields = getDefaultFields();
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 6;
+  };
+
   const handleConnect = async () => {
     setIsConnecting(true);
     
@@ -85,6 +94,28 @@ export function IntegrationModal({ open, onOpenChange, integration, onConnect }:
           toast({
             title: "Campo obrigatório",
             description: `Preencha o campo ${field.label}`,
+            variant: "destructive",
+          });
+          setIsConnecting(false);
+          return;
+        }
+
+        // Validate email format
+        if (field.type === 'email' && !validateEmail(credentials[field.key])) {
+          toast({
+            title: "E-mail inválido",
+            description: "Digite um endereço de e-mail válido",
+            variant: "destructive",
+          });
+          setIsConnecting(false);
+          return;
+        }
+
+        // Validate password minimum length
+        if (field.type === 'password' && field.key === 'password' && !validatePassword(credentials[field.key])) {
+          toast({
+            title: "Senha muito curta",
+            description: "A senha deve ter no mínimo 6 caracteres",
             variant: "destructive",
           });
           setIsConnecting(false);
