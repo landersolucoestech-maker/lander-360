@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ProjectModal } from "@/components/modals/ProjectModal";
 import { ProjectViewModal } from "@/components/modals/ProjectViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download, Trash2 } from "lucide-react";
+import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download, Trash2, PanelLeftClose } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects, useDeleteProject, useCreateProject } from "@/hooks/useProjects";
 import { useArtists } from "@/hooks/useArtists";
@@ -435,9 +435,12 @@ const Projetos = () => {
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold text-foreground">Projetos</h1>
-                <p className="text-muted-foreground">Gestão completa de projetos musicais</p>
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9" />
+                <div className="flex flex-col gap-2">
+                  <h1 className="text-3xl font-bold text-foreground">Projetos</h1>
+                  <p className="text-muted-foreground">Gestão completa de projetos musicais</p>
+                </div>
               </div>
               <div className="flex gap-2">
                 <input type="file" ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
