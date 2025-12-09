@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CheckSquare, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CheckSquare, FileText, Upload, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { AgendaEventModal } from "@/components/modals/AgendaEventModal";
 import { AgendaViewModal } from "@/components/modals/AgendaViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
@@ -54,6 +55,73 @@ const Agenda = () => {
   const createEvent = useCreateAgendaEvent();
   const updateEvent = useUpdateAgendaEvent();
   const deleteEvent = useDeleteAgendaEvent();
+
+  const handleExport = () => {
+    const dataToExport = filteredEvents.map((event: any) => ({
+      'Nome do Evento': event.event_name || '',
+      'Tipo': eventTypeLabels[event.event_type as keyof typeof eventTypeLabels] || '',
+      'Status': statusLabels[event.status as keyof typeof statusLabels] || '',
+      'Data Início': event.start_date || '',
+      'Horário Início': event.start_time || '',
+      'Data Fim': event.end_date || '',
+      'Horário Fim': event.end_time || '',
+      'Local': event.location || '',
+      'Venue': event.venue_name || '',
+      'Artista': event.artists?.stage_name || event.artists?.name || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Agenda');
+    XLSX.writeFile(wb, `agenda_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        toast({ 
+          title: 'Arquivo importado', 
+          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+        });
+      } catch (error) {
+        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  };
+
+  const eventTypeLabels: Record<string, string> = {
+    sessoes_estudio: 'Sessões de estúdio',
+    ensaios: 'Ensaios',
+    sessoes_fotos: 'Sessões de fotos',
+    shows: 'Shows',
+    entrevistas: 'Entrevistas',
+    podcasts: 'Podcasts',
+    programas_tv: 'Programas de TV',
+    radio: 'Rádio',
+    producao_conteudo: 'Produção de conteúdo',
+    reunioes: 'Reuniões'
+  };
+
+  const statusLabels: Record<string, string> = {
+    agendado: 'Agendado',
+    cancelado: 'Cancelado',
+    pendente: 'Pendente',
+    concluido: 'Concluído',
+    confirmado: 'Confirmado'
+  };
 
   // Map backend data to frontend format
   const events: AgendaEvent[] = agendaEvents.map((e: any) => ({
@@ -206,26 +274,6 @@ const Agenda = () => {
   const upcomingEvents = events.filter(e => new Date(e.start_date) > new Date()).length;
   const todayEventsCount = events.filter(e => isSameDay(new Date(e.start_date), new Date())).length;
 
-  const eventTypeLabels = {
-    sessoes_estudio: 'Sessões de estúdio',
-    ensaios: 'Ensaios',
-    sessoes_fotos: 'Sessões de fotos',
-    shows: 'Shows',
-    entrevistas: 'Entrevistas',
-    podcasts: 'Podcasts',
-    programas_tv: 'Programas de TV',
-    radio: 'Rádio',
-    producao_conteudo: 'Produção de conteúdo',
-    reunioes: 'Reuniões'
-  };
-
-  const statusLabels = {
-    agendado: 'Agendado',
-    cancelado: 'Cancelado',
-    pendente: 'Pendente',
-    concluido: 'Concluído',
-    confirmado: 'Confirmado'
-  };
 
 
   return (
@@ -242,10 +290,22 @@ const Agenda = () => {
                   Gerencie eventos, shows e compromissos
                 </p>
               </div>
-              <Button className="gap-2" onClick={handleNewEvent}>
-                <Plus className="h-4 w-4" />
-                Novo Evento
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="gap-2" onClick={handleExport}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <label>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span><Upload className="h-4 w-4" />Importar</span>
+                  </Button>
+                </label>
+                <Button className="gap-2" onClick={handleNewEvent}>
+                  <Plus className="h-4 w-4" />
+                  Novo Evento
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}
