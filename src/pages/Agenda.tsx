@@ -170,7 +170,7 @@ const Agenda = () => {
               start_date: row['Data Início'] ? new Date(row['Data Início']).toISOString() : new Date().toISOString(),
               location: row['Local'] || row['location'] || null,
             });
-            });
+            successCount++;
           } catch (err) {
             errorCount++;
             console.error('Error importing row:', err);
