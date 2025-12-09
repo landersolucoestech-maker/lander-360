@@ -180,18 +180,19 @@ export class DashboardService {
       // Get recent contracts
       const recentContracts = await supabase
         .from('contracts')
-        .select('id, contract_type, created_at')
+        .select('id, title, contract_type, created_at')
         .order('created_at', { ascending: false })
         .limit(3);
 
       if (recentContracts.data) {
         recentContracts.data.forEach(contract => {
-          const translatedType = translateContractType(contract.contract_type);
+          // Use the contract title for display, fallback to translated type
+          const displayName = contract.title || translateContractType(contract.contract_type);
           activities.push({
             id: contract.id,
             type: 'contract',
             title: 'Novo Contrato',
-            description: `Contrato de ${translatedType} foi criado`,
+            description: `"${displayName}" foi criado`,
             timestamp: contract.created_at || new Date().toISOString()
           });
         });
