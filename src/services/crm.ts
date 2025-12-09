@@ -40,6 +40,7 @@ export class CrmService {
     next_action?: string;
     artist_name?: string;
     image_url?: string;
+    interactions?: any[];
   }) {
     const { data, error } = await supabase
       .from('crm_contacts')
@@ -69,6 +70,7 @@ export class CrmService {
     next_action?: string;
     artist_name?: string;
     image_url?: string;
+    interactions?: any[];
   }>) {
     const { data, error } = await supabase
       .from('crm_contacts')

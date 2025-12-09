@@ -417,6 +417,7 @@ export type Database = {
           email: string | null
           id: string
           image_url: string | null
+          interactions: Json | null
           name: string
           next_action: string | null
           notes: string | null
@@ -440,6 +441,7 @@ export type Database = {
           email?: string | null
           id?: string
           image_url?: string | null
+          interactions?: Json | null
           name: string
           next_action?: string | null
           notes?: string | null
@@ -463,6 +465,7 @@ export type Database = {
           email?: string | null
           id?: string
           image_url?: string | null
+          interactions?: Json | null
           name?: string
           next_action?: string | null
           notes?: string | null
