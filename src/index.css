@@ -35,7 +35,7 @@ All colors MUST be HSL.
     --destructive: 2 100% 44%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 88%;
+    --border: 0 0% 88% / 0.3;
     --input: 0 0% 88%;
     --ring: 2 100% 44%;
 
@@ -98,7 +98,7 @@ All colors MUST be HSL.
     --destructive: 2 100% 44%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 18%; /* Graphite border */
+    --border: 0 0% 100% / 0.1;
     --input: 0 0% 18%;
     --ring: 2 100% 44%;
 
