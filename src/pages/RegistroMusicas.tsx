@@ -360,23 +360,21 @@ const RegistroMusicas = () => {
                 />
 
                 <Card className="flex-1">
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                          <CardTitle>Obras Registradas</CardTitle>
-                          <CardDescription>
-                            Catálogo completo de obras musicais registradas
-                          </CardDescription>
-                        </div>
-                        {filteredSongs.length > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              checked={selectedWorks.length === filteredSongs.length && filteredSongs.length > 0}
-                              onCheckedChange={handleSelectAllWorks}
-                            />
-                            <span className="text-sm text-muted-foreground">Selecionar todos</span>
-                          </div>
-                        )}
-                      </CardHeader>
+                  <CardHeader>
+                    <CardTitle>Obras Registradas</CardTitle>
+                    <CardDescription>
+                      Catálogo completo de obras musicais registradas
+                    </CardDescription>
+                    {filteredSongs.length > 0 && (
+                      <div className="flex items-center gap-2 pt-2">
+                        <Checkbox
+                          checked={selectedWorks.length === filteredSongs.length && filteredSongs.length > 0}
+                          onCheckedChange={handleSelectAllWorks}
+                        />
+                        <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                      </div>
+                    )}
+                  </CardHeader>
                   <CardContent>
                     {allSongs.length === 0 ? (
                       <div className="text-center py-12">
