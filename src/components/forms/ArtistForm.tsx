@@ -216,14 +216,15 @@ export function ArtistForm({
     setShowRecordLabelFields(profileType === 'Gravadora');
   }, [profileType]);
   
-  // Get unique record labels from CRM (type "Gravadora musical")
-  const recordLabelContacts = React.useMemo(() => {
-    return crmContacts.filter((contact: any) => 
-      contact.contact_type?.toLowerCase().includes('gravadora')
-    );
+  // Get unique companies from CRM contacts
+  const uniqueCompanies = React.useMemo(() => {
+    const companies = crmContacts
+      .filter((contact: any) => contact.company && contact.company.trim() !== '')
+      .map((contact: any) => contact.company.trim());
+    return [...new Set(companies)].sort();
   }, [crmContacts]);
   
-  // Filter CRM contacts by record label name (company field)
+  // Filter CRM contacts by selected company (record label)
   const filteredCrmContacts = React.useMemo(() => {
     if (!recordLabelName || profileType !== 'Gravadora') return [];
     return crmContacts.filter((contact: any) => 
@@ -231,15 +232,12 @@ export function ArtistForm({
     );
   }, [crmContacts, recordLabelName, profileType]);
   
-  const handleSelectRecordLabel = (contactId: string) => {
-    const contact = crmContacts.find((c: any) => c.id === contactId);
-    if (contact) {
-      form.setValue('record_label_name', contact.name || contact.company || '');
-      // Clear manager fields when changing record label
-      form.setValue('manager_name', '');
-      form.setValue('manager_phone', '');
-      form.setValue('manager_email', '');
-    }
+  const handleSelectRecordLabel = (companyName: string) => {
+    form.setValue('record_label_name', companyName);
+    // Clear manager fields when changing record label
+    form.setValue('manager_name', '');
+    form.setValue('manager_phone', '');
+    form.setValue('manager_email', '');
     setOpenRecordLabelPopover(false);
   };
   
@@ -837,24 +835,19 @@ export function ArtistForm({
                               <CommandList>
                                 <CommandEmpty>Nenhuma gravadora encontrada.</CommandEmpty>
                                 <CommandGroup>
-                                  {recordLabelContacts.map((contact: any) => (
+                                  {uniqueCompanies.map((company: string) => (
                                     <CommandItem
-                                      key={contact.id}
-                                      value={contact.name || contact.company}
-                                      onSelect={() => handleSelectRecordLabel(contact.id)}
+                                      key={company}
+                                      value={company}
+                                      onSelect={() => handleSelectRecordLabel(company)}
                                     >
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          field.value === (contact.name || contact.company) ? "opacity-100" : "opacity-0"
+                                          field.value === company ? "opacity-100" : "opacity-0"
                                         )}
                                       />
-                                      <div className="flex flex-col">
-                                        <span>{contact.name || contact.company}</span>
-                                        {contact.company && contact.name && (
-                                          <span className="text-xs text-muted-foreground">{contact.company}</span>
-                                        )}
-                                      </div>
+                                      <span>{company}</span>
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
