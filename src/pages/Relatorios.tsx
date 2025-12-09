@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileText, Download, Users, Palette, Search, Filter, Calendar as CalendarIcon, Package, X, Loader2, Music, DollarSign, Disc, FileSignature, Warehouse, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { cn, formatDateBR, translateStatus, translatePriority, translateCategory } from "@/lib/utils";
+import * as XLSX from "xlsx";
 import {
   useFinancialReport,
   useArtistsReport,
@@ -139,9 +140,24 @@ const Relatorios = () => {
   };
 
   const handleDownloadExcel = (report: any) => {
+    const data = getReportData(report);
+    if (data.length === 0) {
+      toast({
+        title: "Sem dados",
+        description: "Não há dados para exportar neste relatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, report.type);
+    XLSX.writeFile(workbook, `relatorio_${report.id}_${new Date().toISOString().split('T')[0]}.xlsx`);
+
     toast({
-      title: "Download iniciado",
-      description: `Baixando ${report.name} em formato Excel...`,
+      title: "Exportação concluída",
+      description: `${data.length} registros exportados com sucesso.`,
     });
   };
 
