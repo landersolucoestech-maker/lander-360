@@ -240,6 +240,39 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
   const isAiCreated = form.watch('is_ai_created');
   const aiGenerationType = form.watch('ai_generation_type');
+  const watchedParticipants = form.watch('participants');
+
+  // Artists that always have Lander Records as editor
+  const LANDER_RECORDS_ARTISTS = [
+    'dj stay',
+    'dj md tr3ze', 
+    'mc diogo da gv',
+    'rapha radamá',
+    'rapha radama',
+  ];
+
+  // Auto-add Lander Records as editor when specific artists are added
+  useEffect(() => {
+    if (!watchedParticipants || watchedParticipants.length === 0) return;
+
+    const hasLanderArtist = watchedParticipants.some(p => 
+      LANDER_RECORDS_ARTISTS.includes(p.name?.toLowerCase().trim())
+    );
+
+    const hasLanderEditor = watchedParticipants.some(p => 
+      p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
+    );
+
+    if (hasLanderArtist && !hasLanderEditor) {
+      appendParticipant({
+        name: 'Lander Records',
+        role: 'editor',
+        link: '',
+        contract_start_date: '',
+        percentage: 0,
+      });
+    }
+  }, [watchedParticipants?.length]);
 
   // Reset AI fields when is_ai_created becomes false
   useEffect(() => {
