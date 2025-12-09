@@ -36,6 +36,20 @@ const Projetos = () => {
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
+  const getProjectDetails = (project: any) => {
+    try {
+      if (project.audio_files && typeof project.audio_files === 'string') {
+        return JSON.parse(project.audio_files);
+      }
+      if (project.audio_files && typeof project.audio_files === 'object') {
+        return project.audio_files;
+      }
+    } catch (e) {
+      console.error('Error parsing audio_files:', e);
+    }
+    return null;
+  };
+
   useEffect(() => {
     setFilteredProjects(projects);
   }, [projects]);
@@ -187,19 +201,6 @@ const Projetos = () => {
     }
   };
 
-  const getProjectDetails = (project: any) => {
-    try {
-      if (project.audio_files && typeof project.audio_files === 'string') {
-        return JSON.parse(project.audio_files);
-      }
-      if (project.audio_files && typeof project.audio_files === 'object') {
-        return project.audio_files;
-      }
-    } catch (e) {
-      console.error('Error parsing audio_files:', e);
-    }
-    return null;
-  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
