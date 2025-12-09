@@ -155,6 +155,13 @@ const Inventario = () => {
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+      console.log("Dados importados do Excel:", jsonData);
+      console.log("Número de linhas:", jsonData.length);
+      if (jsonData.length > 0) {
+        console.log("Primeira linha:", jsonData[0]);
+        console.log("Colunas disponíveis:", Object.keys(jsonData[0] as object));
+      }
+
       let importedCount = 0;
       for (const row of jsonData as any[]) {
         const inventoryItem = {
