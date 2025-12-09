@@ -506,17 +506,33 @@ const Relatorios = () => {
                         ))}
 
                         {/* Linha de totais/resumo */}
-                        <div
-                          className="border-t-2 bg-muted/40 font-semibold"
-                          style={{ display: "grid", gridTemplateColumns: `50px repeat(${columns.length}, minmax(100px, 1fr))` }}
-                        >
-                          <div className="p-2 border-r text-xs text-center bg-muted/60"></div>
-                          <div className="p-2 border-r text-xs">TOTAL DE REGISTROS</div>
-                          <div className="p-2 border-r text-xs font-mono">{data.length} itens</div>
-                          {Array.from({ length: columns.length - 2 }).map((_, i) => (
-                            <div key={i} className="p-2 border-r text-xs"></div>
-                          ))}
-                        </div>
+                        {(() => {
+                          // Calculate total value for inventory report
+                          let totalInventoryValue = 0;
+                          if (selectedReport?.type === "Inventário") {
+                            totalInventoryValue = inventoryData.reduce((sum: number, item: any) => {
+                              return sum + ((Number(item.unit_value) || 0) * (Number(item.quantity) || 0));
+                            }, 0);
+                          }
+
+                          return (
+                            <div
+                              className="border-t-2 bg-muted/40 font-semibold"
+                              style={{ display: "grid", gridTemplateColumns: `50px repeat(${columns.length}, minmax(100px, 1fr))` }}
+                            >
+                              <div className="p-2 border-r text-xs text-center bg-muted/60"></div>
+                              <div className="p-2 border-r text-xs">TOTAL</div>
+                              <div className="p-2 border-r text-xs font-mono">{data.length} itens</div>
+                              {columns.slice(2).map((column, i) => (
+                                <div key={i} className="p-2 border-r text-xs font-mono">
+                                  {column === "valor_total" && selectedReport?.type === "Inventário" 
+                                    ? `R$ ${totalInventoryValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                                    : ""}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </>
                     );
                   })()}
