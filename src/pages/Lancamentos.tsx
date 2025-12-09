@@ -48,7 +48,12 @@ const Lancamentos = () => {
   const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
 
   useEffect(() => {
-    setFilteredReleases(allReleases);
+    // Reapply current filters when releases data changes
+    if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
+      filterReleases(currentSearchTerm, currentFilters);
+    } else {
+      setFilteredReleases(allReleases);
+    }
   }, [releasesData, artists]);
 
   const filterOptions = [

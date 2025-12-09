@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -181,6 +181,16 @@ const Artistas = () => {
   };
 
   const displayArtists = artists?.length ? artists.map(transformDatabaseArtist) : mockArtists;
+
+  // Reapply filters when artists data changes
+  useEffect(() => {
+    if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
+      applyFilters(currentSearchTerm, currentFilters);
+    } else {
+      setFilteredArtists([]);
+    }
+  }, [artists]);
+
   const currentArtists = filteredArtists.length ? filteredArtists : displayArtists;
 
   const filterOptions = [
