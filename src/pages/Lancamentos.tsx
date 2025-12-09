@@ -4,25 +4,26 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ReleaseForm } from "@/components/forms/ReleaseForm";
-import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download } from "lucide-react";
+import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
-import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
+import { useReleases, useDeleteRelease, useCreateRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
 import { formatDateBR, translateStatus } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Lancamentos = () => {
   const { toast } = useToast();
   const { data: releasesData = [], isLoading, refetch } = useReleases();
   const { data: artists = [] } = useArtists();
   const deleteRelease = useDeleteRelease();
+  const createRelease = useCreateRelease();
 
-  // Map releases to include artist name and correct field names
   const allReleases = releasesData.map((release: any) => {
     const artist = artists.find((a: any) => a.id === release.artist_id);
     return {
@@ -44,6 +45,10 @@ const Lancamentos = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const handleExport = () => {
     const dataToExport = filteredReleases.map((release: any) => ({
@@ -64,12 +69,13 @@ const Lancamentos = () => {
     toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
   };
 
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsImporting(true);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
@@ -77,39 +83,88 @@ const Lancamentos = () => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
         
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of jsonData as any[]) {
+          try {
+            await createRelease.mutateAsync({
+              title: row['Título'] || row['title'] || 'Lançamento Importado',
+              type: row['Tipo']?.toLowerCase() || row['type'] || 'single',
+              release_date: row['Data Lançamento'] || row['release_date'] || null,
+              genre: row['Gênero'] || row['genre'] || null,
+              language: row['Idioma'] || row['language'] || null,
+              label: row['Gravadora'] || row['label'] || null,
+              status: 'planning',
+            });
+            successCount++;
+          } catch (err) {
+            errorCount++;
+            console.error('Error importing row:', err);
+          }
+        }
+
         toast({ 
-          title: 'Arquivo importado', 
-          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+          title: 'Importação concluída', 
+          description: `${successCount} lançamentos importados com sucesso. ${errorCount > 0 ? `${errorCount} erros.` : ''}` 
         });
       } catch (error) {
         toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      } finally {
+        setIsImporting(false);
       }
     };
     reader.readAsArrayBuffer(file);
     event.target.value = '';
   };
 
-  // Update filtered releases when data changes
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(filteredReleases.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (itemId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, itemId]);
+    } else {
+      setSelectedItems(prev => prev.filter(id => id !== itemId));
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedItems) {
+        await deleteRelease.mutateAsync(id);
+      }
+      toast({
+        title: "Lançamentos excluídos",
+        description: `${selectedItems.length} lançamentos foram excluídos com sucesso.`,
+      });
+      setSelectedItems([]);
+      setIsBulkDeleteModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir alguns lançamentos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   useEffect(() => {
     setFilteredReleases(allReleases);
   }, [releasesData, artists]);
 
   const filterOptions = [
-    {
-      key: "type",
-      label: "Tipo",
-      options: ["Single", "EP", "Álbum"]
-    },
-    {
-      key: "status",
-      label: "Status",
-      options: ["Lançado", "Programado", "Em Produção"]
-    },
-    {
-      key: "artist",
-      label: "Artista",
-      options: [] // Will be populated from database
-    }
+    { key: "type", label: "Tipo", options: ["Single", "EP", "Álbum"] },
+    { key: "status", label: "Status", options: ["Lançado", "Programado", "Em Produção"] },
+    { key: "artist", label: "Artista", options: [] }
   ];
 
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
@@ -134,7 +189,6 @@ const Lancamentos = () => {
   const filterReleases = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = allReleases;
 
-    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(release =>
         release.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,7 +196,6 @@ const Lancamentos = () => {
       );
     }
 
-    // Apply category filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(release => {
@@ -203,14 +256,24 @@ const Lancamentos = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {selectedItems.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2" 
+                    onClick={() => setIsBulkDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir ({selectedItems.length})
+                  </Button>
+                )}
                 <Button variant="outline" className="gap-2" onClick={handleExport}>
                   <Download className="h-4 w-4" />
                   Exportar
                 </Button>
                 <label>
-                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                  <Button variant="outline" className="gap-2" asChild>
-                    <span><Upload className="h-4 w-4" />Importar</span>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" disabled={isImporting} />
+                  <Button variant="outline" className="gap-2" asChild disabled={isImporting}>
+                    <span><Upload className="h-4 w-4" />{isImporting ? 'Importando...' : 'Importar'}</span>
                   </Button>
                 </label>
                 <Button className="gap-2" onClick={handleNewRelease}>
@@ -308,21 +371,62 @@ const Lancamentos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                    {filteredReleases.map((release) => (
-                      <ReleaseCard
-                        key={release.id}
-                        release={release}
-                        onViewDetails={handleViewDetails}
-                        onEdit={handleEditRelease}
-                        onDelete={handleDeleteRelease}
+                  <div className="space-y-4">
+                    {/* Select All */}
+                    <div className="flex items-center gap-2 pb-2 border-b">
+                      <Checkbox
+                        checked={selectedItems.length === filteredReleases.length && filteredReleases.length > 0}
+                        onCheckedChange={handleSelectAll}
                       />
-                    ))}
+                      <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                    </div>
+                    <div className="space-y-3">
+                      {filteredReleases.map((release) => (
+                        <div
+                          key={release.id}
+                          className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <Checkbox
+                            checked={selectedItems.includes(release.id)}
+                            onCheckedChange={(checked) => handleSelectItem(release.id, !!checked)}
+                          />
+                          <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                            {release.cover ? (
+                              <img src={release.cover} alt={release.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <Music className="h-8 w-8 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <h3 className="font-medium">{release.title}</h3>
+                            <p className="text-sm text-muted-foreground">{release.artist}</p>
+                            <div className="flex gap-2">
+                              <Badge variant="secondary">{release.type || 'Single'}</Badge>
+                              <Badge variant={release.approvalStatus === 'aceita' ? 'default' : 'outline'}>
+                                {release.approvalStatus === 'aceita' ? 'Aceita' : 
+                                 release.approvalStatus === 'pendente' ? 'Pendente' : 
+                                 release.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleViewDetails(release)}>
+                              Ver
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleEditRelease(release)}>
+                              Editar
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDeleteRelease(release)}>
+                              Excluir
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
-
 
             {/* New Release Modal */}
             <Dialog open={isNewReleaseModalOpen} onOpenChange={setIsNewReleaseModalOpen}>
@@ -366,6 +470,15 @@ const Lancamentos = () => {
               description={`Tem certeza que deseja excluir o lançamento "${releaseToDelete?.title}"? Esta ação não pode ser desfeita.`}
             />
 
+            {/* Bulk Delete Modal */}
+            <DeleteConfirmationModal
+              open={isBulkDeleteModalOpen}
+              onOpenChange={setIsBulkDeleteModalOpen}
+              onConfirm={confirmBulkDelete}
+              title="Excluir Lançamentos Selecionados"
+              description={`Tem certeza que deseja excluir ${selectedItems.length} lançamentos? Esta ação não pode ser desfeita.`}
+            />
+
             {/* View Details Modal */}
             <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -377,7 +490,6 @@ const Lancamentos = () => {
                 </DialogHeader>
                 {selectedRelease && (
                   <div className="space-y-6">
-                    {/* Capa e Informações Principais */}
                     <div className="flex gap-6">
                       {(selectedRelease.cover || selectedRelease.cover_url) && (
                         <div className="flex-shrink-0">
@@ -394,34 +506,14 @@ const Lancamentos = () => {
                           <p className="text-lg text-muted-foreground">{selectedRelease.artist}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                            {selectedRelease.type || selectedRelease.release_type || 'Single'}
-                          </span>
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            selectedRelease.approvalStatus === 'aceita' ? 'bg-green-500/10 text-green-500' :
-                            selectedRelease.approvalStatus === 'pendente' ? 'bg-yellow-500/10 text-yellow-500' :
-                            selectedRelease.approvalStatus === 'recusada' ? 'bg-red-500/10 text-red-500' :
-                            'bg-blue-500/10 text-blue-500'
-                          }`}>
-                            {selectedRelease.approvalStatus === 'aceita' ? 'Aceita' :
-                             selectedRelease.approvalStatus === 'pendente' ? 'Pendente' :
-                             selectedRelease.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
-                          </span>
-                          {selectedRelease.hasMarketingPlan && (
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              selectedRelease.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
-                              selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' :
-                              'bg-green-500/10 text-green-500'
-                            }`}>
-                              Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : 
-                                           selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
-                            </span>
-                          )}
+                          <Badge>{selectedRelease.type || 'Single'}</Badge>
+                          <Badge variant={selectedRelease.approvalStatus === 'aceita' ? 'default' : 'secondary'}>
+                            {selectedRelease.approvalStatus === 'aceita' ? 'Aceita' : 'Pendente'}
+                          </Badge>
                         </div>
                       </div>
                     </div>
 
-                    {/* Informações Detalhadas */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Status</label>
@@ -429,10 +521,7 @@ const Lancamentos = () => {
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Data de Lançamento</label>
-                        <p className="font-medium flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          {formatDateBR(selectedRelease.releaseDate || selectedRelease.release_date)}
-                        </p>
+                        <p className="font-medium">{formatDateBR(selectedRelease.releaseDate || selectedRelease.release_date)}</p>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Gênero</label>
@@ -451,59 +540,6 @@ const Lancamentos = () => {
                         <p className="font-medium">{selectedRelease.copyright || '-'}</p>
                       </div>
                     </div>
-
-                    {/* Distribuidoras */}
-                    {selectedRelease.distributors && selectedRelease.distributors.length > 0 && (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Distribuidoras</label>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedRelease.distributors.map((distributor: string, index: number) => (
-                            <span 
-                              key={index}
-                              className="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-secondary text-secondary-foreground capitalize"
-                            >
-                              {distributor}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Faixas */}
-                    {selectedRelease.tracks && selectedRelease.tracks.length > 0 && (
-                      <div className="space-y-3">
-                        <label className="text-sm font-medium text-muted-foreground">Faixas ({selectedRelease.tracks.length})</label>
-                        <div className="space-y-2">
-                          {selectedRelease.tracks.map((track: any, index: number) => (
-                            <div key={index} className="p-4 bg-muted/30 rounded-lg space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">{index + 1}. {track.title}</h4>
-                                {track.isrc && (
-                                  <span className="text-xs font-mono text-muted-foreground">ISRC: {track.isrc}</span>
-                                )}
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
-                                {track.composers && track.composers.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">Compositores:</span> {Array.isArray(track.composers) ? track.composers.join(', ') : track.composers}
-                                  </div>
-                                )}
-                                {track.performers && track.performers.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">Intérpretes:</span> {Array.isArray(track.performers) ? track.performers.join(', ') : track.performers}
-                                  </div>
-                                )}
-                                {track.producers && track.producers.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">Produtores:</span> {Array.isArray(track.producers) ? track.producers.join(', ') : track.producers}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </DialogContent>

@@ -9,20 +9,26 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ProjectModal } from "@/components/modals/ProjectModal";
 import { ProjectViewModal } from "@/components/modals/ProjectViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download } from "lucide-react";
+import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download, Trash2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
-import { useProjects, useDeleteProject } from "@/hooks/useProjects";
+import { useProjects, useDeleteProject, useCreateProject } from "@/hooks/useProjects";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Projetos = () => {
   const { data: projects = [], isLoading, error } = useProjects();
   const deleteProjectMutation = useDeleteProject();
+  const createProjectMutation = useCreateProject();
   const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
 
   const handleExport = () => {
@@ -42,12 +48,13 @@ const Projetos = () => {
     toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
   };
 
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsImporting(true);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
@@ -55,19 +62,86 @@ const Projetos = () => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
         
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of jsonData as any[]) {
+          try {
+            const statusMap: Record<string, string> = {
+              'Concluído': 'completed',
+              'Em Andamento': 'in_progress',
+              'Rascunho': 'draft',
+              'Cancelado': 'cancelled'
+            };
+
+            await createProjectMutation.mutateAsync({
+              name: row['Nome'] || row['name'] || 'Projeto Importado',
+              description: row['Descrição'] || row['description'] || null,
+              status: statusMap[row['Status']] || row['status'] || 'draft',
+              start_date: row['Data Início'] || row['start_date'] || null,
+              end_date: row['Data Fim'] || row['end_date'] || null,
+              budget: row['Orçamento'] ? Number(row['Orçamento']) : row['budget'] ? Number(row['budget']) : null,
+            });
+            successCount++;
+          } catch (err) {
+            errorCount++;
+            console.error('Error importing row:', err);
+          }
+        }
+
         toast({ 
-          title: 'Arquivo importado', 
-          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+          title: 'Importação concluída', 
+          description: `${successCount} projetos importados com sucesso. ${errorCount > 0 ? `${errorCount} erros.` : ''}` 
         });
       } catch (error) {
         toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      } finally {
+        setIsImporting(false);
       }
     };
     reader.readAsArrayBuffer(file);
     event.target.value = '';
   };
 
-  // Update filtered projects when projects data changes
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(filteredProjects.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (itemId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, itemId]);
+    } else {
+      setSelectedItems(prev => prev.filter(id => id !== itemId));
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedItems) {
+        await deleteProjectMutation.mutateAsync(id);
+      }
+      toast({
+        title: "Projetos excluídos",
+        description: `${selectedItems.length} projetos foram excluídos com sucesso.`,
+      });
+      setSelectedItems([]);
+      setIsBulkDeleteModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir alguns projetos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   useEffect(() => {
     setFilteredProjects(projects);
   }, [projects]);
@@ -122,7 +196,6 @@ const Projetos = () => {
   const filterProjects = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = projects;
 
-    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(project =>
         project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,7 +203,6 @@ const Projetos = () => {
       );
     }
 
-    // Apply category filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(project => {
@@ -170,7 +242,6 @@ const Projetos = () => {
     }
   };
 
-  // Parse audio_files JSON to get project details
   const getProjectDetails = (project: any) => {
     try {
       if (project.audio_files && typeof project.audio_files === 'string') {
@@ -204,14 +275,24 @@ const Projetos = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {selectedItems.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2" 
+                    onClick={() => setIsBulkDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir ({selectedItems.length})
+                  </Button>
+                )}
                 <Button variant="outline" className="gap-2" onClick={handleExport}>
                   <Download className="h-4 w-4" />
                   Exportar
                 </Button>
                 <label>
-                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                  <Button variant="outline" className="gap-2" asChild>
-                    <span><Upload className="h-4 w-4" />Importar</span>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" disabled={isImporting} />
+                  <Button variant="outline" className="gap-2" asChild disabled={isImporting}>
+                    <span><Upload className="h-4 w-4" />{isImporting ? 'Importando...' : 'Importar'}</span>
                   </Button>
                 </label>
                 <Button className="gap-2" onClick={() => setNewProjectModalOpen(true)}>
@@ -285,6 +366,14 @@ const Projetos = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Select All */}
+                    <div className="flex items-center gap-2 pb-2 border-b">
+                      <Checkbox
+                        checked={selectedItems.length === filteredProjects.length && filteredProjects.length > 0}
+                        onCheckedChange={handleSelectAll}
+                      />
+                      <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                    </div>
                     {filteredProjects.map(project => {
                       const details = getProjectDetails(project);
                       const firstSong = details?.songs?.[0];
@@ -295,6 +384,10 @@ const Projetos = () => {
                           className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                         >
                           <div className="flex items-center gap-4">
+                            <Checkbox
+                              checked={selectedItems.includes(project.id)}
+                              onCheckedChange={(checked) => handleSelectItem(project.id, !!checked)}
+                            />
                             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                               <PlayCircle className="h-6 w-6 text-primary" />
                             </div>
@@ -391,6 +484,14 @@ const Projetos = () => {
               onConfirm={confirmDeleteProject}
               title="Excluir Projeto"
               description={`Tem certeza que deseja excluir o projeto "${selectedProject?.name}"? Esta ação não pode ser desfeita.`}
+            />
+
+            <DeleteConfirmationModal
+              open={isBulkDeleteModalOpen}
+              onOpenChange={setIsBulkDeleteModalOpen}
+              onConfirm={confirmBulkDelete}
+              title="Excluir Projetos Selecionados"
+              description={`Tem certeza que deseja excluir ${selectedItems.length} projetos? Esta ação não pode ser desfeita.`}
             />
           </div>
         </SidebarInset>
