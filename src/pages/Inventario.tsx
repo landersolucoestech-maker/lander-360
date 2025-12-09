@@ -165,11 +165,11 @@ const Inventario = () => {
       let importedCount = 0;
       for (const row of jsonData as any[]) {
         const inventoryItem = {
-          name: row.nome || row.Nome || row.name || row.Name || "",
+          name: row.item || row.Item || row.nome || row.Nome || row.name || row.Name || "",
           category: row.categoria || row.Categoria || row.category || row.Category || "Outros",
           status: row.status || row.Status || "Disponível",
           quantity: Number(row.quantidade || row.Quantidade || row.quantity || row.Quantity || 1),
-          location: row.local || row.Local || row.location || row.Location || "",
+          location: row.localizacao || row.Localizacao || row.local || row.Local || row.location || row.Location || "",
           unit_value: Number(row.valor_unitario || row["Valor Unitário"] || row.valor || row.Valor || row.unit_value || 0) || undefined,
           sector: row.setor || row.Setor || row.sector || row.Sector || undefined,
           responsible: row.responsavel || row.Responsável || row.responsible || row.Responsible || undefined,
