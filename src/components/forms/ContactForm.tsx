@@ -29,6 +29,7 @@ const contactSchema = z.object({
   priority: z.string().optional(),
   company: z.string().optional(),
   position: z.string().optional(),
+  artist_name: z.string().optional(),
   document: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
@@ -407,12 +408,55 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         <div className="space-y-2">
           <Label htmlFor="position">Cargo</Label>
-          <Input
-            id="position"
-            {...register("position")}
-            placeholder="Cargo na empresa"
-          />
+          <Select onValueChange={(value) => setValue("position", value)} value={watch("position")} defaultValue={initialData?.position}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o cargo" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              <SelectItem value="produtor_artistico">Produtor Artístico</SelectItem>
+              <SelectItem value="produtor_musical">Produtor Musical</SelectItem>
+              <SelectItem value="produtor_fonografico">Produtor Fonográfico</SelectItem>
+              <SelectItem value="engenheiro_audio">Engenheiro de Áudio</SelectItem>
+              <SelectItem value="engenheiro_mixagem">Engenheiro de Mixagem</SelectItem>
+              <SelectItem value="engenheiro_masterizacao">Engenheiro de Masterização</SelectItem>
+              <SelectItem value="compositor">Compositor</SelectItem>
+              <SelectItem value="letrista">Letrista</SelectItem>
+              <SelectItem value="arranjador">Arranjador</SelectItem>
+              <SelectItem value="diretor_artistico">Diretor Artístico</SelectItem>
+              <SelectItem value="diretor_criativo">Diretor Criativo</SelectItem>
+              <SelectItem value="manager">Manager / Empresário</SelectItem>
+              <SelectItem value="tour_manager">Tour Manager</SelectItem>
+              <SelectItem value="agente">Agente de Booking</SelectItem>
+              <SelectItem value="social_media">Social Media</SelectItem>
+              <SelectItem value="marketing">Marketing</SelectItem>
+              <SelectItem value="assessor_imprensa">Assessor de Imprensa</SelectItem>
+              <SelectItem value="fotografo">Fotógrafo</SelectItem>
+              <SelectItem value="videomaker">Videomaker</SelectItem>
+              <SelectItem value="designer">Designer Gráfico</SelectItem>
+              <SelectItem value="advogado">Advogado</SelectItem>
+              <SelectItem value="contador">Contador</SelectItem>
+              <SelectItem value="administrativo">Administrativo</SelectItem>
+              <SelectItem value="financeiro">Financeiro</SelectItem>
+              <SelectItem value="ceo">CEO / Diretor</SelectItem>
+              <SelectItem value="socio">Sócio</SelectItem>
+              <SelectItem value="assistente">Assistente</SelectItem>
+              <SelectItem value="estagiario">Estagiário</SelectItem>
+              <SelectItem value="freelancer">Freelancer</SelectItem>
+              <SelectItem value="outro">Outro</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+
+        {watch("position") === "produtor_artistico" && (
+          <div className="space-y-2">
+            <Label htmlFor="artist_name">Nome do Artista</Label>
+            <Input
+              id="artist_name"
+              {...register("artist_name")}
+              placeholder="Nome do artista que trabalha"
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="document">CPF/CNPJ</Label>
