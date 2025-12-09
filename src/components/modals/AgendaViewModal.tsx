@@ -61,7 +61,7 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="text-sm text-muted-foreground">Nome do Evento</label>
-                <p className="font-medium text-lg">{event.event_name}</p>
+                <p className="font-medium text-lg">{event.title || event.event_name}</p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Tipo</label>
