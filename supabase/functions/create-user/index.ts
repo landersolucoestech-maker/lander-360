@@ -12,6 +12,57 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - No authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    // Verify the token and get the user
+    const { data: { user: callerUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
+    if (authError || !callerUser) {
+      console.error('Invalid token:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify the caller has admin role
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', callerUser.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (roleError || !roleData) {
+      console.error('User is not an admin:', callerUser.id);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - Admin privileges required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse request body
     const { email, password, full_name, phone, role } = await req.json();
 
@@ -25,22 +76,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Create Supabase admin client
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-
-    console.log('Creating user:', { email, full_name, role })
+    console.log('Admin user', callerUser.id, 'creating user:', { email, full_name, role })
 
     // Create user through Supabase Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
       email: email,
       password: password,
       email_confirm: true,
@@ -50,10 +89,10 @@ Deno.serve(async (req) => {
       }
     })
 
-    if (authError) {
-      console.error('Auth error:', authError)
+    if (createAuthError) {
+      console.error('Auth error:', createAuthError)
       return new Response(
-        JSON.stringify({ error: 'Failed to create user', details: authError.message }),
+        JSON.stringify({ error: 'Failed to create user', details: createAuthError.message }),
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -97,17 +136,17 @@ Deno.serve(async (req) => {
 
     // The trigger already creates a default 'user' role, so update if different
     if (systemRole !== 'user') {
-      const { error: roleError } = await supabaseAdmin
+      const { error: userRoleError } = await supabaseAdmin
         .from('user_roles')
         .update({ role: systemRole })
         .eq('user_id', userId)
 
-      if (roleError) {
-        console.error('Role assignment error:', roleError)
+      if (userRoleError) {
+        console.error('Role assignment error:', userRoleError)
       }
     }
 
-    console.log('User setup completed successfully')
+    console.log('User setup completed successfully by admin:', callerUser.id)
 
     return new Response(
       JSON.stringify({

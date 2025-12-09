@@ -7,16 +7,14 @@ export function useSecurePassword() {
   const generateAndNotifyPassword = () => {
     const password = generateSecureToken(20); // Longer, more secure password
     
-    // DO NOT show password in UI for security - this should be sent via secure channel
     toast({
       title: "Senha Gerada",
       description: "Senha temporária foi gerada com sucesso. Entre em contato com o administrador para recebê-la via canal seguro.",
       duration: 5000,
     });
 
-    // Log password securely for admin to access via server logs only
-    console.log(`[ADMIN ONLY] Generated password for user: ${password}`);
-
+    // Password is returned but NOT logged for security reasons
+    // In production, this should be sent via secure email using Resend
     return password;
   };
 
