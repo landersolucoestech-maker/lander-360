@@ -13,10 +13,12 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects, useDeleteProject } from "@/hooks/useProjects";
+import { useArtists } from "@/hooks/useArtists";
 import { useDataExport } from "@/hooks/useDataExport";
 
 const Projetos = () => {
   const { data: projects = [], isLoading, error } = useProjects();
+  const { data: artists = [] } = useArtists();
   const deleteProjectMutation = useDeleteProject();
   const { exportToExcel, parseExcelFile } = useDataExport();
   const { toast } = useToast();
@@ -183,7 +185,64 @@ const Projetos = () => {
   };
 
   const handleExport = () => {
-    exportToExcel(projects, "projetos", "Projetos", "projects");
+    // Create artists map for lookup
+    const artistsMap: Record<string, string> = {};
+    artists.forEach(a => {
+      artistsMap[a.id] = a.stage_name || a.name || '';
+    });
+
+    // Transform projects to include all form fields
+    const exportData = projects.map(project => {
+      const details = getProjectDetails(project);
+      const songs = details?.songs || [];
+      const artistName = project.artist_id ? artistsMap[project.artist_id] || '' : '';
+      
+      // If project has multiple songs, create one row per song
+      if (songs.length > 0) {
+        return songs.map((song: any, index: number) => ({
+          'Nome do Projeto': project.name || '',
+          'Artista': artistName,
+          'Tipo de Lançamento': details?.release_type === 'single' ? 'Single' : details?.release_type === 'ep' ? 'EP' : details?.release_type === 'album' ? 'Álbum' : details?.release_type || '',
+          'Status': getStatusLabel(project.status || ''),
+          'Nome da Música': song.song_name || '',
+          'Solo/Feat': song.collaboration_type === 'solo' ? 'Solo' : song.collaboration_type === 'feat' ? 'Feat' : song.collaboration_type || '',
+          'Original/Remix': song.track_type === 'original' ? 'Original' : song.track_type === 'remix' ? 'Remix' : song.track_type || '',
+          'Instrumental': song.instrumental === 'sim' ? 'Sim' : song.instrumental === 'nao' ? 'Não' : song.instrumental || '',
+          'Duração': song.duration_minutes !== undefined ? `${song.duration_minutes}:${String(song.duration_seconds || 0).padStart(2, '0')}` : '',
+          'Gênero Musical': song.genre || '',
+          'Idioma': song.language || '',
+          'Compositores': song.composers?.map((c: any) => c.name).filter(Boolean).join(', ') || '',
+          'Intérpretes': song.performers?.map((p: any) => p.name).filter(Boolean).join(', ') || '',
+          'Produtores': song.producers?.map((p: any) => p.name).filter(Boolean).join(', ') || '',
+          'Letra': song.lyrics || '',
+          'Observações': details?.observations || '',
+          'Data de Criação': project.created_at ? new Date(project.created_at).toLocaleDateString('pt-BR') : '',
+        }));
+      }
+      
+      // If no songs, create single row with project info
+      return [{
+        'Nome do Projeto': project.name || '',
+        'Artista': artistName,
+        'Tipo de Lançamento': details?.release_type === 'single' ? 'Single' : details?.release_type === 'ep' ? 'EP' : details?.release_type === 'album' ? 'Álbum' : details?.release_type || '',
+        'Status': getStatusLabel(project.status || ''),
+        'Nome da Música': '',
+        'Solo/Feat': '',
+        'Original/Remix': '',
+        'Instrumental': '',
+        'Duração': '',
+        'Gênero Musical': '',
+        'Idioma': '',
+        'Compositores': '',
+        'Intérpretes': '',
+        'Produtores': '',
+        'Letra': '',
+        'Observações': details?.observations || '',
+        'Data de Criação': project.created_at ? new Date(project.created_at).toLocaleDateString('pt-BR') : '',
+      }];
+    }).flat();
+
+    exportToExcel(exportData, "projetos", "Projetos");
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

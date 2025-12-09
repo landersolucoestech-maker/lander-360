@@ -24,7 +24,9 @@ import {
   useCrmReport,
   usePhonogramsReport,
   useContractsReport,
+  useProjectsReport,
 } from "@/hooks/useReports";
+import { Folder } from "lucide-react";
 
 const Relatorios = () => {
   const [reportConfigOpen, setReportConfigOpen] = useState(false);
@@ -47,8 +49,10 @@ const Relatorios = () => {
   const { data: crmData = [], isLoading: loadingCrm } = useCrmReport();
   const { data: phonogramsData = [], isLoading: loadingPhonograms } = usePhonogramsReport();
   const { data: contractsData = [], isLoading: loadingContracts } = useContractsReport();
+  const { data: projectsData = [], isLoading: loadingProjects } = useProjectsReport();
+  const { data: artistsList = [] } = useArtistsReport();
 
-  const isLoading = loadingFinancial || loadingArtists || loadingMusic || loadingReleases || loadingInventory || loadingCrm || loadingPhonograms || loadingContracts;
+  const isLoading = loadingFinancial || loadingArtists || loadingMusic || loadingReleases || loadingInventory || loadingCrm || loadingPhonograms || loadingContracts || loadingProjects;
 
   // Generate report types based on real data
   const reportTypes = useMemo(() => [
@@ -124,7 +128,16 @@ const Relatorios = () => {
       count: crmData.length,
       status: crmData.length > 0 ? "Disponível" : "Sem dados",
     },
-  ], [financialData, artistsData, musicData, releasesData, inventoryData, crmData, phonogramsData, contractsData]);
+    {
+      id: "projetos",
+      name: "Projetos",
+      description: "Projetos musicais e suas músicas",
+      type: "Projetos",
+      icon: Folder,
+      count: projectsData.length,
+      status: projectsData.length > 0 ? "Disponível" : "Sem dados",
+    },
+  ], [financialData, artistsData, musicData, releasesData, inventoryData, crmData, phonogramsData, contractsData, projectsData]);
 
   const handleCustomReport = (reportType: string, data: any[] = []) => {
     setSelectedReportType(reportType);
@@ -295,6 +308,84 @@ const Relatorios = () => {
           prioridade: translatePriority(c.priority) || "N/A",
           cidade: c.city || "N/A",
         }));
+      case "Projetos":
+        // Create artists map for lookup
+        const artistsMap: Record<string, string> = {};
+        artistsList.forEach((a: any) => {
+          artistsMap[a.id] = a.stage_name || a.name || '';
+        });
+
+        const getStatusLabel = (status: string) => {
+          const labels: Record<string, string> = {
+            draft: "Rascunho",
+            in_progress: "Em Andamento",
+            completed: "Concluído",
+            cancelled: "Cancelado"
+          };
+          return labels[status] || status;
+        };
+
+        const getProjectDetails = (project: any) => {
+          try {
+            if (project.audio_files && typeof project.audio_files === 'string') {
+              return JSON.parse(project.audio_files);
+            }
+            if (project.audio_files && typeof project.audio_files === 'object') {
+              return project.audio_files;
+            }
+          } catch (e) {
+            console.error('Error parsing audio_files:', e);
+          }
+          return null;
+        };
+
+        return projectsData.flatMap((project: any) => {
+          const details = getProjectDetails(project);
+          const songs = details?.songs || [];
+          const artistName = project.artist_id ? artistsMap[project.artist_id] || '' : (project.artists?.stage_name || project.artists?.name || '');
+          
+          if (songs.length > 0) {
+            return songs.map((song: any) => ({
+              'Nome do Projeto': project.name || "N/A",
+              'Artista': artistName || "N/A",
+              'Tipo de Lançamento': details?.release_type === 'single' ? 'Single' : details?.release_type === 'ep' ? 'EP' : details?.release_type === 'album' ? 'Álbum' : details?.release_type || "N/A",
+              'Status': getStatusLabel(project.status || ''),
+              'Nome da Música': song.song_name || "N/A",
+              'Solo/Feat': song.collaboration_type === 'solo' ? 'Solo' : song.collaboration_type === 'feat' ? 'Feat' : song.collaboration_type || "N/A",
+              'Original/Remix': song.track_type === 'original' ? 'Original' : song.track_type === 'remix' ? 'Remix' : song.track_type || "N/A",
+              'Instrumental': song.instrumental === 'sim' ? 'Sim' : song.instrumental === 'nao' ? 'Não' : song.instrumental || "N/A",
+              'Duração': song.duration_minutes !== undefined ? `${song.duration_minutes}:${String(song.duration_seconds || 0).padStart(2, '0')}` : "N/A",
+              'Gênero Musical': song.genre || "N/A",
+              'Idioma': song.language || "N/A",
+              'Compositores': song.composers?.map((c: any) => c.name).filter(Boolean).join(', ') || "N/A",
+              'Intérpretes': song.performers?.map((p: any) => p.name).filter(Boolean).join(', ') || "N/A",
+              'Produtores': song.producers?.map((p: any) => p.name).filter(Boolean).join(', ') || "N/A",
+              'Letra': song.lyrics || "N/A",
+              'Observações': details?.observations || "N/A",
+              'Data de Criação': project.created_at ? formatDateBR(project.created_at) : "N/A",
+            }));
+          }
+          
+          return [{
+            'Nome do Projeto': project.name || "N/A",
+            'Artista': artistName || "N/A",
+            'Tipo de Lançamento': details?.release_type === 'single' ? 'Single' : details?.release_type === 'ep' ? 'EP' : details?.release_type === 'album' ? 'Álbum' : details?.release_type || "N/A",
+            'Status': getStatusLabel(project.status || ''),
+            'Nome da Música': "N/A",
+            'Solo/Feat': "N/A",
+            'Original/Remix': "N/A",
+            'Instrumental': "N/A",
+            'Duração': "N/A",
+            'Gênero Musical': "N/A",
+            'Idioma': "N/A",
+            'Compositores': "N/A",
+            'Intérpretes': "N/A",
+            'Produtores': "N/A",
+            'Letra': "N/A",
+            'Observações': details?.observations || "N/A",
+            'Data de Criação': project.created_at ? formatDateBR(project.created_at) : "N/A",
+          }];
+        });
       default:
         return [];
     }

@@ -189,3 +189,30 @@ export const useContractsReport = () => {
     },
   });
 };
+
+// Fetch projects for reports
+export const useProjectsReport = () => {
+  return useQuery({
+    queryKey: ["reports", "projects"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select(`
+          id,
+          name,
+          description,
+          status,
+          audio_files,
+          start_date,
+          end_date,
+          budget,
+          created_at,
+          artists:artist_id(name, stage_name)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+};
