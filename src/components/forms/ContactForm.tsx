@@ -458,7 +458,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
         {watch("position") === "produtor_artistico" && (
           <div className="space-y-2">
-            <Label htmlFor="artist_name">Nome do Artista</Label>
+            <Label htmlFor="artist_name">Responsável pelo Artista</Label>
             <Input
               id="artist_name"
               {...register("artist_name")}
