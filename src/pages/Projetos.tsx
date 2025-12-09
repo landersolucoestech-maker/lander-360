@@ -9,7 +9,8 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ProjectModal } from "@/components/modals/ProjectModal";
 import { ProjectViewModal } from "@/components/modals/ProjectViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2 } from "lucide-react";
+import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
 import { useProjects, useDeleteProject } from "@/hooks/useProjects";
 
@@ -23,6 +24,48 @@ const Projetos = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const { toast } = useToast();
+
+  const handleExport = () => {
+    const dataToExport = filteredProjects.map((project: any) => ({
+      'Nome': project.name || '',
+      'Descrição': project.description || '',
+      'Status': getStatusLabel(project.status),
+      'Data Início': project.start_date || '',
+      'Data Fim': project.end_date || '',
+      'Orçamento': project.budget || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Projetos');
+    XLSX.writeFile(wb, `projetos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        toast({ 
+          title: 'Arquivo importado', 
+          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+        });
+      } catch (error) {
+        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  };
 
   // Update filtered projects when projects data changes
   useEffect(() => {
@@ -160,10 +203,22 @@ const Projetos = () => {
                   Gestão completa de projetos musicais
                 </p>
               </div>
-              <Button className="gap-2" onClick={() => setNewProjectModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Novo Projeto
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="gap-2" onClick={handleExport}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <label>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span><Upload className="h-4 w-4" />Importar</span>
+                  </Button>
+                </label>
+                <Button className="gap-2" onClick={() => setNewProjectModalOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Novo Projeto
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}

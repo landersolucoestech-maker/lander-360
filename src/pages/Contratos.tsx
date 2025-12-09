@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { FileText, Plus, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
+import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Upload, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { ContractModal } from "@/components/modals/ContractModal";
 import { ContractViewModal } from "@/components/modals/ContractViewModal";
 import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract } from "@/hooks/useContracts";
@@ -32,6 +33,50 @@ const Contratos = () => {
   const { data: expiringSoon = [] } = useContractsExpiringSoon(30);
   const deleteContract = useDeleteContract();
   const { toast } = useToast();
+
+  const handleExport = () => {
+    const dataToExport = filteredContracts.map((contract: any) => ({
+      'Título': contract.title || '',
+      'Artista': contract.artists?.stage_name || contract.artists?.name || '',
+      'Tipo de Serviço': serviceTypeLabels[contract.service_type as keyof typeof serviceTypeLabels] || '',
+      'Status': statusLabels[contract.status as keyof typeof statusLabels] || '',
+      'Data Início': contract.start_date || contract.effective_from || '',
+      'Data Fim': contract.end_date || contract.effective_to || '',
+      'Valor': contract.fixed_value || contract.advance_amount || '',
+      'Royalties (%)': contract.royalty_rate || contract.royalties_percentage || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contratos');
+    XLSX.writeFile(wb, `contratos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        toast({ 
+          title: 'Arquivo importado', 
+          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+        });
+      } catch (error) {
+        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  };
 
   // Service type labels mapping
   const serviceTypeLabels = {
@@ -158,10 +203,22 @@ const Contratos = () => {
                   Gerencie contratos e documentação legal
                 </p>
               </div>
-              <Button className="gap-2" onClick={handleNewContract}>
-                <Plus className="h-4 w-4" />
-                Novo Contrato
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="gap-2" onClick={handleExport}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <label>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span><Upload className="h-4 w-4" />Importar</span>
+                  </Button>
+                </label>
+                <Button className="gap-2" onClick={handleNewContract}>
+                  <Plus className="h-4 w-4" />
+                  Novo Contrato
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}

@@ -12,10 +12,61 @@ import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { useActiveContracts } from "@/hooks/useContracts";
-import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
+import { Users, Plus, Music, DollarSign, Star, Upload, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
+import { useToast } from '@/hooks/use-toast';
 import { mockArtists } from "@/data/mockData";
 const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleExport = () => {
+    const dataToExport = currentArtists.map((artist: any) => ({
+      'Nome': artist.name || '',
+      'Nome Artístico': artist.stage_name || '',
+      'Gênero': artist.genre || '',
+      'Email': artist.email || '',
+      'Telefone': artist.phone || '',
+      'Status': artist.status || '',
+      'Perfil': artist.perfil || '',
+      'CPF/CNPJ': artist.cpf_cnpj || '',
+      'Banco': artist.bank || '',
+      'Agência': artist.agency || '',
+      'Conta': artist.account || '',
+      'Chave PIX': artist.pix_key || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Artistas');
+    XLSX.writeFile(wb, `artistas_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        toast({ 
+          title: 'Arquivo importado', 
+          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+        });
+      } catch (error) {
+        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  };
   const {
     data: artists,
     isLoading,
@@ -304,10 +355,22 @@ const Artistas = () => {
                   Gerencie seus artistas e contratos
                 </p>
               </div>
-              <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Novo Artista
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="gap-2" onClick={handleExport}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <label>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span><Upload className="h-4 w-4" />Importar</span>
+                  </Button>
+                </label>
+                <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Novo Artista
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}

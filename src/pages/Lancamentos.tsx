@@ -9,7 +9,8 @@ import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle } from "lucide-react";
+import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
@@ -43,6 +44,50 @@ const Lancamentos = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
+
+  const handleExport = () => {
+    const dataToExport = filteredReleases.map((release: any) => ({
+      'Título': release.title || '',
+      'Artista': release.artist || '',
+      'Tipo': release.type || '',
+      'Data Lançamento': release.releaseDate || '',
+      'Status': release.approvalStatus || '',
+      'Gênero': release.genre || '',
+      'Idioma': release.language || '',
+      'Gravadora': release.label || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Lançamentos');
+    XLSX.writeFile(wb, `lancamentos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        toast({ 
+          title: 'Arquivo importado', 
+          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
+        });
+      } catch (error) {
+        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  };
 
   // Update filtered releases when data changes
   useEffect(() => {
@@ -157,10 +202,22 @@ const Lancamentos = () => {
                   Gestão de lançamentos e distribuição musical
                 </p>
               </div>
-              <Button className="gap-2" onClick={handleNewRelease}>
-                <Plus className="h-4 w-4" />
-                Novo Lançamento
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="gap-2" onClick={handleExport}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <label>
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+                  <Button variant="outline" className="gap-2" asChild>
+                    <span><Upload className="h-4 w-4" />Importar</span>
+                  </Button>
+                </label>
+                <Button className="gap-2" onClick={handleNewRelease}>
+                  <Plus className="h-4 w-4" />
+                  Novo Lançamento
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}
