@@ -236,7 +236,7 @@ const CRM = () => {
                           {contact.position && (
                             <div>
                               <div className="text-muted-foreground text-xs">Cargo</div>
-                              <div className="font-medium truncate max-w-[100px]">{contact.position}</div>
+                              <div className="font-medium truncate max-w-[100px]">{contact.position?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</div>
                             </div>
                           )}
                           {contact.city && (
