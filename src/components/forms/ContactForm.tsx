@@ -13,6 +13,7 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DateInput } from "@/components/ui/date-input";
 import { parse, format } from "date-fns";
+import { useArtists } from "@/hooks/useArtists";
 
 const interactionSchema = z.object({
   date: z.string().min(1, "Data é obrigatória"),
@@ -40,6 +41,29 @@ const contactSchema = z.object({
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
+
+// Artist Dropdown Component
+function ArtistDropdown({ value, onChange }: { value?: string; onChange: (value: string) => void }) {
+  const { data: artists = [], isLoading } = useArtists();
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="artist_name">Responsável pelo Artista</Label>
+      <Select onValueChange={onChange} value={value || ""}>
+        <SelectTrigger>
+          <SelectValue placeholder={isLoading ? "Carregando..." : "Selecione o artista"} />
+        </SelectTrigger>
+        <SelectContent className="max-h-[300px]">
+          {artists.map((artist) => (
+            <SelectItem key={artist.id} value={artist.stage_name || artist.name}>
+              {artist.stage_name || artist.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
 
 interface ContactFormProps {
   onSubmit: (data: ContactFormData) => void;
@@ -457,14 +481,10 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
         </div>
 
         {watch("position") === "produtor_artistico" && (
-          <div className="space-y-2">
-            <Label htmlFor="artist_name">Responsável pelo Artista</Label>
-            <Input
-              id="artist_name"
-              {...register("artist_name")}
-              placeholder="Nome do artista que trabalha"
-            />
-          </div>
+          <ArtistDropdown 
+            value={watch("artist_name")} 
+            onChange={(value) => setValue("artist_name", value)} 
+          />
         )}
 
         <div className="space-y-2">
