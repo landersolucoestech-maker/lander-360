@@ -4,34 +4,37 @@ import { formatDateBR } from '@/lib/utils';
 
 // Column mappings for each entity type with Portuguese labels
 const artistColumns = {
+  id: 'ID',
   name: 'Nome Artístico',
   full_name: 'Nome Completo',
+  genre: 'Gênero Musical',
   email: 'E-mail',
   phone: 'Telefone',
-  genre: 'Gênero Musical',
-  bio: 'Biografia',
   profile_type: 'Tipo de Perfil',
-  contract_status: 'Status do Contrato',
-  birth_date: 'Data de Nascimento',
+  contract_status: 'Status Contrato',
   cpf_cnpj: 'CPF/CNPJ',
   rg: 'RG',
+  birth_date: 'Data Nascimento',
   full_address: 'Endereço Completo',
   bank: 'Banco',
   agency: 'Agência',
   account: 'Conta',
   pix_key: 'Chave PIX',
   account_holder: 'Titular da Conta',
-  manager_name: 'Nome do Empresário',
-  manager_phone: 'Telefone do Empresário',
-  manager_email: 'E-mail do Empresário',
-  distributors: 'Distribuidoras',
-  spotify_url: 'Spotify URL',
-  instagram_url: 'Instagram URL',
-  youtube_url: 'YouTube URL',
+  manager_name: 'Nome Empresário',
+  manager_phone: 'Telefone Empresário',
+  manager_email: 'E-mail Empresário',
+  distributors: 'Distribuidores',
+  instagram: 'Instagram',
+  spotify_url: 'Spotify',
+  youtube_url: 'YouTube',
   tiktok: 'TikTok',
   soundcloud: 'SoundCloud',
+  distrokid_email: 'Email de Share Distrokid',
+  onerpm_email: 'Email de Share ONErpm',
+  bio: 'Biografia',
   observations: 'Observações',
-  created_at: 'Data de Cadastro',
+  created_at: 'Data Cadastro',
 };
 
 const projectColumns = {
@@ -228,9 +231,25 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
       transformed['Artista'] = artistsMap[item.artist_id];
     }
     
+    // Handle special case for artist distributor emails
+    if (entityType === 'artists' && item.distributor_emails) {
+      const distributorEmails = typeof item.distributor_emails === 'string' 
+        ? JSON.parse(item.distributor_emails) 
+        : item.distributor_emails;
+      item.distrokid_email = distributorEmails?.distrokid || '';
+      item.onerpm_email = distributorEmails?.onerpm || '';
+    }
+    
+    // Handle instagram field mapping (use instagram or instagram_url)
+    if (entityType === 'artists') {
+      item.instagram = item.instagram || item.instagram_url || '';
+    }
+    
     Object.entries(columns).forEach(([key, label]) => {
       if (item[key] !== undefined) {
         transformed[label] = formatValue(item[key], key);
+      } else {
+        transformed[label] = '';
       }
     });
     
