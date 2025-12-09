@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -9,9 +9,10 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { InventoryViewModal } from "@/components/modals/InventoryViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Package, Plus, Headphones, Mic, Speaker, Loader2 } from "lucide-react";
+import { Package, Plus, Headphones, Mic, Speaker, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useInventory, useDeleteInventory } from "@/hooks/useInventory";
+import { useInventory, useDeleteInventory, useCreateInventory } from "@/hooks/useInventory";
+import * as XLSX from "xlsx";
 
 interface Equipment {
   id: string;
@@ -33,6 +34,8 @@ const Inventario = () => {
   const { toast } = useToast();
   const { data: inventoryData, isLoading } = useInventory();
   const deleteInventory = useDeleteInventory();
+  const createInventory = useCreateInventory();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
@@ -40,6 +43,7 @@ const Inventario = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   const allEquipment: Equipment[] = (inventoryData || []).map((item: any) => ({
     id: item.id,
@@ -139,6 +143,60 @@ const Inventario = () => {
     }
   };
 
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      let importedCount = 0;
+      for (const row of jsonData as any[]) {
+        const inventoryItem = {
+          name: row.nome || row.Nome || row.name || row.Name || "",
+          category: row.categoria || row.Categoria || row.category || row.Category || "Outros",
+          status: row.status || row.Status || "Disponível",
+          quantity: Number(row.quantidade || row.Quantidade || row.quantity || row.Quantity || 1),
+          location: row.local || row.Local || row.location || row.Location || "",
+          unit_value: Number(row.valor_unitario || row["Valor Unitário"] || row.valor || row.Valor || row.unit_value || 0) || undefined,
+          sector: row.setor || row.Setor || row.sector || row.Sector || undefined,
+          responsible: row.responsavel || row.Responsável || row.responsible || row.Responsible || undefined,
+          purchase_location: row.local_compra || row["Local de Compra"] || row.purchase_location || undefined,
+          invoice_number: row.nota_fiscal || row["Nota Fiscal"] || row.invoice_number || row.NF || undefined,
+          entry_date: row.data_entrada || row["Data de Entrada"] || row.entry_date || undefined,
+          observations: row.observacoes || row.Observações || row.observations || row.Observations || undefined,
+        };
+
+        if (inventoryItem.name) {
+          await createInventory.mutateAsync(inventoryItem);
+          importedCount++;
+        }
+      }
+
+      toast({
+        title: "Importação concluída",
+        description: `${importedCount} itens importados com sucesso.`,
+      });
+    } catch (error) {
+      console.error("Erro ao importar:", error);
+      toast({
+        title: "Erro na importação",
+        description: "Não foi possível importar o arquivo. Verifique o formato.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const formatCurrency = (value: number | null) => {
     if (!value) return 'R$ 0,00';
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -160,10 +218,32 @@ const Inventario = () => {
                   Controle de equipamentos e patrimônio
                 </p>
               </div>
-              <Button className="gap-2" onClick={() => setIsInventoryModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Novo Item
-              </Button>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".xlsx,.xls"
+                  onChange={handleImportExcel}
+                  className="hidden"
+                />
+                <Button 
+                  variant="outline" 
+                  className="gap-2" 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                >
+                  {isImporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  Importar Excel
+                </Button>
+                <Button className="gap-2" onClick={() => setIsInventoryModalOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Novo Item
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}
