@@ -473,15 +473,13 @@ const RegistroMusicas = () => {
                 />
 
                 <Card className="flex-1">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle>Fonogramas Registrados</CardTitle>
-                      <CardDescription>
-                        Catálogo completo de gravações registradas
-                      </CardDescription>
-                    </div>
+                  <CardHeader>
+                    <CardTitle>Fonogramas Registrados</CardTitle>
+                    <CardDescription>
+                      Catálogo completo de gravações registradas
+                    </CardDescription>
                     {filteredPhonograms.length > 0 && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 pt-2">
                         <Checkbox
                           checked={selectedPhonos.length === filteredPhonograms.length && filteredPhonograms.length > 0}
                           onCheckedChange={handleSelectAllPhonos}
