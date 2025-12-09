@@ -260,15 +260,6 @@ export const AgendaEventForm: React.FC<AgendaEventFormProps> = ({
               </div>
             </div>
 
-            {/* Local */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="location">Local</Label>
-              <Input
-                id="location"
-                {...form.register('location')}
-                placeholder="Local do evento"
-              />
-            </div>
 
             {/* Campos específicos para eventos com artistas e reuniões */}
             {showVenueFields && (
