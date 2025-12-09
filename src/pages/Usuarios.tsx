@@ -13,6 +13,7 @@ import { UserModal } from "@/components/modals/UserModal";
 import { UserViewModal } from "@/components/modals/UserViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mockUsers } from "@/data/mockData";
 import { formatDateBR } from "@/lib/utils";
 
@@ -22,6 +23,9 @@ const Usuarios = () => {
   const users = dbUsers.length > 0 ? dbUsers : mockUsers;
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -31,14 +35,39 @@ const Usuarios = () => {
   const [userToDelete, setUserToDelete] = useState<any>(null);
   const [userToToggle, setUserToToggle] = useState<any>(null);
 
+  // Get unique sectors for filter dropdown
+  const uniqueSectors = [...new Set(users.map(u => u.sector).filter(Boolean))];
+
   useEffect(() => {
-    const filtered = users.filter(user =>
-      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.sector?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = users;
+
+    // Text search filter
+    if (searchTerm) {
+      filtered = filtered.filter(user =>
+        user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.sector?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Role filter
+    if (roleFilter !== "all") {
+      filtered = filtered.filter(user => user.roles?.includes(roleFilter));
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      const isActive = statusFilter === "active";
+      filtered = filtered.filter(user => user.isActive === isActive);
+    }
+
+    // Sector filter
+    if (sectorFilter !== "all") {
+      filtered = filtered.filter(user => user.sector === sectorFilter);
+    }
+
     setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+  }, [searchTerm, users, roleFilter, statusFilter, sectorFilter]);
 
   const handleCreateUser = () => {
     setSelectedUser(null);
@@ -161,7 +190,7 @@ const Usuarios = () => {
             {/* Search and Filters */}
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
@@ -171,6 +200,43 @@ const Usuarios = () => {
                       className="pl-10"
                     />
                   </div>
+                  
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-full md:w-[180px]">
+                      <SelectValue placeholder="Cargo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os Cargos</SelectItem>
+                      <SelectItem value="admin">Administrador</SelectItem>
+                      <SelectItem value="manager">Gerente</SelectItem>
+                      <SelectItem value="user">Usuário</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full md:w-[150px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os Status</SelectItem>
+                      <SelectItem value="active">Ativo</SelectItem>
+                      <SelectItem value="inactive">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {uniqueSectors.length > 0 && (
+                    <Select value={sectorFilter} onValueChange={setSectorFilter}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue placeholder="Setor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Setores</SelectItem>
+                        {uniqueSectors.map(sector => (
+                          <SelectItem key={sector} value={sector}>{sector}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </CardContent>
             </Card>
