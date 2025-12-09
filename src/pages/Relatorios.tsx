@@ -184,11 +184,15 @@ const Relatorios = () => {
           pagamento: t.payment_method || "N/A",
         }));
       case "Artistas":
+        const getDistributorEmail = (emails: any, key: string) => {
+          if (!emails) return "N/A";
+          const parsed = typeof emails === 'string' ? JSON.parse(emails) : emails;
+          return parsed?.[key] || "N/A";
+        };
         return artistsData.map((a: any) => ({
-          "ID": a.id?.slice(0, 8) || "N/A",
-          "Nome Artístico": a.stage_name || a.name || "N/A",
-          "Nome Completo": a.full_name || a.name || "N/A",
-          "Nome Legal": a.legal_name || "N/A",
+          "ID": a.id || "N/A",
+          "Nome Artístico": a.name || "N/A",
+          "Nome Completo": a.full_name || "N/A",
           "Gênero Musical": a.genre || "N/A",
           "E-mail": a.email || "N/A",
           "Telefone": a.phone || "N/A",
@@ -212,6 +216,8 @@ const Relatorios = () => {
           "YouTube": a.youtube_url || "N/A",
           "TikTok": a.tiktok || "N/A",
           "SoundCloud": a.soundcloud || "N/A",
+          "Email de Share Distrokid": getDistributorEmail(a.distributor_emails, 'distrokid'),
+          "Email de Share ONErpm": getDistributorEmail(a.distributor_emails, 'onerpm'),
           "Biografia": a.bio || "N/A",
           "Observações": a.observations || "N/A",
           "Data Cadastro": a.created_at ? formatDateBR(a.created_at) : "N/A",
