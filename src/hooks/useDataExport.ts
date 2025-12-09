@@ -39,11 +39,21 @@ const artistColumns = {
 
 const projectColumns = {
   name: 'Nome do Projeto',
-  description: 'Descrição',
+  artist_name: 'Artista',
+  release_type: 'Tipo de Lançamento',
   status: 'Status',
-  start_date: 'Data de Início',
-  end_date: 'Data de Término',
-  budget: 'Orçamento',
+  song_name: 'Nome da Música',
+  collaboration_type: 'Solo/Feat',
+  track_type: 'Original/Remix',
+  instrumental: 'Instrumental',
+  duration: 'Duração',
+  genre: 'Gênero Musical',
+  language: 'Idioma',
+  composers: 'Compositores',
+  performers: 'Intérpretes',
+  producers: 'Produtores',
+  lyrics: 'Letra',
+  observations: 'Observações',
   created_at: 'Data de Criação',
 };
 
