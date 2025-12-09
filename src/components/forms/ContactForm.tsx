@@ -308,7 +308,6 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="agencia_publicidade">Agência de publicidade</SelectItem>
               <SelectItem value="agencia_sync">Agência de sync/licenciamento</SelectItem>
               <SelectItem value="agencia_viagem">Agência de viagem</SelectItem>
-              <SelectItem value="artista">Artista</SelectItem>
               <SelectItem value="assessoria_imprensa">Assessoria de imprensa</SelectItem>
               <SelectItem value="associacoes_musicos">Associações de músicos</SelectItem>
               <SelectItem value="bancos">Bancos</SelectItem>
@@ -317,7 +316,6 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="casa_show">Casa de show</SelectItem>
               <SelectItem value="clientes_corporativos">Clientes corporativos</SelectItem>
               <SelectItem value="colaborador">Colaborador</SelectItem>
-              <SelectItem value="compositor">Compositor</SelectItem>
               <SelectItem value="concessionaria">Concessionária</SelectItem>
               <SelectItem value="consultor_estrategia">Consultor de estratégia</SelectItem>
               <SelectItem value="consultor_financeiro">Consultor financeiro</SelectItem>
@@ -347,7 +345,6 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="hoteis">Hotéis</SelectItem>
               <SelectItem value="influenciador">Influenciador(a)</SelectItem>
               <SelectItem value="instrutor_vocal">Instrutor vocal</SelectItem>
-              <SelectItem value="interprete">Intérprete</SelectItem>
               <SelectItem value="jornalistas">Jornalistas</SelectItem>
               <SelectItem value="leads">Leads</SelectItem>
               <SelectItem value="locadores_equipamento">Locadores de equipamento</SelectItem>
@@ -363,7 +360,6 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="produtor_artistico">Produtor artístico</SelectItem>
               <SelectItem value="produtor_cultural">Produtor cultural</SelectItem>
               <SelectItem value="produtor_fonografico">Produtor fonográfico</SelectItem>
-              <SelectItem value="produtor_musical">Produtor musical</SelectItem>
               <SelectItem value="produtora_eventos">Produtora de eventos</SelectItem>
               <SelectItem value="produtora_video">Produtora de vídeo</SelectItem>
               <SelectItem value="sala_ensaio">Sala de ensaio</SelectItem>
