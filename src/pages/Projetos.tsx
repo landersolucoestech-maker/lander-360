@@ -26,6 +26,8 @@ const Projetos = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -71,14 +73,18 @@ const Projetos = () => {
   ];
 
   const handleSearch = (searchTerm: string) => {
-    filterProjects(searchTerm, {});
+    setCurrentSearchTerm(searchTerm);
+    filterProjects(searchTerm, currentFilters);
   };
 
   const handleFilter = (filters: Record<string, string>) => {
-    filterProjects("", filters);
+    setCurrentFilters(filters);
+    filterProjects(currentSearchTerm, filters);
   };
 
   const handleClear = () => {
+    setCurrentSearchTerm("");
+    setCurrentFilters({});
     setFilteredProjects(projects);
   };
 
