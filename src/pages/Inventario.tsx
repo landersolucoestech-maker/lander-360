@@ -9,10 +9,11 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { InventoryViewModal } from "@/components/modals/InventoryViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Package, Plus, Headphones, Mic, Speaker, Loader2, Upload, Download } from "lucide-react";
+import { Package, Plus, Headphones, Mic, Speaker, Loader2, Upload, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useInventory, useDeleteInventory, useCreateInventory } from "@/hooks/useInventory";
 import * as XLSX from "xlsx";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Equipment {
   id: string;
@@ -76,6 +77,9 @@ const Inventario = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   const allEquipment: Equipment[] = (inventoryData || []).map((item: any) => ({
     id: item.id,
@@ -172,6 +176,45 @@ const Inventario = () => {
       await deleteInventory.mutateAsync(selectedEquipment.id);
       setIsDeleteModalOpen(false);
       setSelectedEquipment(null);
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(filteredEquipment.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (itemId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, itemId]);
+    } else {
+      setSelectedItems(prev => prev.filter(id => id !== itemId));
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedItems) {
+        await deleteInventory.mutateAsync(id);
+      }
+      toast({
+        title: "Itens excluídos",
+        description: `${selectedItems.length} itens foram excluídos com sucesso.`,
+      });
+      setSelectedItems([]);
+      setIsBulkDeleteModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir alguns itens.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingBulk(false);
     }
   };
 
@@ -365,10 +408,25 @@ const Inventario = () => {
             {/* Equipment List */}
             <Card className="flex-1">
               <CardHeader>
-                <CardTitle>Lista de Equipamentos</CardTitle>
-                <CardDescription>
-                  Inventário completo de equipamentos e instrumentos
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Lista de Equipamentos</CardTitle>
+                    <CardDescription>
+                      Inventário completo de equipamentos e instrumentos
+                    </CardDescription>
+                  </div>
+                  {selectedItems.length > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => setIsBulkDeleteModalOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir Selecionados ({selectedItems.length})
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -387,12 +445,32 @@ const Inventario = () => {
                   </div>
                 ) : (
                 <div className="space-y-4">
+                  {/* Select All Header */}
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border">
+                    <Checkbox
+                      checked={selectedItems.length === filteredEquipment.length && filteredEquipment.length > 0}
+                      onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                    />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {selectedItems.length > 0 
+                        ? `${selectedItems.length} de ${filteredEquipment.length} selecionados`
+                        : "Selecionar todos"
+                      }
+                    </span>
+                  </div>
+
                   {filteredEquipment.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                      className={`flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors ${
+                        selectedItems.includes(item.id) ? 'border-primary bg-primary/5' : 'border-border'
+                      }`}
                     >
                       <div className="flex items-center gap-4">
+                        <Checkbox
+                          checked={selectedItems.includes(item.id)}
+                          onCheckedChange={(checked) => handleSelectItem(item.id, !!checked)}
+                        />
                         <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                           {item.category === "Microfone" ? (
                             <Mic className="h-6 w-6 text-primary" />
@@ -507,6 +585,17 @@ const Inventario = () => {
               onConfirm={confirmDelete}
               title="Excluir Equipamento"
               description={`Tem certeza que deseja excluir "${selectedEquipment?.name}"? Esta ação não pode ser desfeita.`}
+            />
+
+            {/* Modal Excluir em Massa */}
+            <DeleteConfirmationModal
+              open={isBulkDeleteModalOpen}
+              onOpenChange={(open) => {
+                setIsBulkDeleteModalOpen(open);
+              }}
+              onConfirm={confirmBulkDelete}
+              title="Excluir Itens Selecionados"
+              description={`Tem certeza que deseja excluir ${selectedItems.length} itens selecionados? Esta ação não pode ser desfeita.`}
             />
           </div>
         </SidebarInset>
