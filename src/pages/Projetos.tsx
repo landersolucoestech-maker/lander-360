@@ -53,7 +53,12 @@ const Projetos = () => {
   };
 
   useEffect(() => {
-    setFilteredProjects(projects);
+    // Reapply current filters when projects data changes
+    if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
+      filterProjects(currentSearchTerm, currentFilters);
+    } else {
+      setFilteredProjects(projects);
+    }
   }, [projects]);
 
   // Extract unique values for filter dropdowns
