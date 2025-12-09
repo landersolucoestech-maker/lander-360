@@ -6,7 +6,6 @@ import { formatDateBR } from '@/lib/utils';
 const artistColumns = {
   name: 'Nome Artístico',
   full_name: 'Nome Completo',
-  legal_name: 'Nome Legal',
   email: 'E-mail',
   phone: 'Telefone',
   genre: 'Gênero Musical',
