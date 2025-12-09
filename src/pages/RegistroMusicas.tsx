@@ -12,7 +12,8 @@ import { MusicViewModal } from "@/components/modals/MusicViewModal";
 import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
 import { PhonogramViewModal } from "@/components/modals/PhonogramViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, FileText, CheckCircle, Clock, Disc } from "lucide-react";
+import { Music, Plus, FileText, CheckCircle, Clock, Disc, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
@@ -44,6 +45,16 @@ const RegistroMusicas = () => {
   const [viewPhonogramModalOpen, setViewPhonogramModalOpen] = useState(false);
   const [deletePhonogramModalOpen, setDeletePhonogramModalOpen] = useState(false);
   const [selectedPhonogram, setSelectedPhonogram] = useState<any>(null);
+
+  // Bulk delete states - Works
+  const [selectedWorks, setSelectedWorks] = useState<string[]>([]);
+  const [isBulkDeleteWorksModalOpen, setIsBulkDeleteWorksModalOpen] = useState(false);
+  const [isDeletingBulkWorks, setIsDeletingBulkWorks] = useState(false);
+
+  // Bulk delete states - Phonograms
+  const [selectedPhonograms, setSelectedPhonograms] = useState<string[]>([]);
+  const [isBulkDeletePhonogramsModalOpen, setIsBulkDeletePhonogramsModalOpen] = useState(false);
+  const [isDeletingBulkPhonograms, setIsDeletingBulkPhonograms] = useState(false);
 
   const getStatusDisplay = (status: string | null) => {
     return translateStatus(status) || 'Pendente';
@@ -198,6 +209,88 @@ const RegistroMusicas = () => {
     setViewPhonogramModalOpen(true);
   };
 
+  // Bulk delete handlers - Works
+  const handleSelectAllWorks = (checked: boolean) => {
+    if (checked) {
+      setSelectedWorks(filteredSongs.map(s => s.id));
+    } else {
+      setSelectedWorks([]);
+    }
+  };
+
+  const handleSelectWork = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedWorks(prev => [...prev, id]);
+    } else {
+      setSelectedWorks(prev => prev.filter(i => i !== id));
+    }
+  };
+
+  const confirmBulkDeleteWorks = async () => {
+    setIsDeletingBulkWorks(true);
+    try {
+      for (const id of selectedWorks) {
+        await deleteMusicEntry.mutateAsync(id);
+      }
+      toast({
+        title: "Sucesso",
+        description: `${selectedWorks.length} obra(s) excluída(s) com sucesso.`,
+      });
+      setSelectedWorks([]);
+      setIsBulkDeleteWorksModalOpen(false);
+    } catch (error) {
+      console.error('Error bulk deleting works:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir obras. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingBulkWorks(false);
+    }
+  };
+
+  // Bulk delete handlers - Phonograms
+  const handleSelectAllPhonograms = (checked: boolean) => {
+    if (checked) {
+      setSelectedPhonograms(filteredPhonograms.map(p => p.id));
+    } else {
+      setSelectedPhonograms([]);
+    }
+  };
+
+  const handleSelectPhonogram = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedPhonograms(prev => [...prev, id]);
+    } else {
+      setSelectedPhonograms(prev => prev.filter(i => i !== id));
+    }
+  };
+
+  const confirmBulkDeletePhonograms = async () => {
+    setIsDeletingBulkPhonograms(true);
+    try {
+      for (const id of selectedPhonograms) {
+        await deletePhonogram.mutateAsync(id);
+      }
+      toast({
+        title: "Sucesso",
+        description: `${selectedPhonograms.length} fonograma(s) excluído(s) com sucesso.`,
+      });
+      setSelectedPhonograms([]);
+      setIsBulkDeletePhonogramsModalOpen(false);
+    } catch (error) {
+      console.error('Error bulk deleting phonograms:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir fonogramas. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingBulkPhonograms(false);
+    }
+  };
+
   // Calculate KPIs based on active tab
   const worksKPIs = {
     total: allSongs.length,
@@ -289,13 +382,26 @@ const RegistroMusicas = () => {
 
               {/* Obras Tab */}
               <TabsContent value="obras" className="space-y-4">
-                <SearchFilter
-                  searchPlaceholder="Buscar obras por título, artista ou ISWC..."
-                  filters={filterOptions}
-                  onSearch={handleSearchWorks}
-                  onFilter={handleFilterWorks}
-                  onClear={handleClearWorks}
-                />
+                <div className="flex items-center gap-4 flex-wrap">
+                  <SearchFilter
+                    searchPlaceholder="Buscar obras por título, artista ou ISWC..."
+                    filters={filterOptions}
+                    onSearch={handleSearchWorks}
+                    onFilter={handleFilterWorks}
+                    onClear={handleClearWorks}
+                  />
+                  {selectedWorks.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setIsBulkDeleteWorksModalOpen(true)}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir Selecionados ({selectedWorks.length})
+                    </Button>
+                  )}
+                </div>
 
                 <Card className="flex-1">
                   <CardHeader>
@@ -319,11 +425,24 @@ const RegistroMusicas = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
+                        <div className="flex items-center gap-2 p-2 border-b border-border">
+                          <Checkbox
+                            checked={selectedWorks.length === filteredSongs.length && filteredSongs.length > 0}
+                            onCheckedChange={(checked) => handleSelectAllWorks(!!checked)}
+                          />
+                          <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                        </div>
                         {filteredSongs.map((song) => (
                           <div
                             key={song.id}
-                            className="grid grid-cols-[1fr_auto] gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="grid grid-cols-[auto_1fr_auto] gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
+                            <div className="flex items-center">
+                              <Checkbox
+                                checked={selectedWorks.includes(song.id)}
+                                onCheckedChange={(checked) => handleSelectWork(song.id, !!checked)}
+                              />
+                            </div>
                             <div className="flex items-center gap-4 min-w-0">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <Music className="h-6 w-6 text-primary" />
@@ -388,13 +507,26 @@ const RegistroMusicas = () => {
 
               {/* Fonogramas Tab */}
               <TabsContent value="fonogramas" className="space-y-4">
-                <SearchFilter
-                  searchPlaceholder="Buscar fonogramas por título, artista ou ISRC..."
-                  filters={filterOptions}
-                  onSearch={handleSearchPhonograms}
-                  onFilter={handleFilterPhonograms}
-                  onClear={handleClearPhonograms}
-                />
+                <div className="flex items-center gap-4 flex-wrap">
+                  <SearchFilter
+                    searchPlaceholder="Buscar fonogramas por título, artista ou ISRC..."
+                    filters={filterOptions}
+                    onSearch={handleSearchPhonograms}
+                    onFilter={handleFilterPhonograms}
+                    onClear={handleClearPhonograms}
+                  />
+                  {selectedPhonograms.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setIsBulkDeletePhonogramsModalOpen(true)}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir Selecionados ({selectedPhonograms.length})
+                    </Button>
+                  )}
+                </div>
 
                 <Card className="flex-1">
                   <CardHeader>
@@ -418,11 +550,22 @@ const RegistroMusicas = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
+                        <div className="flex items-center gap-2 p-2 border-b border-border">
+                          <Checkbox
+                            checked={selectedPhonograms.length === filteredPhonograms.length && filteredPhonograms.length > 0}
+                            onCheckedChange={(checked) => handleSelectAllPhonograms(!!checked)}
+                          />
+                          <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                        </div>
                         {filteredPhonograms.map((phono) => (
                           <div
                             key={phono.id}
-                            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
+                            <Checkbox
+                              checked={selectedPhonograms.includes(phono.id)}
+                              onCheckedChange={(checked) => handleSelectPhonogram(phono.id, !!checked)}
+                            />
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                                 <Disc className="h-6 w-6 text-primary" />
@@ -566,6 +709,25 @@ const RegistroMusicas = () => {
               }}
               title="Excluir Fonograma"
               description={`Tem certeza que deseja excluir o fonograma "${selectedPhonogram?.title}"? Esta ação não pode ser desfeita.`}
+            />
+
+            {/* Bulk Delete Modals */}
+            <DeleteConfirmationModal
+              open={isBulkDeleteWorksModalOpen}
+              onOpenChange={setIsBulkDeleteWorksModalOpen}
+              onConfirm={confirmBulkDeleteWorks}
+              title="Excluir Obras Selecionadas"
+              description={`Tem certeza que deseja excluir ${selectedWorks.length} obra(s) selecionada(s)? Esta ação não pode ser desfeita.`}
+              isLoading={isDeletingBulkWorks}
+            />
+
+            <DeleteConfirmationModal
+              open={isBulkDeletePhonogramsModalOpen}
+              onOpenChange={setIsBulkDeletePhonogramsModalOpen}
+              onConfirm={confirmBulkDeletePhonograms}
+              title="Excluir Fonogramas Selecionados"
+              description={`Tem certeza que deseja excluir ${selectedPhonograms.length} fonograma(s) selecionado(s)? Esta ação não pode ser desfeita.`}
+              isLoading={isDeletingBulkPhonograms}
             />
           </div>
         </SidebarInset>
