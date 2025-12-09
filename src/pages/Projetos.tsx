@@ -12,7 +12,7 @@ import { ProjectViewModal } from "@/components/modals/ProjectViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { PlayCircle, Plus, TrendingUp, Calendar, Music, Loader2, Upload, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useProjects, useDeleteProject } from "@/hooks/useProjects";
+import { useProjects, useDeleteProject, useCreateProject } from "@/hooks/useProjects";
 import { useArtists } from "@/hooks/useArtists";
 import { useDataExport } from "@/hooks/useDataExport";
 
@@ -20,6 +20,7 @@ const Projetos = () => {
   const { data: projects = [], isLoading, error } = useProjects();
   const { data: artists = [] } = useArtists();
   const deleteProjectMutation = useDeleteProject();
+  const createProjectMutation = useCreateProject();
   const { exportToExcel, parseExcelFile } = useDataExport();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,13 +250,112 @@ const Projetos = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsImporting(true);
+    
     try {
       const data = await parseExcelFile(file);
+      
+      if (data.length === 0) {
+        toast({
+          title: "Arquivo vazio",
+          description: "O arquivo não contém dados para importar.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create artists map for lookup by name
+      const artistsMap: Record<string, string> = {};
+      artists.forEach(a => {
+        if (a.name) artistsMap[a.name.toLowerCase()] = a.id;
+        if (a.stage_name) artistsMap[a.stage_name.toLowerCase()] = a.id;
+        if (a.full_name) artistsMap[a.full_name.toLowerCase()] = a.id;
+      });
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const row of data) {
+        try {
+          // Map Excel columns to project data
+          const projectName = row['Nome do Projeto'] || row['nome do projeto'] || row['Projeto'] || row['projeto'] || row['Nome'] || row['nome'];
+          
+          if (!projectName) {
+            errorCount++;
+            continue;
+          }
+
+          // Find artist ID
+          const artistName = row['Artista'] || row['artista'] || row['Nome do Artista'] || row['nome do artista'] || '';
+          const artistId = artistName ? artistsMap[artistName.toString().toLowerCase()] : undefined;
+
+          // Map status
+          const statusMap: Record<string, string> = {
+            'concluído': 'completed',
+            'concluido': 'completed',
+            'em andamento': 'in_progress',
+            'rascunho': 'draft',
+            'cancelado': 'cancelled',
+            'completed': 'completed',
+            'in_progress': 'in_progress',
+            'draft': 'draft',
+            'cancelled': 'cancelled',
+          };
+          const rawStatus = (row['Status'] || row['status'] || 'draft').toString().toLowerCase();
+          const status = statusMap[rawStatus] || 'draft';
+
+          // Map release type
+          const releaseTypeMap: Record<string, string> = {
+            'single': 'single',
+            'ep': 'ep',
+            'álbum': 'album',
+            'album': 'album',
+          };
+          const rawReleaseType = (row['Tipo de Lançamento'] || row['tipo de lançamento'] || row['Tipo'] || row['tipo'] || '').toString().toLowerCase();
+          const releaseType = releaseTypeMap[rawReleaseType] || 'single';
+
+          // Build song data if available
+          const songName = row['Nome da Música'] || row['nome da música'] || row['Música'] || row['musica'] || '';
+          const songs = songName ? [{
+            song_name: songName,
+            genre: row['Gênero Musical'] || row['gênero musical'] || row['Gênero'] || row['genero'] || '',
+            language: row['Idioma'] || row['idioma'] || '',
+            collaboration_type: (row['Solo/Feat'] || row['solo/feat'] || '').toString().toLowerCase() === 'feat' ? 'feat' : 'solo',
+            track_type: (row['Original/Remix'] || row['original/remix'] || '').toString().toLowerCase() === 'remix' ? 'remix' : 'original',
+            instrumental: (row['Instrumental'] || row['instrumental'] || '').toString().toLowerCase() === 'sim' ? 'sim' : 'nao',
+            duration_minutes: parseInt((row['Duração'] || row['duracao'] || '0:00').toString().split(':')[0]) || 0,
+            duration_seconds: parseInt((row['Duração'] || row['duracao'] || '0:00').toString().split(':')[1]) || 0,
+            composers: (row['Compositores'] || row['compositores'] || '').toString().split(',').filter(Boolean).map((name: string) => ({ name: name.trim() })),
+            performers: (row['Intérpretes'] || row['interpretes'] || '').toString().split(',').filter(Boolean).map((name: string) => ({ name: name.trim() })),
+            producers: (row['Produtores'] || row['produtores'] || '').toString().split(',').filter(Boolean).map((name: string) => ({ name: name.trim() })),
+            lyrics: row['Letra'] || row['letra'] || '',
+          }] : [];
+
+          const audioFiles = {
+            release_type: releaseType,
+            songs: songs,
+            observations: row['Observações'] || row['observações'] || row['observacoes'] || '',
+          };
+
+          await createProjectMutation.mutateAsync({
+            name: projectName.toString(),
+            artist_id: artistId || null,
+            status: status,
+            audio_files: audioFiles,
+          });
+          
+          successCount++;
+        } catch (err) {
+          console.error('Error importing project row:', err);
+          errorCount++;
+        }
+      }
+
       toast({
-        title: "Arquivo lido",
-        description: `${data.length} registros encontrados. Funcionalidade de importação em desenvolvimento.`,
+        title: "Importação concluída",
+        description: `${successCount} projetos importados com sucesso. ${errorCount > 0 ? `${errorCount} erros.` : ''}`,
       });
     } catch (error) {
+      console.error('Error importing file:', error);
       toast({
         title: "Erro na importação",
         description: "Não foi possível ler o arquivo.",
