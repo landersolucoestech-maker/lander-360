@@ -59,6 +59,10 @@ const integrationConfigs = {
     type: 'calendar' as const,
     description: 'Sincronize eventos e compromissos da agenda com o Google Calendar.',
     website: 'https://calendar.google.com',
+    requiredFields: [
+      { key: 'email', label: 'E-mail da conta Google', placeholder: 'seu@gmail.com', type: 'email' },
+      { key: 'password', label: 'Senha', placeholder: 'Digite sua senha', type: 'password' },
+    ],
   },
 };
 
