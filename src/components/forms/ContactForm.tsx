@@ -445,18 +445,17 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="outro">Outro</SelectItem>
             </SelectContent>
           </Select>
+          {watch("position") === "produtor_artistico" && (
+            <div className="space-y-2 mt-2">
+              <Label htmlFor="artist_name">Nome do Artista</Label>
+              <Input
+                id="artist_name"
+                {...register("artist_name")}
+                placeholder="Nome do artista que trabalha"
+              />
+            </div>
+          )}
         </div>
-
-        {watch("position") === "produtor_artistico" && (
-          <div className="space-y-2">
-            <Label htmlFor="artist_name">Nome do Artista</Label>
-            <Input
-              id="artist_name"
-              {...register("artist_name")}
-              placeholder="Nome do artista que trabalha"
-            />
-          </div>
-        )}
 
         <div className="space-y-2">
           <Label htmlFor="document">CPF/CNPJ</Label>
