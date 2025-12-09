@@ -32,21 +32,32 @@ interface Equipment {
 
 const sectorLabels: Record<string, string> = {
   administrativo_corporativo: "Administrativo / Corporativo",
+  administrativo: "Administrativo / Corporativo",
   financeiro: "Financeiro",
   juridico: "Jurídico",
   artistico_ar: "Artístico (A&R)",
+  artistico: "Artístico (A&R)",
   producao_musical: "Produção Musical",
   producao_audiovisual: "Produção Audiovisual",
   editora_musical: "Editora Musical (Publishing)",
+  editora: "Editora Musical (Publishing)",
   distribuicao_digital: "Distribuição Digital",
+  distribuicao: "Distribuição Digital",
   marketing: "Marketing",
   comunicacao_imprensa: "Comunicação e Imprensa (PR)",
+  comunicacao: "Comunicação e Imprensa (PR)",
   eventos_shows: "Eventos e Shows",
+  eventos: "Eventos e Shows",
   comercial_vendas: "Comercial / Vendas",
+  comercial: "Comercial / Vendas",
   recursos_humanos: "Recursos Humanos (RH)",
+  rh: "Recursos Humanos (RH)",
   tecnologia_ti: "Tecnologia / TI",
+  ti: "Tecnologia / TI",
   arquivo_documentacao: "Arquivo e Documentação",
+  arquivo: "Arquivo e Documentação",
   logistica_operacoes: "Logística e Operações",
+  logistica: "Logística e Operações",
 };
 
 const Inventario = () => {
