@@ -30,6 +30,25 @@ interface Equipment {
   observations: string | null;
 }
 
+const sectorLabels: Record<string, string> = {
+  administrativo_corporativo: "Administrativo / Corporativo",
+  financeiro: "Financeiro",
+  juridico: "Jurídico",
+  artistico_ar: "Artístico (A&R)",
+  producao_musical: "Produção Musical",
+  producao_audiovisual: "Produção Audiovisual",
+  editora_musical: "Editora Musical (Publishing)",
+  distribuicao_digital: "Distribuição Digital",
+  marketing: "Marketing",
+  comunicacao_imprensa: "Comunicação e Imprensa (PR)",
+  eventos_shows: "Eventos e Shows",
+  comercial_vendas: "Comercial / Vendas",
+  recursos_humanos: "Recursos Humanos (RH)",
+  tecnologia_ti: "Tecnologia / TI",
+  arquivo_documentacao: "Arquivo e Documentação",
+  logistica_operacoes: "Logística e Operações",
+};
+
 const Inventario = () => {
   const { toast } = useToast();
   const { data: inventoryData, isLoading } = useInventory();
@@ -406,7 +425,7 @@ const Inventario = () => {
                         {item.sector && (
                           <div className="text-center min-w-[80px]">
                             <div className="text-muted-foreground text-xs">Setor</div>
-                            <div className="font-medium truncate">{item.sector}</div>
+                            <div className="font-medium truncate">{sectorLabels[item.sector] || item.sector}</div>
                           </div>
                         )}
                         <div className="text-center min-w-[80px]">
