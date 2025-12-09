@@ -7,73 +7,15 @@ import { Button } from "@/components/ui/button";
 import { ArtistCard } from "@/components/artists/ArtistCard";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ArtistModal } from "@/components/modals/ArtistModal";
-import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { useArtists, useArtistsCount, useDeleteArtist } from "@/hooks/useArtists";
+import { useArtists, useArtistsCount } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { useActiveContracts } from "@/hooks/useContracts";
-import { Users, Plus, Music, DollarSign, Star, Upload, Download, Trash2 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import * as XLSX from 'xlsx';
-import { useToast } from '@/hooks/use-toast';
+import { Users, Plus, Music, DollarSign, Star } from "lucide-react";
 import { mockArtists } from "@/data/mockData";
-
 const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
-  const { toast } = useToast();
-  const deleteArtist = useDeleteArtist();
-
-  const handleExport = () => {
-    const dataToExport = currentArtists.map((artist: any) => ({
-      'Nome': artist.name || '',
-      'Nome Artístico': artist.stage_name || '',
-      'Gênero': artist.genre || '',
-      'Email': artist.email || '',
-      'Telefone': artist.phone || '',
-      'Status': artist.status || '',
-      'Perfil': artist.perfil || '',
-      'CPF/CNPJ': artist.cpf_cnpj || '',
-      'Banco': artist.bank || '',
-      'Agência': artist.agency || '',
-      'Conta': artist.account || '',
-      'Chave PIX': artist.pix_key || '',
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Artistas');
-    XLSX.writeFile(wb, `artistas_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        
-        toast({ 
-          title: 'Arquivo importado', 
-          description: `${jsonData.length} registros encontrados. Funcionalidade de importação em desenvolvimento.` 
-        });
-      } catch (error) {
-        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
-      }
-    };
-    reader.readAsArrayBuffer(file);
-    event.target.value = '';
-  };
   const {
     data: artists,
     isLoading,
@@ -349,39 +291,6 @@ const Artistas = () => {
     setCurrentFilters({});
     setFilteredArtists([]);
   };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedItems(currentArtists.map((artist: any) => artist.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  const handleSelectItem = (id: string, checked: boolean) => {
-    if (checked) {
-      setSelectedItems(prev => [...prev, id]);
-    } else {
-      setSelectedItems(prev => prev.filter(item => item !== id));
-    }
-  };
-
-  const confirmBulkDelete = async () => {
-    setIsDeletingBulk(true);
-    try {
-      for (const id of selectedItems) {
-        await deleteArtist.mutateAsync(id);
-      }
-      toast({ title: 'Sucesso', description: `${selectedItems.length} artistas excluídos com sucesso!` });
-      setSelectedItems([]);
-    } catch (error) {
-      toast({ title: 'Erro', description: 'Erro ao excluir artistas.', variant: 'destructive' });
-    } finally {
-      setIsDeletingBulk(false);
-      setIsBulkDeleteModalOpen(false);
-    }
-  };
-
   return <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
@@ -395,32 +304,10 @@ const Artistas = () => {
                   Gerencie seus artistas e contratos
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                {selectedItems.length > 0 && (
-                  <Button 
-                    variant="destructive" 
-                    className="gap-2" 
-                    onClick={() => setIsBulkDeleteModalOpen(true)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Excluir ({selectedItems.length})
-                  </Button>
-                )}
-                <Button variant="outline" className="gap-2" onClick={handleExport}>
-                  <Download className="h-4 w-4" />
-                  Exportar
-                </Button>
-                <label>
-                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                  <Button variant="outline" className="gap-2" asChild>
-                    <span><Upload className="h-4 w-4" />Importar</span>
-                  </Button>
-                </label>
-                <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
-                  <Plus className="h-4 w-4" />
-                  Novo Artista
-                </Button>
-              </div>
+              <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
+                <Plus className="h-4 w-4" />
+                Novo Artista
+              </Button>
             </div>
 
             {/* KPI Cards */}
@@ -439,15 +326,6 @@ const Artistas = () => {
               <CardHeader>
                 <CardTitle>Lista de Artistas</CardTitle>
                 <CardDescription>Visão geral de todos os artistas</CardDescription>
-                {currentArtists.length > 0 && (
-                  <div className="flex items-center gap-2 pt-2">
-                    <Checkbox
-                      checked={selectedItems.length === currentArtists.length && currentArtists.length > 0}
-                      onCheckedChange={handleSelectAll}
-                    />
-                    <span className="text-sm text-muted-foreground">Selecionar todos</span>
-                  </div>
-                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -471,18 +349,7 @@ const Artistas = () => {
                         Adicionar Artista
                       </Button>
                     </div> : null}
-                  {currentArtists.map((artist: any) => (
-                    <div key={artist.id} className="flex items-start gap-3">
-                      <Checkbox
-                        checked={selectedItems.includes(artist.id)}
-                        onCheckedChange={(checked) => handleSelectItem(artist.id, !!checked)}
-                        className="mt-4"
-                      />
-                      <div className="flex-1">
-                        <ArtistCard artist={artist} />
-                      </div>
-                    </div>
-                  ))}
+                  {currentArtists.map((artist: any) => <ArtistCard key={artist.id} artist={artist} />)}
                   {!currentArtists.length && !isLoading && <div className="text-center py-8 text-muted-foreground">
                       Nenhum artista encontrado.
                     </div>}
@@ -495,16 +362,6 @@ const Artistas = () => {
 
       {/* Create Artist Modal */}
       <ArtistModal open={createModalOpen} onOpenChange={setCreateModalOpen} mode="create" />
-
-      {/* Bulk Delete Modal */}
-      <DeleteConfirmationModal
-        open={isBulkDeleteModalOpen}
-        onOpenChange={setIsBulkDeleteModalOpen}
-        onConfirm={confirmBulkDelete}
-        title="Excluir Artistas"
-        description={`Tem certeza que deseja excluir ${selectedItems.length} artistas? Esta ação não pode ser desfeita.`}
-        isLoading={isDeletingBulk}
-      />
     </SidebarProvider>;
 };
 export default Artistas;

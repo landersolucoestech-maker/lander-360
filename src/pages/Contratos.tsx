@@ -6,17 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Upload, Download, Trash2 } from "lucide-react";
-import * as XLSX from 'xlsx';
+import { FileText, Plus, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
 import { ContractModal } from "@/components/modals/ContractModal";
 import { ContractViewModal } from "@/components/modals/ContractViewModal";
-import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract, useCreateContract } from "@/hooks/useContracts";
+import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract } from "@/hooks/useContracts";
 import { mockContracts } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { Contract } from "@/types/database";
 import { formatDateBR } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const Contratos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,20 +25,16 @@ const Contratos = () => {
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
   const { data: dbContracts = [], isLoading } = useContracts();
   const contracts: any[] = dbContracts;
   const { data: activeContracts = [] } = useActiveContracts();
   const { data: expiringSoon = [] } = useContractsExpiringSoon(30);
   const deleteContract = useDeleteContract();
-  const createContract = useCreateContract();
   const { toast } = useToast();
 
-  const serviceTypeLabels: Record<string, string> = {
+  // Service type labels mapping
+  const serviceTypeLabels = {
     empresariamento: 'Empresariamento',
     gestao: 'Gestão',
     agenciamento: 'Agenciamento',
@@ -51,7 +45,7 @@ const Contratos = () => {
     producao_audiovisual: 'Produção Audiovisual'
   };
 
-  const statusLabels: Record<string, string> = {
+  const statusLabels = {
     pendente: 'Pendente',
     assinado: 'Assinado',
     expirado: 'Expirado',
@@ -59,113 +53,7 @@ const Contratos = () => {
     rascunho: 'Rascunho'
   };
 
-  const handleExport = () => {
-    const dataToExport = filteredContracts.map((contract: any) => ({
-      'Título': contract.title || '',
-      'Artista': contract.artists?.stage_name || contract.artists?.name || '',
-      'Tipo de Serviço': serviceTypeLabels[contract.service_type as keyof typeof serviceTypeLabels] || '',
-      'Status': statusLabels[contract.status as keyof typeof statusLabels] || '',
-      'Data Início': contract.start_date || contract.effective_from || '',
-      'Data Fim': contract.end_date || contract.effective_to || '',
-      'Valor': contract.fixed_value || contract.advance_amount || '',
-      'Royalties (%)': contract.royalty_rate || contract.royalties_percentage || '',
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Contratos');
-    XLSX.writeFile(wb, `contratos_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
-  };
-
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImporting(true);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const row of jsonData as any[]) {
-          try {
-            await createContract.mutateAsync({
-              title: row['Título'] || row['title'] || 'Contrato Importado',
-              service_type: row['Tipo de Serviço']?.toLowerCase().replace(/ /g, '_') || row['service_type'] || null,
-              status: row['Status']?.toLowerCase() || row['status'] || 'rascunho',
-              start_date: row['Data Início'] || row['start_date'] || null,
-              end_date: row['Data Fim'] || row['end_date'] || null,
-              fixed_value: row['Valor'] ? Number(row['Valor']) : row['fixed_value'] ? Number(row['fixed_value']) : null,
-              royalty_rate: row['Royalties (%)'] ? Number(row['Royalties (%)']) : row['royalty_rate'] ? Number(row['royalty_rate']) : null,
-            });
-            successCount++;
-          } catch (err) {
-            errorCount++;
-            console.error('Error importing row:', err);
-          }
-        }
-
-        toast({ 
-          title: 'Importação concluída', 
-          description: `${successCount} contratos importados com sucesso. ${errorCount > 0 ? `${errorCount} erros.` : ''}` 
-        });
-      } catch (error) {
-        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
-      } finally {
-        setIsImporting(false);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-    event.target.value = '';
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedItems(filteredContracts.map(item => item.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  const handleSelectItem = (itemId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedItems(prev => [...prev, itemId]);
-    } else {
-      setSelectedItems(prev => prev.filter(id => id !== itemId));
-    }
-  };
-
-  const confirmBulkDelete = async () => {
-    setIsDeletingBulk(true);
-    try {
-      for (const id of selectedItems) {
-        await deleteContract.mutateAsync(id);
-      }
-      toast({
-        title: "Contratos excluídos",
-        description: `${selectedItems.length} contratos foram excluídos com sucesso.`,
-      });
-      setSelectedItems([]);
-      setIsBulkDeleteModalOpen(false);
-    } catch (error) {
-      toast({
-        title: "Erro ao excluir",
-        description: "Não foi possível excluir alguns contratos.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeletingBulk(false);
-    }
-  };
-
+  // Calculate days to expire for a contract
   const getDaysToExpire = (endDate: string | null) => {
     if (!endDate) return null;
     const today = new Date();
@@ -175,6 +63,7 @@ const Contratos = () => {
     return diffDays;
   };
 
+  // Filter contracts based on search and filters
   const filteredContracts = contracts.filter(contract => {
     const matchesSearch = !searchTerm || 
       ((contract as any).title || contract.contract_type).toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -193,9 +82,21 @@ const Contratos = () => {
   });
 
   const filterOptions = [
-    { key: "service_type", label: "Tipo de Serviço", options: ["empresariamento", "gestao", "agenciamento", "edicao", "distribuicao", "marketing", "producao_musical", "producao_audiovisual", "licenciamento", "publicidade", "parceria", "shows", "outros"] },
-    { key: "status", label: "Status", options: ["pendente", "assinado", "expirado", "rescindido", "rascunho"] },
-    { key: "client_type", label: "Tipo de Cliente", options: ["artista", "empresa"] }
+    {
+      key: "service_type",
+      label: "Tipo de Serviço",
+      options: ["empresariamento", "gestao", "agenciamento", "edicao", "distribuicao", "marketing", "producao_musical", "producao_audiovisual", "licenciamento", "publicidade", "parceria", "shows", "outros"]
+    },
+    {
+      key: "status",
+      label: "Status",
+      options: ["pendente", "assinado", "expirado", "rescindido", "rascunho"]
+    },
+    {
+      key: "client_type",
+      label: "Tipo de Cliente",
+      options: ["artista", "empresa"]
+    }
   ];
 
   const handleSearch = (searchTerm: string) => {
@@ -257,46 +158,27 @@ const Contratos = () => {
                   Gerencie contratos e documentação legal
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                {selectedItems.length > 0 && (
-                  <Button 
-                    variant="destructive" 
-                    className="gap-2" 
-                    onClick={() => setIsBulkDeleteModalOpen(true)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Excluir ({selectedItems.length})
-                  </Button>
-                )}
-                <Button variant="outline" className="gap-2" onClick={handleExport}>
-                  <Download className="h-4 w-4" />
-                  Exportar
-                </Button>
-                <label>
-                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" disabled={isImporting} />
-                  <Button variant="outline" className="gap-2" asChild disabled={isImporting}>
-                    <span><Upload className="h-4 w-4" />{isImporting ? 'Importando...' : 'Importar'}</span>
-                  </Button>
-                </label>
-                <Button className="gap-2" onClick={handleNewContract}>
-                  <Plus className="h-4 w-4" />
-                  Novo Contrato
-                </Button>
-              </div>
+              <Button className="gap-2" onClick={handleNewContract}>
+                <Plus className="h-4 w-4" />
+                Novo Contrato
+              </Button>
             </div>
 
             {/* KPI Cards */}
             {(() => {
+              // Calculate KPIs from real data
               const totalContracts = contracts.length;
               const activeCount = activeContracts.length;
               const expiringCount = expiringSoon.length;
               
+              // Calculate signed contracts this year
               const currentYear = new Date().getFullYear();
               const signedThisYear = contracts.filter((c: any) => {
                 const createdAt = new Date(c.created_at);
                 return createdAt.getFullYear() === currentYear && c.status === 'assinado';
               }).length;
               
+              // Calculate total value of active contracts
               const totalValue = activeContracts.reduce((sum: number, c: any) => {
                 const value = c.fixed_value || c.advance_amount || c.value || 0;
                 return sum + Number(value);
@@ -370,112 +252,123 @@ const Contratos = () => {
                       </Button>
                     </div>
                   ) : (
-                    <>
-                      {/* Select All */}
-                      <div className="flex items-center gap-2 pb-2 border-b">
-                        <Checkbox
-                          checked={selectedItems.length === filteredContracts.length && filteredContracts.length > 0}
-                          onCheckedChange={handleSelectAll}
-                        />
-                        <span className="text-sm text-muted-foreground">Selecionar todos</span>
-                      </div>
-                      {filteredContracts.map((contract) => {
-                        const daysToExpire = getDaysToExpire((contract as any).end_date || contract.effective_to);
-                        const totalValue = (contract as any).fixed_value || contract.advance_amount || 0;
-                        
-                        return (
-                          <div
-                            key={contract.id}
-                            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                          >
-                            <div className="flex items-center gap-4">
-                              <Checkbox
-                                checked={selectedItems.includes(contract.id)}
-                                onCheckedChange={(checked) => handleSelectItem(contract.id, !!checked)}
-                              />
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <FileText className="h-6 w-6 text-primary" />
-                              </div>
-                              <div className="space-y-1">
-                                <h3 className="font-medium text-foreground">{(contract as any).title || contract.contract_type}</h3>
-                                {(contract as any).artists && (
-                                  <p className="text-sm text-muted-foreground">
-                                    Artista: {(contract as any).artists.stage_name || (contract as any).artists.name}
-                                  </p>
-                                )}
-                                <div className="flex items-center gap-2">
-                                  {(contract as any).service_type && (
-                                    <Badge variant="secondary">
-                                      {serviceTypeLabels[(contract as any).service_type as keyof typeof serviceTypeLabels]}
-                                    </Badge>
-                                  )}
-                                  <Badge 
-                                    variant={
-                                      (contract as any).status === "assinado" ? "default" : 
-                                      (contract as any).status === "expirado" || (contract as any).status === "rescindido" ? "destructive" : 
-                                      (contract as any).status === "pendente" ? "secondary" : "outline"
-                                    }
-                                  >
-                                    {statusLabels[(contract as any).status as keyof typeof statusLabels] || 'Ativo'}
-                                  </Badge>
-                                  {(contract as any).client_type && (
-                                    <Badge variant="outline">
-                                      {(contract as any).client_type === 'artista' ? 'Artista' : 'Empresa'}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
+                    filteredContracts.map((contract) => {
+                      const daysToExpire = getDaysToExpire((contract as any).end_date || contract.effective_to);
+                      const totalValue = (contract as any).fixed_value || contract.advance_amount || 0;
+                      
+                      return (
+                        <div
+                          key={contract.id}
+                          className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <FileText className="h-6 w-6 text-primary" />
                             </div>
-                            
-                            <div className="flex items-center gap-6 text-sm">
-                              {((contract as any).start_date || (contract as any).end_date || contract.effective_from || contract.effective_to) && (
-                                <div className="text-center">
-                                  <div className="text-muted-foreground">Período</div>
-                                  <div className="font-medium">
-                                    {formatDateBR((contract as any).start_date || contract.effective_from)} - {formatDateBR((contract as any).end_date || contract.effective_to)}
-                                  </div>
-                                </div>
+                            <div className="space-y-1">
+                              <h3 className="font-medium text-foreground">{(contract as any).title || contract.contract_type}</h3>
+                              {(contract as any).artists && (
+                                <p className="text-sm text-muted-foreground">
+                                  Artista: {(contract as any).artists.stage_name || (contract as any).artists.name}
+                                </p>
                               )}
-                              
-                              {totalValue > 0 && (
-                                <div className="text-center">
-                                  <div className="text-muted-foreground">Valor</div>
-                                  <div className="font-medium text-foreground">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {daysToExpire !== null && (
-                                <div className="text-center">
-                                  <div className="text-muted-foreground">Vencimento</div>
-                                  <div className={`font-medium ${
-                                    daysToExpire < 0 ? "text-destructive" :
-                                    daysToExpire < 30 ? "text-orange-600" : "text-foreground"
-                                  }`}>
-                                    {daysToExpire < 0 ? "Vencido" : 
-                                     daysToExpire === 0 ? "Hoje" :
-                                     `${daysToExpire} dias`}
-                                  </div>
-                                </div>
-                              )}
-                              
                               <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)}>
-                                  Ver
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleEditContract(contract)}>
-                                  Editar
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDeleteContract(contract)}>
-                                  Excluir
-                                </Button>
+                                {(contract as any).service_type && (
+                                  <Badge variant="secondary">
+                                    {serviceTypeLabels[(contract as any).service_type as keyof typeof serviceTypeLabels]}
+                                  </Badge>
+                                )}
+                                <Badge 
+                                  variant={
+                                    (contract as any).status === "assinado" ? "default" : 
+                                    (contract as any).status === "expirado" || (contract as any).status === "rescindido" ? "destructive" : 
+                                    (contract as any).status === "pendente" ? "secondary" : "outline"
+                                  }
+                                >
+                                  {statusLabels[(contract as any).status as keyof typeof statusLabels] || 'Ativo'}
+                                </Badge>
+                                {(contract as any).client_type && (
+                                  <Badge variant="outline">
+                                    {(contract as any).client_type === 'artista' ? 'Artista' : 'Empresa'}
+                                  </Badge>
+                                )}
                               </div>
+                              {(contract as any).responsible_person && (
+                                <p className="text-sm text-muted-foreground">
+                                  Responsável: {(contract as any).responsible_person}
+                                </p>
+                              )}
                             </div>
                           </div>
-                        );
-                      })}
-                    </>
+                          
+                          <div className="flex items-center gap-6 text-sm">
+                            {((contract as any).start_date || (contract as any).end_date || contract.effective_from || contract.effective_to) && (
+                              <div className="text-center">
+                                <div className="text-muted-foreground">Período</div>
+                                <div className="font-medium">
+                                  {formatDateBR((contract as any).start_date || contract.effective_from)} - {formatDateBR((contract as any).end_date || contract.effective_to)}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {totalValue > 0 && (
+                              <div className="text-center">
+                                <div className="text-muted-foreground">Valor</div>
+                                <div className="font-medium text-foreground">
+                                  {new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                  }).format(totalValue)}
+                                </div>
+                                {(contract.royalty_rate || (contract as any).royalties_percentage) && (
+                                  <div className="text-xs text-muted-foreground">
+                                    + {contract.royalty_rate || (contract as any).royalties_percentage}% royalties
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {daysToExpire !== null && (
+                              <div className="text-center">
+                                <div className="text-muted-foreground">Vencimento</div>
+                                <div className={`font-medium ${
+                                  daysToExpire < 0 ? "text-destructive" :
+                                  daysToExpire < 30 ? "text-orange-600" : "text-foreground"
+                                }`}>
+                                  {daysToExpire < 0 ? "Vencido" : 
+                                   daysToExpire === 0 ? "Hoje" :
+                                   `${daysToExpire} dias`}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleViewContract(contract)}
+                              >
+                                Ver
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditContract(contract)}
+                              >
+                                Editar
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleDeleteContract(contract)}
+                              >
+                                Excluir
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </CardContent>
@@ -503,14 +396,7 @@ const Contratos = () => {
         onConfirm={confirmDelete}
         title="Excluir Contrato"
         description={`Tem certeza que deseja excluir o contrato "${(contractToDelete as any)?.title || contractToDelete?.contract_type}"? Esta ação não pode ser desfeita.`}
-      />
-
-      <DeleteConfirmationModal
-        open={isBulkDeleteModalOpen}
-        onOpenChange={setIsBulkDeleteModalOpen}
-        onConfirm={confirmBulkDelete}
-        title="Excluir Contratos Selecionados"
-        description={`Tem certeza que deseja excluir ${selectedItems.length} contratos? Esta ação não pode ser desfeita.`}
+        isLoading={deleteContract.isPending}
       />
     </SidebarProvider>
   );

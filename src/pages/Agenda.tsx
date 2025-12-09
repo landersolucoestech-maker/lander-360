@@ -6,16 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CheckSquare, FileText, Upload, Download, Trash2 } from "lucide-react";
-import * as XLSX from 'xlsx';
+import { Calendar as CalendarIcon, Plus, Clock, MapPin, Users, CheckSquare, FileText } from "lucide-react";
 import { AgendaEventModal } from "@/components/modals/AgendaEventModal";
 import { AgendaViewModal } from "@/components/modals/AgendaViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
-import { isSameDay } from "date-fns";
-import { formatDateFullBR } from "@/lib/utils";
+import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns";
+import { cn, formatDateFullBR, formatDateForDB } from "@/lib/utils";
 import { useAgenda, useCreateAgendaEvent, useUpdateAgendaEvent, useDeleteAgendaEvent } from "@/hooks/useAgenda";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface AgendaEvent {
   id: string;
@@ -48,39 +46,16 @@ const Agenda = () => {
   const [eventToDelete, setEventToDelete] = useState<AgendaEvent | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
   
   const { toast } = useToast();
 
+  // Fetch events from backend
   const { data: agendaEvents = [], isLoading } = useAgenda();
   const createEvent = useCreateAgendaEvent();
   const updateEvent = useUpdateAgendaEvent();
   const deleteEvent = useDeleteAgendaEvent();
 
-  const eventTypeLabels: Record<string, string> = {
-    sessoes_estudio: 'Sessões de estúdio',
-    ensaios: 'Ensaios',
-    sessoes_fotos: 'Sessões de fotos',
-    shows: 'Shows',
-    entrevistas: 'Entrevistas',
-    podcasts: 'Podcasts',
-    programas_tv: 'Programas de TV',
-    radio: 'Rádio',
-    producao_conteudo: 'Produção de conteúdo',
-    reunioes: 'Reuniões'
-  };
-
-  const statusLabels: Record<string, string> = {
-    agendado: 'Agendado',
-    cancelado: 'Cancelado',
-    pendente: 'Pendente',
-    concluido: 'Concluído',
-    confirmado: 'Confirmado'
-  };
-
+  // Map backend data to frontend format
   const events: AgendaEvent[] = agendaEvents.map((e: any) => ({
     id: e.id,
     event_name: e.title,
@@ -102,133 +77,6 @@ const Agenda = () => {
     description: e.description,
     observations: e.observations,
   }));
-
-  const handleExport = () => {
-    const dataToExport = filteredEvents.map((event: any) => ({
-      'Nome do Evento': event.event_name || '',
-      'Tipo': eventTypeLabels[event.event_type as keyof typeof eventTypeLabels] || '',
-      'Status': statusLabels[event.status as keyof typeof statusLabels] || '',
-      'Data Início': event.start_date || '',
-      'Horário Início': event.start_time || '',
-      'Data Fim': event.end_date || '',
-      'Horário Fim': event.end_time || '',
-      'Local': event.location || '',
-      'Venue': event.venue_name || '',
-      'Artista': event.artists?.stage_name || event.artists?.name || '',
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Agenda');
-    XLSX.writeFile(wb, `agenda_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
-  };
-
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImporting(true);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const row of jsonData as any[]) {
-          try {
-            const eventTypeReverseMap: Record<string, string> = {
-              'Sessões de estúdio': 'sessoes_estudio',
-              'Ensaios': 'ensaios',
-              'Sessões de fotos': 'sessoes_fotos',
-              'Shows': 'shows',
-              'Entrevistas': 'entrevistas',
-              'Podcasts': 'podcasts',
-              'Programas de TV': 'programas_tv',
-              'Rádio': 'radio',
-              'Produção de conteúdo': 'producao_conteudo',
-              'Reuniões': 'reunioes'
-            };
-
-            const statusReverseMap: Record<string, string> = {
-              'Agendado': 'agendado',
-              'Cancelado': 'cancelado',
-              'Pendente': 'pendente',
-              'Concluído': 'concluido',
-              'Confirmado': 'confirmado'
-            };
-
-            await createEvent.mutateAsync({
-              title: row['Nome do Evento'] || row['title'] || 'Evento Importado',
-              event_type: eventTypeReverseMap[row['Tipo']] || row['event_type'] || 'reunioes',
-              start_date: row['Data Início'] ? new Date(row['Data Início']).toISOString() : new Date().toISOString(),
-              location: row['Local'] || row['location'] || null,
-            });
-            successCount++;
-          } catch (err) {
-            errorCount++;
-            console.error('Error importing row:', err);
-          }
-        }
-
-        toast({ 
-          title: 'Importação concluída', 
-          description: `${successCount} eventos importados com sucesso. ${errorCount > 0 ? `${errorCount} erros.` : ''}` 
-        });
-      } catch (error) {
-        toast({ title: 'Erro', description: 'Erro ao processar arquivo.', variant: 'destructive' });
-      } finally {
-        setIsImporting(false);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-    event.target.value = '';
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedItems(filteredEvents.map(item => item.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  const handleSelectItem = (itemId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedItems(prev => [...prev, itemId]);
-    } else {
-      setSelectedItems(prev => prev.filter(id => id !== itemId));
-    }
-  };
-
-  const confirmBulkDelete = async () => {
-    setIsDeletingBulk(true);
-    try {
-      for (const id of selectedItems) {
-        await deleteEvent.mutateAsync(id);
-      }
-      toast({
-        title: "Eventos excluídos",
-        description: `${selectedItems.length} eventos foram excluídos com sucesso.`,
-      });
-      setSelectedItems([]);
-      setIsBulkDeleteModalOpen(false);
-    } catch (error) {
-      toast({
-        title: "Erro ao excluir",
-        description: "Não foi possível excluir alguns eventos.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeletingBulk(false);
-    }
-  };
 
   const handleNewEvent = () => {
     setSelectedEvent(undefined);
@@ -252,6 +100,7 @@ const Agenda = () => {
 
   const handleSubmitEvent = async (data: any) => {
     try {
+      // Map form data to database format
       const eventData = {
         title: data.event_name,
         start_date: data.start_date instanceof Date 
@@ -277,7 +126,10 @@ const Agenda = () => {
       };
 
       if (selectedEvent) {
-        await updateEvent.mutateAsync({ id: selectedEvent.id, data: eventData });
+        await updateEvent.mutateAsync({ 
+          id: selectedEvent.id, 
+          data: eventData 
+        });
       } else {
         await createEvent.mutateAsync(eventData);
       }
@@ -302,8 +154,16 @@ const Agenda = () => {
   };
 
   const filterOptions = [
-    { key: "event_type", label: "Tipo", options: ["sessoes_estudio", "ensaios", "sessoes_fotos", "shows", "entrevistas", "podcasts", "programas_tv", "radio", "producao_conteudo", "reunioes"] },
-    { key: "status", label: "Status", options: ["agendado", "cancelado", "pendente", "concluido", "confirmado"] }
+    {
+      key: "event_type",
+      label: "Tipo",
+      options: ["sessoes_estudio", "ensaios", "sessoes_fotos", "shows", "entrevistas", "podcasts", "programas_tv", "radio", "producao_conteudo", "reunioes"]
+    },
+    {
+      key: "status",
+      label: "Status",
+      options: ["agendado", "cancelado", "pendente", "concluido", "confirmado"]
+    }
   ];
 
   const handleSearch = (searchTerm: string) => {
@@ -319,6 +179,7 @@ const Agenda = () => {
     setFilters({});
   };
 
+  // Filter events based on search and filters
   const filteredEvents = events.filter(event => {
     const matchesSearch = !searchTerm || 
       event.event_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -334,10 +195,38 @@ const Agenda = () => {
     return matchesSearch && matchesFilters;
   });
 
+  // Get events for today's date (since we removed selectedDate)
+  const todayEvents = filteredEvents.filter(event => 
+    isSameDay(new Date(event.start_date), new Date())
+  );
+
+  // Calculate stats
   const totalEvents = events.length;
   const confirmedEvents = events.filter(e => e.status === 'confirmado').length;
   const upcomingEvents = events.filter(e => new Date(e.start_date) > new Date()).length;
   const todayEventsCount = events.filter(e => isSameDay(new Date(e.start_date), new Date())).length;
+
+  const eventTypeLabels = {
+    sessoes_estudio: 'Sessões de estúdio',
+    ensaios: 'Ensaios',
+    sessoes_fotos: 'Sessões de fotos',
+    shows: 'Shows',
+    entrevistas: 'Entrevistas',
+    podcasts: 'Podcasts',
+    programas_tv: 'Programas de TV',
+    radio: 'Rádio',
+    producao_conteudo: 'Produção de conteúdo',
+    reunioes: 'Reuniões'
+  };
+
+  const statusLabels = {
+    agendado: 'Agendado',
+    cancelado: 'Cancelado',
+    pendente: 'Pendente',
+    concluido: 'Concluído',
+    confirmado: 'Confirmado'
+  };
+
 
   return (
     <SidebarProvider>
@@ -353,32 +242,10 @@ const Agenda = () => {
                   Gerencie eventos, shows e compromissos
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                {selectedItems.length > 0 && (
-                  <Button 
-                    variant="destructive" 
-                    className="gap-2" 
-                    onClick={() => setIsBulkDeleteModalOpen(true)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Excluir ({selectedItems.length})
-                  </Button>
-                )}
-                <Button variant="outline" className="gap-2" onClick={handleExport}>
-                  <Download className="h-4 w-4" />
-                  Exportar
-                </Button>
-                <label>
-                  <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" disabled={isImporting} />
-                  <Button variant="outline" className="gap-2" asChild disabled={isImporting}>
-                    <span><Upload className="h-4 w-4" />{isImporting ? 'Importando...' : 'Importar'}</span>
-                  </Button>
-                </label>
-                <Button className="gap-2" onClick={handleNewEvent}>
-                  <Plus className="h-4 w-4" />
-                  Novo Evento
-                </Button>
-              </div>
+              <Button className="gap-2" onClick={handleNewEvent}>
+                <Plus className="h-4 w-4" />
+                Novo Evento
+              </Button>
             </div>
 
             {/* KPI Cards */}
@@ -415,55 +282,48 @@ const Agenda = () => {
 
             {/* Lista de Eventos */}
             <div className="space-y-4">
-              <SearchFilter
-                searchPlaceholder="Buscar eventos por nome ou local..."
-                filters={filterOptions}
-                onSearch={handleSearch}
-                onFilter={handleFilter}
-                onClear={handleClear}
-              />
+                {/* Search and Filters */}
+                <SearchFilter
+                  searchPlaceholder="Buscar eventos por nome ou local..."
+                  filters={filterOptions}
+                  onSearch={handleSearch}
+                  onFilter={handleFilter}
+                  onClear={handleClear}
+                />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Todos os Eventos</CardTitle>
-                  <CardDescription>{filteredEvents.length} evento(s) cadastrado(s)</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {isLoading ? (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground">Carregando eventos...</p>
-                      </div>
-                    ) : filteredEvents.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum evento cadastrado</h3>
-                        <p className="text-muted-foreground mb-4">Comece agendando seu primeiro evento</p>
-                        <Button onClick={handleNewEvent} className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Agendar Primeiro Evento
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Select All */}
-                        <div className="flex items-center gap-2 pb-2 border-b">
-                          <Checkbox
-                            checked={selectedItems.length === filteredEvents.length && filteredEvents.length > 0}
-                            onCheckedChange={handleSelectAll}
-                          />
-                          <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                {/* Todos os Eventos */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      Todos os Eventos
+                    </CardTitle>
+                    <CardDescription>
+                      {filteredEvents.length} evento(s) cadastrado(s)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {isLoading ? (
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground">Carregando eventos...</p>
                         </div>
-                        {filteredEvents.map((event) => (
+                      ) : filteredEvents.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum evento cadastrado</h3>
+                          <p className="text-muted-foreground mb-4">Comece agendando seu primeiro evento</p>
+                          <Button onClick={handleNewEvent} className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Agendar Primeiro Evento
+                          </Button>
+                        </div>
+                      ) : (
+                        filteredEvents.map((event) => (
                           <div
                             key={event.id}
                             className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
                             <div className="flex items-center gap-4">
-                              <Checkbox
-                                checked={selectedItems.includes(event.id)}
-                                onCheckedChange={(checked) => handleSelectItem(event.id, !!checked)}
-                              />
                               <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                                 event.event_type === "shows" ? "bg-purple-100 dark:bg-purple-900/20" :
                                 event.event_type === "sessoes_estudio" ? "bg-red-100 dark:bg-red-900/20" :
@@ -516,6 +376,13 @@ const Agenda = () => {
                                 </div>
                               )}
                               
+                              {event.venue_name && (
+                                <div className="text-center">
+                                  <div className="text-muted-foreground">Venue</div>
+                                  <div className="font-medium">{event.venue_name}</div>
+                                </div>
+                              )}
+                              
                               <div className="text-center">
                                 <div className="text-muted-foreground">Data</div>
                                 <div className="font-medium flex items-center gap-1">
@@ -535,40 +402,53 @@ const Agenda = () => {
                               )}
                               
                               <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleViewEvent(event)}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleViewEvent(event)}
+                                >
                                   Ver
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleEditEvent(event)}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditEvent(event)}
+                                >
                                   Editar
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDeleteEvent(event)}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleDeleteEvent(event)}
+                                >
                                   Excluir
                                 </Button>
                               </div>
                             </div>
                           </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
             </div>
           </div>
         </SidebarInset>
       </div>
+
+      {/* Modals */}
+      <AgendaViewModal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        event={eventToView}
+      />
 
       <AgendaEventModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         event={selectedEvent}
         onSubmit={handleSubmitEvent}
-      />
-
-      <AgendaViewModal
-        open={isViewModalOpen}
-        onOpenChange={setIsViewModalOpen}
-        event={eventToView}
+        isLoading={false}
       />
 
       <DeleteConfirmationModal
@@ -577,14 +457,7 @@ const Agenda = () => {
         onConfirm={confirmDelete}
         title="Excluir Evento"
         description={`Tem certeza que deseja excluir o evento "${eventToDelete?.event_name}"? Esta ação não pode ser desfeita.`}
-      />
-
-      <DeleteConfirmationModal
-        open={isBulkDeleteModalOpen}
-        onOpenChange={setIsBulkDeleteModalOpen}
-        onConfirm={confirmBulkDelete}
-        title="Excluir Eventos Selecionados"
-        description={`Tem certeza que deseja excluir ${selectedItems.length} eventos? Esta ação não pode ser desfeita.`}
+        isLoading={false}
       />
     </SidebarProvider>
   );

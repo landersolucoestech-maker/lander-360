@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical, X, ArrowUpDown } from "lucide-react";
 import { UserModal } from "@/components/modals/UserModal";
 import { UserViewModal } from "@/components/modals/UserViewModal";
@@ -36,9 +35,6 @@ const Usuarios = () => {
   const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
   const [userToToggle, setUserToToggle] = useState<any>(null);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   // Get unique sectors for filter dropdown
   const uniqueSectors = [...new Set(users.map(u => u.sector).filter(Boolean))];
@@ -100,26 +96,6 @@ const Usuarios = () => {
 
     setFilteredUsers(filtered);
   }, [searchTerm, users, roleFilter, statusFilter, sectorFilter, sortBy]);
-
-  const handleSelectAll = (checked: boolean) => {
-    setSelectedItems(checked ? filteredUsers.map((u: any) => u.id) : []);
-  };
-
-  const handleSelectItem = (id: string, checked: boolean) => {
-    setSelectedItems(prev => checked ? [...prev, id] : prev.filter(i => i !== id));
-  };
-
-  const confirmBulkDelete = async () => {
-    setIsDeletingBulk(true);
-    try {
-      for (const id of selectedItems) {
-        await deleteUser(id);
-      }
-      toast({ title: 'Sucesso', description: `${selectedItems.length} usuários excluídos!` });
-      setSelectedItems([]);
-    } catch { toast({ title: 'Erro', variant: 'destructive' }); }
-    finally { setIsDeletingBulk(false); setIsBulkDeleteModalOpen(false); }
-  };
 
   const handleCreateUser = () => {
     setSelectedUser(null);
@@ -233,22 +209,10 @@ const Usuarios = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {selectedItems.length > 0 && (
-                  <Button 
-                    variant="destructive" 
-                    className="gap-2" 
-                    onClick={() => setIsBulkDeleteModalOpen(true)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Excluir ({selectedItems.length})
-                  </Button>
-                )}
-                <Button onClick={handleCreateUser} className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Novo Usuário
-                </Button>
-              </div>
+              <Button onClick={handleCreateUser} className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Novo Usuário
+              </Button>
             </div>
 
             {/* Search and Filters */}
@@ -340,32 +304,12 @@ const Usuarios = () => {
 
             {/* Users List */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Lista de Usuários</CardTitle>
-                  <CardDescription>Todos os usuários cadastrados no sistema</CardDescription>
-                </div>
-                {filteredUsers.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedItems.length === filteredUsers.length && filteredUsers.length > 0}
-                      onCheckedChange={handleSelectAll}
-                    />
-                    <span className="text-sm text-muted-foreground">Selecionar todos</span>
-                  </div>
-                )}
-              </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
                   {filteredUsers.map((userData) => (
                     <div key={userData.id} className="p-6 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 flex-1">
-                          <Checkbox
-                            checked={selectedItems.includes(userData.id)}
-                            onCheckedChange={(checked) => handleSelectItem(userData.id, !!checked)}
-                            className="flex-shrink-0"
-                          />
                           <Avatar className="h-12 w-12">
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {getUserInitials(userData.full_name || 'U')}
