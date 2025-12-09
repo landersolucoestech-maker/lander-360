@@ -49,6 +49,7 @@ const sectorLabels: Record<string, string> = {
   eventos_shows: "Eventos e Shows",
   eventos: "Eventos e Shows",
   shows: "Eventos e Shows",
+  Shows: "Eventos e Shows",
   comercial_vendas: "Comercial / Vendas",
   comercial: "Comercial / Vendas",
   recursos_humanos: "Recursos Humanos (RH)",
