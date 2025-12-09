@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,11 +94,14 @@ const MarketingTarefas = () => {
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold text-foreground">Gestão de Tarefas</h1>
-                <p className="text-muted-foreground">
-                  Organize e acompanhe todas as tarefas de marketing
-                </p>
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9" />
+                <div className="flex flex-col gap-2">
+                  <h1 className="text-3xl font-bold text-foreground">Gestão de Tarefas</h1>
+                  <p className="text-muted-foreground">
+                    Organize e acompanhe todas as tarefas de marketing
+                  </p>
+                </div>
               </div>
               <Button className="gap-2" onClick={() => setIsModalOpen(true)}>
                 <Plus className="h-4 w-4" />
