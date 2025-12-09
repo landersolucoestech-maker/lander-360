@@ -177,11 +177,29 @@ export function ContactProfileModal({
               <Clock className="h-5 w-5" />
               Histórico de Interações
             </h3>
-            <div className="text-center py-8 text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>Nenhuma interação registrada ainda.</p>
-              <p className="text-sm mt-1">As interações com este contato aparecerão aqui.</p>
-            </div>
+            {contact.interactions && contact.interactions.length > 0 ? (
+              <div className="space-y-3">
+                {contact.interactions.map((interaction: any, index: number) => (
+                  <div key={index} className="border rounded-lg p-3 bg-muted/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className="capitalize">
+                        {interaction.type?.replace(/_/g, ' ') || 'Nota'}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {interaction.date ? formatDateBR(interaction.date) : 'Sem data'}
+                      </span>
+                    </div>
+                    <p className="text-sm">{interaction.description}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhuma interação registrada ainda.</p>
+                <p className="text-sm mt-1">As interações com este contato aparecerão aqui.</p>
+              </div>
+            )}
           </div>
 
           <Separator />
