@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical } from "lucide-react";
+import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical, X } from "lucide-react";
 import { UserModal } from "@/components/modals/UserModal";
 import { UserViewModal } from "@/components/modals/UserViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
@@ -236,6 +236,23 @@ const Usuarios = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                  )}
+
+                  {(searchTerm || roleFilter !== "all" || statusFilter !== "all" || sectorFilter !== "all") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setRoleFilter("all");
+                        setStatusFilter("all");
+                        setSectorFilter("all");
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Limpar
+                    </Button>
                   )}
                 </div>
               </CardContent>
