@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical, X } from "lucide-react";
+import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical, X, ArrowUpDown } from "lucide-react";
 import { UserModal } from "@/components/modals/UserModal";
 import { UserViewModal } from "@/components/modals/UserViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
@@ -26,6 +26,7 @@ const Usuarios = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sectorFilter, setSectorFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("name_asc");
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -66,8 +67,35 @@ const Usuarios = () => {
       filtered = filtered.filter(user => user.sector === sectorFilter);
     }
 
+    // Sorting
+    const [field, direction] = sortBy.split("_");
+    filtered = [...filtered].sort((a, b) => {
+      let valueA, valueB;
+      
+      switch (field) {
+        case "name":
+          valueA = a.full_name?.toLowerCase() || "";
+          valueB = b.full_name?.toLowerCase() || "";
+          break;
+        case "email":
+          valueA = a.email?.toLowerCase() || "";
+          valueB = b.email?.toLowerCase() || "";
+          break;
+        case "date":
+          valueA = new Date(a.created_at || 0).getTime();
+          valueB = new Date(b.created_at || 0).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (valueA < valueB) return direction === "asc" ? -1 : 1;
+      if (valueA > valueB) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
     setFilteredUsers(filtered);
-  }, [searchTerm, users, roleFilter, statusFilter, sectorFilter]);
+  }, [searchTerm, users, roleFilter, statusFilter, sectorFilter, sortBy]);
 
   const handleCreateUser = () => {
     setSelectedUser(null);
@@ -238,7 +266,22 @@ const Usuarios = () => {
                     </Select>
                   )}
 
-                  {(searchTerm || roleFilter !== "all" || statusFilter !== "all" || sectorFilter !== "all") && (
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-full md:w-[180px]">
+                      <ArrowUpDown className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Ordenar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
+                      <SelectItem value="name_desc">Nome (Z-A)</SelectItem>
+                      <SelectItem value="email_asc">Email (A-Z)</SelectItem>
+                      <SelectItem value="email_desc">Email (Z-A)</SelectItem>
+                      <SelectItem value="date_desc">Mais Recentes</SelectItem>
+                      <SelectItem value="date_asc">Mais Antigos</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {(searchTerm || roleFilter !== "all" || statusFilter !== "all" || sectorFilter !== "all" || sortBy !== "name_asc") && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -247,6 +290,7 @@ const Usuarios = () => {
                         setRoleFilter("all");
                         setStatusFilter("all");
                         setSectorFilter("all");
+                        setSortBy("name_asc");
                       }}
                       className="flex items-center gap-2"
                     >
