@@ -4,7 +4,10 @@ export class AgendaService {
   static async getAll() {
     const { data, error } = await supabase
       .from('agenda_events')
-      .select('*')
+      .select(`
+        *,
+        artists:artist_id(id, name, stage_name)
+      `)
       .order('start_date', { ascending: true });
 
     if (error) throw error;

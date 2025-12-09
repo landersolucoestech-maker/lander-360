@@ -72,6 +72,7 @@ const Agenda = () => {
     event_type: e.event_type || 'reunioes',
     status: e.status || 'agendado',
     artist_id: e.artist_id,
+    artists: e.artists,
     description: e.description,
     observations: e.observations,
   }));

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatDateFullBR } from "@/lib/utils";
-import { MapPin, Clock, Calendar, Users, DollarSign, Building, Phone } from "lucide-react";
+import { MapPin, Clock, Calendar, Users, DollarSign, Building, Phone, Music } from "lucide-react";
 
 interface AgendaViewModalProps {
   open: boolean;
@@ -84,6 +84,16 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
                   </Badge>
                 </p>
               </div>
+              {(event.artists || event.artist_name) && (
+                <div className="col-span-2">
+                  <label className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Music className="h-4 w-4" /> Artista
+                  </label>
+                  <p className="font-medium">
+                    {event.artists?.stage_name || event.artists?.name || event.artist_name}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
