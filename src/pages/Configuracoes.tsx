@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,11 +123,14 @@ const Configuracoes = () => {
         <SidebarInset className="flex-1">
           <div className="container mx-auto p-6 space-y-6">
             {/* Header */}
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
-              <p className="text-muted-foreground">
-                Gerencie as configurações do sistema e preferências
-              </p>
+            <div className="flex items-center gap-3 mb-6">
+              <SidebarTrigger className="h-9 w-9" />
+              <div className="flex flex-col gap-2">
+                <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
+                <p className="text-muted-foreground">
+                  Gerencie as configurações do sistema e preferências
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

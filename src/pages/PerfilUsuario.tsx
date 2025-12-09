@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -303,9 +303,12 @@ const PerfilUsuario = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
-                <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9" />
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
+                  <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
+                </div>
               </div>
               {!isEditing ? (
                 <Button onClick={handleEdit} className="gap-2">

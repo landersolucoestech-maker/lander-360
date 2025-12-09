@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { WorkflowNavigation } from "@/components/navigation/WorkflowNavigation";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -64,11 +64,14 @@ const MarketingVisaoGeral = () => {
             
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold text-foreground">Marketing</h1>
-                <p className="text-muted-foreground">
-                  Painel principal de campanhas e métricas de marketing
-                </p>
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9" />
+                <div className="flex flex-col gap-2">
+                  <h1 className="text-3xl font-bold text-foreground">Marketing</h1>
+                  <p className="text-muted-foreground">
+                    Painel principal de campanhas e métricas de marketing
+                  </p>
+                </div>
               </div>
               <Button className="gap-2" onClick={() => setIsModalOpen(true)}>
                 <Plus className="h-4 w-4" />

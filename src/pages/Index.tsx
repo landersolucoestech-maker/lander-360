@@ -1,7 +1,7 @@
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,11 +80,14 @@ const Index = () => {
           <div className="w-full h-full px-4 py-3 space-y-3">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-                <p className="text-sm text-muted-foreground">
-                  Visão geral do seu negócio musical
-                </p>
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9" />
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Visão geral do seu negócio musical
+                  </p>
+                </div>
               </div>
             </div>
 

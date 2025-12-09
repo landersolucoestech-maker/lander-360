@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -200,13 +200,16 @@ const Usuarios = () => {
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-8 w-8 text-primary" />
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">Usuários</h1>
-                  <p className="text-muted-foreground">
-                    Gerencie usuários e permissões do sistema
-                  </p>
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="h-9 w-9" />
+                <div className="flex items-center gap-2">
+                  <Users className="h-8 w-8 text-primary" />
+                  <div>
+                    <h1 className="text-3xl font-bold text-foreground">Usuários</h1>
+                    <p className="text-muted-foreground">
+                      Gerencie usuários e permissões do sistema
+                    </p>
+                  </div>
                 </div>
               </div>
               <Button onClick={handleCreateUser} className="flex items-center gap-2">
