@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -9,19 +9,22 @@ import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle } from "lucide-react";
+import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
-import { formatDateBR, translateStatus } from "@/lib/utils";
+import { useDataExport } from "@/hooks/useDataExport";
+import { formatDateBR } from "@/lib/utils";
 
 const Lancamentos = () => {
   const { toast } = useToast();
   const { data: releasesData = [], isLoading, refetch } = useReleases();
   const { data: artists = [] } = useArtists();
   const deleteRelease = useDeleteRelease();
+  const { exportToExcel, parseExcelFile } = useDataExport();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
-  // Map releases to include artist name and correct field names
   const allReleases = releasesData.map((release: any) => {
     const artist = artists.find((a: any) => a.id === release.artist_id);
     return {
@@ -44,27 +47,14 @@ const Lancamentos = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
 
-  // Update filtered releases when data changes
   useEffect(() => {
     setFilteredReleases(allReleases);
   }, [releasesData, artists]);
 
   const filterOptions = [
-    {
-      key: "type",
-      label: "Tipo",
-      options: ["Single", "EP", "Álbum"]
-    },
-    {
-      key: "status",
-      label: "Status",
-      options: ["Lançado", "Programado", "Em Produção"]
-    },
-    {
-      key: "artist",
-      label: "Artista",
-      options: [] // Will be populated from database
-    }
+    { key: "type", label: "Tipo", options: ["Single", "EP", "Álbum"] },
+    { key: "status", label: "Status", options: ["Lançado", "Programado", "Em Produção"] },
+    { key: "artist", label: "Artista", options: [] }
   ];
 
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
@@ -89,7 +79,6 @@ const Lancamentos = () => {
   const filterReleases = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = allReleases;
 
-    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(release =>
         release.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,7 +86,6 @@ const Lancamentos = () => {
       );
     }
 
-    // Apply category filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(release => {
@@ -143,6 +131,41 @@ const Lancamentos = () => {
     }
   };
 
+  const handleExport = () => {
+    const exportData = allReleases.map((release: any) => ({
+      "Título": release.title || "",
+      "Artista": release.artist || "",
+      "Tipo": release.type || "",
+      "Status": release.status || "",
+      "Data de Lançamento": formatDateBR(release.releaseDate),
+      "Gênero": release.genre || "",
+      "Gravadora": release.label || "",
+    }));
+    exportToExcel(exportData, "lancamentos", "Lançamentos");
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsImporting(true);
+    try {
+      const data = await parseExcelFile(file);
+      toast({
+        title: "Arquivo lido",
+        description: `${data.length} registros encontrados. Funcionalidade de importação em desenvolvimento.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro na importação",
+        description: "Não foi possível ler o arquivo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -153,14 +176,23 @@ const Lancamentos = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold text-foreground">Lançamentos</h1>
-                <p className="text-muted-foreground">
-                  Gestão de lançamentos e distribuição musical
-                </p>
+                <p className="text-muted-foreground">Gestão de lançamentos e distribuição musical</p>
               </div>
-              <Button className="gap-2" onClick={handleNewRelease}>
-                <Plus className="h-4 w-4" />
-                Novo Lançamento
-              </Button>
+              <div className="flex gap-2">
+                <input type="file" ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                  {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  Importar
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={handleExport} disabled={allReleases.length === 0}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <Button className="gap-2" onClick={handleNewRelease}>
+                  <Plus className="h-4 w-4" />
+                  Novo Lançamento
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}
@@ -175,76 +207,34 @@ const Lancamentos = () => {
               }).length;
               const totalStreams = allReleases.reduce((sum, r) => sum + (r.streams || 0), 0);
               const takedowns = allReleases.filter(r => r.takedown).length;
-              const performanceRate = allReleases.length > 0 
-                ? Math.round((activeReleases / allReleases.length) * 100) 
-                : 0;
+              const performanceRate = allReleases.length > 0 ? Math.round((activeReleases / allReleases.length) * 100) : 0;
 
               return (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                  <DashboardCard
-                    title="Lançamentos Ativos"
-                    value={activeReleases}
-                    description="disponíveis nas plataformas"
-                    icon={Music}
-                    trend={{ value: activeReleases, isPositive: true }}
-                  />
-                  <DashboardCard
-                    title="Programados"
-                    value={scheduledReleases}
-                    description="próximos 30 dias"
-                    icon={Calendar}
-                    trend={{ value: scheduledReleases, isPositive: true }}
-                  />
-                  <DashboardCard
-                    title="Performance"
-                    value={`${performanceRate}%`}
-                    description="taxa de crescimento"
-                    icon={TrendingUp}
-                    trend={{ value: performanceRate, isPositive: performanceRate > 0 }}
-                  />
-                  <DashboardCard
-                    title="Total de Streams"
-                    value={totalStreams.toLocaleString('pt-BR')}
-                    description="reproduções acumuladas"
-                    icon={Eye}
-                    trend={{ value: totalStreams, isPositive: true }}
-                  />
-                  <DashboardCard
-                    title="Takedowns"
-                    value={takedowns}
-                    description="lançamentos removidos"
-                    icon={AlertTriangle}
-                    className="border-orange-500/30"
-                  />
+                  <DashboardCard title="Lançamentos Ativos" value={activeReleases} description="disponíveis nas plataformas" icon={Music} trend={{ value: activeReleases, isPositive: true }} />
+                  <DashboardCard title="Programados" value={scheduledReleases} description="próximos 30 dias" icon={Calendar} trend={{ value: scheduledReleases, isPositive: true }} />
+                  <DashboardCard title="Performance" value={`${performanceRate}%`} description="taxa de crescimento" icon={TrendingUp} trend={{ value: performanceRate, isPositive: performanceRate > 0 }} />
+                  <DashboardCard title="Total de Streams" value={totalStreams.toLocaleString('pt-BR')} description="reproduções acumuladas" icon={Eye} trend={{ value: totalStreams, isPositive: true }} />
+                  <DashboardCard title="Takedowns" value={takedowns} description="lançamentos removidos" icon={AlertTriangle} className="border-orange-500/30" />
                 </div>
               );
             })()}
 
             {/* Search and Filters */}
-            <SearchFilter
-              searchPlaceholder="Buscar lançamentos por título ou artista..."
-              filters={filterOptions}
-              onSearch={handleSearch}
-              onFilter={handleFilter}
-              onClear={handleClear}
-            />
+            <SearchFilter searchPlaceholder="Buscar lançamentos por título ou artista..." filters={filterOptions} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
 
             {/* Releases List */}
             <Card className="flex-1">
               <CardHeader>
                 <CardTitle>Lista de Lançamentos</CardTitle>
-                <CardDescription>
-                  Acompanhe todos os seus lançamentos musicais
-                </CardDescription>
+                <CardDescription>Acompanhe todos os seus lançamentos musicais</CardDescription>
               </CardHeader>
               <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6">
                 {allReleases.length === 0 ? (
                   <div className="text-center py-12">
                     <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">Nenhum lançamento cadastrado</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Comece criando seu primeiro lançamento musical
-                    </p>
+                    <p className="text-muted-foreground mb-4">Comece criando seu primeiro lançamento musical</p>
                     <Button onClick={handleNewRelease}>
                       <Plus className="h-4 w-4 mr-2" />
                       Criar Primeiro Lançamento
@@ -253,19 +243,12 @@ const Lancamentos = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                     {filteredReleases.map((release) => (
-                      <ReleaseCard
-                        key={release.id}
-                        release={release}
-                        onViewDetails={handleViewDetails}
-                        onEdit={handleEditRelease}
-                        onDelete={handleDeleteRelease}
-                      />
+                      <ReleaseCard key={release.id} release={release} onViewDetails={handleViewDetails} onEdit={handleEditRelease} onDelete={handleDeleteRelease} />
                     ))}
                   </div>
                 )}
               </CardContent>
             </Card>
-
 
             {/* New Release Modal */}
             <Dialog open={isNewReleaseModalOpen} onOpenChange={setIsNewReleaseModalOpen}>
@@ -273,10 +256,7 @@ const Lancamentos = () => {
                 <DialogHeader>
                   <DialogTitle>Novo Lançamento</DialogTitle>
                 </DialogHeader>
-                <ReleaseForm
-                  onSuccess={() => setIsNewReleaseModalOpen(false)}
-                  onCancel={() => setIsNewReleaseModalOpen(false)}
-                />
+                <ReleaseForm onSuccess={() => setIsNewReleaseModalOpen(false)} onCancel={() => setIsNewReleaseModalOpen(false)} />
               </DialogContent>
             </Dialog>
 
@@ -286,28 +266,12 @@ const Lancamentos = () => {
                 <DialogHeader>
                   <DialogTitle>Editar Lançamento</DialogTitle>
                 </DialogHeader>
-                <ReleaseForm
-                  release={selectedRelease}
-                  onSuccess={() => {
-                    setIsEditModalOpen(false);
-                    setSelectedRelease(null);
-                  }}
-                  onCancel={() => {
-                    setIsEditModalOpen(false);
-                    setSelectedRelease(null);
-                  }}
-                />
+                <ReleaseForm release={selectedRelease} onSuccess={() => { setIsEditModalOpen(false); setSelectedRelease(null); }} onCancel={() => { setIsEditModalOpen(false); setSelectedRelease(null); }} />
               </DialogContent>
             </Dialog>
 
             {/* Delete Confirmation Modal */}
-            <DeleteConfirmationModal
-              open={isDeleteModalOpen}
-              onOpenChange={setIsDeleteModalOpen}
-              onConfirm={confirmDeleteRelease}
-              title="Excluir Lançamento"
-              description={`Tem certeza que deseja excluir o lançamento "${releaseToDelete?.title}"? Esta ação não pode ser desfeita.`}
-            />
+            <DeleteConfirmationModal open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen} onConfirm={confirmDeleteRelease} title="Excluir Lançamento" description={`Tem certeza que deseja excluir o lançamento "${releaseToDelete?.title}"? Esta ação não pode ser desfeita.`} />
 
             {/* View Details Modal */}
             <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
@@ -320,15 +284,10 @@ const Lancamentos = () => {
                 </DialogHeader>
                 {selectedRelease && (
                   <div className="space-y-6">
-                    {/* Capa e Informações Principais */}
                     <div className="flex gap-6">
                       {(selectedRelease.cover || selectedRelease.cover_url) && (
                         <div className="flex-shrink-0">
-                          <img 
-                            src={selectedRelease.cover || selectedRelease.cover_url} 
-                            alt={selectedRelease.title}
-                            className="w-40 h-40 object-cover rounded-lg shadow-md"
-                          />
+                          <img src={selectedRelease.cover || selectedRelease.cover_url} alt={selectedRelease.title} className="w-40 h-40 object-cover rounded-lg shadow-md" />
                         </div>
                       )}
                       <div className="flex-1 space-y-3">
@@ -343,28 +302,22 @@ const Lancamentos = () => {
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                             selectedRelease.approvalStatus === 'aceita' ? 'bg-green-500/10 text-green-500' :
                             selectedRelease.approvalStatus === 'pendente' ? 'bg-yellow-500/10 text-yellow-500' :
-                            selectedRelease.approvalStatus === 'recusada' ? 'bg-red-500/10 text-red-500' :
-                            'bg-blue-500/10 text-blue-500'
+                            selectedRelease.approvalStatus === 'recusada' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'
                           }`}>
-                            {selectedRelease.approvalStatus === 'aceita' ? 'Aceita' :
-                             selectedRelease.approvalStatus === 'pendente' ? 'Pendente' :
-                             selectedRelease.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
+                            {selectedRelease.approvalStatus === 'aceita' ? 'Aceita' : selectedRelease.approvalStatus === 'pendente' ? 'Pendente' : selectedRelease.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
                           </span>
                           {selectedRelease.hasMarketingPlan && (
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                               selectedRelease.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
-                              selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' :
-                              'bg-green-500/10 text-green-500'
+                              selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-500'
                             }`}>
-                              Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : 
-                                           selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
+                              Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Informações Detalhadas */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Status</label>
@@ -395,54 +348,12 @@ const Lancamentos = () => {
                       </div>
                     </div>
 
-                    {/* Distribuidoras */}
                     {selectedRelease.distributors && selectedRelease.distributors.length > 0 && (
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-muted-foreground">Distribuidoras</label>
                         <div className="flex flex-wrap gap-2">
-                          {selectedRelease.distributors.map((distributor: string, index: number) => (
-                            <span 
-                              key={index}
-                              className="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-secondary text-secondary-foreground capitalize"
-                            >
-                              {distributor}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Faixas */}
-                    {selectedRelease.tracks && selectedRelease.tracks.length > 0 && (
-                      <div className="space-y-3">
-                        <label className="text-sm font-medium text-muted-foreground">Faixas ({selectedRelease.tracks.length})</label>
-                        <div className="space-y-2">
-                          {selectedRelease.tracks.map((track: any, index: number) => (
-                            <div key={index} className="p-4 bg-muted/30 rounded-lg space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">{index + 1}. {track.title}</h4>
-                                {track.isrc && (
-                                  <span className="text-xs font-mono text-muted-foreground">ISRC: {track.isrc}</span>
-                                )}
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
-                                {track.composers && track.composers.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">Compositores:</span> {Array.isArray(track.composers) ? track.composers.join(', ') : track.composers}
-                                  </div>
-                                )}
-                                {track.performers && track.performers.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">Intérpretes:</span> {Array.isArray(track.performers) ? track.performers.join(', ') : track.performers}
-                                  </div>
-                                )}
-                                {track.producers && track.producers.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">Produtores:</span> {Array.isArray(track.producers) ? track.producers.join(', ') : track.producers}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                          {selectedRelease.distributors.map((dist: string, index: number) => (
+                            <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{dist}</span>
                           ))}
                         </div>
                       </div>
