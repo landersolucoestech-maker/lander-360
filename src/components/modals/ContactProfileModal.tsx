@@ -112,7 +112,7 @@ export function ContactProfileModal({
                 {contact.position && (
                   <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.position}</span>
+                    <span className="text-sm">{contact.position?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                   </div>
                 )}
                 {contact.document && (
