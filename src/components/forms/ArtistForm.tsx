@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Upload, X, FileText, Loader2 } from 'lucide-react';
+import { CalendarIcon, Upload, X, FileText, Loader2, Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn, formatDateForDB } from '@/lib/utils';
@@ -19,6 +19,8 @@ import { useCreateArtist, useUpdateArtist } from '@/hooks/useArtists';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { useCrmContacts } from '@/hooks/useCrm';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 // Validação para CPF/CNPJ (formato brasileiro)
 const cpfCnpjRegex = /^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{14})$/;
@@ -58,6 +60,7 @@ const artistSchema = z.object({
   soundcloud: z.string().optional(),
   // Tipo de Perfil e Dados do Responsável
   profile_type: z.string().min(1, 'Tipo de perfil é obrigatório'),
+  record_label_name: z.string().optional(),
   manager_name: z.string().optional(),
   manager_phone: z.string().optional(),
   manager_email: z.string().email('Email inválido').optional().or(z.literal('')),
@@ -86,13 +89,16 @@ export function ArtistForm({
   } = useToast();
   const createArtist = useCreateArtist();
   const updateArtist = useUpdateArtist();
+  const { data: crmContacts = [] } = useCrmContacts();
   const [showManagerFields, setShowManagerFields] = useState(false);
+  const [showRecordLabelFields, setShowRecordLabelFields] = useState(false);
   const [selectedDistributors, setSelectedDistributors] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(artist?.image_url || null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentName, setDocumentName] = useState<string | null>(artist?.documents_url ? 'Documento carregado' : null);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [openContactPopover, setOpenContactPopover] = useState(false);
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
     defaultValues: {
@@ -119,6 +125,7 @@ export function ArtistForm({
       tiktok: artist?.tiktok || '',
       soundcloud: artist?.soundcloud || '',
       profile_type: artist?.profile_type || '',
+      record_label_name: (artist as any)?.record_label_name || '',
       manager_name: artist?.manager_name || '',
       manager_phone: artist?.manager_phone || '',
       manager_email: artist?.manager_email || '',
@@ -201,9 +208,30 @@ export function ArtistForm({
 
   // Watch profile_type to show/hide manager fields
   const profileType = form.watch('profile_type');
+  const recordLabelName = form.watch('record_label_name');
+  
   React.useEffect(() => {
     setShowManagerFields(profileType === 'Com Empresário' || profileType === 'Gravadora' || profileType === 'Editora');
+    setShowRecordLabelFields(profileType === 'Gravadora');
   }, [profileType]);
+  
+  // Filter CRM contacts by record label name (company field)
+  const filteredCrmContacts = React.useMemo(() => {
+    if (!recordLabelName || profileType !== 'Gravadora') return crmContacts;
+    return crmContacts.filter((contact: any) => 
+      contact.company?.toLowerCase().includes(recordLabelName.toLowerCase())
+    );
+  }, [crmContacts, recordLabelName, profileType]);
+  
+  const handleSelectCrmContact = (contactId: string) => {
+    const contact = crmContacts.find((c: any) => c.id === contactId);
+    if (contact) {
+      form.setValue('manager_name', contact.name || '');
+      form.setValue('manager_phone', contact.phone || '');
+      form.setValue('manager_email', contact.email || '');
+    }
+    setOpenContactPopover(false);
+  };
   
   const getManagerLabel = (field: 'name' | 'phone' | 'email') => {
     if (profileType === 'Com Empresário') {
@@ -274,6 +302,7 @@ export function ArtistForm({
         tiktok: data.tiktok || null,
         soundcloud: data.soundcloud || null,
         profile_type: data.profile_type,
+        record_label_name: data.record_label_name || null,
         manager_name: data.manager_name || null,
         manager_phone: data.manager_phone || null,
         manager_email: data.manager_email || null,
@@ -759,16 +788,87 @@ export function ArtistForm({
                     <FormMessage />
                   </FormItem>} />
 
-              {showManagerFields && <>
-                  <FormField control={form.control} name="manager_name" render={({
-                field
-              }) => <FormItem>
-                        <FormLabel>{getManagerLabel('name')}</FormLabel>
+              {/* Campos específicos para Gravadora */}
+              {showRecordLabelFields && (
+                <FormField control={form.control} name="record_label_name" render={({
+                  field
+                }) => <FormItem>
+                        <FormLabel>Nome da Gravadora</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nome completo" {...field} />
+                          <Input placeholder="Nome da gravadora" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>} />
+              )}
+
+              {showManagerFields && <>
+                  {/* Campo Nome do Responsável com dropdown do CRM para Gravadora */}
+                  {showRecordLabelFields ? (
+                    <FormField control={form.control} name="manager_name" render={({
+                      field
+                    }) => <FormItem className="flex flex-col">
+                            <FormLabel>{getManagerLabel('name')}</FormLabel>
+                            <Popover open={openContactPopover} onOpenChange={setOpenContactPopover}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openContactPopover}
+                                    className={cn(
+                                      "w-full justify-between",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value || "Selecione um contato do CRM"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[400px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Buscar contato..." />
+                                  <CommandList>
+                                    <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
+                                    <CommandGroup>
+                                      {filteredCrmContacts.map((contact: any) => (
+                                        <CommandItem
+                                          key={contact.id}
+                                          value={contact.name}
+                                          onSelect={() => handleSelectCrmContact(contact.id)}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === contact.name ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          <div className="flex flex-col">
+                                            <span>{contact.name}</span>
+                                            {contact.company && (
+                                              <span className="text-xs text-muted-foreground">{contact.company}</span>
+                                            )}
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>} />
+                  ) : (
+                    <FormField control={form.control} name="manager_name" render={({
+                      field
+                    }) => <FormItem>
+                            <FormLabel>{getManagerLabel('name')}</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome completo" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>} />
+                  )}
 
                   <FormField control={form.control} name="manager_phone" render={({
                 field

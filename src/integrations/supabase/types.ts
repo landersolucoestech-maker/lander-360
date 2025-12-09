@@ -126,6 +126,7 @@ export type Database = {
           phone: string | null
           pix_key: string | null
           profile_type: string | null
+          record_label_name: string | null
           rg: string | null
           soundcloud: string | null
           spotify_id: string | null
@@ -167,6 +168,7 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           profile_type?: string | null
+          record_label_name?: string | null
           rg?: string | null
           soundcloud?: string | null
           spotify_id?: string | null
@@ -208,6 +210,7 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           profile_type?: string | null
+          record_label_name?: string | null
           rg?: string | null
           soundcloud?: string | null
           spotify_id?: string | null
