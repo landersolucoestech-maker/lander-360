@@ -1081,9 +1081,19 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                   </Button>
                 </div>
 
-                {participantFields.length > 0 && (
+{participantFields.length > 0 && (
                   <div className="space-y-3">
-                    {participantFields.map((field, index) => {
+                    {/* Sort participants: editors first, then others */}
+                    {participantFields
+                      .map((field, index) => ({ field, index }))
+                      .sort((a, b) => {
+                        const aIsEditor = form.watch(`participants.${a.index}.role`) === 'editor';
+                        const bIsEditor = form.watch(`participants.${b.index}.role`) === 'editor';
+                        if (aIsEditor && !bIsEditor) return -1;
+                        if (!aIsEditor && bIsEditor) return 1;
+                        return 0;
+                      })
+                      .map(({ field, index }) => {
                       const isEditor = form.watch(`participants.${index}.role`) === 'editor';
                       return (
                         <div key={field.id} className={`grid grid-cols-1 gap-3 p-4 border rounded-lg items-end ${isEditor ? 'md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr_auto]' : 'md:grid-cols-[2fr_1.5fr_1.5fr_0.8fr_auto]'}`}>
