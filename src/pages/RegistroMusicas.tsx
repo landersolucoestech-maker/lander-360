@@ -360,12 +360,23 @@ const RegistroMusicas = () => {
                 />
 
                 <Card className="flex-1">
-                  <CardHeader>
-                    <CardTitle>Obras Registradas</CardTitle>
-                    <CardDescription>
-                      Catálogo completo de obras musicais registradas
-                    </CardDescription>
-                  </CardHeader>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle>Obras Registradas</CardTitle>
+                          <CardDescription>
+                            Catálogo completo de obras musicais registradas
+                          </CardDescription>
+                        </div>
+                        {filteredSongs.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedWorks.length === filteredSongs.length && filteredSongs.length > 0}
+                              onCheckedChange={handleSelectAllWorks}
+                            />
+                            <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                          </div>
+                        )}
+                      </CardHeader>
                   <CardContent>
                     {allSongs.length === 0 ? (
                       <div className="text-center py-12">
@@ -384,8 +395,13 @@ const RegistroMusicas = () => {
                         {filteredSongs.map((song) => (
                           <div
                             key={song.id}
-                            className="grid grid-cols-[1fr_auto] gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="grid grid-cols-[auto_1fr_auto] gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
+                            <Checkbox
+                              checked={selectedWorks.includes(song.id)}
+                              onCheckedChange={(checked) => handleSelectWork(song.id, !!checked)}
+                              className="mt-3"
+                            />
                             <div className="flex items-center gap-4 min-w-0">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <Music className="h-6 w-6 text-primary" />
@@ -459,11 +475,22 @@ const RegistroMusicas = () => {
                 />
 
                 <Card className="flex-1">
-                  <CardHeader>
-                    <CardTitle>Fonogramas Registrados</CardTitle>
-                    <CardDescription>
-                      Catálogo completo de gravações registradas
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle>Fonogramas Registrados</CardTitle>
+                      <CardDescription>
+                        Catálogo completo de gravações registradas
+                      </CardDescription>
+                    </div>
+                    {filteredPhonograms.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedPhonos.length === filteredPhonograms.length && filteredPhonograms.length > 0}
+                          onCheckedChange={handleSelectAllPhonos}
+                        />
+                        <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
                     {allPhonograms.length === 0 ? (
@@ -483,9 +510,14 @@ const RegistroMusicas = () => {
                         {filteredPhonograms.map((phono) => (
                           <div
                             key={phono.id}
-                            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
-                            <div className="flex items-center gap-4">
+                            <Checkbox
+                              checked={selectedPhonos.includes(phono.id)}
+                              onCheckedChange={(checked) => handleSelectPhono(phono.id, !!checked)}
+                              className="flex-shrink-0"
+                            />
+                            <div className="flex items-center gap-4 flex-1">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                                 <Disc className="h-6 w-6 text-primary" />
                               </div>
