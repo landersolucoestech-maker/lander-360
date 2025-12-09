@@ -141,6 +141,9 @@ const Relatorios = () => {
 
   const handleDownloadExcel = (report: any) => {
     const data = getReportData(report);
+    console.log("Exportando dados:", data);
+    console.log("Colunas:", data.length > 0 ? Object.keys(data[0]) : []);
+    
     if (data.length === 0) {
       toast({
         title: "Sem dados",
