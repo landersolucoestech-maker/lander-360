@@ -8,7 +8,7 @@ import { ArtistCard } from "@/components/artists/ArtistCard";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ArtistModal } from "@/components/modals/ArtistModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { useArtists, useArtistsCount, useDeleteArtist } from "@/hooks/useArtists";
+import { useArtists, useArtistsCount, useDeleteArtist, useCreateArtist } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
@@ -28,6 +28,7 @@ const Artistas = () => {
   const { data: musicRegistry = [] } = useMusicRegistry();
   const { data: activeContracts = [] } = useActiveContracts();
   const deleteArtist = useDeleteArtist();
+  const createArtist = useCreateArtist();
   const { exportToExcel, parseExcelFile } = useDataExport();
   const { toast } = useToast();
   
@@ -289,9 +290,78 @@ const Artistas = () => {
     setIsImporting(true);
     try {
       const data = await parseExcelFile(file);
+      
+      if (data.length === 0) {
+        toast({
+          title: "Arquivo vazio",
+          description: "Nenhum registro encontrado no arquivo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const row of data) {
+        try {
+          // Map Excel columns to artist fields (Portuguese headers)
+          const artistData: any = {
+            name: row['Nome'] || row['name'] || row['Nome Artístico'] || '',
+            stage_name: row['Nome Artístico'] || row['stage_name'] || '',
+            full_name: row['Nome Completo'] || row['full_name'] || '',
+            email: row['E-mail'] || row['Email'] || row['email'] || '',
+            phone: row['Telefone'] || row['phone'] || '',
+            cpf_cnpj: row['CPF/CNPJ'] || row['cpf_cnpj'] || '',
+            rg: row['RG'] || row['rg'] || '',
+            birth_date: row['Data de Nascimento'] || row['birth_date'] || null,
+            full_address: row['Endereço Completo'] || row['full_address'] || '',
+            profile_type: row['Tipo de Perfil'] || row['profile_type'] || '',
+            contract_status: row['Status do Contrato'] || row['contract_status'] || 'active',
+            genre: row['Gênero Musical'] || row['genre'] || '',
+            bio: row['Biografia'] || row['bio'] || '',
+            instagram: row['Instagram'] || row['instagram'] || '',
+            spotify_url: row['Spotify'] || row['spotify_url'] || '',
+            youtube_url: row['YouTube'] || row['youtube_url'] || '',
+            tiktok: row['TikTok'] || row['tiktok'] || '',
+            soundcloud: row['SoundCloud'] || row['soundcloud'] || '',
+            bank: row['Banco'] || row['bank'] || '',
+            agency: row['Agência'] || row['agency'] || '',
+            account: row['Conta'] || row['account'] || '',
+            pix_key: row['Chave PIX'] || row['pix_key'] || '',
+            account_holder: row['Titular da Conta'] || row['account_holder'] || '',
+            manager_name: row['Nome do Empresário'] || row['manager_name'] || '',
+            manager_phone: row['Telefone do Empresário'] || row['manager_phone'] || '',
+            manager_email: row['E-mail do Empresário'] || row['manager_email'] || '',
+            record_label_name: row['Nome da Gravadora'] || row['record_label_name'] || '',
+            observations: row['Observações'] || row['observations'] || '',
+          };
+
+          // Skip rows without a name
+          if (!artistData.name) {
+            errorCount++;
+            continue;
+          }
+
+          // Parse birth_date if it's a string
+          if (artistData.birth_date && typeof artistData.birth_date === 'string') {
+            const parts = artistData.birth_date.split('/');
+            if (parts.length === 3) {
+              artistData.birth_date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+
+          await createArtist.mutateAsync(artistData);
+          successCount++;
+        } catch (err) {
+          console.error('Erro ao importar artista:', err);
+          errorCount++;
+        }
+      }
+
       toast({
-        title: "Arquivo lido",
-        description: `${data.length} registros encontrados. Funcionalidade de importação em desenvolvimento.`,
+        title: "Importação concluída",
+        description: `${successCount} artistas importados com sucesso.${errorCount > 0 ? ` ${errorCount} registros com erro.` : ''}`,
       });
     } catch (error) {
       toast({
