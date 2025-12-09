@@ -65,19 +65,7 @@ const CRM = () => {
   };
 
   const handleExport = () => {
-    const exportData = contacts.map((contact: any) => ({
-      "Nome": contact.name || "",
-      "Email": contact.email || "",
-      "Telefone": contact.phone || "",
-      "Empresa": contact.company || "",
-      "Cargo": contact.position || "",
-      "Tipo": contact.contact_type || "",
-      "Status": contact.status || "",
-      "Prioridade": contact.priority || "",
-      "Cidade": contact.city || "",
-      "Estado": contact.state || "",
-    }));
-    exportToExcel(exportData, "crm_contatos", "Contatos");
+    exportToExcel(contacts, "crm_contatos", "Contatos", "crm");
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

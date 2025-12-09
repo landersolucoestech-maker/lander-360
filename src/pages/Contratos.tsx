@@ -135,16 +135,7 @@ const Contratos = () => {
   };
 
   const handleExport = () => {
-    const exportData = contracts.map((contract: any) => ({
-      "Título": contract.title || "",
-      "Tipo de Serviço": serviceTypeLabels[contract.service_type] || contract.service_type || "",
-      "Status": statusLabels[contract.status] || contract.status || "",
-      "Data Início": formatDateBR(contract.start_date || contract.effective_from),
-      "Data Fim": formatDateBR(contract.end_date || contract.effective_to),
-      "Valor": contract.fixed_value || contract.advance_amount || contract.value || 0,
-      "Responsável": contract.responsible_person || "",
-    }));
-    exportToExcel(exportData, "contratos", "Contratos");
+    exportToExcel(contracts, "contratos", "Contratos", "contracts");
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

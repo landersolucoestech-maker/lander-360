@@ -183,15 +183,7 @@ const Projetos = () => {
   };
 
   const handleExport = () => {
-    const exportData = projects.map((project: any) => ({
-      "Nome": project.name || "",
-      "Descrição": project.description || "",
-      "Status": getStatusLabel(project.status),
-      "Data Início": project.start_date || "",
-      "Data Fim": project.end_date || "",
-      "Orçamento": project.budget || 0,
-    }));
-    exportToExcel(exportData, "projetos", "Projetos");
+    exportToExcel(projects, "projetos", "Projetos", "projects");
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

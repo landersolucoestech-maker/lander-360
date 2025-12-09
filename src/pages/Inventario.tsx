@@ -12,6 +12,7 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { Package, Plus, Headphones, Mic, Speaker, Loader2, Upload, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useInventory, useDeleteInventory, useCreateInventory } from "@/hooks/useInventory";
+import { useDataExport } from "@/hooks/useDataExport";
 import * as XLSX from "xlsx";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -68,6 +69,7 @@ const Inventario = () => {
   const { data: inventoryData, isLoading } = useInventory();
   const deleteInventory = useDeleteInventory();
   const createInventory = useCreateInventory();
+  const { exportToExcel, parseExcelFile } = useDataExport();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
@@ -280,30 +282,7 @@ const Inventario = () => {
   };
 
   const handleExportExcel = () => {
-    const exportData = allEquipment.map(item => ({
-      "Nome": item.name,
-      "Categoria": item.category,
-      "Status": item.status,
-      "Quantidade": item.quantity,
-      "Local": item.location,
-      "Valor Unitário": item.unit_value || 0,
-      "Setor": item.sector || "",
-      "Responsável": item.responsible || "",
-      "Local de Compra": item.purchase_location || "",
-      "Nota Fiscal": item.invoice_number || "",
-      "Data de Entrada": item.entry_date || "",
-      "Observações": item.observations || "",
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventário");
-    XLSX.writeFile(workbook, `inventario_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-    toast({
-      title: "Exportação concluída",
-      description: `${exportData.length} itens exportados com sucesso.`,
-    });
+    exportToExcel(allEquipment, "inventario", "Inventário", "inventory");
   };
 
   const formatCurrency = (value: number | null) => {

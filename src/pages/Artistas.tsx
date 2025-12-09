@@ -280,19 +280,7 @@ const Artistas = () => {
   };
 
   const handleExport = () => {
-    const exportData = displayArtists.map((artist: any) => ({
-      "Nome": artist.name || "",
-      "Nome Artístico": artist.stage_name || "",
-      "Email": artist.email || "",
-      "Telefone": artist.phone || "",
-      "Gênero": artist.genre || "",
-      "Status": artist.status || "",
-      "Perfil": artist.perfil || "",
-      "Instagram": artist.instagram || "",
-      "Spotify": artist.spotify_url || "",
-      "YouTube": artist.youtube_url || "",
-    }));
-    exportToExcel(exportData, "artistas", "Artistas");
+    exportToExcel(displayArtists, "artistas", "Artistas", "artists");
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

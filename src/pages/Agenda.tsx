@@ -188,16 +188,11 @@ const Agenda = () => {
   };
 
   const handleExport = () => {
-    const exportData = events.map(event => ({
-      "Nome": event.event_name,
-      "Tipo": eventTypeLabels[event.event_type] || event.event_type,
-      "Status": statusLabels[event.status] || event.status,
-      "Data": formatDateFullBR(new Date(event.start_date)),
-      "Horário": event.start_time || "",
-      "Local": event.location || "",
-      "Venue": event.venue_name || "",
+    const rawEvents = events.map(e => ({
+      ...e,
+      title: e.event_name,
     }));
-    exportToExcel(exportData, "agenda", "Eventos");
+    exportToExcel(rawEvents, "agenda", "Eventos", "agenda");
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

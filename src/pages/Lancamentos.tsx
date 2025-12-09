@@ -132,16 +132,11 @@ const Lancamentos = () => {
   };
 
   const handleExport = () => {
-    const exportData = allReleases.map((release: any) => ({
-      "Título": release.title || "",
-      "Artista": release.artist || "",
-      "Tipo": release.type || "",
-      "Status": release.status || "",
-      "Data de Lançamento": formatDateBR(release.releaseDate),
-      "Gênero": release.genre || "",
-      "Gravadora": release.label || "",
-    }));
-    exportToExcel(exportData, "lancamentos", "Lançamentos");
+    const artistsMap = artists.reduce((acc: Record<string, string>, artist: any) => {
+      acc[artist.id] = artist.stage_name || artist.name;
+      return acc;
+    }, {});
+    exportToExcel(releasesData, "lancamentos", "Lançamentos", "releases", artistsMap);
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
