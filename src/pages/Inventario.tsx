@@ -392,6 +392,10 @@ const Inventario = () => {
                           <div className="text-muted-foreground text-xs">Valor Unit.</div>
                           <div className="font-medium text-foreground">{formatCurrency(item.unit_value)}</div>
                         </div>
+                        <div className="text-center min-w-[90px]">
+                          <div className="text-muted-foreground text-xs">Valor Total</div>
+                          <div className="font-medium text-foreground">{formatCurrency((item.unit_value || 0) * item.quantity)}</div>
+                        </div>
                         {item.sector && (
                           <div className="text-center min-w-[80px]">
                             <div className="text-muted-foreground text-xs">Setor</div>
