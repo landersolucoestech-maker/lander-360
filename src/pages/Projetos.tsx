@@ -40,8 +40,20 @@ const Projetos = () => {
     setFilteredProjects(projects);
   }, [projects]);
 
+  // Extract unique values for filter dropdowns
+  const uniqueArtists = [...new Set(artists.map(a => a.stage_name || a.name).filter(Boolean))].sort();
+  const uniqueGenres = [...new Set(projects.flatMap(p => {
+    const details = getProjectDetails(p);
+    const songs = details?.songs || [];
+    return songs.map((s: any) => s.genre).filter(Boolean);
+  }))].sort();
+  const uniqueReleaseTypes = ['Single', 'EP', 'Álbum'];
+
   const filterOptions = [
     { key: "status", label: "Status", options: ["Concluído", "Em Andamento", "Rascunho", "Cancelado"] },
+    { key: "artist", label: "Artista", options: uniqueArtists },
+    { key: "release_type", label: "Tipo de Lançamento", options: uniqueReleaseTypes },
+    { key: "genre", label: "Gênero", options: uniqueGenres },
   ];
 
   const handleSearch = (searchTerm: string) => {
@@ -86,16 +98,43 @@ const Projetos = () => {
   const filterProjects = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = projects;
 
+    // Search by song name, artist, composer, performer, producer
     if (searchTerm) {
-      filtered = filtered.filter(project =>
-        project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(project => {
+        // Check project name
+        if (project.name?.toLowerCase().includes(term)) return true;
+        
+        // Check artist name
+        const artist = artists.find(a => a.id === project.artist_id);
+        const artistName = artist?.stage_name || artist?.name || '';
+        if (artistName.toLowerCase().includes(term)) return true;
+        
+        // Check songs data
+        const details = getProjectDetails(project);
+        const songs = details?.songs || [];
+        for (const song of songs) {
+          // Song name
+          if (song.song_name?.toLowerCase().includes(term)) return true;
+          // Composers
+          if (song.composers?.some((c: any) => c.name?.toLowerCase().includes(term))) return true;
+          // Performers
+          if (song.performers?.some((p: any) => p.name?.toLowerCase().includes(term))) return true;
+          // Producers
+          if (song.producers?.some((p: any) => p.name?.toLowerCase().includes(term))) return true;
+          // Genre
+          if (song.genre?.toLowerCase().includes(term)) return true;
+        }
+        return false;
+      });
     }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         filtered = filtered.filter(project => {
+          const details = getProjectDetails(project);
+          const songs = details?.songs || [];
+          
           if (key === "status") {
             const statusTranslation: Record<string, string> = {
               'Concluído': 'completed',
@@ -104,6 +143,22 @@ const Projetos = () => {
               'Cancelado': 'cancelled'
             };
             return project.status === statusTranslation[value];
+          }
+          if (key === "artist") {
+            const artist = artists.find(a => a.id === project.artist_id);
+            const artistName = artist?.stage_name || artist?.name || '';
+            return artistName === value;
+          }
+          if (key === "release_type") {
+            const releaseTypeMap: Record<string, string> = {
+              'Single': 'single',
+              'EP': 'ep',
+              'Álbum': 'album'
+            };
+            return details?.release_type === releaseTypeMap[value];
+          }
+          if (key === "genre") {
+            return songs.some((s: any) => s.genre === value);
           }
           return true;
         });
@@ -409,7 +464,7 @@ const Projetos = () => {
             </div>
 
             {/* Search and Filters */}
-            <SearchFilter searchPlaceholder="Buscar projetos por nome ou descrição..." filters={filterOptions} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
+            <SearchFilter searchPlaceholder="Buscar por música, artista, compositor, intérprete, produtor, gênero..." filters={filterOptions} onSearch={handleSearch} onFilter={handleFilter} onClear={handleClear} />
 
             {/* Projects List */}
             <Card className="flex-1">
