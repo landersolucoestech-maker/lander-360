@@ -315,6 +315,8 @@ const CRM = () => {
               priority: data.priority,
               next_action: data.nextAction,
               image_url: data.image_url,
+              artist_name: data.artist_name,
+              interactions: data.interactions,
             });
             setIsContactModalOpen(false);
           } catch (error) {
@@ -365,6 +367,8 @@ const CRM = () => {
               priority: data.priority,
               next_action: data.nextAction,
               image_url: data.image_url,
+              artist_name: data.artist_name,
+              interactions: data.interactions,
             });
             setIsEditModalOpen(false);
           } catch (error) {
