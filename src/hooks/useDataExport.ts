@@ -5,7 +5,6 @@ import { formatDateBR } from '@/lib/utils';
 // Column mappings for each entity type with Portuguese labels
 const artistColumns = {
   name: 'Nome Artístico',
-  stage_name: 'Nome de Palco',
   full_name: 'Nome Completo',
   legal_name: 'Nome Legal',
   email: 'E-mail',
