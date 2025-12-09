@@ -445,16 +445,6 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="outro">Outro</SelectItem>
             </SelectContent>
           </Select>
-          {watch("position") === "produtor_artistico" && (
-            <div className="space-y-2 mt-2">
-              <Label htmlFor="artist_name">Nome do Artista</Label>
-              <Input
-                id="artist_name"
-                {...register("artist_name")}
-                placeholder="Nome do artista que trabalha"
-              />
-            </div>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -465,6 +455,17 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
             placeholder="000.000.000-00 ou 00.000.000/0000-00"
           />
         </div>
+
+        {watch("position") === "produtor_artistico" && (
+          <div className="space-y-2">
+            <Label htmlFor="artist_name">Nome do Artista</Label>
+            <Input
+              id="artist_name"
+              {...register("artist_name")}
+              placeholder="Nome do artista que trabalha"
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="address">Endereço</Label>
