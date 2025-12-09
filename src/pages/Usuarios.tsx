@@ -233,10 +233,22 @@ const Usuarios = () => {
                   </p>
                 </div>
               </div>
-              <Button onClick={handleCreateUser} className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Novo Usuário
-              </Button>
+              <div className="flex items-center gap-2">
+                {selectedItems.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2" 
+                    onClick={() => setIsBulkDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir ({selectedItems.length})
+                  </Button>
+                )}
+                <Button onClick={handleCreateUser} className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Novo Usuário
+                </Button>
+              </div>
             </div>
 
             {/* Search and Filters */}
@@ -328,12 +340,32 @@ const Usuarios = () => {
 
             {/* Users List */}
             <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Lista de Usuários</CardTitle>
+                  <CardDescription>Todos os usuários cadastrados no sistema</CardDescription>
+                </div>
+                {filteredUsers.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedItems.length === filteredUsers.length && filteredUsers.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                    <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                  </div>
+                )}
+              </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
                   {filteredUsers.map((userData) => (
                     <div key={userData.id} className="p-6 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 flex-1">
+                          <Checkbox
+                            checked={selectedItems.includes(userData.id)}
+                            onCheckedChange={(checked) => handleSelectItem(userData.id, !!checked)}
+                            className="flex-shrink-0"
+                          />
                           <Avatar className="h-12 w-12">
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {getUserInitials(userData.full_name || 'U')}
