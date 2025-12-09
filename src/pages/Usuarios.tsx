@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from "@/hooks/useUsers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Search, Users, Shield, Trash2, UserX, MoreVertical, X, ArrowUpDown } from "lucide-react";
 import { UserModal } from "@/components/modals/UserModal";
 import { UserViewModal } from "@/components/modals/UserViewModal";
@@ -35,6 +36,9 @@ const Usuarios = () => {
   const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
   const [userToToggle, setUserToToggle] = useState<any>(null);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   // Get unique sectors for filter dropdown
   const uniqueSectors = [...new Set(users.map(u => u.sector).filter(Boolean))];
@@ -96,6 +100,26 @@ const Usuarios = () => {
 
     setFilteredUsers(filtered);
   }, [searchTerm, users, roleFilter, statusFilter, sectorFilter, sortBy]);
+
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedItems(checked ? filteredUsers.map((u: any) => u.id) : []);
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    setSelectedItems(prev => checked ? [...prev, id] : prev.filter(i => i !== id));
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedItems) {
+        await deleteUser(id);
+      }
+      toast({ title: 'Sucesso', description: `${selectedItems.length} usuários excluídos!` });
+      setSelectedItems([]);
+    } catch { toast({ title: 'Erro', variant: 'destructive' }); }
+    finally { setIsDeletingBulk(false); setIsBulkDeleteModalOpen(false); }
+  };
 
   const handleCreateUser = () => {
     setSelectedUser(null);

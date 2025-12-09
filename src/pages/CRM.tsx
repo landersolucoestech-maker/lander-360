@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { ContactProfileModal } from "@/components/modals/ContactProfileModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
-import { UserCheck, Plus, Phone, Mail, Calendar, Star, Loader2 } from "lucide-react";
+import { UserCheck, Plus, Phone, Mail, Calendar, Star, Loader2, Trash2, Upload, Download } from "lucide-react";
 import { useCrmContacts, useCreateCrmContact, useUpdateCrmContact, useDeleteCrmContact } from "@/hooks/useCrm";
+import * as XLSX from 'xlsx';
 
 const CRM = () => {
   const { toast } = useToast();
@@ -21,6 +23,9 @@ const CRM = () => {
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [contactToDelete, setContactToDelete] = useState<any>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   const { data: crmContacts = [], isLoading } = useCrmContacts();
   const createContact = useCreateCrmContact();
@@ -41,6 +46,59 @@ const CRM = () => {
   const negotiating = contacts.filter((c) => c.status === "negociacao").length;
   const closed = contacts.filter((c) => c.status === "fechado").length;
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(contacts.map((contact: any) => contact.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, id]);
+    } else {
+      setSelectedItems(prev => prev.filter(item => item !== id));
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedItems) {
+        await deleteContact.mutateAsync(id);
+      }
+      toast({ title: 'Sucesso', description: `${selectedItems.length} contatos excluídos com sucesso!` });
+      setSelectedItems([]);
+    } catch (error) {
+      toast({ title: 'Erro', description: 'Erro ao excluir contatos.', variant: 'destructive' });
+    } finally {
+      setIsDeletingBulk(false);
+      setIsBulkDeleteModalOpen(false);
+    }
+  };
+
+  const handleExport = () => {
+    const dataToExport = contacts.map((contact: any) => ({
+      'Nome': contact.name || '',
+      'Email': contact.email || '',
+      'Telefone': contact.phone || '',
+      'Tipo': contact.contact_type || '',
+      'Empresa': contact.company || '',
+      'Cargo': contact.position || '',
+      'Status': contact.status || '',
+      'Prioridade': contact.priority || '',
+      'Cidade': contact.city || '',
+      'Estado': contact.state || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contatos');
+    XLSX.writeFile(wb, `crm_contatos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Sucesso', description: 'Arquivo exportado com sucesso!' });
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -53,10 +111,26 @@ const CRM = () => {
                 <h1 className="text-3xl font-bold text-foreground">CRM</h1>
                 <p className="text-muted-foreground">Gestão de relacionamento com clientes e prospects</p>
               </div>
-              <Button className="gap-2" onClick={() => setIsContactModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Novo Contato
-              </Button>
+              <div className="flex items-center gap-2">
+                {selectedItems.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2" 
+                    onClick={() => setIsBulkDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir ({selectedItems.length})
+                  </Button>
+                )}
+                <Button variant="outline" className="gap-2" onClick={handleExport}>
+                  <Download className="h-4 w-4" />
+                  Exportar
+                </Button>
+                <Button className="gap-2" onClick={() => setIsContactModalOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Novo Contato
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}
@@ -136,9 +210,20 @@ const CRM = () => {
 
             {/* Contacts List */}
             <Card className="flex-1">
-              <CardHeader>
-                <CardTitle>Lista de Contatos</CardTitle>
-                <CardDescription>Todos os contatos e prospects em acompanhamento</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Lista de Contatos</CardTitle>
+                  <CardDescription>Todos os contatos e prospects em acompanhamento</CardDescription>
+                </div>
+                {contacts.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedItems.length === contacts.length && contacts.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                    <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -162,6 +247,12 @@ const CRM = () => {
                         key={contact.id}
                         className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                       >
+                        {/* Checkbox */}
+                        <Checkbox
+                          checked={selectedItems.includes(contact.id)}
+                          onCheckedChange={(checked) => handleSelectItem(contact.id, !!checked)}
+                          className="flex-shrink-0"
+                        />
                         {/* Avatar e Info Principal */}
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <Avatar className="h-10 w-10 flex-shrink-0">
@@ -393,6 +484,16 @@ const CRM = () => {
         }}
         title="Excluir Contato"
         description={`Tem certeza que deseja excluir o contato "${contactToDelete?.name}"? Esta ação não pode ser desfeita.`}
+      />
+
+      {/* Bulk Delete Modal */}
+      <DeleteConfirmationModal
+        open={isBulkDeleteModalOpen}
+        onOpenChange={setIsBulkDeleteModalOpen}
+        onConfirm={confirmBulkDelete}
+        title="Excluir Contatos"
+        description={`Tem certeza que deseja excluir ${selectedItems.length} contatos? Esta ação não pode ser desfeita.`}
+        isLoading={isDeletingBulk}
       />
     </SidebarProvider>
   );

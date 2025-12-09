@@ -7,18 +7,25 @@ import { Button } from "@/components/ui/button";
 import { ArtistCard } from "@/components/artists/ArtistCard";
 import { SearchFilter } from "@/components/filters/SearchFilter";
 import { ArtistModal } from "@/components/modals/ArtistModal";
-import { useArtists, useArtistsCount } from "@/hooks/useArtists";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
+import { useArtists, useArtistsCount, useDeleteArtist } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { useActiveContracts } from "@/hooks/useContracts";
-import { Users, Plus, Music, DollarSign, Star, Upload, Download } from "lucide-react";
+import { Users, Plus, Music, DollarSign, Star, Upload, Download, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from 'xlsx';
 import { useToast } from '@/hooks/use-toast';
 import { mockArtists } from "@/data/mockData";
+
 const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const { toast } = useToast();
+  const deleteArtist = useDeleteArtist();
 
   const handleExport = () => {
     const dataToExport = currentArtists.map((artist: any) => ({
@@ -342,6 +349,39 @@ const Artistas = () => {
     setCurrentFilters({});
     setFilteredArtists([]);
   };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(currentArtists.map((artist: any) => artist.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, id]);
+    } else {
+      setSelectedItems(prev => prev.filter(item => item !== id));
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedItems) {
+        await deleteArtist.mutateAsync(id);
+      }
+      toast({ title: 'Sucesso', description: `${selectedItems.length} artistas excluídos com sucesso!` });
+      setSelectedItems([]);
+    } catch (error) {
+      toast({ title: 'Erro', description: 'Erro ao excluir artistas.', variant: 'destructive' });
+    } finally {
+      setIsDeletingBulk(false);
+      setIsBulkDeleteModalOpen(false);
+    }
+  };
+
   return <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
@@ -356,6 +396,16 @@ const Artistas = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {selectedItems.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2" 
+                    onClick={() => setIsBulkDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir ({selectedItems.length})
+                  </Button>
+                )}
                 <Button variant="outline" className="gap-2" onClick={handleExport}>
                   <Download className="h-4 w-4" />
                   Exportar
@@ -386,9 +436,20 @@ const Artistas = () => {
 
             {/* Artists List */}
             <Card className="flex-1">
-              <CardHeader>
-                <CardTitle>Lista de Artistas</CardTitle>
-                <CardDescription>Visão geral de todos os artistas</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Lista de Artistas</CardTitle>
+                  <CardDescription>Visão geral de todos os artistas</CardDescription>
+                </div>
+                {currentArtists.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedItems.length === currentArtists.length && currentArtists.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                    <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -412,7 +473,18 @@ const Artistas = () => {
                         Adicionar Artista
                       </Button>
                     </div> : null}
-                  {currentArtists.map((artist: any) => <ArtistCard key={artist.id} artist={artist} />)}
+                  {currentArtists.map((artist: any) => (
+                    <div key={artist.id} className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedItems.includes(artist.id)}
+                        onCheckedChange={(checked) => handleSelectItem(artist.id, !!checked)}
+                        className="mt-4"
+                      />
+                      <div className="flex-1">
+                        <ArtistCard artist={artist} />
+                      </div>
+                    </div>
+                  ))}
                   {!currentArtists.length && !isLoading && <div className="text-center py-8 text-muted-foreground">
                       Nenhum artista encontrado.
                     </div>}
@@ -425,6 +497,16 @@ const Artistas = () => {
 
       {/* Create Artist Modal */}
       <ArtistModal open={createModalOpen} onOpenChange={setCreateModalOpen} mode="create" />
+
+      {/* Bulk Delete Modal */}
+      <DeleteConfirmationModal
+        open={isBulkDeleteModalOpen}
+        onOpenChange={setIsBulkDeleteModalOpen}
+        onConfirm={confirmBulkDelete}
+        title="Excluir Artistas"
+        description={`Tem certeza que deseja excluir ${selectedItems.length} artistas? Esta ação não pode ser desfeita.`}
+        isLoading={isDeletingBulk}
+      />
     </SidebarProvider>;
 };
 export default Artistas;

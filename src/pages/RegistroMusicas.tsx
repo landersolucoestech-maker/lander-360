@@ -7,17 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SearchFilter } from "@/components/filters/SearchFilter";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { MusicViewModal } from "@/components/modals/MusicViewModal";
 import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
 import { PhonogramViewModal } from "@/components/modals/PhonogramViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, FileText, CheckCircle, Clock, Disc } from "lucide-react";
+import { Music, Plus, FileText, CheckCircle, Clock, Disc, Trash2, Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
 import { formatDateBR, translateStatus } from "@/lib/utils";
+import * as XLSX from 'xlsx';
 
 const RegistroMusicas = () => {
   const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
@@ -30,6 +32,13 @@ const RegistroMusicas = () => {
   const [filteredSongs, setFilteredSongs] = useState<any[]>([]);
   const [filteredPhonograms, setFilteredPhonograms] = useState<any[]>([]);
   const { toast } = useToast();
+  
+  // Bulk selection states
+  const [selectedWorks, setSelectedWorks] = useState<string[]>([]);
+  const [selectedPhonos, setSelectedPhonos] = useState<string[]>([]);
+  const [isBulkDeleteWorksModalOpen, setIsBulkDeleteWorksModalOpen] = useState(false);
+  const [isBulkDeletePhonosModalOpen, setIsBulkDeletePhonosModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   
   // Work modals
   const [newMusicModalOpen, setNewMusicModalOpen] = useState(false);
@@ -198,6 +207,47 @@ const RegistroMusicas = () => {
     setViewPhonogramModalOpen(true);
   };
 
+  // Bulk selection handlers
+  const handleSelectAllWorks = (checked: boolean) => {
+    setSelectedWorks(checked ? filteredSongs.map((s: any) => s.id) : []);
+  };
+
+  const handleSelectWork = (id: string, checked: boolean) => {
+    setSelectedWorks(prev => checked ? [...prev, id] : prev.filter(i => i !== id));
+  };
+
+  const handleSelectAllPhonos = (checked: boolean) => {
+    setSelectedPhonos(checked ? filteredPhonograms.map((p: any) => p.id) : []);
+  };
+
+  const handleSelectPhono = (id: string, checked: boolean) => {
+    setSelectedPhonos(prev => checked ? [...prev, id] : prev.filter(i => i !== id));
+  };
+
+  const confirmBulkDeleteWorks = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedWorks) {
+        await deleteMusicEntry.mutateAsync(id);
+      }
+      toast({ title: 'Sucesso', description: `${selectedWorks.length} obras excluídas!` });
+      setSelectedWorks([]);
+    } catch { toast({ title: 'Erro', variant: 'destructive' }); }
+    finally { setIsDeletingBulk(false); setIsBulkDeleteWorksModalOpen(false); }
+  };
+
+  const confirmBulkDeletePhonos = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedPhonos) {
+        await deletePhonogram.mutateAsync(id);
+      }
+      toast({ title: 'Sucesso', description: `${selectedPhonos.length} fonogramas excluídos!` });
+      setSelectedPhonos([]);
+    } catch { toast({ title: 'Erro', variant: 'destructive' }); }
+    finally { setIsDeletingBulk(false); setIsBulkDeletePhonosModalOpen(false); }
+  };
+
   // Calculate KPIs based on active tab
   const worksKPIs = {
     total: allSongs.length,
@@ -231,13 +281,25 @@ const RegistroMusicas = () => {
                   Registro e controle de obras musicais e fonogramas
                 </p>
               </div>
-              <Button 
-                className="gap-2" 
-                onClick={() => activeTab === "obras" ? setNewMusicModalOpen(true) : setNewPhonogramModalOpen(true)}
-              >
-                <Plus className="h-4 w-4" />
-                {activeTab === "obras" ? "Nova Obra" : "Novo Fonograma"}
-              </Button>
+              <div className="flex items-center gap-2">
+                {(activeTab === "obras" ? selectedWorks.length : selectedPhonos.length) > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2" 
+                    onClick={() => activeTab === "obras" ? setIsBulkDeleteWorksModalOpen(true) : setIsBulkDeletePhonosModalOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir ({activeTab === "obras" ? selectedWorks.length : selectedPhonos.length})
+                  </Button>
+                )}
+                <Button 
+                  className="gap-2" 
+                  onClick={() => activeTab === "obras" ? setNewMusicModalOpen(true) : setNewPhonogramModalOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  {activeTab === "obras" ? "Nova Obra" : "Novo Fonograma"}
+                </Button>
+              </div>
             </div>
 
             {/* KPI Cards */}
