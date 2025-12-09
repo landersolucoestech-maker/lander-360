@@ -407,6 +407,7 @@ export type Database = {
       crm_contacts: {
         Row: {
           address: string | null
+          artist_name: string | null
           city: string | null
           company: string | null
           contact_type: string | null
@@ -429,6 +430,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          artist_name?: string | null
           city?: string | null
           company?: string | null
           contact_type?: string | null
@@ -451,6 +453,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          artist_name?: string | null
           city?: string | null
           company?: string | null
           contact_type?: string | null
