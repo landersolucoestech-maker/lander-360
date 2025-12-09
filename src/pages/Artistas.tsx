@@ -436,13 +436,11 @@ const Artistas = () => {
 
             {/* Artists List */}
             <Card className="flex-1">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Lista de Artistas</CardTitle>
-                  <CardDescription>Visão geral de todos os artistas</CardDescription>
-                </div>
+              <CardHeader>
+                <CardTitle>Lista de Artistas</CardTitle>
+                <CardDescription>Visão geral de todos os artistas</CardDescription>
                 {currentArtists.length > 0 && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 pt-2">
                     <Checkbox
                       checked={selectedItems.length === currentArtists.length && currentArtists.length > 0}
                       onCheckedChange={handleSelectAll}
