@@ -97,6 +97,21 @@ const Configuracoes = () => {
     setConnectedIntegrations(prev => ({ ...prev, [integrationId]: true }));
   };
 
+  const handleIntegrationDisconnect = (integrationId: string) => {
+    // Remove from localStorage
+    const stored = localStorage.getItem('integrations');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      delete parsed[integrationId];
+      localStorage.setItem('integrations', JSON.stringify(parsed));
+    }
+    setConnectedIntegrations(prev => ({ ...prev, [integrationId]: false }));
+    toast({
+      title: "Integração desconectada",
+      description: "A integração foi removida com sucesso.",
+    });
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -313,16 +328,19 @@ const Configuracoes = () => {
                         name="ONErpm" 
                         connected={connectedIntegrations['onerpm'] || false}
                         onConnect={() => handleOpenIntegration('onerpm')}
+                        onDisconnect={() => handleIntegrationDisconnect('onerpm')}
                       />
                       <IntegrationItem 
                         name="DistroKid" 
                         connected={connectedIntegrations['distrokid'] || false}
                         onConnect={() => handleOpenIntegration('distrokid')}
+                        onDisconnect={() => handleIntegrationDisconnect('distrokid')}
                       />
                       <IntegrationItem 
                         name="30por1" 
                         connected={connectedIntegrations['30por1'] || false}
                         onConnect={() => handleOpenIntegration('30por1')}
+                        onDisconnect={() => handleIntegrationDisconnect('30por1')}
                       />
                     </div>
                   </div>
@@ -340,6 +358,7 @@ const Configuracoes = () => {
                         name="ABRAMUS" 
                         connected={connectedIntegrations['abramus'] || false}
                         onConnect={() => handleOpenIntegration('abramus')}
+                        onDisconnect={() => handleIntegrationDisconnect('abramus')}
                       />
                     </div>
                   </div>
@@ -355,8 +374,9 @@ const Configuracoes = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       <IntegrationItem 
                         name="Conta Bancária" 
-                        connected={false}
+                        connected={connectedIntegrations['bank'] || false}
                         onConnect={() => setShowBankIntegration(true)}
+                        onDisconnect={() => handleIntegrationDisconnect('bank')}
                       />
                     </div>
                   </div>
@@ -374,6 +394,7 @@ const Configuracoes = () => {
                         name="Google Calendar" 
                         connected={connectedIntegrations['google_calendar'] || false}
                         onConnect={() => handleOpenIntegration('google_calendar')}
+                        onDisconnect={() => handleIntegrationDisconnect('google_calendar')}
                       />
                     </div>
                   </div>
@@ -408,11 +429,13 @@ const Configuracoes = () => {
 const IntegrationItem = ({ 
   name, 
   connected, 
-  onConnect 
+  onConnect,
+  onDisconnect 
 }: { 
   name: string; 
   connected: boolean; 
   onConnect: () => void;
+  onDisconnect: () => void;
 }) => {
   return (
     <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors">
@@ -423,6 +446,25 @@ const IntegrationItem = ({
           <XCircle className="h-4 w-4 text-muted-foreground" />
         )}
         <span className="text-sm font-medium">{name}</span>
+      </div>
+      <div className="flex gap-2">
+        {connected ? (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={onDisconnect}
+          >
+            Desconectar
+          </Button>
+        ) : (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onConnect}
+          >
+            Conectar
+          </Button>
+        )}
       </div>
       {connected ? (
         <Badge variant="outline" className="text-green-500 border-green-500">
