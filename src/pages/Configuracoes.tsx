@@ -447,31 +447,20 @@ const IntegrationItem = ({
         )}
         <span className="text-sm font-medium">{name}</span>
       </div>
-      <div className="flex gap-2">
-        {connected ? (
-          <Button 
-            variant="destructive" 
-            size="sm"
-            onClick={onDisconnect}
-          >
-            Desconectar
-          </Button>
-        ) : (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onConnect}
-          >
-            Conectar
-          </Button>
-        )}
-      </div>
       {connected ? (
-        <Badge variant="outline" className="text-green-500 border-green-500">
-          Conectado
-        </Badge>
+        <Button 
+          variant="destructive" 
+          size="sm"
+          onClick={onDisconnect}
+        >
+          Desconectar
+        </Button>
       ) : (
-        <Button variant="outline" size="sm" onClick={onConnect}>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={onConnect}
+        >
           Conectar
         </Button>
       )}
