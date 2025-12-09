@@ -32,6 +32,7 @@ interface AgendaEvent {
   event_type: 'sessoes_estudio' | 'ensaios' | 'sessoes_fotos' | 'shows' | 'entrevistas' | 'podcasts' | 'programas_tv' | 'radio' | 'producao_conteudo' | 'reunioes';
   status: 'agendado' | 'cancelado' | 'pendente' | 'concluido' | 'confirmado';
   artist_id?: string;
+  artists?: { id: string; name: string; stage_name?: string };
   description?: string;
   observations?: string;
 }
@@ -340,7 +341,14 @@ const Agenda = () => {
                                 )}
                               </div>
                               <div className="space-y-1">
-                                <h3 className="font-medium text-foreground">{event.event_name}</h3>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-medium text-foreground">{event.event_name}</h3>
+                                  {event.artists && (
+                                    <span className="text-muted-foreground">
+                                      — {event.artists.stage_name || event.artists.name}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-2">
                                   <Badge variant="secondary">
                                     {eventTypeLabels[event.event_type as keyof typeof eventTypeLabels]}
