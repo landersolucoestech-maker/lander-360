@@ -9,7 +9,7 @@ import { SearchFilter } from "@/components/filters/SearchFilter";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { InventoryViewModal } from "@/components/modals/InventoryViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Package, Plus, Headphones, Mic, Speaker, Loader2, Upload } from "lucide-react";
+import { Package, Plus, Headphones, Mic, Speaker, Loader2, Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useInventory, useDeleteInventory, useCreateInventory } from "@/hooks/useInventory";
 import * as XLSX from "xlsx";
@@ -197,6 +197,33 @@ const Inventario = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    const exportData = allEquipment.map(item => ({
+      "Nome": item.name,
+      "Categoria": item.category,
+      "Status": item.status,
+      "Quantidade": item.quantity,
+      "Local": item.location,
+      "Valor Unitário": item.unit_value || 0,
+      "Setor": item.sector || "",
+      "Responsável": item.responsible || "",
+      "Local de Compra": item.purchase_location || "",
+      "Nota Fiscal": item.invoice_number || "",
+      "Data de Entrada": item.entry_date || "",
+      "Observações": item.observations || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventário");
+    XLSX.writeFile(workbook, `inventario_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: "Exportação concluída",
+      description: `${exportData.length} itens exportados com sucesso.`,
+    });
+  };
+
   const formatCurrency = (value: number | null) => {
     if (!value) return 'R$ 0,00';
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -238,6 +265,15 @@ const Inventario = () => {
                     <Upload className="h-4 w-4" />
                   )}
                   Importar Excel
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="gap-2" 
+                  onClick={handleExportExcel}
+                  disabled={allEquipment.length === 0}
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar Excel
                 </Button>
                 <Button className="gap-2" onClick={() => setIsInventoryModalOpen(true)}>
                   <Plus className="h-4 w-4" />
