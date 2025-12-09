@@ -99,6 +99,7 @@ export function ArtistForm({
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [openContactPopover, setOpenContactPopover] = useState(false);
+  const [openRecordLabelPopover, setOpenRecordLabelPopover] = useState(false);
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
     defaultValues: {
@@ -215,13 +216,32 @@ export function ArtistForm({
     setShowRecordLabelFields(profileType === 'Gravadora');
   }, [profileType]);
   
+  // Get unique record labels from CRM (type "Gravadora musical")
+  const recordLabelContacts = React.useMemo(() => {
+    return crmContacts.filter((contact: any) => 
+      contact.contact_type?.toLowerCase().includes('gravadora')
+    );
+  }, [crmContacts]);
+  
   // Filter CRM contacts by record label name (company field)
   const filteredCrmContacts = React.useMemo(() => {
-    if (!recordLabelName || profileType !== 'Gravadora') return crmContacts;
+    if (!recordLabelName || profileType !== 'Gravadora') return [];
     return crmContacts.filter((contact: any) => 
-      contact.company?.toLowerCase().includes(recordLabelName.toLowerCase())
+      contact.company?.toLowerCase() === recordLabelName.toLowerCase()
     );
   }, [crmContacts, recordLabelName, profileType]);
+  
+  const handleSelectRecordLabel = (contactId: string) => {
+    const contact = crmContacts.find((c: any) => c.id === contactId);
+    if (contact) {
+      form.setValue('record_label_name', contact.name || contact.company || '');
+      // Clear manager fields when changing record label
+      form.setValue('manager_name', '');
+      form.setValue('manager_phone', '');
+      form.setValue('manager_email', '');
+    }
+    setOpenRecordLabelPopover(false);
+  };
   
   const handleSelectCrmContact = (contactId: string) => {
     const contact = crmContacts.find((c: any) => c.id === contactId);
@@ -792,11 +812,56 @@ export function ArtistForm({
               {showRecordLabelFields && (
                 <FormField control={form.control} name="record_label_name" render={({
                   field
-                }) => <FormItem>
+                }) => <FormItem className="flex flex-col">
                         <FormLabel>Nome da Gravadora</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nome da gravadora" {...field} />
-                        </FormControl>
+                        <Popover open={openRecordLabelPopover} onOpenChange={setOpenRecordLabelPopover}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openRecordLabelPopover}
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value || "Selecione uma gravadora do CRM"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Buscar gravadora..." />
+                              <CommandList>
+                                <CommandEmpty>Nenhuma gravadora encontrada.</CommandEmpty>
+                                <CommandGroup>
+                                  {recordLabelContacts.map((contact: any) => (
+                                    <CommandItem
+                                      key={contact.id}
+                                      value={contact.name || contact.company}
+                                      onSelect={() => handleSelectRecordLabel(contact.id)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === (contact.name || contact.company) ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span>{contact.name || contact.company}</span>
+                                        {contact.company && contact.name && (
+                                          <span className="text-xs text-muted-foreground">{contact.company}</span>
+                                        )}
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>} />
               )}
