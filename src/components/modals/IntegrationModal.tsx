@@ -202,13 +202,13 @@ export function IntegrationModal({ open, onOpenChange, integration, onConnect }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             {getIcon()}
             Conectar {integration.name}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {integration.description}
           </DialogDescription>
         </DialogHeader>

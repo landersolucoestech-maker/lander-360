@@ -46,9 +46,9 @@ export function UserViewModal({ open, onOpenChange, user }: UserViewModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Detalhes do Usuário</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Detalhes do Usuário</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">

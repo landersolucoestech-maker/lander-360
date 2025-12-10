@@ -20,12 +20,12 @@ export function UserModal({ open, onOpenChange, user, mode }: UserModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {mode === 'create' ? 'Novo Usuário' : 'Editar Usuário'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {mode === 'create' 
               ? 'Preencha as informações para criar um novo usuário no sistema.'
               : 'Edite as informações do usuário selecionado.'

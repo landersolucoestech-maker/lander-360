@@ -1464,13 +1464,13 @@ export function ReportConfigModal({
     });
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
+      <DialogContent className="w-[98vw] max-w-7xl max-h-[95vh] overflow-hidden p-3 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <FileText className="h-5 w-5" />
             Configuração Avançada de Relatórios
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Personalize completamente o visual e conteúdo dos seus relatórios exportáveis
           </DialogDescription>
         </DialogHeader>

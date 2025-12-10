@@ -92,13 +92,13 @@ export function BankIntegrationModal({ open, onOpenChange }: BankIntegrationModa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="w-[98vw] max-w-6xl max-h-[90vh] overflow-hidden p-3 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Building2 className="h-5 w-5" />
             Integração Bancária (Belvo)
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Configure e gerencie suas conexões bancárias via Belvo Open Banking para sincronização automática de transações
           </DialogDescription>
         </DialogHeader>

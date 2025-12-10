@@ -31,12 +31,12 @@ export function ContactModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {initialData ? "Editar Contato" : "Novo Contato"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {initialData
               ? "Atualize as informações do contato"
               : "Preencha as informações do novo contato"}

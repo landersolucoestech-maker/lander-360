@@ -41,9 +41,11 @@ export function InventoryModal({ isOpen, onClose, equipment, isEditMode = false 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Editar Item" : "Novo Item no Inventário"}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
+            {isEditMode ? "Editar Item" : "Novo Item no Inventário"}
+          </DialogTitle>
         </DialogHeader>
         <InventoryForm 
           onSubmit={handleSubmit} 
