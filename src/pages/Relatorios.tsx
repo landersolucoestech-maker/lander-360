@@ -466,7 +466,7 @@ const Relatorios = () => {
                 <span className="ml-2 text-muted-foreground">Carregando dados...</span>
               </div>
             ) : (
-              /* Reports Grid */
+              /* Reports List */
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-semibold text-foreground">
@@ -474,60 +474,76 @@ const Relatorios = () => {
                   </h2>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredReports.map((report) => {
-                    const Icon = report.icon;
-                    return (
-                      <Card key={report.id} className="hover:shadow-md transition-all">
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-primary/10 rounded-lg">
-                                <Icon className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <CardTitle className="text-base">{report.name}</CardTitle>
-                                <CardDescription className="text-xs mt-1">
-                                  {report.description}
-                                </CardDescription>
-                              </div>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                              <Badge variant={report.count > 0 ? "default" : "secondary"}>
-                                {report.count} registros
-                              </Badge>
-                              <Badge variant="outline">{report.type}</Badge>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={report.count === 0}
-                              onClick={() => handleViewReport(report)}
-                              className="flex-1"
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Visualizar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={report.count === 0}
-                              onClick={() => handleDownloadExcel(report)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b bg-muted/50">
+                            <th className="text-left p-4 font-medium text-muted-foreground">Relatório</th>
+                            <th className="text-left p-4 font-medium text-muted-foreground">Tipo</th>
+                            <th className="text-left p-4 font-medium text-muted-foreground">Registros</th>
+                            <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
+                            <th className="text-right p-4 font-medium text-muted-foreground">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredReports.map((report) => {
+                            const Icon = report.icon;
+                            return (
+                              <tr key={report.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                                <td className="p-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                      <Icon className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-foreground">{report.name}</p>
+                                      <p className="text-xs text-muted-foreground">{report.description}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="p-4">
+                                  <Badge variant="outline">{report.type}</Badge>
+                                </td>
+                                <td className="p-4">
+                                  <Badge variant={report.count > 0 ? "default" : "secondary"}>
+                                    {report.count}
+                                  </Badge>
+                                </td>
+                                <td className="p-4">
+                                  <Badge variant={report.count > 0 ? "default" : "secondary"} className={report.count > 0 ? "bg-green-500/20 text-green-600 border-green-500/30" : ""}>
+                                    {report.status}
+                                  </Badge>
+                                </td>
+                                <td className="p-4">
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={report.count === 0}
+                                      onClick={() => handleViewReport(report)}
+                                    >
+                                      Ver
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={report.count === 0}
+                                      onClick={() => handleDownloadExcel(report)}
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {filteredReports.length === 0 && (
                   <Card className="text-center py-8">
