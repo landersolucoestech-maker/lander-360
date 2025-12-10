@@ -473,8 +473,8 @@ export function ArtistForm({
                 name="artist_types"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Tipo de Artista *</FormLabel>
-                    <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <FormLabel className="mb-0">Tipo de Artista *</FormLabel>
                       {artistTypeOptions.map((type) => (
                         <FormField
                           key={type}
@@ -484,7 +484,7 @@ export function ArtistForm({
                             return (
                               <FormItem
                                 key={type}
-                                className="flex flex-row items-center space-x-3 space-y-0"
+                                className="flex flex-row items-center space-x-2 space-y-0"
                               >
                                 <FormControl>
                                   <Checkbox
@@ -500,7 +500,7 @@ export function ArtistForm({
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">
+                                <FormLabel className="font-normal cursor-pointer mb-0">
                                   {type}
                                 </FormLabel>
                               </FormItem>
