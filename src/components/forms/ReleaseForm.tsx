@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -147,6 +147,26 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const { data: phonograms = [] } = usePhonograms();
   const createRelease = useCreateRelease();
   const updateRelease = useUpdateRelease();
+
+  // Filtrar apenas projetos concluídos que possuem obra E fonograma registrados
+  const availableProjects = useMemo(() => {
+    return projects.filter(project => {
+      // 1. Projeto deve estar concluído
+      if (project.status !== 'completed') return false;
+      
+      // 2. Verificar se existe obra registrada para este projeto
+      const hasWork = musicRegistry.some(work => work.artist_id === project.artist_id);
+      if (!hasWork) return false;
+      
+      // 3. Verificar se existe fonograma registrado (vinculado a uma obra do projeto)
+      const projectWorks = musicRegistry.filter(work => work.artist_id === project.artist_id);
+      const hasPhonogram = projectWorks.some(work => 
+        phonograms.some(phonogram => phonogram.work_id === work.id)
+      );
+      
+      return hasPhonogram;
+    });
+  }, [projects, musicRegistry, phonograms]);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>(() => {
     // Initialize with existing cover when editing
     if (release?.cover_url || release?.cover_art) {
@@ -524,11 +544,17 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name} {project.description && `- ${project.description}`}
-                        </SelectItem>
-                      ))}
+                      {availableProjects.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          Nenhum projeto disponível. É necessário ter projeto concluído com obra e fonograma registrados.
+                        </div>
+                      ) : (
+                        availableProjects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name} {project.description && `- ${project.description}`}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
