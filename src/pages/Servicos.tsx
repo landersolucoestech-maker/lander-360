@@ -131,13 +131,16 @@ export default function Servicos() {
     setIsDeleteModalOpen(true);
   };
   const handleSubmit = async (data: ServiceFormData) => {
+    // Remove sale_price_type as it's not a database column (UI only)
+    const { sale_price_type, ...serviceData } = data;
+    
     if (selectedService) {
       await updateService.mutateAsync({
         id: selectedService.id,
-        ...data
+        ...serviceData
       });
     } else {
-      await createService.mutateAsync(data as any);
+      await createService.mutateAsync(serviceData as any);
     }
     setIsModalOpen(false);
     setSelectedService(null);
