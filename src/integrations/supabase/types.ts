@@ -1482,6 +1482,51 @@ export type Database = {
         }
         Relationships: []
       }
+      services: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          discount_type: string | null
+          discount_value: number | null
+          final_price: number
+          id: string
+          observations: string | null
+          sale_price: number
+          service_type: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          discount_type?: string | null
+          discount_value?: number | null
+          final_price?: number
+          id?: string
+          observations?: string | null
+          sale_price?: number
+          service_type: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          discount_type?: string | null
+          discount_value?: number | null
+          final_price?: number
+          id?: string
+          observations?: string | null
+          sale_price?: number
+          service_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_media_metrics: {
         Row: {
           artist_id: string | null

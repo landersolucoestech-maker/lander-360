@@ -1,0 +1,323 @@
+import { useState, useEffect } from "react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Search, X } from "lucide-react";
+import { useServices, useCreateService, useUpdateService, useDeleteService, Service } from "@/hooks/useServices";
+import { ServiceModal } from "@/components/modals/ServiceModal";
+import { ServiceViewModal } from "@/components/modals/ServiceViewModal";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
+import { ServiceFormData } from "@/components/forms/ServiceForm";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const categoryLabels: Record<string, string> = {
+  agenciamento: "Agenciamento",
+  gestao_carreira: "Gestão de Carreira",
+  producao_musical: "Produção Musical",
+  producao_audiovisual: "Produção Audiovisual",
+  design_grafico: "Design Gráfico",
+  gestao_redes_sociais: "Gestão de Redes Sociais",
+  trafego_pago: "Tráfego Pago",
+  criacao_sites: "Criação de Sites",
+  edicao_musical: "Edição Musical",
+};
+
+const serviceTypeLabels: Record<string, string> = {
+  recorrente: "Recorrente",
+  avulso: "Avulso",
+  pacote: "Pacote",
+};
+
+export default function Servicos() {
+  const { data: services = [], isLoading } = useServices();
+  const createService = useCreateService();
+  const updateService = useUpdateService();
+  const deleteService = useDeleteService();
+
+  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
+      filterServices(currentSearchTerm, currentFilters);
+    } else {
+      setFilteredServices(services);
+    }
+  }, [services]);
+
+  const displayedServices = currentSearchTerm || Object.values(currentFilters).some(v => v)
+    ? filteredServices
+    : services;
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
+  const formatDiscount = (value: number, type: string) => {
+    if (type === "percentage") {
+      return `${value}%`;
+    }
+    return formatCurrency(value);
+  };
+
+  const handleSearch = (value: string) => {
+    setCurrentSearchTerm(value);
+    filterServices(value, currentFilters);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    const newFilters = { ...currentFilters, category: value === "all" ? "" : value };
+    setCurrentFilters(newFilters);
+    filterServices(currentSearchTerm, newFilters);
+  };
+
+  const handleTypeChange = (value: string) => {
+    const newFilters = { ...currentFilters, service_type: value === "all" ? "" : value };
+    setCurrentFilters(newFilters);
+    filterServices(currentSearchTerm, newFilters);
+  };
+
+  const handleClear = () => {
+    setCurrentSearchTerm("");
+    setCurrentFilters({});
+    setFilteredServices(services);
+  };
+
+  const filterServices = (searchTerm: string, filters: Record<string, string>) => {
+    let filtered = services;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter((service) =>
+        service.description.toLowerCase().includes(term) ||
+        (categoryLabels[service.category] || service.category).toLowerCase().includes(term)
+      );
+    }
+
+    if (filters.category) {
+      filtered = filtered.filter((service) => service.category === filters.category);
+    }
+
+    if (filters.service_type) {
+      filtered = filtered.filter((service) => service.service_type === filters.service_type);
+    }
+
+    setFilteredServices(filtered);
+  };
+
+  const handleCreateService = () => {
+    setSelectedService(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditService = (service: Service) => {
+    setSelectedService(service);
+    setIsModalOpen(true);
+  };
+
+  const handleViewService = (service: Service) => {
+    setSelectedService(service);
+    setIsViewModalOpen(true);
+  };
+
+  const handleDeleteClick = (service: Service) => {
+    setSelectedService(service);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleSubmit = async (data: ServiceFormData) => {
+    if (selectedService) {
+      await updateService.mutateAsync({ id: selectedService.id, ...data });
+    } else {
+      await createService.mutateAsync(data as any);
+    }
+    setIsModalOpen(false);
+    setSelectedService(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedService) {
+      await deleteService.mutateAsync(selectedService.id);
+      setIsDeleteModalOpen(false);
+      setSelectedService(null);
+    }
+  };
+
+  const hasActiveFilters = currentSearchTerm || currentFilters.category || currentFilters.service_type;
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        <main className="flex-1 p-4 md:p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <SidebarTrigger />
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Serviços</h1>
+          </div>
+
+          <Card>
+            <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <CardTitle>Lista de Serviços</CardTitle>
+              <Button onClick={handleCreateService}>
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Serviço
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-row gap-2 items-center w-full mb-4">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por descrição..."
+                    value={currentSearchTerm}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <Select value={currentFilters.category || "all"} onValueChange={handleCategoryChange}>
+                  <SelectTrigger className="w-48 shrink-0">
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas Categorias</SelectItem>
+                    {Object.entries(categoryLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={currentFilters.service_type || "all"} onValueChange={handleTypeChange}>
+                  <SelectTrigger className="w-40 shrink-0">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos Tipos</SelectItem>
+                    {Object.entries(serviceTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {hasActiveFilters && (
+                  <Button variant="ghost" onClick={handleClear} className="gap-2 shrink-0">
+                    <X className="h-4 w-4" />
+                    Limpar
+                  </Button>
+                )}
+              </div>
+
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+              ) : displayedServices.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum serviço cadastrado
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Descrição do Serviço</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead className="text-right">Preço de Venda</TableHead>
+                        <TableHead className="text-right">Desconto</TableHead>
+                        <TableHead className="text-right">Preço Final</TableHead>
+                        <TableHead className="text-center">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {displayedServices.map((service) => (
+                        <TableRow key={service.id}>
+                          <TableCell className="font-medium">{service.description}</TableCell>
+                          <TableCell>{categoryLabels[service.category] || service.category}</TableCell>
+                          <TableCell>{serviceTypeLabels[service.service_type] || service.service_type}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(service.sale_price)}</TableCell>
+                          <TableCell className="text-right">
+                            {formatDiscount(service.discount_value, service.discount_type)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium text-primary">
+                            {formatCurrency(service.final_price)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewService(service)}
+                              >
+                                Ver
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditService(service)}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteClick(service)}
+                              >
+                                Excluir
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <ServiceModal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedService(null);
+            }}
+            onSubmit={handleSubmit}
+            service={selectedService}
+            isLoading={createService.isPending || updateService.isPending}
+          />
+
+          <ServiceViewModal
+            isOpen={isViewModalOpen}
+            onClose={() => {
+              setIsViewModalOpen(false);
+              setSelectedService(null);
+            }}
+            service={selectedService}
+          />
+
+          <DeleteConfirmationModal
+            open={isDeleteModalOpen}
+            onOpenChange={(open) => {
+              setIsDeleteModalOpen(open);
+              if (!open) setSelectedService(null);
+            }}
+            onConfirm={handleConfirmDelete}
+            title="Excluir Serviço"
+            description={`Tem certeza que deseja excluir o serviço "${selectedService?.description}"? Esta ação não pode ser desfeita.`}
+            isLoading={deleteService.isPending}
+          />
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+}
