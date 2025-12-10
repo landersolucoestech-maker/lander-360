@@ -247,11 +247,12 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
           name="observations"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Observações</FormLabel>
+              <FormLabel>Descrição do Serviço</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Observações adicionais..."
+                  placeholder="Descreva os detalhes do serviço..."
                   className="resize-none"
+                  rows={4}
                   {...field}
                 />
               </FormControl>
