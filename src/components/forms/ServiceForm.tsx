@@ -91,7 +91,7 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição do Serviço</FormLabel>
+              <FormLabel>Nome do Serviço</FormLabel>
               <FormControl>
                 <Input placeholder="Digite a descrição do serviço" {...field} />
               </FormControl>
