@@ -73,7 +73,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
       parts.push(uniquePerformers.join(", "));
     }
     if (uniqueProducers.length > 0) {
-      parts.push(`Prod. ${uniqueProducers.slice(0, 1).join(", ")}`);
+      parts.push(`Prod. ${uniqueProducers.join(", ")}`);
     }
     return parts.join(" • ") || release.artist;
   };
