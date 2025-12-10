@@ -460,25 +460,25 @@ const Projetos = () => {
                   <p className="text-muted-foreground">Gestão completa de projetos musicais</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input type="file" ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
                   {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  Importar
+                  <span className="hidden sm:inline">Importar</span>
                 </Button>
-                <Button variant="outline" className="gap-2" onClick={handleExport} disabled={projects.length === 0}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={handleExport} disabled={projects.length === 0}>
                   <Download className="h-4 w-4" />
-                  Exportar
+                  <span className="hidden sm:inline">Exportar</span>
                 </Button>
-                <Button className="gap-2" onClick={() => setNewProjectModalOpen(true)}>
+                <Button size="sm" className="gap-1 sm:gap-2" onClick={() => setNewProjectModalOpen(true)}>
                   <Plus className="h-4 w-4" />
-                  Novo Projeto
+                  <span className="hidden sm:inline">Novo Projeto</span>
                 </Button>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <DashboardCard title="Projetos Ativos" value={projects.filter(p => p.status === "in_progress").length} description="em desenvolvimento" icon={PlayCircle} />
               <DashboardCard title="Concluídos" value={projects.filter(p => p.status === "completed").length} description="projetos finalizados" icon={TrendingUp} />
               <DashboardCard title="Rascunhos" value={projects.filter(p => p.status === "draft").length} description="em planejamento" icon={Calendar} />
@@ -542,12 +542,12 @@ const Projetos = () => {
                             checked={selectedItems.includes(project.id)}
                             onCheckedChange={(checked) => handleSelectItem(project.id, !!checked)}
                           />
-                          <div className="flex-1 flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <PlayCircle className="h-6 w-6 text-primary" />
+                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <PlayCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                               </div>
-                              <div className="space-y-1">
+                              <div className="space-y-1 min-w-0">
                                 <h3 className="font-medium text-foreground">{project.name}</h3>
                                 <div className="flex items-center gap-2">
                                   <Badge variant={getStatusVariant(project.status)}>{getStatusLabel(project.status)}</Badge>

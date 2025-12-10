@@ -268,9 +268,9 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
           </div>
 
           {songFields.map((songField, songIndex) => (
-            <div key={songField.id} className="border rounded-lg p-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">
+            <div key={songField.id} className="border rounded-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h4 className="font-medium text-sm sm:text-base">
                   {songFields.length > 1 ? `Música ${songIndex + 1}` : 'Detalhes da Música'}
                 </h4>
                 {songFields.length > 1 && (
@@ -279,14 +279,15 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
                     variant="outline"
                     size="sm"
                     onClick={() => removeSong(songIndex)}
+                    className="self-start sm:self-auto"
                   >
-                    <Trash2Icon className="h-4 w-4 mr-2" />
-                    Remover
+                    <Trash2Icon className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="text-xs sm:text-sm">Remover</span>
                   </Button>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <FormField
                   control={form.control}
                   name={`songs.${songIndex}.song_name`}

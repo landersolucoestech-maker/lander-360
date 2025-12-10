@@ -296,12 +296,15 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [isAiCreated, aiGenerationType, form]);
 
-  // Build list of available works from projects only
+  // Build list of available works from completed projects only
   const availableWorks = React.useMemo(() => {
     const works: any[] = [];
     
-    // Add works from projects audio_files
-    projects.forEach(project => {
+    // Filter only completed projects
+    const completedProjects = projects.filter(project => project.status === 'completed');
+    
+    // Add works from completed projects audio_files
+    completedProjects.forEach(project => {
       let audioFilesData = project.audio_files as any;
       
       // Handle if audio_files is a string (JSON stringified)

@@ -545,12 +545,12 @@ const Artistas = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Artistas</h1>
-                  <p className="text-muted-foreground">Gerencie seus artistas e contratos</p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Artistas</h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">Gerencie seus artistas e contratos</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -558,23 +558,23 @@ const Artistas = () => {
                   onChange={handleImport}
                   className="hidden"
                 />
-                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
                   {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  Importar
+                  <span className="hidden sm:inline">Importar</span>
                 </Button>
-                <Button variant="outline" className="gap-2" onClick={handleExport} disabled={displayArtists.length === 0}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={handleExport} disabled={displayArtists.length === 0}>
                   <Download className="h-4 w-4" />
-                  Exportar
+                  <span className="hidden sm:inline">Exportar</span>
                 </Button>
-                <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
+                <Button size="sm" className="gap-1 sm:gap-2" onClick={() => setCreateModalOpen(true)}>
                   <Plus className="h-4 w-4" />
-                  Novo Artista
+                  <span className="hidden sm:inline">Novo Artista</span>
                 </Button>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} trend={kpiTrends.artists} />
               <DashboardCard title="Contratos Vigentes" value={isLoading ? '...' : artistsWithActiveContracts} description="artistas com contratos ativos" icon={Star} trend={kpiTrends.contracts} />
               <DashboardCard title="Obras e Fonogramas Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} trend={kpiTrends.music} />

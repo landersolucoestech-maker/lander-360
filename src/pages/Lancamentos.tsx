@@ -173,27 +173,27 @@ const Lancamentos = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Lançamentos</h1>
-                  <p className="text-muted-foreground">Gestão de lançamentos e distribuição musical</p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Lançamentos</h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">Gestão de lançamentos e distribuição</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input type="file" ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
                   {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  Importar
+                  <span className="hidden sm:inline">Importar</span>
                 </Button>
-                <Button variant="outline" className="gap-2" onClick={handleExport} disabled={allReleases.length === 0}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={handleExport} disabled={allReleases.length === 0}>
                   <Download className="h-4 w-4" />
-                  Exportar
+                  <span className="hidden sm:inline">Exportar</span>
                 </Button>
-                <Button className="gap-2" onClick={handleNewRelease}>
+                <Button size="sm" className="gap-1 sm:gap-2" onClick={handleNewRelease}>
                   <Plus className="h-4 w-4" />
-                  Novo Lançamento
+                  <span className="hidden sm:inline">Novo Lançamento</span>
                 </Button>
               </div>
             </div>
@@ -213,7 +213,7 @@ const Lancamentos = () => {
               const performanceRate = allReleases.length > 0 ? Math.round((activeReleases / allReleases.length) * 100) : 0;
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                   <DashboardCard title="Lançamentos Ativos" value={activeReleases} description="disponíveis nas plataformas" icon={Music} trend={{ value: activeReleases, isPositive: true }} />
                   <DashboardCard title="Programados" value={scheduledReleases} description="próximos 30 dias" icon={Calendar} trend={{ value: scheduledReleases, isPositive: true }} />
                   <DashboardCard title="Performance" value={`${performanceRate}%`} description="taxa de crescimento" icon={TrendingUp} trend={{ value: performanceRate, isPositive: performanceRate > 0 }} />
@@ -244,7 +244,7 @@ const Lancamentos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {filteredReleases.map((release) => (
                       <ReleaseCard key={release.id} release={release} onViewDetails={handleViewDetails} onEdit={handleEditRelease} onDelete={handleDeleteRelease} />
                     ))}

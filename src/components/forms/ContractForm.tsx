@@ -145,7 +145,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
           <CardTitle>Informações Básicas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Título do Contrato</Label>
               <Input
@@ -313,7 +313,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
           <CardTitle>Datas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label>Data de Início</Label>
               <DateInput
@@ -357,7 +357,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
           <CardTitle>Valores</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {/* Empresa: Valor do Contrato */}
             {form.watch('client_type') === 'empresa' && (
               <div className="space-y-2">

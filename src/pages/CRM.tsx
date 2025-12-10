@@ -90,33 +90,33 @@ const CRM = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">CRM</h1>
-                  <p className="text-muted-foreground">Gestão de relacionamento com clientes e prospects</p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">CRM</h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">Gestão de relacionamento com clientes</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input type="file" ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
                   {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  Importar
+                  <span className="hidden sm:inline">Importar</span>
                 </Button>
-                <Button variant="outline" className="gap-2" onClick={handleExport} disabled={contacts.length === 0}>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={handleExport} disabled={contacts.length === 0}>
                   <Download className="h-4 w-4" />
-                  Exportar
+                  <span className="hidden sm:inline">Exportar</span>
                 </Button>
-                <Button className="gap-2" onClick={() => setIsContactModalOpen(true)}>
+                <Button size="sm" className="gap-1 sm:gap-2" onClick={() => setIsContactModalOpen(true)}>
                   <Plus className="h-4 w-4" />
-                  Novo Contato
+                  <span className="hidden sm:inline">Novo Contato</span>
                 </Button>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <DashboardCard title="Total de Contatos" value={totalContacts} description="na base de dados" icon={UserCheck} trend={{ value: 0, isPositive: true }} />
               <DashboardCard title="Leads Quentes" value={hotLeads} description="alta probabilidade" icon={Star} trend={{ value: 0, isPositive: true }} />
               <DashboardCard title="Conversões" value={closedDeals} description="este mês" icon={Calendar} trend={{ value: 0, isPositive: true }} />
@@ -124,11 +124,11 @@ const CRM = () => {
             </div>
 
             {/* Pipeline Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Prospects</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{prospects}</div><p className="text-xs text-muted-foreground">contatos iniciais</p></CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Qualificados</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{qualified}</div><p className="text-xs text-muted-foreground">leads validados</p></CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Negociação</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{negotiating}</div><p className="text-xs text-muted-foreground">em andamento</p></CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Fechados</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{closed}</div><p className="text-xs text-muted-foreground">contratos assinados</p></CardContent></Card>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              <Card><CardHeader className="pb-2 p-3 sm:p-4"><CardTitle className="text-xs sm:text-sm font-medium">Prospects</CardTitle></CardHeader><CardContent className="p-3 sm:p-4 pt-0"><div className="text-xl sm:text-2xl font-bold">{prospects}</div><p className="text-xs text-muted-foreground hidden sm:block">contatos iniciais</p></CardContent></Card>
+              <Card><CardHeader className="pb-2 p-3 sm:p-4"><CardTitle className="text-xs sm:text-sm font-medium">Qualificados</CardTitle></CardHeader><CardContent className="p-3 sm:p-4 pt-0"><div className="text-xl sm:text-2xl font-bold">{qualified}</div><p className="text-xs text-muted-foreground hidden sm:block">leads validados</p></CardContent></Card>
+              <Card><CardHeader className="pb-2 p-3 sm:p-4"><CardTitle className="text-xs sm:text-sm font-medium">Negociação</CardTitle></CardHeader><CardContent className="p-3 sm:p-4 pt-0"><div className="text-xl sm:text-2xl font-bold">{negotiating}</div><p className="text-xs text-muted-foreground hidden sm:block">em andamento</p></CardContent></Card>
+              <Card><CardHeader className="pb-2 p-3 sm:p-4"><CardTitle className="text-xs sm:text-sm font-medium">Fechados</CardTitle></CardHeader><CardContent className="p-3 sm:p-4 pt-0"><div className="text-xl sm:text-2xl font-bold">{closed}</div><p className="text-xs text-muted-foreground hidden sm:block">contratos assinados</p></CardContent></Card>
             </div>
 
             {/* Contacts List */}

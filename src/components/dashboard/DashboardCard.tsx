@@ -27,28 +27,28 @@ export function DashboardCard({
       "transition-all duration-200 hover:shadow-lg border-border/50 hover:border-primary/20 group",
       className
     )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-2">
+        <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground line-clamp-1">
           {title}
         </CardTitle>
         {Icon && (
-          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
         )}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-foreground">
+      <CardContent className="p-3 sm:p-4 pt-0">
+        <div className="text-lg sm:text-2xl font-bold text-foreground">
           {value}
         </div>
         {(description || trend) && (
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between mt-1 sm:mt-2 gap-1">
             {description && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1">
                 {description}
               </p>
             )}
             {trend && (
               <p className={cn(
-                "text-xs font-medium",
+                "text-[10px] sm:text-xs font-medium flex-shrink-0",
                 trend.isPositive ? "text-success" : "text-destructive"
               )}>
                 {trend.isPositive ? "+" : ""}{trend.value}%

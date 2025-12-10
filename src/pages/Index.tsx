@@ -92,7 +92,7 @@ const Index = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               <DashboardCard
                 title="Obras e Fonogramas"
                 value={isLoading ? '...' : displayStats.totalWorks || 0}

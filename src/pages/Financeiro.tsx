@@ -513,12 +513,12 @@ const Financeiro = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Financeiro</h1>
-                  <p className="text-muted-foreground">
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Controle financeiro e fluxo de caixa
                   </p>
                 </div>
@@ -535,25 +535,26 @@ const Financeiro = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="gap-2" 
+                  size="sm"
+                  className="gap-1 sm:gap-2" 
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload className="h-4 w-4" />
-                  Importar OFX
+                  <span className="hidden sm:inline">Importar OFX</span>
                 </Button>
                 
                 <Link to="/financeiro/regras">
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-1 sm:gap-2">
                     <Settings2 className="h-4 w-4" />
-                    Regras
+                    <span className="hidden sm:inline">Regras</span>
                   </Button>
                 </Link>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-1 sm:gap-2">
                       <Download className="h-4 w-4" />
-                      Exportar
+                      <span className="hidden sm:inline">Exportar</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -570,21 +571,22 @@ const Financeiro = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="gap-2" 
+                  size="sm"
+                  className="gap-1 sm:gap-2" 
                   onClick={() => setIsBankModalOpen(true)}
                 >
                   <Building2 className="h-4 w-4" />
-                  Integração Bancária
+                  <span className="hidden lg:inline">Integração Bancária</span>
                 </Button>
-                <Button className="gap-2" onClick={handleNewTransaction}>
+                <Button size="sm" className="gap-1 sm:gap-2" onClick={handleNewTransaction}>
                   <Plus className="h-4 w-4" />
-                  Nova Transação
+                  <span className="hidden sm:inline">Nova Transação</span>
                 </Button>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <DashboardCard
                 title="Receita Mensal"
                 value={new Intl.NumberFormat('pt-BR', {

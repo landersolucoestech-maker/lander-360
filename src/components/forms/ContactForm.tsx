@@ -205,22 +205,22 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
 
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 sm:space-y-6">
       {/* Upload de Imagem */}
-      <div className="flex items-center gap-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
         <div 
-          className="w-24 h-24 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors"
+          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors flex-shrink-0"
           onClick={() => fileInputRef.current?.click()}
         >
           {imagePreview ? (
             <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
           ) : (
-            <User className="h-10 w-10 text-muted-foreground" />
+            <User className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
           )}
         </div>
         <div className="space-y-2">
-          <Label>Foto do Contato</Label>
-          <div className="flex items-center gap-2">
+          <Label className="text-sm">Foto do Contato</Label>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -228,8 +228,8 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
             >
-              <Upload className="h-4 w-4 mr-2" />
-              {isUploading ? "Enviando..." : "Selecionar Imagem"}
+              <Upload className="h-4 w-4 mr-1 sm:mr-2" />
+              {isUploading ? "Enviando..." : "Selecionar"}
             </Button>
             {imagePreview && (
               <Button
@@ -256,7 +256,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Nome *</Label>
           <Input
