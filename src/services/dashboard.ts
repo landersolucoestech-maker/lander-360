@@ -85,14 +85,14 @@ export class DashboardService {
         supabase
           .from('financial_transactions')
           .select('amount')
-          .eq('type', 'income')
+          .or('type.eq.receitas,type.eq.income')
           .gte('date', formatDateForDB(startOfMonth) || '')
           .then(res => res.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0),
         // Last month revenue
         supabase
           .from('financial_transactions')
           .select('amount')
-          .eq('type', 'income')
+          .or('type.eq.receitas,type.eq.income')
           .gte('date', formatDateForDB(startOfLastMonth) || '')
           .lt('date', formatDateForDB(startOfMonth) || '')
           .then(res => res.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0),
@@ -242,12 +242,12 @@ export class DashboardService {
         supabase
           .from('financial_transactions')
           .select('amount')
-          .eq('type', 'income')
+          .or('type.eq.receitas,type.eq.income')
           .gte('date', formatDateForDB(startOfMonth) || ''),
         supabase
           .from('financial_transactions')
           .select('amount')
-          .eq('type', 'expense')
+          .or('type.eq.despesas,type.eq.expense')
           .gte('date', formatDateForDB(startOfMonth) || '')
       ]);
 
