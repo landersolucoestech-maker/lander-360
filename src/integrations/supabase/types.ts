@@ -99,6 +99,7 @@ export type Database = {
           account: string | null
           account_holder: string | null
           agency: string | null
+          artist_types: string[] | null
           bank: string | null
           bio: string | null
           birth_date: string | null
@@ -141,6 +142,7 @@ export type Database = {
           account?: string | null
           account_holder?: string | null
           agency?: string | null
+          artist_types?: string[] | null
           bank?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -183,6 +185,7 @@ export type Database = {
           account?: string | null
           account_holder?: string | null
           agency?: string | null
+          artist_types?: string[] | null
           bank?: string | null
           bio?: string | null
           birth_date?: string | null

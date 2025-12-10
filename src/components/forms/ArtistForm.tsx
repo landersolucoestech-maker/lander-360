@@ -30,6 +30,8 @@ const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-?\d{4}$/;
 
 // Validação para PIX (CPF, CNPJ, email, telefone ou chave aleatória)
 const pixKeyRegex = /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\(\d{2}\)\s?\d{4,5}-?\d{4}|\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i;
+const artistTypeOptions = ['Compositor', 'Intérprete', 'Produtor'];
+
 const artistSchema = z.object({
   // Informações Básicas
   artistic_name: z.string().min(1, 'Nome artístico é obrigatório'),
@@ -38,6 +40,7 @@ const artistSchema = z.object({
   artist_image: z.any().optional(),
   documents: z.any().optional(),
   biography: z.string().optional(),
+  artist_types: z.array(z.string()).min(1, 'Selecione pelo menos um tipo de artista'),
   // Dados Pessoais
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
   birth_date: z.date().optional(),
@@ -108,6 +111,7 @@ export function ArtistForm({
       music_language: '',
       artist_image: undefined,
       biography: artist?.bio || '',
+      artist_types: (artist as any)?.artist_types || [],
       full_name: artist?.full_name || '',
       birth_date: artist?.birth_date ? new Date(artist.birth_date) : undefined,
       cpf_cnpj: artist?.cpf_cnpj || '',
@@ -329,6 +333,7 @@ export function ArtistForm({
         observations: data.observations || null,
         image_url: imageUrl,
         documents_url: documentsUrl,
+        artist_types: data.artist_types || [],
       };
       
       if (artist) {
@@ -461,6 +466,53 @@ export function ArtistForm({
                     </Select>
                     <FormMessage />
                   </FormItem>} />
+
+              {/* Tipo de Artista */}
+              <FormField
+                control={form.control}
+                name="artist_types"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Tipo de Artista *</FormLabel>
+                    <div className="space-y-3">
+                      {artistTypeOptions.map((type) => (
+                        <FormField
+                          key={type}
+                          control={form.control}
+                          name="artist_types"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={type}
+                                className="flex flex-row items-center space-x-3 space-y-0"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(type)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, type])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (value: string) => value !== type
+                                            )
+                                          );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">
+                                  {type}
+                                </FormLabel>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="md:col-span-2">
                 <FormField control={form.control} name="documents" render={({
