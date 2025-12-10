@@ -37,18 +37,51 @@ export function ArtistHistoryModal({
 }: ArtistHistoryModalProps) {
   if (!artist) return null;
 
-  // Buscar lançamentos do artista
+  // Buscar lançamentos do artista (por artist_id e por nome nas tracks)
   const { data: releases, isLoading: releasesLoading } = useQuery({
-    queryKey: ['artist-releases', artist.id],
+    queryKey: ['artist-releases', artist.id, artist.name, artist.stage_name],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar por artist_id
+      const { data: byId, error: errorById } = await supabase
         .from('releases')
         .select('*')
         .eq('artist_id', artist.id)
         .order('release_date', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (errorById) throw errorById;
+
+      // Buscar todos para filtrar por nome nas tracks
+      const { data: all, error: errorAll } = await supabase
+        .from('releases')
+        .select('*')
+        .order('release_date', { ascending: false });
+      
+      if (errorAll) throw errorAll;
+
+      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      
+      const byName = (all || []).filter(release => {
+        const tracks = release.tracks as any[] || [];
+        
+        return tracks.some((track: any) => {
+          const allParticipants = [
+            ...(track.composers || []),
+            ...(track.performers || []),
+            ...(track.producers || [])
+          ];
+          return allParticipants.some((p: any) => 
+            artistNames.includes(typeof p === 'string' ? p?.toLowerCase() : p?.name?.toLowerCase())
+          );
+        });
+      });
+
+      // Combinar e remover duplicados
+      const combined = [...(byId || []), ...byName];
+      const unique = combined.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      
+      return unique;
     },
     enabled: open && !!artist.id
   });
@@ -85,50 +118,143 @@ export function ArtistHistoryModal({
     enabled: open && !!artist.id
   });
 
-  // Buscar projetos do artista
+  // Buscar projetos do artista (por artist_id e por nome nos participantes)
   const { data: projects, isLoading: projectsLoading } = useQuery({
-    queryKey: ['artist-projects', artist.id],
+    queryKey: ['artist-projects', artist.id, artist.name, artist.stage_name],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar por artist_id
+      const { data: byId, error: errorById } = await supabase
         .from('projects')
         .select('*')
         .eq('artist_id', artist.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (errorById) throw errorById;
+
+      // Buscar todos os projetos para filtrar por nome nos participantes
+      const { data: allProjects, error: errorAll } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (errorAll) throw errorAll;
+
+      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      
+      const byName = (allProjects || []).filter(project => {
+        if (!project.audio_files) return false;
+        const audioFiles = project.audio_files as any;
+        const songs = audioFiles?.songs || [];
+        
+        return songs.some((song: any) => {
+          const allParticipants = [
+            ...(song.composers || []),
+            ...(song.performers || []),
+            ...(song.producers || [])
+          ];
+          return allParticipants.some((p: any) => 
+            artistNames.includes(p?.name?.toLowerCase())
+          );
+        });
+      });
+
+      // Combinar e remover duplicados
+      const combined = [...(byId || []), ...byName];
+      const unique = combined.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      
+      return unique;
     },
     enabled: open && !!artist.id
   });
 
-  // Buscar obras musicais do artista
+  // Buscar obras musicais do artista (por artist_id e por nome nos participantes)
   const { data: musicRegistry, isLoading: musicLoading } = useQuery({
-    queryKey: ['artist-music', artist.id],
+    queryKey: ['artist-music', artist.id, artist.name, artist.stage_name],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar por artist_id
+      const { data: byId, error: errorById } = await supabase
         .from('music_registry')
         .select('*')
         .eq('artist_id', artist.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (errorById) throw errorById;
+
+      // Buscar todos para filtrar por nome nos participantes
+      const { data: all, error: errorAll } = await supabase
+        .from('music_registry')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (errorAll) throw errorAll;
+
+      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      
+      const byName = (all || []).filter(music => {
+        const participants = music.participants as any[] || [];
+        const writers = music.writers || [];
+        const publishers = music.publishers || [];
+        
+        const allNames = [
+          ...participants.map((p: any) => p?.name?.toLowerCase()),
+          ...writers.map((w: string) => w?.toLowerCase()),
+          ...publishers.map((p: string) => p?.toLowerCase())
+        ];
+        
+        return artistNames.some(name => allNames.includes(name));
+      });
+
+      // Combinar e remover duplicados
+      const combined = [...(byId || []), ...byName];
+      const unique = combined.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      
+      return unique;
     },
     enabled: open && !!artist.id
   });
 
-  // Buscar fonogramas do artista
+  // Buscar fonogramas do artista (por artist_id e por nome nos participantes)
   const { data: phonograms, isLoading: phonogramsLoading } = useQuery({
-    queryKey: ['artist-phonograms', artist.id],
+    queryKey: ['artist-phonograms', artist.id, artist.name, artist.stage_name],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar por artist_id
+      const { data: byId, error: errorById } = await supabase
         .from('phonograms')
         .select('*')
         .eq('artist_id', artist.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (errorById) throw errorById;
+
+      // Buscar todos para filtrar por nome nos participantes
+      const { data: all, error: errorAll } = await supabase
+        .from('phonograms')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (errorAll) throw errorAll;
+
+      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      
+      const byName = (all || []).filter(phonogram => {
+        const participants = phonogram.participants as any[] || [];
+        
+        return participants.some((p: any) => 
+          artistNames.includes(p?.name?.toLowerCase())
+        );
+      });
+
+      // Combinar e remover duplicados
+      const combined = [...(byId || []), ...byName];
+      const unique = combined.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      
+      return unique;
     },
     enabled: open && !!artist.id
   });
