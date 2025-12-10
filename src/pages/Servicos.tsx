@@ -358,7 +358,7 @@ export default function Servicos() {
                             onCheckedChange={handleSelectAll}
                           />
                         </TableHead>
-                        <TableHead>Nome do Serviço</TableHead>
+                        
                         <TableHead>Descrição</TableHead>
                         <TableHead>Categoria</TableHead>
                         <TableHead>Tipo</TableHead>
@@ -376,7 +376,7 @@ export default function Servicos() {
                               onCheckedChange={(checked) => handleSelectOne(service.id, !!checked)}
                             />
                           </TableCell>
-                          <TableCell className="font-medium">{service.name}</TableCell>
+                          
                           <TableCell className="max-w-[200px] truncate" title={service.description || ""}>{service.description || "-"}</TableCell>
                           <TableCell>{categoryLabels[service.category] || service.category}</TableCell>
                           <TableCell>{serviceTypeLabels[service.service_type] || service.service_type}</TableCell>
