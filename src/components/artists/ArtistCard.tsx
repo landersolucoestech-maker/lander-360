@@ -29,6 +29,7 @@ interface ArtistCardProps {
     stats: {
       projetos?: number;
       obras: number;
+      fonogramas?: number;
       lancamentos: number;
     };
     profile: {
@@ -184,6 +185,10 @@ export function ArtistCard({
                   <div>
                     <div className="text-xl md:text-2xl font-bold text-foreground">{artist.stats.obras}</div>
                     <div className="text-xs md:text-sm text-muted-foreground">Obras</div>
+                  </div>
+                  <div>
+                    <div className="text-xl md:text-2xl font-bold text-foreground">{artist.stats.fonogramas ?? 0}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Fonogramas</div>
                   </div>
                   <div>
                     <div className="text-xl md:text-2xl font-bold text-foreground">{artist.stats.lancamentos}</div>
