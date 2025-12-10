@@ -70,7 +70,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
   const displayCredits = () => {
     const parts: string[] = [];
     if (uniquePerformers.length > 0) {
-      parts.push(uniquePerformers.slice(0, 2).join(", "));
+      parts.push(uniquePerformers.join(", "));
     }
     if (uniqueProducers.length > 0) {
       parts.push(`Prod. ${uniqueProducers.slice(0, 1).join(", ")}`);
