@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, X, Download, Upload } from "lucide-react";
+import { Plus, Search, X, Download, Upload, Trash2 } from "lucide-react";
 import { useServices, useCreateService, useUpdateService, useDeleteService, Service } from "@/hooks/useServices";
 import { ServiceModal } from "@/components/modals/ServiceModal";
 import { ServiceViewModal } from "@/components/modals/ServiceViewModal";
@@ -12,6 +12,7 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { ServiceFormData } from "@/components/forms/ServiceForm";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 const categoryLabels: Record<string, string> = {
@@ -46,6 +47,9 @@ export default function Servicos() {
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
   const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
   const [isImporting, setIsImporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
@@ -145,6 +149,48 @@ export default function Servicos() {
       setSelectedService(null);
     }
   };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(displayedServices.map(s => s.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(i => i !== id));
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedIds.length === 0) {
+      toast.error("Selecione pelo menos um serviço para excluir");
+      return;
+    }
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteService.mutateAsync(id);
+      }
+      toast.success(`${selectedIds.length} serviço(s) excluído(s) com sucesso!`);
+      setSelectedIds([]);
+      setIsBulkDeleteModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting services:", error);
+      toast.error("Erro ao excluir serviços");
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   const hasActiveFilters = currentSearchTerm || currentFilters.category || currentFilters.service_type;
   const handleExport = () => {
     if (services.length === 0) {
@@ -239,7 +285,15 @@ export default function Servicos() {
 
           <Card>
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <CardTitle>Lista de Serviços</CardTitle>
+              <div className="flex items-center gap-4">
+                <CardTitle>Lista de Serviços</CardTitle>
+                {selectedIds.length > 0 && (
+                  <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir ({selectedIds.length})
+                  </Button>
+                )}
+              </div>
               <div className="flex gap-2">
                 <input type="file" ref={fileInputRef} onChange={handleImport} accept=".xlsx,.xls" className="hidden" />
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
@@ -295,6 +349,12 @@ export default function Servicos() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox 
+                            checked={displayedServices.length > 0 && selectedIds.length === displayedServices.length}
+                            onCheckedChange={handleSelectAll}
+                          />
+                        </TableHead>
                         <TableHead>Nome do Serviço</TableHead>
                         <TableHead>Categoria</TableHead>
                         <TableHead>Tipo</TableHead>
@@ -306,6 +366,12 @@ export default function Servicos() {
                     </TableHeader>
                     <TableBody>
                       {displayedServices.map(service => <TableRow key={service.id}>
+                          <TableCell>
+                            <Checkbox 
+                              checked={selectedIds.includes(service.id)}
+                              onCheckedChange={(checked) => handleSelectOne(service.id, !!checked)}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">{service.name}</TableCell>
                           <TableCell>{categoryLabels[service.category] || service.category}</TableCell>
                           <TableCell>{serviceTypeLabels[service.service_type] || service.service_type}</TableCell>
@@ -350,6 +416,15 @@ export default function Servicos() {
           setIsDeleteModalOpen(open);
           if (!open) setSelectedService(null);
         }} onConfirm={handleConfirmDelete} title="Excluir Serviço" description={`Tem certeza que deseja excluir o serviço "${selectedService?.name}"? Esta ação não pode ser desfeita.`} isLoading={deleteService.isPending} />
+
+          <DeleteConfirmationModal 
+            open={isBulkDeleteModalOpen} 
+            onOpenChange={setIsBulkDeleteModalOpen} 
+            onConfirm={handleConfirmBulkDelete} 
+            title="Excluir Serviços" 
+            description={`Tem certeza que deseja excluir ${selectedIds.length} serviço(s)? Esta ação não pode ser desfeita.`} 
+            isLoading={isDeletingBulk} 
+          />
         </main>
       </div>
     </SidebarProvider>;
