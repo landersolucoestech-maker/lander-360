@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, Download, Upload } from "lucide-react";
 import { useServices, useCreateService, useUpdateService, useDeleteService, Service } from "@/hooks/useServices";
 import { ServiceModal } from "@/components/modals/ServiceModal";
 import { ServiceViewModal } from "@/components/modals/ServiceViewModal";
@@ -12,6 +12,8 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { ServiceFormData } from "@/components/forms/ServiceForm";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 const categoryLabels: Record<string, string> = {
   agenciamento: "Agenciamento",
@@ -44,6 +46,8 @@ export default function Servicos() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
   const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
@@ -156,6 +160,100 @@ export default function Servicos() {
 
   const hasActiveFilters = currentSearchTerm || currentFilters.category || currentFilters.service_type;
 
+  const handleExport = () => {
+    if (services.length === 0) {
+      toast.error("Nenhum serviço para exportar");
+      return;
+    }
+
+    const exportData = services.map((service) => ({
+      "Descrição do Serviço": service.description,
+      "Categoria": categoryLabels[service.category] || service.category,
+      "Tipo": serviceTypeLabels[service.service_type] || service.service_type,
+      "Preço de Venda": service.sale_price,
+      "Tipo de Desconto": service.discount_type === "percentage" ? "Percentual" : "Valor Fixo",
+      "Desconto": service.discount_value,
+      "Preço Final": service.final_price,
+      "Observações": service.observations || "",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Serviços");
+    XLSX.writeFile(wb, "servicos.xlsx");
+    toast.success("Arquivo exportado com sucesso!");
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      let importedCount = 0;
+
+      for (const row of jsonData as any[]) {
+        const description = row["Descrição do Serviço"] || row["Descrição"] || row["description"];
+        if (!description) continue;
+
+        // Map category from Portuguese label to key
+        const categoryValue = row["Categoria"] || row["category"] || "";
+        const category = Object.entries(categoryLabels).find(
+          ([_, label]) => label.toLowerCase() === categoryValue.toLowerCase()
+        )?.[0] || categoryValue.toLowerCase().replace(/ /g, "_");
+
+        // Map service type from Portuguese label to key
+        const typeValue = row["Tipo"] || row["service_type"] || "";
+        const service_type = Object.entries(serviceTypeLabels).find(
+          ([_, label]) => label.toLowerCase() === typeValue.toLowerCase()
+        )?.[0] || typeValue.toLowerCase();
+
+        const salePrice = parseFloat(row["Preço de Venda"] || row["sale_price"] || "0") || 0;
+        const discountValue = parseFloat(row["Desconto"] || row["discount_value"] || "0") || 0;
+        const discountTypeValue = row["Tipo de Desconto"] || row["discount_type"] || "percentage";
+        const discount_type = discountTypeValue.toLowerCase().includes("percent") ? "percentage" : "fixed";
+        
+        let final_price = parseFloat(row["Preço Final"] || row["final_price"] || "0") || 0;
+        if (!final_price) {
+          if (discount_type === "percentage") {
+            final_price = salePrice - (salePrice * discountValue / 100);
+          } else {
+            final_price = salePrice - discountValue;
+          }
+        }
+
+        await createService.mutateAsync({
+          description,
+          category: category || "agenciamento",
+          service_type: service_type || "avulso",
+          sale_price: salePrice,
+          discount_value: discountValue,
+          discount_type,
+          final_price: Math.max(0, final_price),
+          observations: row["Observações"] || row["observations"] || "",
+        });
+
+        importedCount++;
+      }
+
+      toast.success(`${importedCount} serviço(s) importado(s) com sucesso!`);
+    } catch (error) {
+      console.error("Error importing services:", error);
+      toast.error("Erro ao importar arquivo");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -169,10 +267,27 @@ export default function Servicos() {
           <Card>
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle>Lista de Serviços</CardTitle>
-              <Button onClick={handleCreateService}>
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Serviço
-              </Button>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImport}
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  {isImporting ? "Importando..." : "Importar"}
+                </Button>
+                <Button variant="outline" onClick={handleExport}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar
+                </Button>
+                <Button onClick={handleCreateService}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Serviço
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-row gap-2 items-center w-full mb-4">
