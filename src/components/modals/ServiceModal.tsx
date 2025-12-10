@@ -21,6 +21,7 @@ export function ServiceModal({ isOpen, onClose, onSubmit, service, isLoading }: 
         </DialogHeader>
         <ServiceForm
           onSubmit={onSubmit}
+          onCancel={onClose}
           initialData={service || undefined}
           isLoading={isLoading}
         />
