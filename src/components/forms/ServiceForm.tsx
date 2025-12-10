@@ -13,6 +13,7 @@ const serviceSchema = z.object({
   category: z.string().min(1, "Categoria é obrigatória"),
   service_type: z.string().min(1, "Tipo é obrigatório"),
   sale_price: z.number().min(0, "Preço deve ser maior ou igual a zero"),
+  sale_price_type: z.string().optional(),
   discount_value: z.number().min(0).optional(),
   discount_type: z.string().optional(),
   final_price: z.number().min(0).optional(),
@@ -50,6 +51,11 @@ const discountTypes = [
   { value: "fixed", label: "Valor Fixo (R$)" },
 ];
 
+const salePriceTypes = [
+  { value: "fixed", label: "R$" },
+  { value: "percentage", label: "%" },
+];
+
 export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormProps) {
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
@@ -58,6 +64,7 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
       category: initialData?.category || "",
       service_type: initialData?.service_type || "",
       sale_price: initialData?.sale_price || 0,
+      sale_price_type: initialData?.sale_price_type || "fixed",
       discount_value: initialData?.discount_value || 0,
       discount_type: initialData?.discount_type || "percentage",
       final_price: initialData?.final_price || 0,
@@ -66,6 +73,7 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
   });
 
   const salePrice = form.watch("sale_price");
+  const salePriceType = form.watch("sale_price_type");
   const discountValue = form.watch("discount_value");
   const discountType = form.watch("discount_type");
 
@@ -158,17 +166,39 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
             name="sale_price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preço de Venda (R$)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0,00"
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                <FormLabel>Preço de Venda</FormLabel>
+                <div className="flex gap-2">
+                  <FormField
+                    control={form.control}
+                    name="sale_price_type"
+                    render={({ field: typeField }) => (
+                      <Select onValueChange={typeField.onChange} value={typeField.value}>
+                        <SelectTrigger className="w-20">
+                          <SelectValue placeholder="R$" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {salePriceTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   />
-                </FormControl>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max={salePriceType === "percentage" ? 100 : undefined}
+                      placeholder="0,00"
+                      className="flex-1"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
