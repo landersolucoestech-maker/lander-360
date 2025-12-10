@@ -94,16 +94,61 @@ const Artistas = () => {
     return map;
   }, [activeContracts]);
 
+  // Helper function to check if artist name matches any participant
+  const artistMatchesParticipant = (artistName: string, stageName: string, participants: any[]) => {
+    if (!participants || !Array.isArray(participants)) return false;
+    const normalizedArtistName = artistName?.toLowerCase().trim();
+    const normalizedStageName = stageName?.toLowerCase().trim();
+    return participants.some((p: any) => {
+      const pName = p?.name?.toLowerCase().trim();
+      return pName && (pName === normalizedArtistName || pName === normalizedStageName);
+    });
+  };
+
   const artistStats = useMemo(() => {
     const stats: Record<string, { projetos: number; lancamentos: number; obras: number }> = {};
+    
+    // Get list of artists for name matching
+    const artistsList = artists || [];
+    
+    // Count projects - both by artist_id and by participation (composer, performer, producer)
     projects.forEach((project: any) => {
+      // Direct artist_id link
       if (project.artist_id) {
         if (!stats[project.artist_id]) {
           stats[project.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
         }
         stats[project.artist_id].projetos++;
       }
+      
+      // Check participation in songs (composer, performer, producer)
+      const audioFiles = project.audio_files;
+      const songs = audioFiles?.songs || [];
+      
+      artistsList.forEach((artist: any) => {
+        const artistName = artist.full_name || artist.name;
+        const stageName = artist.name || artist.stage_name;
+        
+        let isParticipant = false;
+        songs.forEach((song: any) => {
+          if (artistMatchesParticipant(artistName, stageName, song.composers) ||
+              artistMatchesParticipant(artistName, stageName, song.performers) ||
+              artistMatchesParticipant(artistName, stageName, song.producers)) {
+            isParticipant = true;
+          }
+        });
+        
+        // Only add if not already counted by artist_id
+        if (isParticipant && project.artist_id !== artist.id) {
+          if (!stats[artist.id]) {
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          }
+          stats[artist.id].projetos++;
+        }
+      });
     });
+    
+    // Count releases - both by artist_id and by participation
     releases.forEach((release: any) => {
       if (release.artist_id) {
         if (!stats[release.artist_id]) {
@@ -111,7 +156,34 @@ const Artistas = () => {
         }
         stats[release.artist_id].lancamentos++;
       }
+      
+      // Check participation in tracks
+      const tracks = release.tracks || [];
+      artistsList.forEach((artist: any) => {
+        const artistName = artist.full_name || artist.name;
+        const stageName = artist.name || artist.stage_name;
+        
+        let isParticipant = false;
+        if (Array.isArray(tracks)) {
+          tracks.forEach((track: any) => {
+            if (artistMatchesParticipant(artistName, stageName, track.composers) ||
+                artistMatchesParticipant(artistName, stageName, track.performers) ||
+                artistMatchesParticipant(artistName, stageName, track.producers)) {
+              isParticipant = true;
+            }
+          });
+        }
+        
+        if (isParticipant && release.artist_id !== artist.id) {
+          if (!stats[artist.id]) {
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          }
+          stats[artist.id].lancamentos++;
+        }
+      });
     });
+    
+    // Count music registry - both by artist_id and by participation
     musicRegistry.forEach((music: any) => {
       if (music.artist_id) {
         if (!stats[music.artist_id]) {
@@ -119,9 +191,24 @@ const Artistas = () => {
         }
         stats[music.artist_id].obras++;
       }
+      
+      // Check participation in music registry
+      const participants = music.participants || [];
+      artistsList.forEach((artist: any) => {
+        const artistName = artist.full_name || artist.name;
+        const stageName = artist.name || artist.stage_name;
+        
+        if (artistMatchesParticipant(artistName, stageName, participants) && music.artist_id !== artist.id) {
+          if (!stats[artist.id]) {
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          }
+          stats[artist.id].obras++;
+        }
+      });
     });
+    
     return stats;
-  }, [projects, releases, musicRegistry]);
+  }, [projects, releases, musicRegistry, artists]);
 
   const translateStatus = (status: string | null | undefined): string => {
     const statusMap: Record<string, string> = {
