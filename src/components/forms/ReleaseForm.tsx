@@ -148,40 +148,24 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const createRelease = useCreateRelease();
   const updateRelease = useUpdateRelease();
 
-  // Filtrar apenas projetos concluídos que possuem fonograma registrado
+  // Filtrar apenas projetos concluídos que possuem obra E fonograma registrados
   const availableProjects = useMemo(() => {
     return projects.filter(project => {
       // 1. Projeto deve estar concluído
       if (project.status !== 'completed') return false;
       
-      // 2. Extrair nomes das músicas do projeto
-      let projectSongs: string[] = [];
-      if (project.audio_files) {
-        const audioData = typeof project.audio_files === 'string' 
-          ? JSON.parse(project.audio_files) 
-          : project.audio_files;
-        
-        if (Array.isArray(audioData)) {
-          projectSongs = audioData.map((song: any) => song.song_name?.toLowerCase() || '').filter(Boolean);
-        } else if (audioData?.song_name) {
-          projectSongs = [audioData.song_name.toLowerCase()];
-        }
-      }
+      // 2. Verificar se existe obra registrada para o mesmo artista do projeto
+      const projectWorks = musicRegistry.filter(work => work.artist_id === project.artist_id);
+      if (projectWorks.length === 0) return false;
       
-      // 3. Verificar se existe fonograma registrado para alguma música do projeto
-      // Verificar por artist_id OU por título da música
-      const hasPhonogram = phonograms.some(phonogram => {
-        // Verificar se o fonograma é do mesmo artista
-        if (phonogram.artist_id === project.artist_id) return true;
-        
-        // Verificar se o título do fonograma corresponde a alguma música do projeto
-        const phonogramTitle = phonogram.title?.toLowerCase() || '';
-        return projectSongs.some(songName => songName === phonogramTitle);
-      });
+      // 3. Verificar se existe fonograma registrado vinculado a alguma obra do projeto
+      const hasPhonogram = projectWorks.some(work => 
+        phonograms.some(phonogram => phonogram.work_id === work.id)
+      );
       
       return hasPhonogram;
     });
-  }, [projects, phonograms]);
+  }, [projects, musicRegistry, phonograms]);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>(() => {
     // Initialize with existing cover when editing
     if (release?.cover_url || release?.cover_art) {
