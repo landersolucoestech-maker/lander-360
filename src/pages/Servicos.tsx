@@ -356,6 +356,7 @@ export default function Servicos() {
                           />
                         </TableHead>
                         <TableHead>Nome do Serviço</TableHead>
+                        <TableHead>Descrição</TableHead>
                         <TableHead>Categoria</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead className="text-right">Preço de Venda</TableHead>
@@ -373,6 +374,7 @@ export default function Servicos() {
                             />
                           </TableCell>
                           <TableCell className="font-medium">{service.name}</TableCell>
+                          <TableCell className="max-w-[200px] truncate" title={service.description || ""}>{service.description || "-"}</TableCell>
                           <TableCell>{categoryLabels[service.category] || service.category}</TableCell>
                           <TableCell>{serviceTypeLabels[service.service_type] || service.service_type}</TableCell>
                           <TableCell className="text-right">{formatCurrency(service.sale_price)}</TableCell>
