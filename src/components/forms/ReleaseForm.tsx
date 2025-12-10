@@ -148,28 +148,22 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const createRelease = useCreateRelease();
   const updateRelease = useUpdateRelease();
 
-  // Filtrar apenas projetos que possuem fonograma registrado
+  // Filtrar apenas projetos que possuem fonograma registrado com mesmo nome
   const availableProjects = useMemo(() => {
-    // Obter todos os work_ids que têm fonograma registrado
-    const workIdsWithPhonogram = new Set(
-      phonograms.map(p => p.work_id).filter(Boolean)
+    // Obter títulos dos fonogramas registrados (lowercase para comparação)
+    const phonogramTitles = new Set(
+      phonograms.map(p => p.title?.toLowerCase().trim()).filter(Boolean)
     );
     
-    // Obter todos os artist_ids das obras que têm fonograma
-    const artistIdsWithPhonogram = new Set(
-      musicRegistry
-        .filter(work => workIdsWithPhonogram.has(work.id))
-        .map(work => work.artist_id)
-        .filter(Boolean)
-    );
-    
-    // Filtrar projetos concluídos cujo artista tem fonograma registrado
-    return projects.filter(project => 
-      project.status === 'completed' && 
-      project.artist_id && 
-      artistIdsWithPhonogram.has(project.artist_id)
-    );
-  }, [projects, musicRegistry, phonograms]);
+    // Filtrar projetos concluídos que têm fonograma com mesmo nome
+    return projects.filter(project => {
+      if (project.status !== 'completed') return false;
+      
+      // Verificar se existe fonograma com o mesmo nome do projeto
+      const projectName = project.name?.toLowerCase().trim();
+      return projectName && phonogramTitles.has(projectName);
+    });
+  }, [projects, phonograms]);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>(() => {
     // Initialize with existing cover when editing
     if (release?.cover_url || release?.cover_art) {
