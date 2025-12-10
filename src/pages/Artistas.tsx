@@ -12,6 +12,7 @@ import { useArtists, useArtistsCount, useDeleteArtist, useCreateArtist } from "@
 import { useProjects } from "@/hooks/useProjects";
 import { useReleases } from "@/hooks/useReleases";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
+import { usePhonograms } from "@/hooks/usePhonograms";
 import { useActiveContracts } from "@/hooks/useContracts";
 import { useDataExport } from "@/hooks/useDataExport";
 import { Users, Plus, Music, DollarSign, Star, Upload, Download, Trash2, Loader2 } from "lucide-react";
@@ -26,6 +27,7 @@ const Artistas = () => {
   const { data: projects = [] } = useProjects();
   const { data: releases = [] } = useReleases();
   const { data: musicRegistry = [] } = useMusicRegistry();
+  const { data: phonograms = [] } = usePhonograms();
   const { data: activeContracts = [] } = useActiveContracts();
   const deleteArtist = useDeleteArtist();
   const createArtist = useCreateArtist();
@@ -106,7 +108,7 @@ const Artistas = () => {
   };
 
   const artistStats = useMemo(() => {
-    const stats: Record<string, { projetos: number; lancamentos: number; obras: number }> = {};
+    const stats: Record<string, { projetos: number; lancamentos: number; obras: number; fonogramas: number }> = {};
     
     // Get list of artists for name matching
     const artistsList = artists || [];
@@ -129,7 +131,7 @@ const Artistas = () => {
       // Direct artist_id link
       if (project.artist_id) {
         if (!stats[project.artist_id]) {
-          stats[project.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          stats[project.artist_id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
         }
         stats[project.artist_id].projetos++;
       }
@@ -154,7 +156,7 @@ const Artistas = () => {
         // Only add if not already counted by artist_id
         if (isParticipant && project.artist_id !== artist.id) {
           if (!stats[artist.id]) {
-            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0 };
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
           }
           stats[artist.id].projetos++;
         }
@@ -165,7 +167,7 @@ const Artistas = () => {
     releases.forEach((release: any) => {
       if (release.artist_id) {
         if (!stats[release.artist_id]) {
-          stats[release.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          stats[release.artist_id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
         }
         stats[release.artist_id].lancamentos++;
       }
@@ -197,7 +199,7 @@ const Artistas = () => {
         
         if (isParticipant && release.artist_id !== artist.id) {
           if (!stats[artist.id]) {
-            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0 };
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
           }
           stats[artist.id].lancamentos++;
         }
@@ -208,7 +210,7 @@ const Artistas = () => {
     musicRegistry.forEach((music: any) => {
       if (music.artist_id) {
         if (!stats[music.artist_id]) {
-          stats[music.artist_id] = { projetos: 0, lancamentos: 0, obras: 0 };
+          stats[music.artist_id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
         }
         stats[music.artist_id].obras++;
       }
@@ -229,15 +231,47 @@ const Artistas = () => {
         
         if (artistMatchesParticipant(artistName, stageName, participants) && music.artist_id !== artist.id) {
           if (!stats[artist.id]) {
-            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0 };
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
           }
           stats[artist.id].obras++;
         }
       });
     });
     
+    // Count phonograms - both by artist_id and by participation
+    phonograms.forEach((phonogram: any) => {
+      if (phonogram.artist_id) {
+        if (!stats[phonogram.artist_id]) {
+          stats[phonogram.artist_id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
+        }
+        stats[phonogram.artist_id].fonogramas++;
+      }
+      
+      // Check participation in phonogram
+      let participants = phonogram.participants || [];
+      if (typeof participants === 'string') {
+        try {
+          participants = JSON.parse(participants);
+        } catch (e) {
+          participants = [];
+        }
+      }
+      
+      artistsList.forEach((artist: any) => {
+        const artistName = artist.full_name || artist.name;
+        const stageName = artist.stage_name || artist.name;
+        
+        if (artistMatchesParticipant(artistName, stageName, participants) && phonogram.artist_id !== artist.id) {
+          if (!stats[artist.id]) {
+            stats[artist.id] = { projetos: 0, lancamentos: 0, obras: 0, fonogramas: 0 };
+          }
+          stats[artist.id].fonogramas++;
+        }
+      });
+    });
+    
     return stats;
-  }, [projects, releases, musicRegistry, artists]);
+  }, [projects, releases, musicRegistry, phonograms, artists]);
 
   const translateStatus = (status: string | null | undefined): string => {
     const statusMap: Record<string, string> = {
@@ -277,7 +311,7 @@ const Artistas = () => {
       stats: {
         projetos: artistStats[dbArtist.id]?.projetos || 0,
         obras: artistStats[dbArtist.id]?.obras || 0,
-        fonogramas: 0,
+        fonogramas: artistStats[dbArtist.id]?.fonogramas || 0,
         lancamentos: artistStats[dbArtist.id]?.lancamentos || 0,
         streams: '0'
       },
