@@ -82,6 +82,10 @@ const Inventario = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  
+  // Filter persistence state
+  const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
 
   const allEquipment: Equipment[] = (inventoryData || []).map((item: any) => ({
     id: item.id,
@@ -99,37 +103,42 @@ const Inventario = () => {
     observations: item.observations,
   }));
 
+  // Apply filters when data changes (persistence)
   useEffect(() => {
-    setFilteredEquipment(allEquipment);
+    filterEquipment(currentSearchTerm, currentFilters);
   }, [inventoryData]);
 
   const filterOptions = [
     {
       key: "category",
       label: "Categoria",
-      options: ["Microfone", "Fone", "Monitor", "Instrumento", "Interface"]
+      options: ["Computador", "Audio", "Video", "Software", "Equipamento", "Estrutura", "Mobilia", "Iluminação", "Escritorio"]
     },
     {
       key: "status",
       label: "Status",
-      options: ["Disponível", "Em Uso", "Manutenção", "Danificado"]
+      options: ["Disponivel", "Em Uso", "Manutenção", "Danificado"]
     },
     {
       key: "location",
       label: "Local",
-      options: ["Estúdio A", "Estúdio B", "Depósito", "Em Trânsito"]
+      options: ["Escritorio", "Estudio 1", "Estudio 2", "Dj Stay", "Estoque"]
     }
   ];
 
   const handleSearch = (searchTerm: string) => {
-    filterEquipment(searchTerm, {});
+    setCurrentSearchTerm(searchTerm);
+    filterEquipment(searchTerm, currentFilters);
   };
 
   const handleFilter = (filters: Record<string, string>) => {
-    filterEquipment("", filters);
+    setCurrentFilters(filters);
+    filterEquipment(currentSearchTerm, filters);
   };
 
   const handleClear = () => {
+    setCurrentSearchTerm("");
+    setCurrentFilters({});
     setFilteredEquipment(allEquipment);
   };
 
