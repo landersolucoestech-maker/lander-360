@@ -16,8 +16,10 @@ import {
   Globe,
   User,
   FileAudio,
-  Clock
+  Clock,
+  Calendar
 } from "lucide-react";
+import { formatDateTimeBR } from "@/lib/utils";
 import { useArtists } from "@/hooks/useArtists";
 
 interface ProjectViewModalProps {
@@ -110,6 +112,12 @@ export function ProjectViewModal({
                   </Badge>
                 )}
               </div>
+              {project.created_at && (
+                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Cadastrado em: {formatDateTimeBR(project.created_at)}</span>
+                </div>
+              )}
             </div>
           </div>
 

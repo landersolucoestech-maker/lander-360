@@ -13,7 +13,7 @@ import { ReportConfigModal } from "@/components/modals/ReportConfigModal";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Download, Users, Palette, Search, Filter, Calendar as CalendarIcon, Package, X, Loader2, Music, DollarSign, Disc, FileSignature, Warehouse, UserCheck } from "lucide-react";
 import { format } from "date-fns";
-import { cn, formatDateBR, translateStatus, translatePriority, translateCategory } from "@/lib/utils";
+import { cn, formatDateBR, formatDateTimeBR, translateStatus, translatePriority, translateCategory } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import {
   useFinancialReport,
@@ -362,7 +362,7 @@ const Relatorios = () => {
               'Produtores': song.producers?.map((p: any) => p.name).filter(Boolean).join(', ') || "N/A",
               'Letra': song.lyrics || "N/A",
               'Observações': details?.observations || "N/A",
-              'Data de Criação': project.created_at ? formatDateBR(project.created_at) : "N/A",
+              'Data de Cadastro': project.created_at ? formatDateTimeBR(project.created_at) : "N/A",
             }));
           }
           
@@ -383,7 +383,7 @@ const Relatorios = () => {
             'Produtores': "N/A",
             'Letra': "N/A",
             'Observações': details?.observations || "N/A",
-            'Data de Criação': project.created_at ? formatDateBR(project.created_at) : "N/A",
+            'Data de Cadastro': project.created_at ? formatDateTimeBR(project.created_at) : "N/A",
           }];
         });
       default:
