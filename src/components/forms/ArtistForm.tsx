@@ -359,25 +359,25 @@ export function ArtistForm({
     }
   };
   const isLoading = createArtist.isPending || updateArtist.isPending;
-  return <div className="max-w-4xl mx-auto p-6 space-y-8">
+  return <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2 text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
           {artist ? 'Editar Artista' : 'Cadastro de Artista'}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           Preencha todos os campos obrigatórios (*) para cadastrar o artista
         </p>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
           
           {/* Seção 1: Informações Básicas */}
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold border-b pb-2 text-white">
+          <div className="space-y-4 sm:space-y-6">
+            <h3 className="text-lg sm:text-xl font-semibold border-b pb-2 text-white">
               1. Informações Básicas
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {/* Imagem do Artista */}
               <div className="md:col-span-2">
                 <FormField control={form.control} name="artist_image" render={({

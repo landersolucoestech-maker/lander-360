@@ -99,12 +99,12 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initia
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-h-[80vh] overflow-y-auto">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 max-h-[80vh] overflow-y-auto">
         {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Informações Básicas</h3>
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="text-base sm:text-lg font-semibold">Informações Básicas</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <FormField
               control={form.control}
               name="sector"
@@ -185,7 +185,7 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initia
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <FormField
               control={form.control}
               name="quantity"
