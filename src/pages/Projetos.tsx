@@ -52,12 +52,19 @@ const Projetos = () => {
     return null;
   };
 
+  // Sort projects alphabetically by name
+  const sortedProjects = [...projects].sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase();
+    const nameB = (b.name || '').toLowerCase();
+    return nameA.localeCompare(nameB, 'pt-BR');
+  });
+
   useEffect(() => {
     // Reapply current filters when projects data changes
     if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
       filterProjects(currentSearchTerm, currentFilters);
     } else {
-      setFilteredProjects(projects);
+      setFilteredProjects(sortedProjects);
     }
   }, [projects]);
 
@@ -90,7 +97,7 @@ const Projetos = () => {
   const handleClear = () => {
     setCurrentSearchTerm("");
     setCurrentFilters({});
-    setFilteredProjects(projects);
+    setFilteredProjects(sortedProjects);
   };
 
   const handleEditProject = (project: any) => {
@@ -121,7 +128,7 @@ const Projetos = () => {
   };
 
   const filterProjects = (searchTerm: string, filters: Record<string, string>) => {
-    let filtered = projects;
+    let filtered = sortedProjects;
 
     // Search by song name, artist, composer, performer, producer
     if (searchTerm) {
