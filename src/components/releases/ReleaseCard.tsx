@@ -3,6 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Music } from "lucide-react";
 
+interface Track {
+  title?: string;
+  performers?: string[];
+  producers?: string[];
+  composers?: string[];
+}
+
 interface ReleaseCardProps {
   release: {
     id: string;
@@ -16,6 +23,7 @@ interface ReleaseCardProps {
     priority?: "alta" | "media" | "baixa";
     takedown?: boolean;
     hasMarketingPlan?: boolean;
+    tracks?: Track[];
   };
   onViewDetails: (release: any) => void;
   onEdit?: (release: any) => void;
@@ -52,6 +60,23 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
   }, [release.releaseDate]);
 
   const pad = (num: number) => num.toString().padStart(2, "0");
+
+  // Extrair intérpretes e produtores das tracks
+  const performers = release.tracks?.flatMap(t => t.performers || []) || [];
+  const producers = release.tracks?.flatMap(t => t.producers || []) || [];
+  const uniquePerformers = [...new Set(performers)];
+  const uniqueProducers = [...new Set(producers)];
+  
+  const displayCredits = () => {
+    const parts: string[] = [];
+    if (uniquePerformers.length > 0) {
+      parts.push(uniquePerformers.slice(0, 2).join(", "));
+    }
+    if (uniqueProducers.length > 0) {
+      parts.push(`Prod. ${uniqueProducers.slice(0, 1).join(", ")}`);
+    }
+    return parts.join(" • ") || release.artist;
+  };
 
   return (
     <div
@@ -94,10 +119,10 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
 
         {/* Content */}
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
-          {/* Title and Artist */}
+          {/* Title and Credits */}
           <div>
             <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate">{release.title}</h3>
-            <p className="text-sm text-white/70">{release.artist}</p>
+            <p className="text-sm text-white/70 truncate">{displayCredits()}</p>
           </div>
 
           {/* Marketing Planning - Only show when there's a marketing plan */}
