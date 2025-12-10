@@ -4,10 +4,12 @@ import { toast } from "sonner";
 
 export interface Service {
   id: string;
-  name: string;
+  grupo?: string;
   description: string;
   category: string;
   service_type: string;
+  cost_price: number;
+  margin: number;
   sale_price: number;
   discount_value: number;
   discount_type: string;
@@ -16,6 +18,8 @@ export interface Service {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  // Legacy field - kept for backwards compatibility
+  name?: string;
 }
 
 export const useServices = () => {
@@ -25,7 +29,7 @@ export const useServices = () => {
       const { data, error } = await supabase
         .from("services")
         .select("*")
-        .order("name", { ascending: true });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data as Service[];
@@ -38,9 +42,15 @@ export const useCreateService = () => {
 
   return useMutation({
     mutationFn: async (service: Omit<Service, "id" | "created_at" | "updated_at">) => {
+      // Set name from description for backwards compatibility
+      const serviceData = {
+        ...service,
+        name: service.description || "Serviço",
+      };
+      
       const { data, error } = await supabase
         .from("services")
-        .insert([service])
+        .insert([serviceData])
         .select()
         .single();
 
@@ -63,9 +73,15 @@ export const useUpdateService = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...service }: Partial<Service> & { id: string }) => {
+      // Set name from description for backwards compatibility
+      const serviceData = {
+        ...service,
+        name: service.description || service.name || "Serviço",
+      };
+      
       const { data, error } = await supabase
         .from("services")
-        .update(service)
+        .update(serviceData)
         .eq("id", id)
         .select()
         .single();
