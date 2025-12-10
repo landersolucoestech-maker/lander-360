@@ -8,22 +8,50 @@ interface ServiceViewModalProps {
   service: Service | null;
 }
 
-const categoryLabels: Record<string, string> = {
+const grupoLabels: Record<string, string> = {
   agenciamento: "Agenciamento",
-  gestao_carreira: "Gestão de Carreira",
   producao_musical: "Produção Musical",
   producao_audiovisual: "Produção Audiovisual",
+  editora: "Editora",
   design_grafico: "Design Gráfico",
-  gestao_redes_sociais: "Gestão de Redes Sociais",
+  gerenciamento_redes_sociais: "Gerenciamento de Redes Sociais",
   trafego_pago: "Tráfego Pago",
   criacao_sites: "Criação de Sites",
-  edicao_musical: "Edição Musical",
+};
+
+const categoryLabels: Record<string, string> = {
+  consultoria: "Consultoria",
+  criacao_sites: "Criação de Sites",
+  design_grafico: "Design Gráfico",
+  distribuicao_musical: "Distribuição Musical",
+  editora_musical: "Editora Musical",
+  financeiro_admin: "Financeiro/Admin",
+  gerenciamento_redes_sociais: "Gerenciamento de Redes Sociais",
+  gestao_carreira: "Gestão de Carreira",
+  marketing: "Marketing",
+  parcerias: "Parcerias",
+  producao_audiovisual: "Produção Audiovisual",
+  producao_conteudo: "Produção de Conteúdo",
+  producao_musical: "Produção Musical",
+  trafego_pago: "Tráfego Pago",
 };
 
 const serviceTypeLabels: Record<string, string> = {
-  recorrente: "Recorrente",
   avulso: "Avulso",
+  mensal: "Mensal",
   pacote: "Pacote",
+  pacote_1: "Pacote 1",
+  pacote_2: "Pacote 2",
+  pacote_3: "Pacote 3",
+  pacote_4: "Pacote 4",
+  pacote_5: "Pacote 5",
+  pacote_6: "Pacote 6",
+  pacote_7: "Pacote 7",
+  pacote_essencial: "Pacote Essencial",
+  pacote_iniciante: "Pacote Iniciante",
+  pacote_intermediario: "Pacote Intermediário",
+  pacote_intermediario_completo: "Pacote Intermediário (Completo)",
+  pacote_profissional: "Pacote Profissional",
 };
 
 export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalProps) {
@@ -33,14 +61,11 @@ export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalP
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(value);
+    }).format(value || 0);
   };
 
-  const formatDiscount = (value: number, type: string) => {
-    if (type === "percentage") {
-      return `${value}%`;
-    }
-    return formatCurrency(value);
+  const formatPercent = (value: number) => {
+    return `${value || 0}%`;
   };
 
   return (
@@ -51,12 +76,11 @@ export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalP
         </DialogHeader>
         
         <div className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Nome do Serviço</p>
-            <p className="font-medium">{service.name}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Grupo</p>
+              <p className="font-medium">{grupoLabels[service.grupo || ""] || service.grupo || "-"}</p>
+            </div>
             <div>
               <p className="text-sm text-muted-foreground">Categoria</p>
               <p className="font-medium">{categoryLabels[service.category] || service.category}</p>
@@ -67,27 +91,36 @@ export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalP
             </div>
           </div>
 
+          <div>
+            <p className="text-sm text-muted-foreground">Descrição do Serviço</p>
+            <p className="font-medium">{service.description || "-"}</p>
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Preço de Venda</p>
+              <p className="text-sm text-muted-foreground">Valor Custo</p>
+              <p className="font-medium">{formatCurrency(service.cost_price)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Margem</p>
+              <p className="font-medium">{formatPercent(service.margin)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Valor Venda</p>
               <p className="font-medium">{formatCurrency(service.sale_price)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Desconto</p>
-              <p className="font-medium">{formatDiscount(service.discount_value, service.discount_type)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Preço Final</p>
-              <p className="font-medium text-primary">{formatCurrency(service.final_price)}</p>
             </div>
           </div>
 
-          {service.description && (
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Descrição</p>
-              <p className="font-medium">{service.description}</p>
+              <p className="text-sm text-muted-foreground">Desc%</p>
+              <p className="font-medium">{formatPercent(service.discount_value)}</p>
             </div>
-          )}
+            <div>
+              <p className="text-sm text-muted-foreground">Valor Total</p>
+              <p className="font-medium text-primary">{formatCurrency(service.final_price)}</p>
+            </div>
+          </div>
 
           {service.observations && (
             <div>

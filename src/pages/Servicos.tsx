@@ -15,27 +15,55 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-const categoryLabels: Record<string, string> = {
+
+const grupoLabels: Record<string, string> = {
   agenciamento: "Agenciamento",
-  gestao_carreira: "Gestão de Carreira",
   producao_musical: "Produção Musical",
   producao_audiovisual: "Produção Audiovisual",
+  editora: "Editora",
   design_grafico: "Design Gráfico",
-  gestao_redes_sociais: "Gestão de Redes Sociais",
+  gerenciamento_redes_sociais: "Gerenciamento de Redes Sociais",
   trafego_pago: "Tráfego Pago",
   criacao_sites: "Criação de Sites",
-  edicao_musical: "Edição Musical"
 };
+
+const categoryLabels: Record<string, string> = {
+  consultoria: "Consultoria",
+  criacao_sites: "Criação de Sites",
+  design_grafico: "Design Gráfico",
+  distribuicao_musical: "Distribuição Musical",
+  editora_musical: "Editora Musical",
+  financeiro_admin: "Financeiro/Admin",
+  gerenciamento_redes_sociais: "Gerenciamento de Redes Sociais",
+  gestao_carreira: "Gestão de Carreira",
+  marketing: "Marketing",
+  parcerias: "Parcerias",
+  producao_audiovisual: "Produção Audiovisual",
+  producao_conteudo: "Produção de Conteúdo",
+  producao_musical: "Produção Musical",
+  trafego_pago: "Tráfego Pago",
+};
+
 const serviceTypeLabels: Record<string, string> = {
-  recorrente: "Recorrente",
   avulso: "Avulso",
-  pacote: "Pacote"
+  mensal: "Mensal",
+  pacote: "Pacote",
+  pacote_1: "Pacote 1",
+  pacote_2: "Pacote 2",
+  pacote_3: "Pacote 3",
+  pacote_4: "Pacote 4",
+  pacote_5: "Pacote 5",
+  pacote_6: "Pacote 6",
+  pacote_7: "Pacote 7",
+  pacote_essencial: "Pacote Essencial",
+  pacote_iniciante: "Pacote Iniciante",
+  pacote_intermediario: "Pacote Intermediário",
+  pacote_intermediario_completo: "Pacote Intermediário (Completo)",
+  pacote_profissional: "Pacote Profissional",
 };
+
 export default function Servicos() {
-  const {
-    data: services = [],
-    isLoading
-  } = useServices();
+  const { data: services = [], isLoading } = useServices();
   const createService = useCreateService();
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
@@ -51,6 +79,7 @@ export default function Servicos() {
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (currentSearchTerm || Object.values(currentFilters).some(v => v)) {
       filterServices(currentSearchTerm, currentFilters);
@@ -58,23 +87,34 @@ export default function Servicos() {
       setFilteredServices(services);
     }
   }, [services]);
+
   const displayedServices = currentSearchTerm || Object.values(currentFilters).some(v => v) ? filteredServices : services;
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL"
-    }).format(value);
+    }).format(value || 0);
   };
-  const formatDiscount = (value: number, type: string) => {
-    if (type === "percentage") {
-      return `${value}%`;
-    }
-    return formatCurrency(value);
+
+  const formatPercent = (value: number) => {
+    return `${value || 0}%`;
   };
+
   const handleSearch = (value: string) => {
     setCurrentSearchTerm(value);
     filterServices(value, currentFilters);
   };
+
+  const handleGrupoChange = (value: string) => {
+    const newFilters = {
+      ...currentFilters,
+      grupo: value === "all" ? "" : value
+    };
+    setCurrentFilters(newFilters);
+    filterServices(currentSearchTerm, newFilters);
+  };
+
   const handleCategoryChange = (value: string) => {
     const newFilters = {
       ...currentFilters,
@@ -83,6 +123,7 @@ export default function Servicos() {
     setCurrentFilters(newFilters);
     filterServices(currentSearchTerm, newFilters);
   };
+
   const handleTypeChange = (value: string) => {
     const newFilters = {
       ...currentFilters,
@@ -91,20 +132,25 @@ export default function Servicos() {
     setCurrentFilters(newFilters);
     filterServices(currentSearchTerm, newFilters);
   };
+
   const handleClear = () => {
     setCurrentSearchTerm("");
     setCurrentFilters({});
     setFilteredServices(services);
   };
+
   const filterServices = (searchTerm: string, filters: Record<string, string>) => {
     let filtered = services;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(service => 
-        service.name.toLowerCase().includes(term) || 
+      filtered = filtered.filter(service =>
         (service.description || "").toLowerCase().includes(term) ||
+        (grupoLabels[service.grupo || ""] || "").toLowerCase().includes(term) ||
         (categoryLabels[service.category] || service.category).toLowerCase().includes(term)
       );
+    }
+    if (filters.grupo) {
+      filtered = filtered.filter(service => service.grupo === filters.grupo);
     }
     if (filters.category) {
       filtered = filtered.filter(service => service.category === filters.category);
@@ -114,26 +160,33 @@ export default function Servicos() {
     }
     setFilteredServices(filtered);
   };
+
   const handleCreateService = () => {
     setSelectedService(null);
     setIsModalOpen(true);
   };
+
   const handleEditService = (service: Service) => {
     setSelectedService(service);
     setIsModalOpen(true);
   };
+
   const handleViewService = (service: Service) => {
     setSelectedService(service);
     setIsViewModalOpen(true);
   };
+
   const handleDeleteClick = (service: Service) => {
     setSelectedService(service);
     setIsDeleteModalOpen(true);
   };
+
   const handleSubmit = async (data: ServiceFormData) => {
-    // Remove sale_price_type as it's not a database column (UI only)
-    const { sale_price_type, ...serviceData } = data;
-    
+    const serviceData = {
+      ...data,
+      discount_type: "percentage",
+    };
+
     if (selectedService) {
       await updateService.mutateAsync({
         id: selectedService.id,
@@ -145,6 +198,7 @@ export default function Servicos() {
     setIsModalOpen(false);
     setSelectedService(null);
   };
+
   const handleConfirmDelete = async () => {
     if (selectedService) {
       await deleteService.mutateAsync(selectedService.id);
@@ -194,7 +248,8 @@ export default function Servicos() {
     }
   };
 
-  const hasActiveFilters = currentSearchTerm || currentFilters.category || currentFilters.service_type;
+  const hasActiveFilters = currentSearchTerm || currentFilters.grupo || currentFilters.category || currentFilters.service_type;
+
   const handleExport = () => {
     if (services.length === 0) {
       toast.error("Nenhum serviço para exportar");
@@ -202,14 +257,15 @@ export default function Servicos() {
     }
     const exportData = services.map(service => ({
       "ID": service.id,
-      "Nome do Serviço": service.name,
+      "Grupo": grupoLabels[service.grupo || ""] || service.grupo || "",
       "Categoria": categoryLabels[service.category] || service.category,
-      "Tipo de Serviço": serviceTypeLabels[service.service_type] || service.service_type,
-      "Preço de Venda": service.sale_price,
-      "Tipo de Desconto": service.discount_type === "percentage" ? "Percentual (%)" : "Valor Fixo (R$)",
-      "Valor do Desconto": service.discount_value,
-      "Preço Final": service.final_price,
+      "Tipo": serviceTypeLabels[service.service_type] || service.service_type,
       "Descrição do Serviço": service.description || "",
+      "Valor Custo": service.cost_price || 0,
+      "Margem (%)": service.margin || 0,
+      "Valor Venda": service.sale_price || 0,
+      "Desconto (%)": service.discount_value || 0,
+      "Valor Total": service.final_price || 0,
       "Observações": service.observations || "",
       "Data de Criação": service.created_at ? new Date(service.created_at).toLocaleDateString("pt-BR") : "",
       "Última Atualização": service.updated_at ? new Date(service.updated_at).toLocaleDateString("pt-BR") : ""
@@ -220,6 +276,7 @@ export default function Servicos() {
     XLSX.writeFile(wb, "servicos.xlsx");
     toast.success("Arquivo exportado com sucesso!");
   };
+
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -231,36 +288,35 @@ export default function Servicos() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       let importedCount = 0;
       for (const row of jsonData as any[]) {
-        const name = row["Nome do Serviço"] || row["Nome"] || row["name"];
-        if (!name) continue;
+        const grupoValue = row["Grupo"] || row["grupo"] || "";
+        const grupo = Object.entries(grupoLabels).find(([_, label]) => label.toLowerCase() === grupoValue.toLowerCase())?.[0] || grupoValue.toLowerCase().replace(/ /g, "_");
 
-        // Map category from Portuguese label to key
         const categoryValue = row["Categoria"] || row["category"] || "";
         const category = Object.entries(categoryLabels).find(([_, label]) => label.toLowerCase() === categoryValue.toLowerCase())?.[0] || categoryValue.toLowerCase().replace(/ /g, "_");
 
-        // Map service type from Portuguese label to key
         const typeValue = row["Tipo"] || row["service_type"] || "";
-        const service_type = Object.entries(serviceTypeLabels).find(([_, label]) => label.toLowerCase() === typeValue.toLowerCase())?.[0] || typeValue.toLowerCase();
-        const salePrice = parseFloat(row["Preço de Venda"] || row["sale_price"] || "0") || 0;
-        const discountValue = parseFloat(row["Desconto"] || row["discount_value"] || "0") || 0;
-        const discountTypeValue = row["Tipo de Desconto"] || row["discount_type"] || "percentage";
-        const discount_type = discountTypeValue.toLowerCase().includes("percent") ? "percentage" : "fixed";
-        let final_price = parseFloat(row["Preço Final"] || row["final_price"] || "0") || 0;
+        const service_type = Object.entries(serviceTypeLabels).find(([_, label]) => label.toLowerCase() === typeValue.toLowerCase())?.[0] || typeValue.toLowerCase().replace(/ /g, "_");
+
+        const costPrice = parseFloat(row["Valor Custo"] || row["cost_price"] || "0") || 0;
+        const margin = parseFloat(row["Margem (%)"] || row["Margem"] || row["margin"] || "0") || 0;
+        const salePrice = parseFloat(row["Valor Venda"] || row["sale_price"] || "0") || costPrice + (costPrice * margin / 100);
+        const discountValue = parseFloat(row["Desconto (%)"] || row["Desconto"] || row["discount_value"] || "0") || 0;
+        let final_price = parseFloat(row["Valor Total"] || row["final_price"] || "0") || 0;
+        
         if (!final_price) {
-          if (discount_type === "percentage") {
-            final_price = salePrice - salePrice * discountValue / 100;
-          } else {
-            final_price = salePrice - discountValue;
-          }
+          final_price = salePrice - (salePrice * discountValue / 100);
         }
+
         await createService.mutateAsync({
-          name,
+          grupo: grupo || "agenciamento",
           description: row["Descrição do Serviço"] || row["Descrição"] || row["description"] || "",
-          category: category || "agenciamento",
+          category: category || "consultoria",
           service_type: service_type || "avulso",
+          cost_price: costPrice,
+          margin: margin,
           sale_price: salePrice,
           discount_value: discountValue,
-          discount_type,
+          discount_type: "percentage",
           final_price: Math.max(0, final_price),
           observations: row["Observações"] || row["observations"] || ""
         });
@@ -277,7 +333,9 @@ export default function Servicos() {
       }
     }
   };
-  return <SidebarProvider>
+
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <main className="flex-1 p-4 md:p-8">
@@ -314,11 +372,23 @@ export default function Servicos() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-row gap-2 items-center w-full mb-4">
-                <div className="relative flex-1 min-w-0">
+              <div className="flex flex-row gap-2 items-center w-full mb-4 flex-wrap">
+                <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Buscar por nome ou descrição..." value={currentSearchTerm} onChange={e => handleSearch(e.target.value)} className="pl-10" />
+                  <Input placeholder="Buscar por descrição..." value={currentSearchTerm} onChange={e => handleSearch(e.target.value)} className="pl-10" />
                 </div>
+
+                <Select value={currentFilters.grupo || "all"} onValueChange={handleGrupoChange}>
+                  <SelectTrigger className="w-44 shrink-0">
+                    <SelectValue placeholder="Grupo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos Grupos</SelectItem>
+                    {Object.entries(grupoLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
                 <Select value={currentFilters.category || "all"} onValueChange={handleCategoryChange}>
                   <SelectTrigger className="w-48 shrink-0">
@@ -326,64 +396,76 @@ export default function Servicos() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas Categorias</SelectItem>
-                    {Object.entries(categoryLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                    {Object.entries(categoryLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
                 <Select value={currentFilters.service_type || "all"} onValueChange={handleTypeChange}>
-                  <SelectTrigger className="w-40 shrink-0">
+                  <SelectTrigger className="w-44 shrink-0">
                     <SelectValue placeholder="Tipo" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos Tipos</SelectItem>
-                    {Object.entries(serviceTypeLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                    {Object.entries(serviceTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
-                {hasActiveFilters && <Button variant="ghost" onClick={handleClear} className="gap-2 shrink-0">
+                {hasActiveFilters && (
+                  <Button variant="ghost" onClick={handleClear} className="gap-2 shrink-0">
                     <X className="h-4 w-4" />
                     Limpar
-                  </Button>}
+                  </Button>
+                )}
               </div>
 
-              {isLoading ? <div className="text-center py-8 text-muted-foreground">Carregando...</div> : displayedServices.length === 0 ? <div className="text-center py-8 text-muted-foreground">
+              {isLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+              ) : displayedServices.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
                   Nenhum serviço cadastrado
-                </div> : <div className="overflow-x-auto">
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12">
-                          <Checkbox 
+                          <Checkbox
                             checked={displayedServices.length > 0 && selectedIds.length === displayedServices.length}
                             onCheckedChange={handleSelectAll}
                           />
                         </TableHead>
-                        
-                        <TableHead>Descrição</TableHead>
+                        <TableHead>Grupo</TableHead>
+                        <TableHead>Descrição do Serviço</TableHead>
                         <TableHead>Categoria</TableHead>
                         <TableHead>Tipo</TableHead>
-                        <TableHead className="text-right">Preço de Venda</TableHead>
-                        <TableHead className="text-right">Desconto</TableHead>
-                        <TableHead className="text-right">Preço Final</TableHead>
+                        <TableHead className="text-right">Valor Venda</TableHead>
+                        <TableHead className="text-right">Desconto %</TableHead>
+                        <TableHead className="text-right">Valor Total (R$)</TableHead>
                         <TableHead className="text-center">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {displayedServices.map(service => <TableRow key={service.id}>
+                      {displayedServices.map(service => (
+                        <TableRow key={service.id}>
                           <TableCell>
-                            <Checkbox 
+                            <Checkbox
                               checked={selectedIds.includes(service.id)}
                               onCheckedChange={(checked) => handleSelectOne(service.id, !!checked)}
                             />
                           </TableCell>
-                          
-                          <TableCell className="max-w-[200px] truncate" title={service.description || ""}>{service.description || "-"}</TableCell>
+                          <TableCell>{grupoLabels[service.grupo || ""] || service.grupo || "-"}</TableCell>
+                          <TableCell className="max-w-[200px] truncate" title={service.description || ""}>
+                            {service.description || "-"}
+                          </TableCell>
                           <TableCell>{categoryLabels[service.category] || service.category}</TableCell>
                           <TableCell>{serviceTypeLabels[service.service_type] || service.service_type}</TableCell>
                           <TableCell className="text-right">{formatCurrency(service.sale_price)}</TableCell>
-                          <TableCell className="text-right">
-                            {formatDiscount(service.discount_value, service.discount_type)}
-                          </TableCell>
+                          <TableCell className="text-right">{formatPercent(service.discount_value)}</TableCell>
                           <TableCell className="text-right font-medium text-primary">
                             {formatCurrency(service.final_price)}
                           </TableCell>
@@ -400,37 +482,53 @@ export default function Servicos() {
                               </Button>
                             </div>
                           </TableCell>
-                        </TableRow>)}
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
-                </div>}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <ServiceModal isOpen={isModalOpen} onClose={() => {
-          setIsModalOpen(false);
-          setSelectedService(null);
-        }} onSubmit={handleSubmit} service={selectedService} isLoading={createService.isPending || updateService.isPending} />
+          <ServiceModal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedService(null);
+            }}
+            onSubmit={handleSubmit}
+            service={selectedService}
+            isLoading={createService.isPending || updateService.isPending}
+          />
 
-          <ServiceViewModal isOpen={isViewModalOpen} onClose={() => {
-          setIsViewModalOpen(false);
-          setSelectedService(null);
-        }} service={selectedService} />
+          <ServiceViewModal
+            isOpen={isViewModalOpen}
+            onClose={() => {
+              setIsViewModalOpen(false);
+              setSelectedService(null);
+            }}
+            service={selectedService}
+          />
 
-          <DeleteConfirmationModal open={isDeleteModalOpen} onOpenChange={open => {
-          setIsDeleteModalOpen(open);
-          if (!open) setSelectedService(null);
-        }} onConfirm={handleConfirmDelete} title="Excluir Serviço" description={`Tem certeza que deseja excluir o serviço "${selectedService?.name}"? Esta ação não pode ser desfeita.`} isLoading={deleteService.isPending} />
+          <DeleteConfirmationModal
+            open={isDeleteModalOpen}
+            onOpenChange={setIsDeleteModalOpen}
+            onConfirm={handleConfirmDelete}
+            title="Excluir Serviço"
+            description={`Tem certeza que deseja excluir o serviço "${selectedService?.description || ""}"? Esta ação não pode ser desfeita.`}
+          />
 
-          <DeleteConfirmationModal 
-            open={isBulkDeleteModalOpen} 
-            onOpenChange={setIsBulkDeleteModalOpen} 
-            onConfirm={handleConfirmBulkDelete} 
-            title="Excluir Serviços" 
-            description={`Tem certeza que deseja excluir ${selectedIds.length} serviço(s)? Esta ação não pode ser desfeita.`} 
-            isLoading={isDeletingBulk} 
+          <DeleteConfirmationModal
+            open={isBulkDeleteModalOpen}
+            onOpenChange={setIsBulkDeleteModalOpen}
+            onConfirm={handleConfirmBulkDelete}
+            title="Excluir Serviços"
+            description={`Tem certeza que deseja excluir ${selectedIds.length} serviço(s)? Esta ação não pode ser desfeita.`}
+            isLoading={isDeletingBulk}
           />
         </main>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 }

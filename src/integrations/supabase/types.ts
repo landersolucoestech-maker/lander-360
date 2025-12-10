@@ -1485,13 +1485,16 @@ export type Database = {
       services: {
         Row: {
           category: string
+          cost_price: number | null
           created_at: string
           created_by: string | null
           description: string
           discount_type: string | null
           discount_value: number | null
           final_price: number
+          grupo: string | null
           id: string
+          margin: number | null
           name: string
           observations: string | null
           sale_price: number
@@ -1500,13 +1503,16 @@ export type Database = {
         }
         Insert: {
           category: string
+          cost_price?: number | null
           created_at?: string
           created_by?: string | null
           description: string
           discount_type?: string | null
           discount_value?: number | null
           final_price?: number
+          grupo?: string | null
           id?: string
+          margin?: number | null
           name: string
           observations?: string | null
           sale_price?: number
@@ -1515,13 +1521,16 @@ export type Database = {
         }
         Update: {
           category?: string
+          cost_price?: number | null
           created_at?: string
           created_by?: string | null
           description?: string
           discount_type?: string | null
           discount_value?: number | null
           final_price?: number
+          grupo?: string | null
           id?: string
+          margin?: number | null
           name?: string
           observations?: string | null
           sale_price?: number
