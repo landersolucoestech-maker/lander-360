@@ -110,6 +110,19 @@ const Artistas = () => {
     
     // Get list of artists for name matching
     const artistsList = artists || [];
+
+    // Helper function to parse audio_files
+    const parseAudioFiles = (audioFiles: any) => {
+      if (!audioFiles) return null;
+      if (typeof audioFiles === 'string') {
+        try {
+          return JSON.parse(audioFiles);
+        } catch (e) {
+          return null;
+        }
+      }
+      return audioFiles;
+    };
     
     // Count projects - both by artist_id and by participation (composer, performer, producer)
     projects.forEach((project: any) => {
@@ -122,12 +135,12 @@ const Artistas = () => {
       }
       
       // Check participation in songs (composer, performer, producer)
-      const audioFiles = project.audio_files;
+      const audioFiles = parseAudioFiles(project.audio_files);
       const songs = audioFiles?.songs || [];
       
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.name || artist.stage_name;
+        const stageName = artist.stage_name || artist.name;
         
         let isParticipant = false;
         songs.forEach((song: any) => {
@@ -158,10 +171,18 @@ const Artistas = () => {
       }
       
       // Check participation in tracks
-      const tracks = release.tracks || [];
+      let tracks = release.tracks || [];
+      if (typeof tracks === 'string') {
+        try {
+          tracks = JSON.parse(tracks);
+        } catch (e) {
+          tracks = [];
+        }
+      }
+      
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.name || artist.stage_name;
+        const stageName = artist.stage_name || artist.name;
         
         let isParticipant = false;
         if (Array.isArray(tracks)) {
@@ -193,10 +214,18 @@ const Artistas = () => {
       }
       
       // Check participation in music registry
-      const participants = music.participants || [];
+      let participants = music.participants || [];
+      if (typeof participants === 'string') {
+        try {
+          participants = JSON.parse(participants);
+        } catch (e) {
+          participants = [];
+        }
+      }
+      
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.name || artist.stage_name;
+        const stageName = artist.stage_name || artist.name;
         
         if (artistMatchesParticipant(artistName, stageName, participants) && music.artist_id !== artist.id) {
           if (!stats[artist.id]) {
