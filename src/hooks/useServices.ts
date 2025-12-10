@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 export interface Service {
   id: string;
+  name: string;
   description: string;
   category: string;
   service_type: string;
@@ -24,7 +25,7 @@ export const useServices = () => {
       const { data, error } = await supabase
         .from("services")
         .select("*")
-        .order("description", { ascending: true });
+        .order("name", { ascending: true });
 
       if (error) throw error;
       return data as Service[];
