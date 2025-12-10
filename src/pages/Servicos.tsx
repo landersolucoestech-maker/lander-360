@@ -96,7 +96,11 @@ export default function Servicos() {
     let filtered = services;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(service => service.description.toLowerCase().includes(term) || (categoryLabels[service.category] || service.category).toLowerCase().includes(term));
+      filtered = filtered.filter(service => 
+        service.name.toLowerCase().includes(term) || 
+        (service.description || "").toLowerCase().includes(term) ||
+        (categoryLabels[service.category] || service.category).toLowerCase().includes(term)
+      );
     }
     if (filters.category) {
       filtered = filtered.filter(service => service.category === filters.category);
@@ -149,13 +153,14 @@ export default function Servicos() {
     }
     const exportData = services.map(service => ({
       "ID": service.id,
-      "Nome do Serviço": service.description,
+      "Nome do Serviço": service.name,
       "Categoria": categoryLabels[service.category] || service.category,
       "Tipo de Serviço": serviceTypeLabels[service.service_type] || service.service_type,
       "Preço de Venda": service.sale_price,
       "Tipo de Desconto": service.discount_type === "percentage" ? "Percentual (%)" : "Valor Fixo (R$)",
       "Valor do Desconto": service.discount_value,
       "Preço Final": service.final_price,
+      "Descrição do Serviço": service.description || "",
       "Observações": service.observations || "",
       "Data de Criação": service.created_at ? new Date(service.created_at).toLocaleDateString("pt-BR") : "",
       "Última Atualização": service.updated_at ? new Date(service.updated_at).toLocaleDateString("pt-BR") : ""
@@ -177,8 +182,8 @@ export default function Servicos() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       let importedCount = 0;
       for (const row of jsonData as any[]) {
-        const description = row["Nome do Serviço"] || row["Nome"] || row["Descrição do Serviço"] || row["Descrição"] || row["description"];
-        if (!description) continue;
+        const name = row["Nome do Serviço"] || row["Nome"] || row["name"];
+        if (!name) continue;
 
         // Map category from Portuguese label to key
         const categoryValue = row["Categoria"] || row["category"] || "";
@@ -200,7 +205,8 @@ export default function Servicos() {
           }
         }
         await createService.mutateAsync({
-          description,
+          name,
+          description: row["Descrição do Serviço"] || row["Descrição"] || row["description"] || "",
           category: category || "agenciamento",
           service_type: service_type || "avulso",
           sale_price: salePrice,
@@ -254,7 +260,7 @@ export default function Servicos() {
               <div className="flex flex-row gap-2 items-center w-full mb-4">
                 <div className="relative flex-1 min-w-0">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Buscar por descrição..." value={currentSearchTerm} onChange={e => handleSearch(e.target.value)} className="pl-10" />
+                  <Input placeholder="Buscar por nome ou descrição..." value={currentSearchTerm} onChange={e => handleSearch(e.target.value)} className="pl-10" />
                 </div>
 
                 <Select value={currentFilters.category || "all"} onValueChange={handleCategoryChange}>
@@ -300,7 +306,7 @@ export default function Servicos() {
                     </TableHeader>
                     <TableBody>
                       {displayedServices.map(service => <TableRow key={service.id}>
-                          <TableCell className="font-medium">{service.description}</TableCell>
+                          <TableCell className="font-medium">{service.name}</TableCell>
                           <TableCell>{categoryLabels[service.category] || service.category}</TableCell>
                           <TableCell>{serviceTypeLabels[service.service_type] || service.service_type}</TableCell>
                           <TableCell className="text-right">{formatCurrency(service.sale_price)}</TableCell>
@@ -343,7 +349,7 @@ export default function Servicos() {
           <DeleteConfirmationModal open={isDeleteModalOpen} onOpenChange={open => {
           setIsDeleteModalOpen(open);
           if (!open) setSelectedService(null);
-        }} onConfirm={handleConfirmDelete} title="Excluir Serviço" description={`Tem certeza que deseja excluir o serviço "${selectedService?.description}"? Esta ação não pode ser desfeita.`} isLoading={deleteService.isPending} />
+        }} onConfirm={handleConfirmDelete} title="Excluir Serviço" description={`Tem certeza que deseja excluir o serviço "${selectedService?.name}"? Esta ação não pode ser desfeita.`} isLoading={deleteService.isPending} />
         </main>
       </div>
     </SidebarProvider>;

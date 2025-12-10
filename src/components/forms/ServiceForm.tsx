@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEffect } from "react";
 
 const serviceSchema = z.object({
-  description: z.string().min(1, "Descrição é obrigatória"),
+  name: z.string().min(1, "Nome é obrigatório"),
+  description: z.string().optional(),
   category: z.string().min(1, "Categoria é obrigatória"),
   service_type: z.string().min(1, "Tipo é obrigatório"),
   sale_price: z.number().min(0, "Preço deve ser maior ou igual a zero"),
@@ -60,6 +61,7 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
+      name: initialData?.name || "",
       description: initialData?.description || "",
       category: initialData?.category || "",
       service_type: initialData?.service_type || "",
@@ -96,12 +98,12 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="description"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nome do Serviço</FormLabel>
               <FormControl>
-                <Input placeholder="Digite a descrição do serviço" {...field} />
+                <Input placeholder="Digite o nome do serviço" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -274,7 +276,7 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
 
         <FormField
           control={form.control}
-          name="observations"
+          name="description"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Descrição do Serviço</FormLabel>

@@ -1492,6 +1492,7 @@ export type Database = {
           discount_value: number | null
           final_price: number
           id: string
+          name: string
           observations: string | null
           sale_price: number
           service_type: string
@@ -1506,6 +1507,7 @@ export type Database = {
           discount_value?: number | null
           final_price?: number
           id?: string
+          name: string
           observations?: string | null
           sale_price?: number
           service_type: string
@@ -1520,6 +1522,7 @@ export type Database = {
           discount_value?: number | null
           final_price?: number
           id?: string
+          name?: string
           observations?: string | null
           sale_price?: number
           service_type?: string

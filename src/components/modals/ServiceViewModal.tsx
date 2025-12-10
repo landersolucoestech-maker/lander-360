@@ -52,8 +52,8 @@ export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalP
         
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">Descrição</p>
-            <p className="font-medium">{service.description}</p>
+            <p className="text-sm text-muted-foreground">Nome do Serviço</p>
+            <p className="font-medium">{service.name}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -81,6 +81,13 @@ export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalP
               <p className="font-medium text-primary">{formatCurrency(service.final_price)}</p>
             </div>
           </div>
+
+          {service.description && (
+            <div>
+              <p className="text-sm text-muted-foreground">Descrição</p>
+              <p className="font-medium">{service.description}</p>
+            </div>
+          )}
 
           {service.observations && (
             <div>
