@@ -220,6 +220,36 @@ const Inventario = () => {
     }
   };
 
+  // Convert Excel serial date to ISO date string
+  const excelDateToISO = (excelDate: any): string | undefined => {
+    if (!excelDate) return undefined;
+    
+    // If it's already a string date, try to parse it
+    if (typeof excelDate === 'string') {
+      // Check if it's in dd/mm/yyyy format
+      const ddmmyyyyMatch = excelDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (ddmmyyyyMatch) {
+        const [, day, month, year] = ddmmyyyyMatch;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+      // Check if it's already in yyyy-mm-dd format
+      if (/^\d{4}-\d{2}-\d{2}$/.test(excelDate)) {
+        return excelDate;
+      }
+      return undefined;
+    }
+    
+    // If it's a number (Excel serial date)
+    if (typeof excelDate === 'number') {
+      // Excel dates are days since January 1, 1900 (with a bug for 1900 leap year)
+      const excelEpoch = new Date(1899, 11, 30); // December 30, 1899
+      const date = new Date(excelEpoch.getTime() + excelDate * 24 * 60 * 60 * 1000);
+      return date.toISOString().split('T')[0];
+    }
+    
+    return undefined;
+  };
+
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -241,19 +271,31 @@ const Inventario = () => {
 
       let importedCount = 0;
       for (const row of jsonData as any[]) {
+        // Parse currency values (remove R$, dots and convert comma to dot)
+        const parseValue = (val: any): number | undefined => {
+          if (!val) return undefined;
+          if (typeof val === 'number') return val;
+          if (typeof val === 'string') {
+            const cleaned = val.replace(/[R$\s.]/g, '').replace(',', '.');
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? undefined : num;
+          }
+          return undefined;
+        };
+
         const inventoryItem = {
           name: row.item || row.Item || row.nome || row.Nome || row.name || row.Name || "",
           category: row.categoria || row.Categoria || row.category || row.Category || "Outros",
           status: row.status || row.Status || "Disponível",
           quantity: Number(row.quantidade || row.Quantidade || row.quantity || row.Quantity || 1),
-          location: row.localizacao || row.Localizacao || row.local || row.Local || row.location || row.Location || "",
-          unit_value: Number(row.valor_unitario || row["Valor Unitário"] || row.valor || row.Valor || row.unit_value || 0) || undefined,
+          location: row.localizacao || row.Localizacao || row["Localização"] || row.local || row.Local || row.location || row.Location || "",
+          unit_value: parseValue(row.valor_unitario || row["Valor Unitário"] || row.valor || row.Valor || row.unit_value),
           sector: row.setor || row.Setor || row.sector || row.Sector || undefined,
-          responsible: row.responsavel || row.Responsável || row.responsible || row.Responsible || undefined,
+          responsible: row.responsavel || row["Responsável"] || row.responsible || row.Responsible || undefined,
           purchase_location: row.local_compra || row["Local de Compra"] || row.purchase_location || undefined,
-          invoice_number: row.nota_fiscal || row["Nota Fiscal"] || row.invoice_number || row.NF || undefined,
-          entry_date: row.data_entrada || row["Data de Entrada"] || row.entry_date || undefined,
-          observations: row.observacoes || row.Observações || row.observations || row.Observations || undefined,
+          invoice_number: row.nota_fiscal || row["Nota Fiscal"] || row["Número da Nota"] || row.invoice_number || row.NF || undefined,
+          entry_date: excelDateToISO(row.data_entrada || row["Data de Entrada"] || row.entry_date),
+          observations: row.observacoes || row["Observações"] || row.observations || row.Observations || undefined,
         };
 
         if (inventoryItem.name) {
