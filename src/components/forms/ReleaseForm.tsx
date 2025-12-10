@@ -148,23 +148,27 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const createRelease = useCreateRelease();
   const updateRelease = useUpdateRelease();
 
-  // Filtrar apenas projetos concluídos que possuem obra E fonograma registrados
+  // Filtrar apenas projetos que possuem fonograma registrado
   const availableProjects = useMemo(() => {
-    return projects.filter(project => {
-      // 1. Projeto deve estar concluído
-      if (project.status !== 'completed') return false;
-      
-      // 2. Verificar se existe obra registrada para o mesmo artista do projeto
-      const projectWorks = musicRegistry.filter(work => work.artist_id === project.artist_id);
-      if (projectWorks.length === 0) return false;
-      
-      // 3. Verificar se existe fonograma registrado vinculado a alguma obra do projeto
-      const hasPhonogram = projectWorks.some(work => 
-        phonograms.some(phonogram => phonogram.work_id === work.id)
-      );
-      
-      return hasPhonogram;
-    });
+    // Obter todos os work_ids que têm fonograma registrado
+    const workIdsWithPhonogram = new Set(
+      phonograms.map(p => p.work_id).filter(Boolean)
+    );
+    
+    // Obter todos os artist_ids das obras que têm fonograma
+    const artistIdsWithPhonogram = new Set(
+      musicRegistry
+        .filter(work => workIdsWithPhonogram.has(work.id))
+        .map(work => work.artist_id)
+        .filter(Boolean)
+    );
+    
+    // Filtrar projetos concluídos cujo artista tem fonograma registrado
+    return projects.filter(project => 
+      project.status === 'completed' && 
+      project.artist_id && 
+      artistIdsWithPhonogram.has(project.artist_id)
+    );
   }, [projects, musicRegistry, phonograms]);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>(() => {
     // Initialize with existing cover when editing
