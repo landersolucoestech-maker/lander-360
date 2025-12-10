@@ -180,7 +180,9 @@ export function PhonogramForm({
       origin_country: phonogram?.origin_country || phonogram?.recording_location || 'brazil',
       publication_country: phonogram?.publication_country || 'brazil',
       status: phonogram?.status || 'pendente',
-      phonographic_producers: phonogram?.participants?.filter((p: any) => p.role === 'produtor_fonografico') || [],
+      phonographic_producers: phonogram?.participants?.filter((p: any) => p.role === 'produtor_fonografico')?.length > 0 
+        ? phonogram.participants.filter((p: any) => p.role === 'produtor_fonografico') 
+        : [{ name: 'Lander Records', role: 'produtor_fonografico', percentage: 41.70 }],
       performers: phonogram?.participants?.filter((p: any) => p.role === 'interprete') || [],
       musicians: phonogram?.participants?.filter((p: any) => p.role === 'musico') || [],
       // Se está editando, já aceitou os termos antes
