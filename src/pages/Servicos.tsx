@@ -156,7 +156,7 @@ export default function Servicos() {
       "Tipo de Desconto": service.discount_type === "percentage" ? "Percentual (%)" : "Valor Fixo (R$)",
       "Valor do Desconto": service.discount_value,
       "Preço Final": service.final_price,
-      "Descrição do Serviço": service.observations || "",
+      "Observações": service.observations || "",
       "Data de Criação": service.created_at ? new Date(service.created_at).toLocaleDateString("pt-BR") : "",
       "Última Atualização": service.updated_at ? new Date(service.updated_at).toLocaleDateString("pt-BR") : ""
     }));
@@ -177,7 +177,7 @@ export default function Servicos() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       let importedCount = 0;
       for (const row of jsonData as any[]) {
-        const description = row["Descrição do Serviço"] || row["Descrição"] || row["description"];
+        const description = row["Nome do Serviço"] || row["Nome"] || row["Descrição do Serviço"] || row["Descrição"] || row["description"];
         if (!description) continue;
 
         // Map category from Portuguese label to key
