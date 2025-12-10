@@ -65,9 +65,9 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <FileText className="h-5 w-5 text-primary" />
             {contractData.title || contract.contract_type}
           </DialogTitle>

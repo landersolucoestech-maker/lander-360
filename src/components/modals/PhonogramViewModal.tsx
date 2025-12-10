@@ -99,9 +99,9 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Disc className="h-5 w-5" />
             Detalhes do Fonograma
           </DialogTitle>

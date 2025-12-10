@@ -87,10 +87,10 @@ export function InventoryViewModal({ isOpen, onClose, equipment }: InventoryView
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Detalhes do Equipamento</DialogTitle>
-          <DialogDescription>Informações completas do item selecionado</DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Detalhes do Equipamento</DialogTitle>
+          <DialogDescription className="text-sm">Informações completas do item selecionado</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

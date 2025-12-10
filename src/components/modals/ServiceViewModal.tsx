@@ -70,9 +70,9 @@ export function ServiceViewModal({ isOpen, onClose, service }: ServiceViewModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Detalhes do Serviço</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Detalhes do Serviço</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">

@@ -48,10 +48,10 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Detalhes do Evento</DialogTitle>
-          <DialogDescription>Visualize todas as informações do evento</DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Detalhes do Evento</DialogTitle>
+          <DialogDescription className="text-sm">Visualize todas as informações do evento</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
