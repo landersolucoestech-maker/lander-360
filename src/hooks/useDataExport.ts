@@ -173,17 +173,17 @@ const phonogramColumns = {
 
 const inventoryColumns = {
   name: 'Nome',
-  description: 'Descrição',
-  category: 'Categoria',
-  status: 'Status',
-  quantity: 'Quantidade',
-  unit_value: 'Valor Unitário',
-  location: 'Localização',
   sector: 'Setor',
+  category: 'Categoria',
+  quantity: 'Quantidade',
+  location: 'Localização',
   responsible: 'Responsável',
+  status: 'Status',
   purchase_location: 'Local de Compra',
   invoice_number: 'Número da Nota',
   entry_date: 'Data de Entrada',
+  unit_value: 'Valor Unitário',
+  total_value: 'Valor Total',
   observations: 'Observações',
   created_at: 'Data de Criação',
 };
@@ -221,7 +221,7 @@ const formatValue = (value: any, key: string): any => {
   }
   
   // Format numbers (currency)
-  if (key.includes('value') || key.includes('amount') || key === 'budget' || key === 'unit_value' || key === 'ticket_price') {
+  if (key.includes('value') || key.includes('amount') || key === 'budget' || key === 'unit_value' || key === 'total_value' || key === 'ticket_price') {
     if (typeof value === 'number') {
       return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     }
@@ -253,6 +253,13 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     // Handle instagram field mapping (use instagram or instagram_url)
     if (entityType === 'artists') {
       item.instagram = item.instagram || item.instagram_url || '';
+    }
+    
+    // Calculate total value for inventory items
+    if (entityType === 'inventory') {
+      const quantity = item.quantity || 0;
+      const unitValue = item.unit_value || 0;
+      item.total_value = quantity * unitValue;
     }
     
     Object.entries(columns).forEach(([key, label]) => {
