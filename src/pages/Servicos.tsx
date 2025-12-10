@@ -148,14 +148,17 @@ export default function Servicos() {
       return;
     }
     const exportData = services.map(service => ({
-      "Descrição do Serviço": service.description,
+      "ID": service.id,
+      "Nome do Serviço": service.description,
       "Categoria": categoryLabels[service.category] || service.category,
-      "Tipo": serviceTypeLabels[service.service_type] || service.service_type,
+      "Tipo de Serviço": serviceTypeLabels[service.service_type] || service.service_type,
       "Preço de Venda": service.sale_price,
-      "Tipo de Desconto": service.discount_type === "percentage" ? "Percentual" : "Valor Fixo",
-      "Desconto": service.discount_value,
+      "Tipo de Desconto": service.discount_type === "percentage" ? "Percentual (%)" : "Valor Fixo (R$)",
+      "Valor do Desconto": service.discount_value,
       "Preço Final": service.final_price,
-      "Observações": service.observations || ""
+      "Descrição do Serviço": service.observations || "",
+      "Data de Criação": service.created_at ? new Date(service.created_at).toLocaleDateString("pt-BR") : "",
+      "Última Atualização": service.updated_at ? new Date(service.updated_at).toLocaleDateString("pt-BR") : ""
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
