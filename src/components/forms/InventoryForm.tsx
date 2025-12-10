@@ -11,19 +11,19 @@ import { useEffect } from "react";
 
 const inventorySchema = z.object({
   // Basic Information
-  sector: z.string().min(1, "Setor é obrigatório"),
-  category: z.string().min(1, "Categoria é obrigatória"),
+  sector: z.string().optional(),
+  category: z.string().optional(),
   name: z.string().min(1, "Nome do item é obrigatório"),
-  quantity: z.string().min(1, "Quantidade é obrigatória"),
-  location: z.string().min(1, "Localização é obrigatória"),
-  responsible: z.string().min(1, "Responsável é obrigatório"),
-  status: z.string().min(1, "Status é obrigatório"),
+  quantity: z.string().optional(),
+  location: z.string().optional(),
+  responsible: z.string().optional(),
+  status: z.string().optional(),
   
   // Purchase Information
   purchaseLocation: z.string().optional(),
   invoiceNumber: z.string().optional(),
-  entryDate: z.date({ required_error: "Data de entrada é obrigatória" }),
-  unitValue: z.string().min(1, "Valor unitário é obrigatório"),
+  entryDate: z.date().optional().nullable(),
+  unitValue: z.string().optional(),
   
   // Additional Information
   observations: z.string().optional(),
