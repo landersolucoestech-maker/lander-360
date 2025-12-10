@@ -25,6 +25,7 @@ export type ServiceFormData = z.infer<typeof serviceSchema>;
 
 interface ServiceFormProps {
   onSubmit: (data: ServiceFormData) => void;
+  onCancel?: () => void;
   initialData?: Partial<ServiceFormData>;
   isLoading?: boolean;
 }
@@ -57,7 +58,7 @@ const salePriceTypes = [
   { value: "percentage", label: "%" },
 ];
 
-export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormProps) {
+export function ServiceForm({ onSubmit, onCancel, initialData, isLoading }: ServiceFormProps) {
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
@@ -293,7 +294,12 @@ export function ServiceForm({ onSubmit, initialData, isLoading }: ServiceFormPro
           )}
         />
 
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end gap-2 pt-4">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+              Cancelar
+            </Button>
+          )}
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "Salvando..." : "Salvar Serviço"}
           </Button>
