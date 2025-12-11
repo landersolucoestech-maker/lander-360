@@ -243,8 +243,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const aiGenerationType = form.watch('ai_generation_type');
   const watchedParticipants = form.watch('participants');
 
-  // Artists that always have Lander Records as editor
-  const LANDER_RECORDS_ARTISTS = [
+  // Artistas exclusivos da produtora - quando são compositores, Lander Records é editora
+  const LANDER_RECORDS_EXCLUSIVE_ARTISTS = [
     'dj stay',
     'dj md tr3ze', 
     'mc diogo da gv',
@@ -255,20 +255,23 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   // Track if auto contract has been triggered
   const autoContractTriggeredRef = useRef<Set<string>>(new Set());
 
-  // Auto-add Lander Records as editor when specific artists are added
+  // Auto-add Lander Records as editor when exclusive artists are added as COMPOSERS
   // Also trigger auto contract creation
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
-    const landerArtist = watchedParticipants.find(p => 
-      LANDER_RECORDS_ARTISTS.includes(p.name?.toLowerCase().trim())
+    // Check specifically for composers (compositor_autor role)
+    const composerRoles = ['compositor_autor', 'compositor', 'autor'];
+    const landerArtistComposer = watchedParticipants.find(p => 
+      composerRoles.includes(p.role?.toLowerCase()) &&
+      LANDER_RECORDS_EXCLUSIVE_ARTISTS.includes(p.name?.toLowerCase().trim())
     );
 
     const hasLanderEditor = watchedParticipants.some(p => 
       p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
     );
 
-    if (landerArtist && !hasLanderEditor) {
+    if (landerArtistComposer && !hasLanderEditor) {
       appendParticipant({
         name: 'Lander Records',
         role: 'editor',
@@ -278,7 +281,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       });
 
       // Trigger auto contract creation for the artist
-      const artistName = landerArtist.name?.trim();
+      const artistName = landerArtistComposer.name?.trim();
       if (artistName && !autoContractTriggeredRef.current.has(artistName)) {
         autoContractTriggeredRef.current.add(artistName);
         
@@ -291,7 +294,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
         if (matchedArtist) {
           const musicTitle = form.getValues('title') || 'Nova Obra';
-          const percentage = landerArtist.percentage || 0;
+          const percentage = landerArtistComposer.percentage || 0;
           
           AutoContractService.createEditionContract({
             artist_id: matchedArtist.id,
