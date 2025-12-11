@@ -127,7 +127,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       setHeaderPreview(url);
       setFormData(prev => ({
         ...prev,
-        header_html: `<div style="text-align: center; margin-bottom: 20px;"><img src="${url}" alt="Logo Cabeçalho" style="max-height: 80px; max-width: 200px;" /></div>`
+        header_html: `<div style="text-align: center; margin-bottom: 20px;"><img src="${url}" alt="Logo Cabeçalho" style="width: 100%; max-width: 794px; height: auto;" /></div>`
       }));
     }
     setIsUploadingHeader(false);
@@ -148,7 +148,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       setFooterPreview(url);
       setFormData(prev => ({
         ...prev,
-        footer_html: `<div style="text-align: center; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;"><img src="${url}" alt="Logo Rodapé" style="max-height: 60px; max-width: 150px;" /></div>`
+        footer_html: `<div style="text-align: center; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;"><img src="${url}" alt="Logo Rodapé" style="width: 100%; max-width: 794px; height: auto;" /></div>`
       }));
     }
     setIsUploadingFooter(false);
@@ -287,7 +287,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
                   />
                   {headerPreview ? (
                     <div className="relative border border-border rounded-lg p-4 bg-card">
-                      <img src={headerPreview} alt="Cabeçalho" className="max-h-20 mx-auto" />
+                      <img src={headerPreview} alt="Cabeçalho" className="w-full h-auto" />
                       <Button
                         type="button"
                         variant="ghost"
@@ -330,7 +330,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
                   />
                   {footerPreview ? (
                     <div className="relative border border-border rounded-lg p-4 bg-card">
-                      <img src={footerPreview} alt="Rodapé" className="max-h-20 mx-auto" />
+                      <img src={footerPreview} alt="Rodapé" className="w-full h-auto" />
                       <Button
                         type="button"
                         variant="ghost"
