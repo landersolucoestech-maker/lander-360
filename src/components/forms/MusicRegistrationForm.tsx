@@ -244,7 +244,14 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const watchedParticipants = form.watch('participants');
 
   // Artistas exclusivos da produtora - quando são compositores, Lander Records é editora
+  // Verificar pelo nome real (full_name) pois no registro de obras vai o nome civil
   const LANDER_RECORDS_EXCLUSIVE_ARTISTS = [
+    // Nomes reais (full_name) - usados no registro de obras
+    'allison batista barbosa militano',  // DJ Stay
+    'david alexandre ferreira aires',    // DJ MD TR3ZE
+    'diogo junior pereira',              // MC Diogo da GV
+    'raphael lopes de souza',            // Rapha Radamá
+    // Nomes artísticos (fallback)
     'dj stay',
     'dj md tr3ze', 
     'mc diogo da gv',
