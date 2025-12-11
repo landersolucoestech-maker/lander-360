@@ -10,14 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor } from "lucide-react";
+import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor, Plus, Pencil, Trash2 } from "lucide-react";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { IntegrationModal } from "@/components/modals/IntegrationModal";
+import { ContractTemplateModal } from "@/components/modals/ContractTemplateModal";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { useBackupData } from "@/hooks/useBackupData";
 import { RestoreBackupModal } from "@/components/modals/RestoreBackupModal";
+import { useContractTemplates, useDeleteContractTemplate } from "@/hooks/useContractTemplates";
 
 // Integration configurations
 const integrationConfigs = {
@@ -78,6 +81,15 @@ const Configuracoes = () => {
   const [selectedIntegration, setSelectedIntegration] = useState<typeof integrationConfigs[keyof typeof integrationConfigs] | null>(null);
   const [timezoneInput, setTimezoneInput] = useState(systemSettings.timezone);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
+  
+  // Contract Templates State
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [isDeleteTemplateModalOpen, setIsDeleteTemplateModalOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<any>(null);
+  
+  const { data: templates = [], isLoading: isLoadingTemplates } = useContractTemplates();
+  const deleteTemplateMutation = useDeleteContractTemplate();
 
   // Load connected integrations from localStorage
   useEffect(() => {
@@ -114,6 +126,35 @@ const Configuracoes = () => {
       title: "Integração desconectada",
       description: "A integração foi removida com sucesso.",
     });
+  };
+
+  // Contract Template handlers
+  const handleNewTemplate = () => {
+    setSelectedTemplate(null);
+    setIsTemplateModalOpen(true);
+  };
+
+  const handleEditTemplate = (template: any) => {
+    setSelectedTemplate(template);
+    setIsTemplateModalOpen(true);
+  };
+
+  const handleDeleteTemplate = (template: any) => {
+    setTemplateToDelete(template);
+    setIsDeleteTemplateModalOpen(true);
+  };
+
+  const confirmDeleteTemplate = async () => {
+    if (templateToDelete) {
+      try {
+        await deleteTemplateMutation.mutateAsync(templateToDelete.id);
+        toast({ title: "Template excluído", description: "O template foi removido com sucesso." });
+        setIsDeleteTemplateModalOpen(false);
+        setTemplateToDelete(null);
+      } catch (error) {
+        toast({ title: "Erro", description: "Não foi possível excluir o template.", variant: "destructive" });
+      }
+    }
   };
 
   return (
@@ -407,6 +448,65 @@ const Configuracoes = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Contract Templates */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Templates de Contratos
+                      </CardTitle>
+                      <CardDescription>
+                        Gerencie modelos de contratos para geração automática de documentos
+                      </CardDescription>
+                    </div>
+                    <Button onClick={handleNewTemplate} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Novo Template
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingTemplates ? (
+                    <p className="text-muted-foreground text-center py-4">Carregando templates...</p>
+                  ) : templates.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Nenhum template cadastrado</p>
+                      <Button onClick={handleNewTemplate} variant="outline" className="mt-4 gap-2">
+                        <Plus className="h-4 w-4" />
+                        Criar Primeiro Template
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {templates.map((template: any) => (
+                        <div key={template.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{template.name}</h4>
+                              <Badge variant={template.is_active ? "default" : "secondary"}>
+                                {template.is_active ? "Ativo" : "Inativo"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{template.description || template.template_type}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleEditTemplate(template)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDeleteTemplate(template)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </SidebarInset>
@@ -427,6 +527,20 @@ const Configuracoes = () => {
         onOpenChange={setShowIntegrationModal}
         integration={selectedIntegration}
         onConnect={handleIntegrationConnect}
+      />
+
+      <ContractTemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        template={selectedTemplate}
+      />
+
+      <DeleteConfirmationModal
+        open={isDeleteTemplateModalOpen}
+        onOpenChange={setIsDeleteTemplateModalOpen}
+        onConfirm={confirmDeleteTemplate}
+        title="Excluir Template"
+        description={`Tem certeza que deseja excluir o template "${templateToDelete?.name}"? Esta ação não pode ser desfeita.`}
       />
     </SidebarProvider>
   );
