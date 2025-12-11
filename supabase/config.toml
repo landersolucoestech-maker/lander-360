@@ -8,3 +8,12 @@ verify_jwt = true
 
 [functions.confirm-email-change]
 verify_jwt = false
+
+[functions.autentique-signature]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.google-calendar-sync]
+verify_jwt = true
