@@ -41,6 +41,7 @@ const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Itali
 
 const projectSchema = z.object({
   release_type: z.enum(['single', 'ep', 'album']).default('single'),
+  ep_album_name: z.string().optional(),
   artist_id: z.string().optional(),
   songs: z.array(songSchema).min(1, 'Pelo menos uma música é obrigatória'),
   observations: z.string().optional(),
@@ -80,6 +81,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
     resolver: zodResolver(projectSchema),
     defaultValues: {
       release_type: project?.release_type || 'single',
+      ep_album_name: project?.ep_album_name || '',
       artist_id: project?.artist_id || '',
       songs: project?.songs || [{
         song_name: '',
@@ -139,13 +141,19 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
       }));
 
       // Criar objeto apenas com campos válidos da tabela projects
+      // Nome do projeto: se for EP/Album usa o nome do EP/Album, senão usa o nome da primeira música
+      const projectName = (data.release_type === 'ep' || data.release_type === 'album') && data.ep_album_name 
+        ? data.ep_album_name 
+        : firstSong.song_name;
+      
       const projectData: any = {
-        name: firstSong.song_name,
-        description: `${data.release_type} - ${firstSong.song_name} (${firstSong.genre})`,
+        name: projectName,
+        description: `${data.release_type} - ${projectName} (${firstSong.genre})`,
         status: data.status,
         artist_id: data.artist_id || null,
         audio_files: JSON.stringify({
           release_type: data.release_type,
+          ep_album_name: data.ep_album_name,
           songs: songsData,
           observations: data.observations,
         }),
@@ -222,6 +230,26 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
             </FormItem>
           )}
         />
+
+        {/* Campo de nome do EP/Álbum - só aparece quando tipo é EP ou Álbum */}
+        {(releaseType === 'ep' || releaseType === 'album') && (
+          <FormField
+            control={form.control}
+            name="ep_album_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do {releaseType === 'ep' ? 'EP' : 'Álbum'} *</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder={`Digite o nome do ${releaseType === 'ep' ? 'EP' : 'Álbum'}`} 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
