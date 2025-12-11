@@ -26,7 +26,7 @@ export class AutoContractService {
 
       // Create new edition contract
       const contractData = {
-        title: `Contrato de Edição - ${data.artist_name}`,
+        title: `Contrato de Edição "${data.music_title}" - ${data.artist_name}`,
         client_type: 'artista' as const,
         service_type: 'edicao' as const,
         artist_id: data.artist_id,
