@@ -104,7 +104,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
 
   const showArtistSearch = ARTIST_SEARCH_TYPES.includes(formData.template_type);
   const showCrmSearch = CRM_SEARCH_TYPES.includes(formData.template_type);
-  const showStageNameField = showArtistSearch || artistSelected;
+  const showStageNameField = artistSelected;
 
   const handleSelectArtist = (artist: any) => {
     setContractedPartyData({
