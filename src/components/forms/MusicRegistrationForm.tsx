@@ -279,12 +279,15 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     );
 
     if (landerArtistComposer && !hasLanderEditor) {
+      // Get the composer's percentage to use for Lander Records as editor
+      const composerPercentage = landerArtistComposer.percentage || 0;
+      
       appendParticipant({
         name: 'Lander Records',
         role: 'editor',
         link: '',
         contract_start_date: '',
-        percentage: 0,
+        percentage: composerPercentage, // Use the same percentage as the composer
       });
 
       // Trigger auto contract creation for the artist
@@ -301,25 +304,14 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
         if (matchedArtist) {
           const musicTitle = form.getValues('title') || 'Nova Obra';
-          const percentage = landerArtistComposer.percentage || 0;
           
-          AutoContractService.createEditionContract({
-            artist_id: matchedArtist.id,
-            artist_name: matchedArtist.stage_name || matchedArtist.name,
-            music_title: musicTitle,
-            participant_percentage: percentage
-          }).then(contractId => {
-            if (contractId) {
-              toast({
-                title: "Contrato de Edição Criado",
-                description: `Contrato automático criado para ${matchedArtist.stage_name || matchedArtist.name}. Acesse Contratos para revisar.`,
-              });
-            }
-          });
+          // Delay contract creation to allow user to fill percentage
+          // Contract will be created on form submit instead
+          console.log(`Artista exclusivo detectado: ${artistName}. Contrato será criado ao salvar a obra.`);
         }
       }
     }
-  }, [watchedParticipants?.length, artists, toast, form]);
+  }, [watchedParticipants, artists, appendParticipant, form]);
 
   // Reset AI fields when is_ai_created becomes false
   useEffect(() => {
@@ -589,6 +581,45 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       } else {
         // Create new entry
         await createMusicEntry.mutateAsync(musicData);
+        
+        // Check for exclusive artists and create auto edition contract with real percentage
+        const composerRoles = ['compositor_autor', 'compositor', 'autor'];
+        const exclusiveArtistComposer = data.participants?.find(p => 
+          composerRoles.includes(p.role?.toLowerCase()) &&
+          LANDER_RECORDS_EXCLUSIVE_ARTISTS.includes(p.name?.toLowerCase().trim())
+        );
+        
+        if (exclusiveArtistComposer) {
+          // Find Lander Records editor to get the real percentage
+          const landerEditor = data.participants?.find(p => 
+            p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
+          );
+          
+          const landerPercentage = landerEditor?.percentage || 0;
+          
+          // Find artist in database
+          const matchedArtist = artists.find(a => 
+            a.name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim() ||
+            a.stage_name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim() ||
+            a.full_name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim()
+          );
+          
+          if (matchedArtist) {
+            const contractId = await AutoContractService.createEditionContract({
+              artist_id: matchedArtist.id,
+              artist_name: matchedArtist.stage_name || matchedArtist.name,
+              music_title: data.title,
+              participant_percentage: landerPercentage
+            });
+            
+            if (contractId) {
+              toast({
+                title: "Contrato de Edição Criado",
+                description: `Contrato automático criado para ${matchedArtist.stage_name || matchedArtist.name} com ${landerPercentage}% de participação.`,
+              });
+            }
+          }
+        }
       }
       
       onSuccess?.();
