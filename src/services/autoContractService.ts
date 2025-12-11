@@ -32,6 +32,7 @@ export class AutoContractService {
         artist_id: data.artist_id,
         status: 'rascunho' as const,
         description: `Contrato de edição musical criado automaticamente para a obra "${data.music_title}". Lander Records como editora.`,
+        observations: `Obra: ${data.music_title}\nParticipação Lander Records: ${data.participant_percentage || 0}%`,
         notes: `Obra: ${data.music_title}\nParticipação: ${data.participant_percentage || 0}%`,
         effective_from: new Date().toISOString().split('T')[0],
       };
