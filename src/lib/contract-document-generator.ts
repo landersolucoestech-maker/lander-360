@@ -130,20 +130,29 @@ function replaceVariables(text: string, data: ContractData): string {
   return result;
 }
 
+// Helper function to extract image URL from HTML
+function extractImageUrl(html: string | null): string | null {
+  if (!html) return null;
+  const match = html.match(/src=["']([^"']+)["']/);
+  return match ? match[1] : null;
+}
+
 export function generateContractHTML(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): string {
   const clauses = customClauses || template.clauses;
   
-  // Generate header HTML - use template header_html if available
-  const headerContent = template.header_html 
-    ? template.header_html 
+  // Generate header HTML - use template header_html if available, with full width
+  const headerImageUrl = extractImageUrl(template.header_html);
+  const headerContent = headerImageUrl 
+    ? `<div class="header-container"><img src="${headerImageUrl}" alt="Cabeçalho" /></div>`
     : `<div class="header">
         <div class="logo-text">LANDER RECORDS</div>
         <div class="tagline">360º Artist Management</div>
       </div>`;
   
-  // Generate footer HTML - use template footer_html if available
-  const footerContent = template.footer_html 
-    ? template.footer_html 
+  // Generate footer HTML - use template footer_html if available, with full width
+  const footerImageUrl = extractImageUrl(template.footer_html);
+  const footerContent = footerImageUrl 
+    ? `<div class="footer-container"><img src="${footerImageUrl}" alt="Rodapé" /></div>`
     : '';
   
   let html = `
@@ -153,30 +162,30 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
   <meta charset="UTF-8">
   <style>
     @page {
-      margin: 2.5cm;
-      @top-center {
-        content: element(header);
-      }
-      @bottom-center {
-        content: element(footer);
-      }
+      margin: 0;
     }
     body {
       font-family: 'Times New Roman', serif;
       font-size: 12pt;
       line-height: 1.6;
       color: #000;
+      margin: 0;
+      padding: 0;
+    }
+    .header-container {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .header-container img {
+      width: 100%;
+      display: block;
     }
     .header {
       text-align: center;
       border-bottom: 2px solid #c41e3a;
-      padding-bottom: 20px;
+      padding: 20px 25mm;
       margin-bottom: 30px;
-    }
-    .header img {
-      width: 100%;
-      max-width: 794px;
-      height: auto;
     }
     .logo-text {
       font-size: 24pt;
@@ -188,6 +197,9 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       font-size: 10pt;
       color: #666;
       margin-top: 5px;
+    }
+    .content {
+      padding: 20px 25mm;
     }
     .title {
       font-size: 16pt;
@@ -231,6 +243,16 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       margin-top: 60px;
       padding-top: 10px;
     }
+    .footer-container {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      margin-top: 40px;
+    }
+    .footer-container img {
+      width: 100%;
+      display: block;
+    }
     .footer {
       text-align: center;
       font-size: 9pt;
@@ -239,95 +261,83 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       padding-top: 10px;
       margin-top: 40px;
     }
-    .footer img {
-      width: 100%;
-      max-width: 794px;
-      height: auto;
-    }
-    .template-footer {
-      text-align: center;
-      margin-top: 40px;
-    }
-    .template-footer img {
-      width: 100%;
-      max-width: 794px;
-      height: auto;
-    }
   </style>
 </head>
 <body>
   ${headerContent}
 
-  <div class="title">${replaceVariables(template.name, data)}</div>
+  <div class="content">
+    <div class="title">${replaceVariables(template.name, data)}</div>
 
-  <div class="parties">
-    <div class="party">
-      <span class="party-label">CONTRATANTE:</span> ${data.company_name || 'LANDER RECORDS LTDA'}, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ${data.company_cnpj || 'XX.XXX.XXX/0001-XX'}, com sede em ${data.company_address || 'São Paulo/SP'}, neste ato representada por seu representante legal.
+    <div class="parties">
+      <div class="party">
+        <span class="party-label">CONTRATANTE:</span> ${data.company_name || 'LANDER RECORDS LTDA'}, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ${data.company_cnpj || 'XX.XXX.XXX/0001-XX'}, com sede em ${data.company_address || 'São Paulo/SP'}, neste ato representada por seu representante legal.
+      </div>
+      <div class="party">
+        <span class="party-label">CONTRATADO(A):</span> ${data.contracted_name}${data.contracted_stage_name && data.contracted_stage_name !== data.contracted_name ? `, nome artístico "${data.contracted_stage_name}"` : ''}, inscrito(a) no CPF/CNPJ sob nº ${data.contracted_cpf_cnpj || 'XXX.XXX.XXX-XX'}, residente em ${data.contracted_address || 'endereço a informar'}.
+      </div>
     </div>
-    <div class="party">
-      <span class="party-label">CONTRATADO(A):</span> ${data.contracted_name}${data.contracted_stage_name && data.contracted_stage_name !== data.contracted_name ? `, nome artístico "${data.contracted_stage_name}"` : ''}, inscrito(a) no CPF/CNPJ sob nº ${data.contracted_cpf_cnpj || 'XXX.XXX.XXX-XX'}, residente em ${data.contracted_address || 'endereço a informar'}.
-    </div>
-  </div>
 
-  <p style="text-align: justify;">As partes acima identificadas têm, entre si, justo e acordado o presente instrumento particular, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.</p>
+    <p style="text-align: justify;">As partes acima identificadas têm, entre si, justo e acordado o presente instrumento particular, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.</p>
 `;
 
   // Add clauses
   clauses.forEach((clause, index) => {
     const clauseNumber = index + 1;
     html += `
-  <div class="clause">
-    <div class="clause-title">CLÁUSULA ${clauseNumber}ª - ${clause.title}</div>
-    <div class="clause-content">${replaceVariables(clause.content, data)}</div>
-  </div>
+    <div class="clause">
+      <div class="clause-title">CLÁUSULA ${clauseNumber}ª - ${clause.title}</div>
+      <div class="clause-content">${replaceVariables(clause.content, data)}</div>
+    </div>
 `;
   });
 
   // Add signatures
   html += `
-  <p style="text-align: justify; margin-top: 40px;">E, por estarem assim justos e contratados, firmam o presente instrumento, em 2 (duas) vias de igual teor, juntamente com 2 (duas) testemunhas.</p>
+    <p style="text-align: justify; margin-top: 40px;">E, por estarem assim justos e contratados, firmam o presente instrumento, em 2 (duas) vias de igual teor, juntamente com 2 (duas) testemunhas.</p>
 
-  <p style="text-align: center; margin-top: 30px;">${data.company_address || 'São Paulo/SP'}, ${formatDateBR(new Date().toISOString())}.</p>
+    <p style="text-align: center; margin-top: 30px;">${data.company_address || 'São Paulo/SP'}, ${formatDateBR(new Date().toISOString())}.</p>
 
-  <div class="signatures">
-    <div class="signature-block">
-      <div class="signature-line">
-        <strong>${data.company_name || 'LANDER RECORDS LTDA'}</strong><br>
-        CONTRATANTE
-      </div>
-    </div>
-    <div class="signature-block">
-      <div class="signature-line">
-        <strong>${data.contracted_name}</strong><br>
-        CONTRATADO(A)
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top: 60px;">
-    <p><strong>TESTEMUNHAS:</strong></p>
     <div class="signatures">
       <div class="signature-block">
         <div class="signature-line">
-          Nome:<br>
-          CPF:
+          <strong>${data.company_name || 'LANDER RECORDS LTDA'}</strong><br>
+          CONTRATANTE
         </div>
       </div>
       <div class="signature-block">
         <div class="signature-line">
-          Nome:<br>
-          CPF:
+          <strong>${data.contracted_name}</strong><br>
+          CONTRATADO(A)
         </div>
       </div>
     </div>
+
+    <div style="margin-top: 60px;">
+      <p><strong>TESTEMUNHAS:</strong></p>
+      <div class="signatures">
+        <div class="signature-block">
+          <div class="signature-line">
+            Nome:<br>
+            CPF:
+          </div>
+        </div>
+        <div class="signature-block">
+          <div class="signature-line">
+            Nome:<br>
+            CPF:
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}</p>
+      <p>Este documento foi gerado eletronicamente pelo sistema Lander 360º</p>
+    </div>
   </div>
 
-  ${footerContent ? `<div class="template-footer">${footerContent}</div>` : ''}
-
-  <div class="footer">
-    <p>LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}</p>
-    <p>Este documento foi gerado eletronicamente pelo sistema Lander 360º</p>
-  </div>
+  ${footerContent}
 </body>
 </html>
 `;
@@ -335,7 +345,34 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
   return html;
 }
 
-export function generateContractPDF(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): jsPDF {
+// Helper function to load image as base64
+async function loadImageAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error loading image:', error);
+    return null;
+  }
+}
+
+// Helper function to get image dimensions
+function getImageDimensions(base64: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.width, height: img.height });
+    img.onerror = () => resolve({ width: 0, height: 0 });
+    img.src = base64;
+  });
+}
+
+export async function generateContractPDF(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): Promise<jsPDF> {
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -347,48 +384,91 @@ export function generateContractPDF(template: ContractTemplate, data: ContractDa
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 25;
   const contentWidth = pageWidth - (margin * 2);
-  let yPosition = margin;
+  let yPosition = 0;
+
+  // Load header and footer images
+  const headerImageUrl = extractImageUrl(template.header_html);
+  const footerImageUrl = extractImageUrl(template.footer_html);
+  
+  let headerBase64: string | null = null;
+  let footerBase64: string | null = null;
+  let headerHeight = 0;
+  let footerHeight = 0;
+
+  if (headerImageUrl) {
+    headerBase64 = await loadImageAsBase64(headerImageUrl);
+    if (headerBase64) {
+      const dims = await getImageDimensions(headerBase64);
+      // Calculate height maintaining aspect ratio for full width
+      headerHeight = (dims.height / dims.width) * pageWidth;
+    }
+  }
+
+  if (footerImageUrl) {
+    footerBase64 = await loadImageAsBase64(footerImageUrl);
+    if (footerBase64) {
+      const dims = await getImageDimensions(footerBase64);
+      // Calculate height maintaining aspect ratio for full width
+      footerHeight = (dims.height / dims.width) * pageWidth;
+    }
+  }
 
   const addHeader = () => {
-    // Logo text
-    pdf.setFontSize(24);
-    pdf.setTextColor(196, 30, 58); // #c41e3a
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('LANDER RECORDS', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 8;
+    if (headerBase64) {
+      pdf.addImage(headerBase64, 'PNG', 0, 0, pageWidth, headerHeight);
+      yPosition = headerHeight + 10;
+    } else {
+      yPosition = margin;
+      // Logo text
+      pdf.setFontSize(24);
+      pdf.setTextColor(196, 30, 58); // #c41e3a
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('LANDER RECORDS', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 8;
 
-    // Tagline
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('360º Artist Management', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 5;
+      // Tagline
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('360º Artist Management', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 5;
 
-    // Line
-    pdf.setDrawColor(196, 30, 58);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 15;
+      // Line
+      pdf.setDrawColor(196, 30, 58);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 15;
+    }
   };
 
   const addFooter = () => {
-    const footerY = pageHeight - 15;
-    pdf.setDrawColor(196, 30, 58);
-    pdf.setLineWidth(0.3);
-    pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-    
+    if (footerBase64) {
+      const footerY = pageHeight - footerHeight;
+      pdf.addImage(footerBase64, 'PNG', 0, footerY, pageWidth, footerHeight);
+    } else {
+      const footerY = pageHeight - 15;
+      pdf.setDrawColor(196, 30, 58);
+      pdf.setLineWidth(0.3);
+      pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+      
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}`, pageWidth / 2, footerY, { align: 'center' });
+    }
     pdf.setFontSize(8);
     pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}`, pageWidth / 2, footerY, { align: 'center' });
-    pdf.text(`Página ${pdf.getNumberOfPages()}`, pageWidth / 2, footerY + 4, { align: 'center' });
+    pdf.text(`Página ${pdf.getNumberOfPages()}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+  };
+
+  const getContentEndY = () => {
+    return footerBase64 ? pageHeight - footerHeight - 10 : pageHeight - 30;
   };
 
   const checkPageBreak = (requiredSpace: number) => {
-    if (yPosition + requiredSpace > pageHeight - 30) {
+    if (yPosition + requiredSpace > getContentEndY()) {
       addFooter();
       pdf.addPage();
-      yPosition = margin;
       addHeader();
     }
   };
@@ -519,13 +599,13 @@ export function generateContractPDF(template: ContractTemplate, data: ContractDa
   return pdf;
 }
 
-export function downloadContractPDF(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): void {
-  const pdf = generateContractPDF(template, data, customClauses);
+export async function downloadContractPDF(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): Promise<void> {
+  const pdf = await generateContractPDF(template, data, customClauses);
   const filename = `contrato_${template.template_type}_${data.contracted_name.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
   pdf.save(filename);
 }
 
-export function getContractPDFBlob(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): Blob {
-  const pdf = generateContractPDF(template, data, customClauses);
+export async function getContractPDFBlob(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): Promise<Blob> {
+  const pdf = await generateContractPDF(template, data, customClauses);
   return pdf.output('blob');
 }

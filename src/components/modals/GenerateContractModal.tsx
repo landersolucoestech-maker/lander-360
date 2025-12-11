@@ -160,13 +160,22 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     setCustomClauses(customClauses.filter(clause => clause.id !== id));
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (selectedTemplate) {
-      downloadContractPDF(selectedTemplate, contractData, customClauses);
-      toast({
-        title: 'PDF gerado',
-        description: 'O contrato foi baixado com sucesso.',
-      });
+      try {
+        await downloadContractPDF(selectedTemplate, contractData, customClauses);
+        toast({
+          title: 'PDF gerado',
+          description: 'O contrato foi baixado com sucesso.',
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        toast({
+          title: 'Erro',
+          description: 'Erro ao gerar o PDF.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
