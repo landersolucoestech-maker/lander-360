@@ -46,6 +46,114 @@ export interface ContractData {
 
 const LANDER_LOGO_BASE64 = ''; // Will use text header instead
 
+// Company data for Lander Produtora
+const LANDER_COMPANY_DATA = {
+  name: 'Lander Produtora',
+  cnpj: '50.056.858/0001-46',
+  address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
+  representative: {
+    name: 'Deyvisson Lander Andrade',
+    nationality: 'brasileiro',
+    marital_status: 'solteiro',
+    profession: 'empresário',
+    rg: 'MG17905257',
+    cpf: '062.049.196-52',
+    address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610'
+  }
+};
+
+// Contract types that use specific party structures
+const PRODUCTION_CONTRACTS = ['producao_musical', 'producao_audiovisual', 'marketing', 'shows', 'distribuicao', 'licenciamento', 'edicao'];
+const COLLABORATOR_CONTRACTS = ['colaborador', 'prestacao_servico'];
+const AGENCY_CONTRACTS = ['agenciamento', 'gestao', 'empresariamento'];
+
+// Helper function to determine party structure based on template type
+function getPartyStructure(templateType: string): 'production' | 'collaborator' | 'agency' {
+  const normalizedType = templateType.toLowerCase().replace(/[_\s-]/g, '_');
+  
+  if (AGENCY_CONTRACTS.some(t => normalizedType.includes(t))) {
+    return 'agency';
+  }
+  if (COLLABORATOR_CONTRACTS.some(t => normalizedType.includes(t))) {
+    return 'collaborator';
+  }
+  // Default to production structure for most contract types
+  return 'production';
+}
+
+// Generate party text based on contract type
+function generatePartiesHTML(templateType: string, data: ContractData): string {
+  const structure = getPartyStructure(templateType);
+  
+  const landerFullText = `${LANDER_COMPANY_DATA.name}, pessoa jurídica de direito privado, inscrita no CNPJ nº ${LANDER_COMPANY_DATA.cnpj}, com sede na ${LANDER_COMPANY_DATA.address}, representada por ${LANDER_COMPANY_DATA.representative.name}, ${LANDER_COMPANY_DATA.representative.nationality}, ${LANDER_COMPANY_DATA.representative.marital_status}, ${LANDER_COMPANY_DATA.representative.profession}, portador do RG nº ${LANDER_COMPANY_DATA.representative.rg} e CPF nº ${LANDER_COMPANY_DATA.representative.cpf}, residente e domiciliado na ${LANDER_COMPANY_DATA.representative.address}`;
+  
+  const contractedFullText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_stage_name ? `, cujo nome artístico é "${data.contracted_stage_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}`;
+
+  switch (structure) {
+    case 'production':
+      // Lander is CONTRATADO(A), Artist is CONTRATANTE
+      return `
+        <div class="party">
+          <span class="party-label">CONTRATADO(A):</span> ${landerFullText}, doravante denominado "CONTRATADO(A)".
+        </div>
+        <div class="party">
+          <span class="party-label">CONTRATANTE:</span> ${contractedFullText}, doravante denominado(a) "CONTRATANTE".
+        </div>
+      `;
+    
+    case 'collaborator':
+      // Lander is CONTRATANTE, Collaborator is CONTRATADO(A)
+      return `
+        <div class="party">
+          <span class="party-label">CONTRATANTE:</span> ${landerFullText}, doravante denominado "CONTRATANTE".
+        </div>
+        <div class="party">
+          <span class="party-label">CONTRATADO(A):</span> ${contractedFullText}, doravante denominado(a) "CONTRATADO(A)".
+        </div>
+      `;
+    
+    case 'agency':
+      // Lander is REPRESENTANTE, Artist is REPRESENTADO(A)
+      return `
+        <div class="party">
+          <span class="party-label">REPRESENTANTE:</span> ${landerFullText}, doravante denominado "REPRESENTANTE".
+        </div>
+        <div class="party">
+          <span class="party-label">REPRESENTADO(A):</span> ${contractedFullText}, doravante denominado(a) "REPRESENTADO(A)".
+        </div>
+      `;
+  }
+}
+
+// Generate signatures based on contract type
+function generateSignaturesHTML(templateType: string, data: ContractData): { leftLabel: string; rightLabel: string; leftName: string; rightName: string } {
+  const structure = getPartyStructure(templateType);
+  
+  switch (structure) {
+    case 'production':
+      return {
+        leftLabel: 'CONTRATADO(A)',
+        rightLabel: 'CONTRATANTE',
+        leftName: LANDER_COMPANY_DATA.name,
+        rightName: data.contracted_name
+      };
+    case 'collaborator':
+      return {
+        leftLabel: 'CONTRATANTE',
+        rightLabel: 'CONTRATADO(A)',
+        leftName: LANDER_COMPANY_DATA.name,
+        rightName: data.contracted_name
+      };
+    case 'agency':
+      return {
+        leftLabel: 'REPRESENTANTE',
+        rightLabel: 'REPRESENTADO(A)',
+        leftName: LANDER_COMPANY_DATA.name,
+        rightName: data.contracted_name
+      };
+  }
+}
+
 function numberToWords(num: number): string {
   const units = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
   const teens = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
@@ -270,12 +378,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     <div class="title">${replaceVariables(template.name, data)}</div>
 
     <div class="parties">
-      <div class="party">
-        <span class="party-label">CONTRATANTE:</span> ${data.company_name || 'LANDER RECORDS LTDA'}, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ${data.company_cnpj || 'XX.XXX.XXX/0001-XX'}, com sede em ${data.company_address || 'São Paulo/SP'}, neste ato representada por seu representante legal.
-      </div>
-      <div class="party">
-        <span class="party-label">CONTRATADO(A):</span> ${data.contracted_name}${data.contracted_stage_name && data.contracted_stage_name !== data.contracted_name ? `, nome artístico "${data.contracted_stage_name}"` : ''}, inscrito(a) no CPF/CNPJ sob nº ${data.contracted_cpf_cnpj || 'XXX.XXX.XXX-XX'}, residente em ${data.contracted_address || 'endereço a informar'}.
-      </div>
+      ${generatePartiesHTML(template.template_type, data)}
     </div>
 
     <p style="text-align: justify;">As partes acima identificadas têm, entre si, justo e acordado o presente instrumento particular, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.</p>
@@ -292,23 +395,26 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
 `;
   });
 
+  // Get signature labels based on contract type
+  const signatures = generateSignaturesHTML(template.template_type, data);
+
   // Add signatures
   html += `
     <p style="text-align: justify; margin-top: 40px;">E, por estarem assim justos e contratados, firmam o presente instrumento, em 2 (duas) vias de igual teor, juntamente com 2 (duas) testemunhas.</p>
 
-    <p style="text-align: center; margin-top: 30px;">${data.company_address || 'São Paulo/SP'}, ${formatDateBR(new Date().toISOString())}.</p>
+    <p style="text-align: center; margin-top: 30px;">${LANDER_COMPANY_DATA.address}, ${formatDateBR(new Date().toISOString())}.</p>
 
     <div class="signatures">
       <div class="signature-block">
         <div class="signature-line">
-          <strong>${data.company_name || 'LANDER RECORDS LTDA'}</strong><br>
-          CONTRATANTE
+          <strong>${signatures.leftName}</strong><br>
+          ${signatures.leftLabel}
         </div>
       </div>
       <div class="signature-block">
         <div class="signature-line">
-          <strong>${data.contracted_name}</strong><br>
-          CONTRATADO(A)
+          <strong>${signatures.rightName}</strong><br>
+          ${signatures.rightLabel}
         </div>
       </div>
     </div>
@@ -332,7 +438,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     </div>
 
     <div class="footer">
-      <p>LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}</p>
+      <p>${LANDER_COMPANY_DATA.name} | ${data.company_email || 'contato@lander360.com'} | ${LANDER_COMPANY_DATA.address}</p>
       <p>Este documento foi gerado eletronicamente pelo sistema Lander 360º</p>
     </div>
   </div>
@@ -454,11 +560,9 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
       pdf.setFontSize(8);
       pdf.setTextColor(100, 100, 100);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}`, pageWidth / 2, footerY, { align: 'center' });
+      pdf.text(`${LANDER_COMPANY_DATA.name} | ${data.company_email || 'contato@lander360.com'} | ${LANDER_COMPANY_DATA.address}`, pageWidth / 2, footerY, { align: 'center' });
     }
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text(`Página ${pdf.getNumberOfPages()}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+    // Page numbering removed as per requirement
   };
 
   const getContentEndY = () => {
@@ -501,23 +605,39 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
   pdf.text(titleText, pageWidth / 2, yPosition, { align: 'center' });
   yPosition += 15;
 
-  // Parties
+  // Get party structure based on template type
+  const partyStructure = getPartyStructure(template.template_type);
+  const signatures = generateSignaturesHTML(template.template_type, data);
+  
+  // Determine labels based on contract type
+  let firstPartyLabel = 'CONTRATANTE:';
+  let secondPartyLabel = 'CONTRATADO(A):';
+  
+  if (partyStructure === 'production') {
+    firstPartyLabel = 'CONTRATADO(A):';
+    secondPartyLabel = 'CONTRATANTE:';
+  } else if (partyStructure === 'agency') {
+    firstPartyLabel = 'REPRESENTANTE:';
+    secondPartyLabel = 'REPRESENTADO(A):';
+  }
+
+  // Parties - Lander first
   pdf.setFontSize(11);
   pdf.setFont('times', 'bold');
-  pdf.text('CONTRATANTE:', margin, yPosition);
+  pdf.text(firstPartyLabel, margin, yPosition);
   yPosition += 5;
   
   pdf.setFont('times', 'normal');
-  const contractorText = `${data.company_name || 'LANDER RECORDS LTDA'}, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ${data.company_cnpj || 'XX.XXX.XXX/0001-XX'}, com sede em ${data.company_address || 'São Paulo/SP'}, neste ato representada por seu representante legal.`;
-  addWrappedText(contractorText, 11);
+  const landerText = `${LANDER_COMPANY_DATA.name}, pessoa jurídica de direito privado, inscrita no CNPJ nº ${LANDER_COMPANY_DATA.cnpj}, com sede na ${LANDER_COMPANY_DATA.address}, representada por ${LANDER_COMPANY_DATA.representative.name}, ${LANDER_COMPANY_DATA.representative.nationality}, ${LANDER_COMPANY_DATA.representative.marital_status}, ${LANDER_COMPANY_DATA.representative.profession}, portador do RG nº ${LANDER_COMPANY_DATA.representative.rg} e CPF nº ${LANDER_COMPANY_DATA.representative.cpf}, residente e domiciliado na ${LANDER_COMPANY_DATA.representative.address}, doravante denominado "${firstPartyLabel.replace(':', '')}".`;
+  addWrappedText(landerText, 11);
   yPosition += 8;
 
   pdf.setFont('times', 'bold');
-  pdf.text('CONTRATADO(A):', margin, yPosition);
+  pdf.text(secondPartyLabel, margin, yPosition);
   yPosition += 5;
   
   pdf.setFont('times', 'normal');
-  const contractedText = `${data.contracted_name}${data.contracted_stage_name && data.contracted_stage_name !== data.contracted_name ? `, nome artístico "${data.contracted_stage_name}"` : ''}, inscrito(a) no CPF/CNPJ sob nº ${data.contracted_cpf_cnpj || 'XXX.XXX.XXX-XX'}, residente em ${data.contracted_address || 'endereço a informar'}.`;
+  const contractedText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_stage_name ? `, cujo nome artístico é "${data.contracted_stage_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}, doravante denominado(a) "${secondPartyLabel.replace(':', '')}".`;
   addWrappedText(contractedText, 11);
   yPosition += 10;
 
@@ -547,7 +667,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
 
   // Date and place
   pdf.setFont('times', 'normal');
-  pdf.text(`${data.company_address || 'São Paulo/SP'}, ${formatDateBR(new Date().toISOString())}.`, pageWidth / 2, yPosition, { align: 'center' });
+  pdf.text(`${LANDER_COMPANY_DATA.address.split(',').slice(0, 2).join(',')}, ${formatDateBR(new Date().toISOString())}.`, pageWidth / 2, yPosition, { align: 'center' });
   yPosition += 30;
 
   // Signatures
@@ -566,13 +686,13 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
   
   pdf.setFont('times', 'bold');
   pdf.setFontSize(10);
-  pdf.text(data.company_name || 'LANDER RECORDS LTDA', leftSigX + sigWidth / 2, yPosition, { align: 'center' });
-  pdf.text(data.contracted_name, rightSigX + sigWidth / 2, yPosition, { align: 'center' });
+  pdf.text(signatures.leftName, leftSigX + sigWidth / 2, yPosition, { align: 'center' });
+  pdf.text(signatures.rightName, rightSigX + sigWidth / 2, yPosition, { align: 'center' });
   yPosition += 4;
   
   pdf.setFont('times', 'normal');
-  pdf.text('CONTRATANTE', leftSigX + sigWidth / 2, yPosition, { align: 'center' });
-  pdf.text('CONTRATADO(A)', rightSigX + sigWidth / 2, yPosition, { align: 'center' });
+  pdf.text(signatures.leftLabel, leftSigX + sigWidth / 2, yPosition, { align: 'center' });
+  pdf.text(signatures.rightLabel, rightSigX + sigWidth / 2, yPosition, { align: 'center' });
   yPosition += 25;
 
   // Witnesses
