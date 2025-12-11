@@ -264,10 +264,59 @@ export type Database = {
           },
         ]
       }
+      contract_templates: {
+        Row: {
+          clauses: Json | null
+          created_at: string
+          created_by: string | null
+          default_fields: Json | null
+          description: string | null
+          footer_html: string | null
+          header_html: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          template_type: string
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          clauses?: Json | null
+          created_at?: string
+          created_by?: string | null
+          default_fields?: Json | null
+          description?: string | null
+          footer_html?: string | null
+          header_html?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          template_type: string
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          clauses?: Json | null
+          created_at?: string
+          created_by?: string | null
+          default_fields?: Json | null
+          description?: string | null
+          footer_html?: string | null
+          header_html?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          template_type?: string
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           advance_amount: number | null
           artist_id: string | null
+          autentique_document_id: string | null
           client_type: string | null
           contract_type: string | null
           contractor_contact: string | null
@@ -279,6 +328,7 @@ export type Database = {
           effective_to: string | null
           end_date: string | null
           fixed_value: number | null
+          generated_document_content: string | null
           id: string
           notes: string | null
           observations: string | null
@@ -290,8 +340,11 @@ export type Database = {
           royalties_percentage: number | null
           royalty_rate: number | null
           service_type: string | null
+          signature_request_date: string | null
+          signed_date: string | null
           start_date: string | null
           status: string | null
+          template_id: string | null
           terms: string | null
           title: string
           updated_at: string
@@ -300,6 +353,7 @@ export type Database = {
         Insert: {
           advance_amount?: number | null
           artist_id?: string | null
+          autentique_document_id?: string | null
           client_type?: string | null
           contract_type?: string | null
           contractor_contact?: string | null
@@ -311,6 +365,7 @@ export type Database = {
           effective_to?: string | null
           end_date?: string | null
           fixed_value?: number | null
+          generated_document_content?: string | null
           id?: string
           notes?: string | null
           observations?: string | null
@@ -322,8 +377,11 @@ export type Database = {
           royalties_percentage?: number | null
           royalty_rate?: number | null
           service_type?: string | null
+          signature_request_date?: string | null
+          signed_date?: string | null
           start_date?: string | null
           status?: string | null
+          template_id?: string | null
           terms?: string | null
           title: string
           updated_at?: string
@@ -332,6 +390,7 @@ export type Database = {
         Update: {
           advance_amount?: number | null
           artist_id?: string | null
+          autentique_document_id?: string | null
           client_type?: string | null
           contract_type?: string | null
           contractor_contact?: string | null
@@ -343,6 +402,7 @@ export type Database = {
           effective_to?: string | null
           end_date?: string | null
           fixed_value?: number | null
+          generated_document_content?: string | null
           id?: string
           notes?: string | null
           observations?: string | null
@@ -354,8 +414,11 @@ export type Database = {
           royalties_percentage?: number | null
           royalty_rate?: number | null
           service_type?: string | null
+          signature_request_date?: string | null
+          signed_date?: string | null
           start_date?: string | null
           status?: string | null
+          template_id?: string | null
           terms?: string | null
           title?: string
           updated_at?: string
@@ -374,6 +437,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
             referencedColumns: ["id"]
           },
         ]
