@@ -12,13 +12,17 @@ import { MusicViewModal } from "@/components/modals/MusicViewModal";
 import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
 import { PhonogramViewModal } from "@/components/modals/PhonogramViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
-import { Music, Plus, FileText, CheckCircle, Clock, Disc, Trash2 } from "lucide-react";
+import { Music, Plus, FileText, CheckCircle, Clock, Disc, Trash2, Download, Upload } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
 import { formatDateBR, translateStatus } from "@/lib/utils";
+import { useDataExport } from "@/hooks/useDataExport";
+import { useCreateMusicRegistryEntry } from "@/hooks/useMusicRegistry";
+import { useCreatePhonogram } from "@/hooks/usePhonograms";
+import { useRef } from "react";
 
 const RegistroMusicas = () => {
   const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
@@ -26,6 +30,12 @@ const RegistroMusicas = () => {
   const { data: artists = [] } = useArtists();
   const deleteMusicEntry = useDeleteMusicRegistryEntry();
   const deletePhonogram = useDeletePhonogram();
+  const createMusicEntry = useCreateMusicRegistryEntry();
+  const createPhonogram = useCreatePhonogram();
+  const { exportToExcel, parseExcelFile } = useDataExport();
+  
+  const worksFileInputRef = useRef<HTMLInputElement>(null);
+  const phonogramsFileInputRef = useRef<HTMLInputElement>(null);
   
   const [activeTab, setActiveTab] = useState("obras");
   const [filteredSongs, setFilteredSongs] = useState<any[]>([]);
@@ -291,7 +301,116 @@ const RegistroMusicas = () => {
     }
   };
 
-  // Calculate KPIs based on active tab
+  // Export/Import handlers - Works
+  const handleExportWorks = () => {
+    const artistsMap = artists.reduce((acc, artist) => {
+      acc[artist.id] = artist.name;
+      return acc;
+    }, {} as Record<string, string>);
+    exportToExcel(musicRegistry, 'obras_musicais', 'Obras', 'music_registry', artistsMap);
+  };
+
+  const handleImportWorks = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await parseExcelFile(file);
+      let imported = 0;
+
+      for (const row of data) {
+        const workData = {
+          title: row['Título'] || row['title'] || '',
+          status: row['Status'] || row['status'] || 'pendente',
+          genre: row['Gênero'] || row['genre'] || null,
+          abramus_code: row['Código ABRAMUS'] || row['abramus_code'] || null,
+          ecad_code: row['Código ECAD'] || row['ecad_code'] || null,
+          isrc: row['ISRC'] || row['isrc'] || null,
+          iswc: row['ISWC'] || row['iswc'] || null,
+          key: row['Tonalidade'] || row['key'] || null,
+          bpm: row['BPM'] || row['bpm'] || null,
+          duration: row['Duração (segundos)'] || row['duration'] || null,
+          writers: row['Compositores'] ? String(row['Compositores']).split(',').map(s => s.trim()) : null,
+          publishers: row['Editoras'] ? String(row['Editoras']).split(',').map(s => s.trim()) : null,
+        };
+
+        if (workData.title) {
+          await createMusicEntry.mutateAsync(workData);
+          imported++;
+        }
+      }
+
+      toast({
+        title: "Importação concluída",
+        description: `${imported} obra(s) importada(s) com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Error importing works:', error);
+      toast({
+        title: "Erro na importação",
+        description: "Falha ao importar obras. Verifique o formato do arquivo.",
+        variant: "destructive",
+      });
+    }
+    event.target.value = '';
+  };
+
+  // Export/Import handlers - Phonograms
+  const handleExportPhonograms = () => {
+    const artistsMap = artists.reduce((acc, artist) => {
+      acc[artist.id] = artist.name;
+      return acc;
+    }, {} as Record<string, string>);
+    exportToExcel(phonograms, 'fonogramas', 'Fonogramas', 'phonograms', artistsMap);
+  };
+
+  const handleImportPhonograms = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await parseExcelFile(file);
+      let imported = 0;
+
+      for (const row of data) {
+        const phonogramData = {
+          title: row['Título'] || row['title'] || '',
+          status: row['Status'] || row['status'] || 'pendente',
+          genre: row['Gênero'] || row['genre'] || null,
+          isrc: row['ISRC'] || row['isrc'] || null,
+          duration: row['Duração (segundos)'] || row['duration'] || null,
+          language: row['Idioma'] || row['language'] || null,
+          label: row['Gravadora'] || row['label'] || null,
+          master_owner: row['Proprietário do Master'] || row['master_owner'] || null,
+          version_type: row['Tipo de Versão'] || row['version_type'] || null,
+          is_remix: row['É Remix'] === 'Sim' || row['is_remix'] === true,
+          remix_artist: row['Artista do Remix'] || row['remix_artist'] || null,
+          recording_date: row['Data de Gravação'] || row['recording_date'] || null,
+          recording_studio: row['Estúdio de Gravação'] || row['recording_studio'] || null,
+          recording_location: row['Local de Gravação'] || row['recording_location'] || null,
+        };
+
+        if (phonogramData.title) {
+          await createPhonogram.mutateAsync(phonogramData);
+          imported++;
+        }
+      }
+
+      toast({
+        title: "Importação concluída",
+        description: `${imported} fonograma(s) importado(s) com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Error importing phonograms:', error);
+      toast({
+        title: "Erro na importação",
+        description: "Falha ao importar fonogramas. Verifique o formato do arquivo.",
+        variant: "destructive",
+      });
+    }
+    event.target.value = '';
+  };
+
   const worksKPIs = {
     total: allSongs.length,
     pending: allSongs.filter(s => s.statusDisplay === "Pendente").length,
@@ -393,6 +512,33 @@ const RegistroMusicas = () => {
                     onFilter={handleFilterWorks}
                     onClear={handleClearWorks}
                   />
+                  <div className="flex gap-2 ml-auto">
+                    <input
+                      type="file"
+                      ref={worksFileInputRef}
+                      onChange={handleImportWorks}
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => worksFileInputRef.current?.click()}
+                      className="gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Importar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportWorks}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Exportar
+                    </Button>
+                  </div>
                   {selectedWorks.length > 0 && (
                     <Button
                       variant="destructive"
@@ -518,6 +664,33 @@ const RegistroMusicas = () => {
                     onFilter={handleFilterPhonograms}
                     onClear={handleClearPhonograms}
                   />
+                  <div className="flex gap-2 ml-auto">
+                    <input
+                      type="file"
+                      ref={phonogramsFileInputRef}
+                      onChange={handleImportPhonograms}
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => phonogramsFileInputRef.current?.click()}
+                      className="gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Importar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportPhonograms}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Exportar
+                    </Button>
+                  </div>
                   {selectedPhonograms.length > 0 && (
                     <Button
                       variant="destructive"
