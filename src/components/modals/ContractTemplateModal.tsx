@@ -64,6 +64,18 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
     representative_address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610',
   });
 
+  const [contractedPartyData, setContractedPartyData] = useState({
+    full_name: '',
+    nationality: 'brasileiro(a)',
+    age: '',
+    profession: '',
+    rg: '',
+    rg_issuer: '',
+    cpf: '',
+    stage_name: '',
+    address: '',
+  });
+
   const [clauses, setClauses] = useState<ContractClause[]>([]);
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [footerPreview, setFooterPreview] = useState<string | null>(null);
@@ -84,6 +96,11 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       // Load company data from default_fields if exists
       if (template.default_fields?.company_data) {
         setCompanyData(template.default_fields.company_data);
+      }
+      
+      // Load contracted party data from default_fields if exists
+      if (template.default_fields?.contracted_party_data) {
+        setContractedPartyData(template.default_fields.contracted_party_data);
       }
       
       // Extract image URL from header_html if exists
@@ -115,6 +132,17 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
         representative_rg: 'MG17905257',
         representative_cpf: '062.049.196-52',
         representative_address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610',
+      });
+      setContractedPartyData({
+        full_name: '',
+        nationality: 'brasileiro(a)',
+        age: '',
+        profession: '',
+        rg: '',
+        rg_issuer: '',
+        cpf: '',
+        stage_name: '',
+        address: '',
       });
     }
   }, [template, isOpen]);
@@ -228,6 +256,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       clauses: clauses,
       default_fields: {
         company_data: companyData,
+        contracted_party_data: contractedPartyData,
       },
     };
 
@@ -416,6 +445,101 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Contracted Party Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Dados da Outra Parte (Contratante/Contratado/Representado)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Preencha os dados padrão ou deixe em branco para preencher no momento da geração do contrato.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome Completo</Label>
+                  <Input
+                    value={contractedPartyData.full_name}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, full_name: e.target.value })}
+                    placeholder="(nome completo)"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome Artístico</Label>
+                  <Input
+                    value={contractedPartyData.stage_name}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, stage_name: e.target.value })}
+                    placeholder="(nome artístico)"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Nacionalidade</Label>
+                  <Input
+                    value={contractedPartyData.nationality}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, nationality: e.target.value })}
+                    placeholder="Ex: brasileiro(a)"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Idade</Label>
+                  <Input
+                    value={contractedPartyData.age}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, age: e.target.value })}
+                    placeholder="Ex: maior de idade"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Profissão</Label>
+                  <Input
+                    value={contractedPartyData.profession}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, profession: e.target.value })}
+                    placeholder="Ex: cantor(a)"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>RG</Label>
+                  <Input
+                    value={contractedPartyData.rg}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, rg: e.target.value })}
+                    placeholder="Número do RG"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Órgão Expedidor</Label>
+                  <Input
+                    value={contractedPartyData.rg_issuer}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, rg_issuer: e.target.value })}
+                    placeholder="Ex: SSP/MG"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>CPF</Label>
+                  <Input
+                    value={contractedPartyData.cpf}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, cpf: e.target.value })}
+                    placeholder="000.000.000-00"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Endereço Completo</Label>
+                <Input
+                  value={contractedPartyData.address}
+                  onChange={(e) => setContractedPartyData({ ...contractedPartyData, address: e.target.value })}
+                  placeholder="Rua, número, bairro, cidade/UF, CEP"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Header & Footer Upload */}
           <Card>
             <CardHeader>
