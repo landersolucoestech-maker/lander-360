@@ -34,6 +34,7 @@ import MarketingMetricas from "./pages/marketing/Metricas";
 import MarketingBriefing from "./pages/marketing/Briefing";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Servicos from "./pages/Servicos";
+import ContractTemplates from "./pages/ContractTemplates";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/registro-musicas" element={<ProtectedRoute><RegistroMusicas /></ProtectedRoute>} />
               <Route path="/lancamentos" element={<ProtectedRoute><Lancamentos /></ProtectedRoute>} />
               <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
+              <Route path="/templates-contratos" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
               <Route path="/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
               <Route path="/financeiro/regras" element={<ProtectedRoute><RegrasCategorização /></ProtectedRoute>} />
               <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />

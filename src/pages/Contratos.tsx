@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Upload, Download, Loader2, Trash2 } from "lucide-react";
+import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Upload, Download, Loader2, Trash2, FileSignature } from "lucide-react";
 import { ContractModal } from "@/components/modals/ContractModal";
 import { ContractViewModal } from "@/components/modals/ContractViewModal";
+import { GenerateContractModal } from "@/components/modals/GenerateContractModal";
 import { useContracts, useActiveContracts, useContractsExpiringSoon, useDeleteContract } from "@/hooks/useContracts";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
@@ -20,8 +21,10 @@ import { formatDateBR } from "@/lib/utils";
 const Contratos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
   const [contractToView, setContractToView] = useState<Contract | null>(null);
+  const [contractToGenerate, setContractToGenerate] = useState<Contract | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -97,6 +100,7 @@ const Contratos = () => {
   const handleViewContract = (contract: Contract) => { setContractToView(contract); setIsViewModalOpen(true); };
   const handleEditContract = (contract: Contract) => { setSelectedContract(contract); setIsModalOpen(true); };
   const handleDeleteContract = (contract: Contract) => { setContractToDelete(contract); setIsDeleteModalOpen(true); };
+  const handleGenerateDocument = (contract: Contract) => { setContractToGenerate(contract); setIsGenerateModalOpen(true); };
 
   const confirmDelete = async () => {
     if (contractToDelete) {
@@ -296,6 +300,10 @@ const Contratos = () => {
                                 <div className="flex items-center gap-2">
                                   <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)}>Ver</Button>
                                   <Button variant="outline" size="sm" onClick={() => handleEditContract(contract)}>Editar</Button>
+                                  <Button variant="outline" size="sm" onClick={() => handleGenerateDocument(contract)} className="gap-1">
+                                    <FileSignature className="h-3 w-3" />
+                                    Gerar
+                                  </Button>
                                   <Button variant="outline" size="sm" onClick={() => handleDeleteContract(contract)}>Excluir</Button>
                                 </div>
                               </div>
@@ -314,6 +322,7 @@ const Contratos = () => {
 
       <ContractViewModal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} contract={contractToView} />
       <ContractModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} contract={selectedContract} />
+      <GenerateContractModal isOpen={isGenerateModalOpen} onClose={() => setIsGenerateModalOpen(false)} contract={contractToGenerate} />
       <DeleteConfirmationModal open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen} onConfirm={confirmDelete} title="Excluir Contrato" description={`Tem certeza que deseja excluir o contrato "${(contractToDelete as any)?.title || contractToDelete?.contract_type}"? Esta ação não pode ser desfeita.`} />
       <DeleteConfirmationModal open={isBulkDeleteModalOpen} onOpenChange={setIsBulkDeleteModalOpen} onConfirm={confirmBulkDelete} title="Excluir Contratos" description={`Tem certeza que deseja excluir ${selectedItems.length} contratos? Esta ação não pode ser desfeita.`} isLoading={isDeletingBulk} />
     </SidebarProvider>
