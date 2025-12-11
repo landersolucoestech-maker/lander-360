@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,6 +24,7 @@ import { useSearchMusic, useMusicRegistry, useCreateMusicRegistryEntry, useUpdat
 import { AbramusService, AbramusWork, AbramusParticipant } from '@/services/abramusService';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AutoContractService } from '@/services/autoContractService';
 
 const participantSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -251,11 +252,15 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     'rapha radama',
   ];
 
+  // Track if auto contract has been triggered
+  const autoContractTriggeredRef = useRef<Set<string>>(new Set());
+
   // Auto-add Lander Records as editor when specific artists are added
+  // Also trigger auto contract creation
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
-    const hasLanderArtist = watchedParticipants.some(p => 
+    const landerArtist = watchedParticipants.find(p => 
       LANDER_RECORDS_ARTISTS.includes(p.name?.toLowerCase().trim())
     );
 
@@ -263,7 +268,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
     );
 
-    if (hasLanderArtist && !hasLanderEditor) {
+    if (landerArtist && !hasLanderEditor) {
       appendParticipant({
         name: 'Lander Records',
         role: 'editor',
@@ -271,8 +276,40 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         contract_start_date: '',
         percentage: 0,
       });
+
+      // Trigger auto contract creation for the artist
+      const artistName = landerArtist.name?.trim();
+      if (artistName && !autoContractTriggeredRef.current.has(artistName)) {
+        autoContractTriggeredRef.current.add(artistName);
+        
+        // Find artist in database to get ID
+        const matchedArtist = artists.find(a => 
+          a.name?.toLowerCase() === artistName.toLowerCase() ||
+          a.stage_name?.toLowerCase() === artistName.toLowerCase() ||
+          a.full_name?.toLowerCase() === artistName.toLowerCase()
+        );
+
+        if (matchedArtist) {
+          const musicTitle = form.getValues('title') || 'Nova Obra';
+          const percentage = landerArtist.percentage || 0;
+          
+          AutoContractService.createEditionContract({
+            artist_id: matchedArtist.id,
+            artist_name: matchedArtist.stage_name || matchedArtist.name,
+            music_title: musicTitle,
+            participant_percentage: percentage
+          }).then(contractId => {
+            if (contractId) {
+              toast({
+                title: "Contrato de Edição Criado",
+                description: `Contrato automático criado para ${matchedArtist.stage_name || matchedArtist.name}. Acesse Contratos para revisar.`,
+              });
+            }
+          });
+        }
+      }
     }
-  }, [watchedParticipants?.length]);
+  }, [watchedParticipants?.length, artists, toast, form]);
 
   // Reset AI fields when is_ai_created becomes false
   useEffect(() => {
