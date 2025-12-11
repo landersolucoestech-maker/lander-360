@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,8 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload } from 'lucide-react';
+import { Upload, Search, User, Building } from 'lucide-react';
 import { DateInput } from '@/components/ui/date-input';
+import { ContractTemplate } from '@/services/contractTemplates';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const contractSchema = z.object({
   title: z.string().optional(),
@@ -41,10 +44,11 @@ interface ContractFormProps {
   onCancel?: () => void;
   initialData?: Partial<ContractFormData>;
   isLoading?: boolean;
-  artists?: Array<{ id: string; name: string }>;
+  artists?: Array<{ id: string; name: string; full_name?: string; stage_name?: string; cpf_cnpj?: string; rg?: string; full_address?: string; artist_types?: string[] }>;
   companies?: Array<{ id: string; name: string }>;
   projects?: Array<{ id: string; name: string }>;
-  contacts?: Array<{ id: string; name: string; company?: string | null }>;
+  contacts?: Array<{ id: string; name: string; company?: string | null; document?: string; address?: string; city?: string; state?: string; zip_code?: string; position?: string }>;
+  templates?: ContractTemplate[];
 }
 
 export const ContractForm: React.FC<ContractFormProps> = ({
@@ -55,9 +59,42 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   artists = [],
   companies = [],
   projects = [],
-  contacts = []
+  contacts = [],
+  templates = []
 }) => {
   const [attachments, setAttachments] = React.useState<File[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate | null>(null);
+  const [artistSearchOpen, setArtistSearchOpen] = useState(false);
+  const [crmSearchOpen, setCrmSearchOpen] = useState(false);
+  
+  // Template data states
+  const [companyData, setCompanyData] = useState({
+    company_name: '',
+    company_type: '',
+    cnpj: '',
+    company_address: '',
+    representative_name: '',
+    representative_nationality: '',
+    representative_marital_status: '',
+    representative_profession: '',
+    representative_rg: '',
+    representative_cpf: '',
+    representative_address: '',
+  });
+
+  const [contractedPartyData, setContractedPartyData] = useState({
+    full_name: '',
+    nationality: 'brasileiro(a)',
+    age: '',
+    profession: '',
+    rg: '',
+    rg_issuer: '',
+    cpf: '',
+    stage_name: '',
+    address: '',
+  });
+  
+  const [artistSelected, setArtistSelected] = useState(false);
 
   const form = useForm<ContractFormData>({
     resolver: zodResolver(contractSchema),
@@ -69,7 +106,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   });
 
   // Reset form when initialData changes (for edit mode)
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData) {
       form.reset({
         status: 'rascunho',
@@ -79,15 +116,96 @@ export const ContractForm: React.FC<ContractFormProps> = ({
     }
   }, [initialData, form]);
 
+  // Load template data when service_type changes
+  const watchedServiceType = form.watch('service_type');
+  
+  useEffect(() => {
+    if (watchedServiceType && templates.length > 0) {
+      const template = templates.find(t => t.template_type === watchedServiceType && t.is_active);
+      if (template) {
+        setSelectedTemplate(template);
+        
+        // Load company data from template
+        if (template.default_fields?.company_data) {
+          setCompanyData(template.default_fields.company_data);
+        }
+        
+        // Load contracted party data from template
+        if (template.default_fields?.contracted_party_data) {
+          setContractedPartyData(template.default_fields.contracted_party_data);
+          setArtistSelected(!!template.default_fields.contracted_party_data.stage_name);
+        }
+      } else {
+        setSelectedTemplate(null);
+      }
+    } else {
+      setSelectedTemplate(null);
+    }
+  }, [watchedServiceType, templates]);
+
+  // Handle artist selection from search
+  const handleSelectArtist = (artist: any) => {
+    setContractedPartyData({
+      full_name: artist.full_name || artist.name || '',
+      nationality: 'brasileiro(a)',
+      age: '',
+      profession: artist.artist_types?.join(', ') || 'artista',
+      rg: artist.rg || '',
+      rg_issuer: '',
+      cpf: artist.cpf_cnpj || '',
+      stage_name: artist.stage_name || artist.name || '',
+      address: artist.full_address || '',
+    });
+    form.setValue('artist_id', artist.id);
+    setArtistSelected(true);
+    setArtistSearchOpen(false);
+  };
+
+  // Handle CRM contact selection
+  const handleSelectCrmContact = (contact: any) => {
+    setContractedPartyData({
+      full_name: contact.name || '',
+      nationality: 'brasileiro(a)',
+      age: '',
+      profession: contact.position || '',
+      rg: '',
+      rg_issuer: '',
+      cpf: contact.document || '',
+      stage_name: '',
+      address: contact.address ? `${contact.address}, ${contact.city || ''} - ${contact.state || ''}, CEP ${contact.zip_code || ''}` : '',
+    });
+    form.setValue('contractor_contact', contact.id);
+    setArtistSelected(false);
+    setCrmSearchOpen(false);
+  };
+
   const handleSubmit = (data: ContractFormData) => {
     console.log('ContractForm handleSubmit called with data:', data);
-    onSubmit(data);
+    // Include template data in submission
+    const submitData = {
+      ...data,
+      template_id: selectedTemplate?.id,
+      template_data: selectedTemplate ? {
+        company_data: companyData,
+        contracted_party_data: contractedPartyData,
+      } : undefined,
+    };
+    onSubmit(submitData);
   };
 
   const handleManualSubmit = () => {
     const values = form.getValues();
     console.log('Manual submit with values:', values);
-    onSubmit(values);
+    // Include template data in submission
+    const submitData = {
+      ...values,
+      template_id: selectedTemplate?.id,
+      template_data: selectedTemplate ? {
+        company_data: companyData,
+        contracted_party_data: contractedPartyData,
+      } : undefined,
+    };
+    onSubmit(submitData);
   };
 
   // Debug: log form errors
@@ -307,6 +425,287 @@ export const ContractForm: React.FC<ContractFormProps> = ({
         </CardContent>
       </Card>
 
+      {/* Template Fields - Only show when a template is selected */}
+      {selectedTemplate && (
+        <>
+          {/* Company Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Dados da Empresa (Contratado/Contratante/Representante)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da Empresa</Label>
+                  <Input
+                    value={companyData.company_name}
+                    onChange={(e) => setCompanyData({ ...companyData, company_name: e.target.value })}
+                    placeholder="Ex: Lander Produtora"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tipo Jurídico</Label>
+                  <Input
+                    value={companyData.company_type}
+                    onChange={(e) => setCompanyData({ ...companyData, company_type: e.target.value })}
+                    placeholder="Ex: pessoa jurídica de direito privado"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>CNPJ</Label>
+                  <Input
+                    value={companyData.cnpj}
+                    onChange={(e) => setCompanyData({ ...companyData, cnpj: e.target.value })}
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Endereço da Empresa</Label>
+                  <Input
+                    value={companyData.company_address}
+                    onChange={(e) => setCompanyData({ ...companyData, company_address: e.target.value })}
+                    placeholder="Rua, número, bairro, cidade/UF, CEP"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4 mt-4">
+                <h4 className="font-medium text-sm mb-4">Representante Legal</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome Completo</Label>
+                    <Input
+                      value={companyData.representative_name}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_name: e.target.value })}
+                      placeholder="Nome do representante"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nacionalidade</Label>
+                    <Input
+                      value={companyData.representative_nationality}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_nationality: e.target.value })}
+                      placeholder="Ex: brasileiro"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <Label>Estado Civil</Label>
+                    <Input
+                      value={companyData.representative_marital_status}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_marital_status: e.target.value })}
+                      placeholder="Ex: solteiro"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Profissão</Label>
+                    <Input
+                      value={companyData.representative_profession}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_profession: e.target.value })}
+                      placeholder="Ex: empresário"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>RG</Label>
+                    <Input
+                      value={companyData.representative_rg}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_rg: e.target.value })}
+                      placeholder="Número do RG"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <Label>CPF</Label>
+                    <Input
+                      value={companyData.representative_cpf}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_cpf: e.target.value })}
+                      placeholder="000.000.000-00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Endereço</Label>
+                    <Input
+                      value={companyData.representative_address}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_address: e.target.value })}
+                      placeholder="Endereço completo"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contracted Party Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center justify-between">
+                <span>Dados da Outra Parte (Contratante/Contratado)</span>
+                <div className="flex gap-2">
+                  {form.watch('client_type') === 'artista' && (
+                    <Popover open={artistSearchOpen} onOpenChange={setArtistSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button type="button" variant="outline" size="sm">
+                          <User className="h-4 w-4 mr-2" />
+                          Buscar Artista
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-0" align="end">
+                        <Command>
+                          <CommandInput placeholder="Buscar artista..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum artista encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {artists.map((artist) => (
+                                <CommandItem
+                                  key={artist.id}
+                                  value={artist.name}
+                                  onSelect={() => handleSelectArtist(artist)}
+                                >
+                                  <User className="h-4 w-4 mr-2" />
+                                  {artist.stage_name || artist.name}
+                                  {artist.full_name && artist.full_name !== artist.name && (
+                                    <span className="text-muted-foreground ml-2">({artist.full_name})</span>
+                                  )}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                  
+                  {form.watch('client_type') === 'empresa' && (
+                    <Popover open={crmSearchOpen} onOpenChange={setCrmSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button type="button" variant="outline" size="sm">
+                          <Building className="h-4 w-4 mr-2" />
+                          Buscar Contato CRM
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-0" align="end">
+                        <Command>
+                          <CommandInput placeholder="Buscar contato..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {contacts.map((contact) => (
+                                <CommandItem
+                                  key={contact.id}
+                                  value={contact.name}
+                                  onSelect={() => handleSelectCrmContact(contact)}
+                                >
+                                  <Building className="h-4 w-4 mr-2" />
+                                  {contact.name}
+                                  {contact.company && (
+                                    <span className="text-muted-foreground ml-2">({contact.company})</span>
+                                  )}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome Completo</Label>
+                  <Input
+                    value={contractedPartyData.full_name}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, full_name: e.target.value })}
+                    placeholder="Nome completo"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nacionalidade</Label>
+                  <Input
+                    value={contractedPartyData.nationality}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, nationality: e.target.value })}
+                    placeholder="Ex: brasileiro(a)"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Idade</Label>
+                  <Input
+                    value={contractedPartyData.age}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, age: e.target.value })}
+                    placeholder="Ex: maior"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Profissão</Label>
+                  <Input
+                    value={contractedPartyData.profession}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, profession: e.target.value })}
+                    placeholder="Ex: artista"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>RG</Label>
+                  <Input
+                    value={contractedPartyData.rg}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, rg: e.target.value })}
+                    placeholder="Número do RG"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Órgão Emissor RG</Label>
+                  <Input
+                    value={contractedPartyData.rg_issuer}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, rg_issuer: e.target.value })}
+                    placeholder="Ex: SSP/MG"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>CPF</Label>
+                  <Input
+                    value={contractedPartyData.cpf}
+                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, cpf: e.target.value })}
+                    placeholder="000.000.000-00"
+                  />
+                </div>
+                {artistSelected && (
+                  <div className="space-y-2">
+                    <Label>Nome Artístico</Label>
+                    <Input
+                      value={contractedPartyData.stage_name}
+                      onChange={(e) => setContractedPartyData({ ...contractedPartyData, stage_name: e.target.value })}
+                      placeholder="Nome artístico"
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Endereço Completo</Label>
+                <Input
+                  value={contractedPartyData.address}
+                  onChange={(e) => setContractedPartyData({ ...contractedPartyData, address: e.target.value })}
+                  placeholder="Rua, número, bairro, cidade/UF, CEP"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       <Card>
         <CardHeader>
