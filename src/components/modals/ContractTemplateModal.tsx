@@ -6,11 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, GripVertical, Save, Upload, X, Image } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, Upload, X, Image, Search, User, Building } from 'lucide-react';
 import { ContractTemplate, ContractClause, ContractTemplateInsert } from '@/services/contractTemplates';
 import { useCreateContractTemplate, useUpdateContractTemplate } from '@/hooks/useContractTemplates';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useArtists } from '@/hooks/useArtists';
+import { useCrmContacts } from '@/hooks/useCrm';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 interface ContractTemplateModalProps {
   isOpen: boolean;
@@ -29,7 +33,21 @@ const templateTypeLabels: Record<string, string> = {
   marketing: 'Marketing',
   licenciamento: 'Licenciamento',
   termo_fonograma: 'Termo de Autorização de Fonograma',
+  colaborador: 'Colaborador',
+  shows: 'Shows',
 };
+
+// Template types that search from Artists
+const ARTIST_SEARCH_TYPES = [
+  'agenciamento', 'gestao', 'empresariamento', 
+  'producao_musical', 'producao_audiovisual', 
+  'distribuicao', 'licenciamento', 'edicao', 'marketing'
+];
+
+// Template types that search from CRM
+const CRM_SEARCH_TYPES = [
+  'producao_musical', 'producao_audiovisual', 'marketing', 'shows', 'colaborador'
+];
 
 export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
   isOpen,
@@ -41,6 +59,12 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
   const { toast } = useToast();
   const headerInputRef = useRef<HTMLInputElement>(null);
   const footerInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: artists = [] } = useArtists();
+  const { data: crmContacts = [] } = useCrmContacts();
+
+  const [artistSearchOpen, setArtistSearchOpen] = useState(false);
+  const [crmSearchOpen, setCrmSearchOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -75,6 +99,39 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
     stage_name: '',
     address: '',
   });
+
+  const showArtistSearch = ARTIST_SEARCH_TYPES.includes(formData.template_type);
+  const showCrmSearch = CRM_SEARCH_TYPES.includes(formData.template_type);
+
+  const handleSelectArtist = (artist: any) => {
+    setContractedPartyData({
+      full_name: artist.full_name || artist.name || '',
+      nationality: 'brasileiro(a)',
+      age: '',
+      profession: artist.artist_types?.join(', ') || 'artista',
+      rg: artist.rg || '',
+      rg_issuer: '',
+      cpf: artist.cpf_cnpj || '',
+      stage_name: artist.stage_name || artist.name || '',
+      address: artist.full_address || '',
+    });
+    setArtistSearchOpen(false);
+  };
+
+  const handleSelectCrmContact = (contact: any) => {
+    setContractedPartyData({
+      full_name: contact.name || '',
+      nationality: 'brasileiro(a)',
+      age: '',
+      profession: contact.position || '',
+      rg: '',
+      rg_issuer: '',
+      cpf: contact.document || '',
+      stage_name: '',
+      address: contact.address ? `${contact.address}, ${contact.city || ''} - ${contact.state || ''}, CEP ${contact.zip_code || ''}` : '',
+    });
+    setCrmSearchOpen(false);
+  };
 
   const [clauses, setClauses] = useState<ContractClause[]>([]);
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
@@ -452,9 +509,88 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
               <CardTitle className="text-base">Dados da Outra Parte (Contratante/Contratado/Representado)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground mb-2">
                 Preencha os dados padrão ou deixe em branco para preencher no momento da geração do contrato.
               </p>
+              
+              {/* Search Buttons */}
+              {(showArtistSearch || showCrmSearch) && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {showArtistSearch && (
+                    <Popover open={artistSearchOpen} onOpenChange={setArtistSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <User className="h-4 w-4" />
+                          Buscar Artista
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar artista..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum artista encontrado.</CommandEmpty>
+                            <CommandGroup heading="Artistas">
+                              {artists.map((artist) => (
+                                <CommandItem
+                                  key={artist.id}
+                                  value={artist.name}
+                                  onSelect={() => handleSelectArtist(artist)}
+                                  className="cursor-pointer"
+                                >
+                                  <User className="h-4 w-4 mr-2" />
+                                  <div className="flex flex-col">
+                                    <span>{artist.stage_name || artist.name}</span>
+                                    {artist.full_name && artist.full_name !== artist.name && (
+                                      <span className="text-xs text-muted-foreground">{artist.full_name}</span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                  
+                  {showCrmSearch && (
+                    <Popover open={crmSearchOpen} onOpenChange={setCrmSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Building className="h-4 w-4" />
+                          Buscar no CRM
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar contato CRM..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
+                            <CommandGroup heading="Contatos CRM">
+                              {crmContacts.map((contact) => (
+                                <CommandItem
+                                  key={contact.id}
+                                  value={contact.name}
+                                  onSelect={() => handleSelectCrmContact(contact)}
+                                  className="cursor-pointer"
+                                >
+                                  <Building className="h-4 w-4 mr-2" />
+                                  <div className="flex flex-col">
+                                    <span>{contact.name}</span>
+                                    {contact.company && (
+                                      <span className="text-xs text-muted-foreground">{contact.company}</span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+              )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
