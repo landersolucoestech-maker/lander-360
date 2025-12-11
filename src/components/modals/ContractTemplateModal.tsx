@@ -50,6 +50,20 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
     footer_html: '',
   });
 
+  const [companyData, setCompanyData] = useState({
+    company_name: 'Lander Produtora',
+    company_type: 'pessoa jurídica de direito privado',
+    cnpj: '50.056.858/0001-46',
+    company_address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
+    representative_name: 'Deyvisson Lander Andrade',
+    representative_nationality: 'brasileiro',
+    representative_marital_status: 'solteiro',
+    representative_profession: 'empresário',
+    representative_rg: 'MG17905257',
+    representative_cpf: '062.049.196-52',
+    representative_address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610',
+  });
+
   const [clauses, setClauses] = useState<ContractClause[]>([]);
   const [headerPreview, setHeaderPreview] = useState<string | null>(null);
   const [footerPreview, setFooterPreview] = useState<string | null>(null);
@@ -66,6 +80,11 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
         footer_html: template.footer_html || '',
       });
       setClauses(template.clauses || []);
+      
+      // Load company data from default_fields if exists
+      if (template.default_fields?.company_data) {
+        setCompanyData(template.default_fields.company_data);
+      }
       
       // Extract image URL from header_html if exists
       const headerMatch = template.header_html?.match(/src="([^"]+)"/);
@@ -84,6 +103,19 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       setClauses([]);
       setHeaderPreview(null);
       setFooterPreview(null);
+      setCompanyData({
+        company_name: 'Lander Produtora',
+        company_type: 'pessoa jurídica de direito privado',
+        cnpj: '50.056.858/0001-46',
+        company_address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
+        representative_name: 'Deyvisson Lander Andrade',
+        representative_nationality: 'brasileiro',
+        representative_marital_status: 'solteiro',
+        representative_profession: 'empresário',
+        representative_rg: 'MG17905257',
+        representative_cpf: '062.049.196-52',
+        representative_address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610',
+      });
     }
   }, [template, isOpen]);
 
@@ -194,6 +226,9 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       header_html: formData.header_html || undefined,
       footer_html: formData.footer_html || undefined,
       clauses: clauses,
+      default_fields: {
+        company_data: companyData,
+      },
     };
 
     try {
@@ -268,6 +303,119 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
             </CardContent>
           </Card>
 
+          {/* Company Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Dados da Empresa (Contratado/Contratante/Representante)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da Empresa</Label>
+                  <Input
+                    value={companyData.company_name}
+                    onChange={(e) => setCompanyData({ ...companyData, company_name: e.target.value })}
+                    placeholder="Ex: Lander Produtora"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tipo Jurídico</Label>
+                  <Input
+                    value={companyData.company_type}
+                    onChange={(e) => setCompanyData({ ...companyData, company_type: e.target.value })}
+                    placeholder="Ex: pessoa jurídica de direito privado"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>CNPJ</Label>
+                  <Input
+                    value={companyData.cnpj}
+                    onChange={(e) => setCompanyData({ ...companyData, cnpj: e.target.value })}
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Endereço da Empresa</Label>
+                  <Input
+                    value={companyData.company_address}
+                    onChange={(e) => setCompanyData({ ...companyData, company_address: e.target.value })}
+                    placeholder="Rua, número, bairro, cidade/UF, CEP"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4 mt-4">
+                <h4 className="font-medium text-sm mb-4">Representante Legal</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome Completo</Label>
+                    <Input
+                      value={companyData.representative_name}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_name: e.target.value })}
+                      placeholder="Nome do representante"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nacionalidade</Label>
+                    <Input
+                      value={companyData.representative_nationality}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_nationality: e.target.value })}
+                      placeholder="Ex: brasileiro"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <Label>Estado Civil</Label>
+                    <Input
+                      value={companyData.representative_marital_status}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_marital_status: e.target.value })}
+                      placeholder="Ex: solteiro"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Profissão</Label>
+                    <Input
+                      value={companyData.representative_profession}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_profession: e.target.value })}
+                      placeholder="Ex: empresário"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>RG</Label>
+                    <Input
+                      value={companyData.representative_rg}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_rg: e.target.value })}
+                      placeholder="Número do RG"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <Label>CPF</Label>
+                    <Input
+                      value={companyData.representative_cpf}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_cpf: e.target.value })}
+                      placeholder="000.000.000-00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Endereço do Representante</Label>
+                    <Input
+                      value={companyData.representative_address}
+                      onChange={(e) => setCompanyData({ ...companyData, representative_address: e.target.value })}
+                      placeholder="Rua, número, bairro, cidade/UF, CEP"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           {/* Header & Footer Upload */}
           <Card>
             <CardHeader>
