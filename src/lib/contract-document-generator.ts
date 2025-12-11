@@ -133,6 +133,19 @@ function replaceVariables(text: string, data: ContractData): string {
 export function generateContractHTML(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): string {
   const clauses = customClauses || template.clauses;
   
+  // Generate header HTML - use template header_html if available
+  const headerContent = template.header_html 
+    ? template.header_html 
+    : `<div class="header">
+        <div class="logo-text">LANDER RECORDS</div>
+        <div class="tagline">360º Artist Management</div>
+      </div>`;
+  
+  // Generate footer HTML - use template footer_html if available
+  const footerContent = template.footer_html 
+    ? template.footer_html 
+    : '';
+  
   let html = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -159,6 +172,11 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       border-bottom: 2px solid #c41e3a;
       padding-bottom: 20px;
       margin-bottom: 30px;
+    }
+    .header img {
+      width: 100%;
+      max-width: 794px;
+      height: auto;
     }
     .logo-text {
       font-size: 24pt;
@@ -221,13 +239,24 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       padding-top: 10px;
       margin-top: 40px;
     }
+    .footer img {
+      width: 100%;
+      max-width: 794px;
+      height: auto;
+    }
+    .template-footer {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .template-footer img {
+      width: 100%;
+      max-width: 794px;
+      height: auto;
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo-text">LANDER RECORDS</div>
-    <div class="tagline">360º Artist Management</div>
-  </div>
+  ${headerContent}
 
   <div class="title">${replaceVariables(template.name, data)}</div>
 
@@ -292,6 +321,8 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       </div>
     </div>
   </div>
+
+  ${footerContent ? `<div class="template-footer">${footerContent}</div>` : ''}
 
   <div class="footer">
     <p>LANDER RECORDS LTDA | ${data.company_email || 'contato@lander360.com'} | ${data.company_address || 'São Paulo/SP'}</p>
