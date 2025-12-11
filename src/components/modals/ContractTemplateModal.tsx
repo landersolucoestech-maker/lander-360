@@ -100,8 +100,11 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
     address: '',
   });
 
+  const [artistSelected, setArtistSelected] = useState(false);
+
   const showArtistSearch = ARTIST_SEARCH_TYPES.includes(formData.template_type);
   const showCrmSearch = CRM_SEARCH_TYPES.includes(formData.template_type);
+  const showStageNameField = showArtistSearch || artistSelected;
 
   const handleSelectArtist = (artist: any) => {
     setContractedPartyData({
@@ -115,6 +118,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       stage_name: artist.stage_name || artist.name || '',
       address: artist.full_address || '',
     });
+    setArtistSelected(true);
     setArtistSearchOpen(false);
   };
 
@@ -158,6 +162,8 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       // Load contracted party data from default_fields if exists
       if (template.default_fields?.contracted_party_data) {
         setContractedPartyData(template.default_fields.contracted_party_data);
+        // Check if stage_name exists to determine if artist was selected
+        setArtistSelected(!!template.default_fields.contracted_party_data.stage_name);
       }
       
       // Extract image URL from header_html if exists
@@ -177,6 +183,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       setClauses([]);
       setHeaderPreview(null);
       setFooterPreview(null);
+      setArtistSelected(false);
       setCompanyData({
         company_name: 'Lander Produtora',
         company_type: 'pessoa jurídica de direito privado',
@@ -592,7 +599,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
                 </div>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`grid grid-cols-1 ${showStageNameField ? 'md:grid-cols-2' : ''} gap-4`}>
                 <div className="space-y-2">
                   <Label>Nome Completo</Label>
                   <Input
@@ -601,14 +608,16 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
                     placeholder="(nome completo)"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Nome Artístico</Label>
-                  <Input
-                    value={contractedPartyData.stage_name}
-                    onChange={(e) => setContractedPartyData({ ...contractedPartyData, stage_name: e.target.value })}
-                    placeholder="(nome artístico)"
-                  />
-                </div>
+                {showStageNameField && (
+                  <div className="space-y-2">
+                    <Label>Nome Artístico</Label>
+                    <Input
+                      value={contractedPartyData.stage_name}
+                      onChange={(e) => setContractedPartyData({ ...contractedPartyData, stage_name: e.target.value })}
+                      placeholder="(nome artístico)"
+                    />
+                  </div>
+                )}
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
