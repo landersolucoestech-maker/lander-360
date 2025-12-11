@@ -46,21 +46,41 @@ export interface ContractData {
 
 const LANDER_LOGO_BASE64 = ''; // Will use text header instead
 
-// Company data for Lander Produtora
-const LANDER_COMPANY_DATA = {
-  name: 'Lander Produtora',
+// Default company data for Lander Produtora (fallback)
+const DEFAULT_COMPANY_DATA = {
+  company_name: 'Lander Produtora',
+  company_type: 'pessoa jurídica de direito privado',
   cnpj: '50.056.858/0001-46',
-  address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
-  representative: {
-    name: 'Deyvisson Lander Andrade',
-    nationality: 'brasileiro',
-    marital_status: 'solteiro',
-    profession: 'empresário',
-    rg: 'MG17905257',
-    cpf: '062.049.196-52',
-    address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610'
-  }
+  company_address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
+  representative_name: 'Deyvisson Lander Andrade',
+  representative_nationality: 'brasileiro',
+  representative_marital_status: 'solteiro',
+  representative_profession: 'empresário',
+  representative_rg: 'MG17905257',
+  representative_cpf: '062.049.196-52',
+  representative_address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610',
 };
+
+interface CompanyData {
+  company_name: string;
+  company_type: string;
+  cnpj: string;
+  company_address: string;
+  representative_name: string;
+  representative_nationality: string;
+  representative_marital_status: string;
+  representative_profession: string;
+  representative_rg: string;
+  representative_cpf: string;
+  representative_address: string;
+}
+
+function getCompanyData(template: ContractTemplate): CompanyData {
+  if (template.default_fields?.company_data) {
+    return { ...DEFAULT_COMPANY_DATA, ...template.default_fields.company_data };
+  }
+  return DEFAULT_COMPANY_DATA;
+}
 
 // Contract types that use specific party structures
 const PRODUCTION_CONTRACTS = ['producao_musical', 'producao_audiovisual', 'marketing', 'shows', 'distribuicao', 'licenciamento', 'edicao'];
@@ -82,10 +102,10 @@ function getPartyStructure(templateType: string): 'production' | 'collaborator' 
 }
 
 // Generate party text based on contract type
-function generatePartiesHTML(templateType: string, data: ContractData): string {
+function generatePartiesHTML(templateType: string, data: ContractData, companyData: CompanyData): string {
   const structure = getPartyStructure(templateType);
   
-  const landerFullText = `${LANDER_COMPANY_DATA.name}, pessoa jurídica de direito privado, inscrita no CNPJ nº ${LANDER_COMPANY_DATA.cnpj}, com sede na ${LANDER_COMPANY_DATA.address}, representada por ${LANDER_COMPANY_DATA.representative.name}, ${LANDER_COMPANY_DATA.representative.nationality}, ${LANDER_COMPANY_DATA.representative.marital_status}, ${LANDER_COMPANY_DATA.representative.profession}, portador do RG nº ${LANDER_COMPANY_DATA.representative.rg} e CPF nº ${LANDER_COMPANY_DATA.representative.cpf}, residente e domiciliado na ${LANDER_COMPANY_DATA.representative.address}`;
+  const landerFullText = `${companyData.company_name}, ${companyData.company_type}, inscrita no CNPJ nº ${companyData.cnpj}, com sede na ${companyData.company_address}, representada por ${companyData.representative_name}, ${companyData.representative_nationality}, ${companyData.representative_marital_status}, ${companyData.representative_profession}, portador do RG nº ${companyData.representative_rg} e CPF nº ${companyData.representative_cpf}, residente e domiciliado na ${companyData.representative_address}`;
   
   const contractedFullText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_stage_name ? `, cujo nome artístico é "${data.contracted_stage_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}`;
 
@@ -126,7 +146,7 @@ function generatePartiesHTML(templateType: string, data: ContractData): string {
 }
 
 // Generate signatures based on contract type
-function generateSignaturesHTML(templateType: string, data: ContractData): { leftLabel: string; rightLabel: string; leftName: string; rightName: string } {
+function generateSignaturesHTML(templateType: string, data: ContractData, companyData: CompanyData): { leftLabel: string; rightLabel: string; leftName: string; rightName: string } {
   const structure = getPartyStructure(templateType);
   
   switch (structure) {
@@ -134,21 +154,21 @@ function generateSignaturesHTML(templateType: string, data: ContractData): { lef
       return {
         leftLabel: 'CONTRATADO(A)',
         rightLabel: 'CONTRATANTE',
-        leftName: LANDER_COMPANY_DATA.name,
+        leftName: companyData.company_name,
         rightName: data.contracted_name
       };
     case 'collaborator':
       return {
         leftLabel: 'CONTRATANTE',
         rightLabel: 'CONTRATADO(A)',
-        leftName: LANDER_COMPANY_DATA.name,
+        leftName: companyData.company_name,
         rightName: data.contracted_name
       };
     case 'agency':
       return {
         leftLabel: 'REPRESENTANTE',
         rightLabel: 'REPRESENTADO(A)',
-        leftName: LANDER_COMPANY_DATA.name,
+        leftName: companyData.company_name,
         rightName: data.contracted_name
       };
   }
@@ -247,6 +267,7 @@ function extractImageUrl(html: string | null): string | null {
 
 export function generateContractHTML(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): string {
   const clauses = customClauses || template.clauses;
+  const companyData = getCompanyData(template);
   
   // Generate header HTML - use template header_html if available, with full width
   const headerImageUrl = extractImageUrl(template.header_html);
@@ -378,7 +399,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     <div class="title">${replaceVariables(template.name, data)}</div>
 
     <div class="parties">
-      ${generatePartiesHTML(template.template_type, data)}
+      ${generatePartiesHTML(template.template_type, data, companyData)}
     </div>
 
     <p style="text-align: justify;">As partes acima identificadas têm, entre si, justo e acordado o presente instrumento particular, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.</p>
@@ -396,13 +417,13 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
   });
 
   // Get signature labels based on contract type
-  const signatures = generateSignaturesHTML(template.template_type, data);
+  const signatures = generateSignaturesHTML(template.template_type, data, companyData);
 
   // Add signatures
   html += `
     <p style="text-align: justify; margin-top: 40px;">E, por estarem assim justos e contratados, firmam o presente instrumento, em 2 (duas) vias de igual teor, juntamente com 2 (duas) testemunhas.</p>
 
-    <p style="text-align: center; margin-top: 30px;">${LANDER_COMPANY_DATA.address}, ${formatDateBR(new Date().toISOString())}.</p>
+    <p style="text-align: center; margin-top: 30px;">${companyData.company_address}, ${formatDateBR(new Date().toISOString())}.</p>
 
     <div class="signatures">
       <div class="signature-block">
@@ -438,7 +459,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     </div>
 
     <div class="footer">
-      <p>${LANDER_COMPANY_DATA.name} | ${data.company_email || 'contato@lander360.com'} | ${LANDER_COMPANY_DATA.address}</p>
+      <p>${companyData.company_name} | ${data.company_email || 'contato@lander360.com'} | ${companyData.company_address}</p>
       <p>Este documento foi gerado eletronicamente pelo sistema Lander 360º</p>
     </div>
   </div>
@@ -486,6 +507,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
   });
 
   const clauses = customClauses || template.clauses;
+  const companyData = getCompanyData(template);
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 25;
@@ -560,7 +582,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
       pdf.setFontSize(8);
       pdf.setTextColor(100, 100, 100);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`${LANDER_COMPANY_DATA.name} | ${data.company_email || 'contato@lander360.com'} | ${LANDER_COMPANY_DATA.address}`, pageWidth / 2, footerY, { align: 'center' });
+      pdf.text(`${companyData.company_name} | ${data.company_email || 'contato@lander360.com'} | ${companyData.company_address}`, pageWidth / 2, footerY, { align: 'center' });
     }
     // Page numbering removed as per requirement
   };
@@ -607,7 +629,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
 
   // Get party structure based on template type
   const partyStructure = getPartyStructure(template.template_type);
-  const signatures = generateSignaturesHTML(template.template_type, data);
+  const signatures = generateSignaturesHTML(template.template_type, data, companyData);
   
   // Determine labels based on contract type
   let firstPartyLabel = 'CONTRATANTE:';
@@ -628,7 +650,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
   yPosition += 5;
   
   pdf.setFont('times', 'normal');
-  const landerText = `${LANDER_COMPANY_DATA.name}, pessoa jurídica de direito privado, inscrita no CNPJ nº ${LANDER_COMPANY_DATA.cnpj}, com sede na ${LANDER_COMPANY_DATA.address}, representada por ${LANDER_COMPANY_DATA.representative.name}, ${LANDER_COMPANY_DATA.representative.nationality}, ${LANDER_COMPANY_DATA.representative.marital_status}, ${LANDER_COMPANY_DATA.representative.profession}, portador do RG nº ${LANDER_COMPANY_DATA.representative.rg} e CPF nº ${LANDER_COMPANY_DATA.representative.cpf}, residente e domiciliado na ${LANDER_COMPANY_DATA.representative.address}, doravante denominado "${firstPartyLabel.replace(':', '')}".`;
+  const landerText = `${companyData.company_name}, ${companyData.company_type}, inscrita no CNPJ nº ${companyData.cnpj}, com sede na ${companyData.company_address}, representada por ${companyData.representative_name}, ${companyData.representative_nationality}, ${companyData.representative_marital_status}, ${companyData.representative_profession}, portador do RG nº ${companyData.representative_rg} e CPF nº ${companyData.representative_cpf}, residente e domiciliado na ${companyData.representative_address}, doravante denominado "${firstPartyLabel.replace(':', '')}".`;
   addWrappedText(landerText, 11);
   yPosition += 8;
 
@@ -667,7 +689,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
 
   // Date and place
   pdf.setFont('times', 'normal');
-  pdf.text(`${LANDER_COMPANY_DATA.address.split(',').slice(0, 2).join(',')}, ${formatDateBR(new Date().toISOString())}.`, pageWidth / 2, yPosition, { align: 'center' });
+  pdf.text(`${companyData.company_address.split(',').slice(0, 2).join(',')}, ${formatDateBR(new Date().toISOString())}.`, pageWidth / 2, yPosition, { align: 'center' });
   yPosition += 30;
 
   // Signatures
