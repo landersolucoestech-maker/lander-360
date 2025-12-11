@@ -2,6 +2,57 @@ import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import { formatDateBR } from '@/lib/utils';
 
+// Status color mapping for Excel export
+const statusColorMap: Record<string, { fgColor: string; bgColor: string }> = {
+  // Yellow - Em análise na distribuidora
+  'em análise': { fgColor: '000000', bgColor: 'FFEB3B' },
+  'em analise': { fgColor: '000000', bgColor: 'FFEB3B' },
+  'em análise na distribuidora': { fgColor: '000000', bgColor: 'FFEB3B' },
+  'analyzing': { fgColor: '000000', bgColor: 'FFEB3B' },
+  'analysis': { fgColor: '000000', bgColor: 'FFEB3B' },
+  
+  // Red - Em espera
+  'em espera': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+  'espera': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+  'waiting': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+  'pendente': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+  'pending': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+  
+  // Blue - Música lançada
+  'lançada': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+  'lancada': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+  'lançado': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+  'lancado': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+  'released': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+  'published': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+  
+  // Green - Pronta para registro
+  'pronta': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'pronto': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'ready': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'completed': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'concluído': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'concluido': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'ativo': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'active': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'aprovado': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  'approved': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+  
+  // Purple/Brown - Takedown
+  'takedown': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+  'removido': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+  'removed': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+  'cancelado': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+  'cancelled': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+};
+
+// Get status color for a value
+const getStatusColor = (value: string): { fgColor: string; bgColor: string } | null => {
+  if (!value) return null;
+  const normalizedValue = value.toLowerCase().trim();
+  return statusColorMap[normalizedValue] || null;
+};
+
 // Column mappings for each entity type with Portuguese labels
 const artistColumns = {
   id: 'ID',
@@ -202,6 +253,9 @@ const columnMappings: Record<EntityType, Record<string, string>> = {
   inventory: inventoryColumns,
 };
 
+// Columns that should have status coloring applied
+const statusColumns = ['Status', 'Status Contrato'];
+
 const formatValue = (value: any, key: string): any => {
   if (value === null || value === undefined) return '';
   
@@ -274,6 +328,56 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
   });
 };
 
+// Apply cell styling for status columns
+const applyStatusColoring = (worksheet: XLSX.WorkSheet, data: any[]): void => {
+  if (data.length === 0) return;
+  
+  const headers = Object.keys(data[0]);
+  
+  // Find status column indices
+  const statusColumnIndices: number[] = [];
+  headers.forEach((header, index) => {
+    if (statusColumns.includes(header)) {
+      statusColumnIndices.push(index);
+    }
+  });
+  
+  if (statusColumnIndices.length === 0) return;
+  
+  // Apply styling to each status cell
+  data.forEach((row, rowIndex) => {
+    statusColumnIndices.forEach(colIndex => {
+      const header = headers[colIndex];
+      const cellValue = row[header];
+      const color = getStatusColor(String(cellValue));
+      
+      if (color) {
+        const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex }); // +1 for header row
+        
+        if (!worksheet[cellAddress]) {
+          worksheet[cellAddress] = { v: cellValue };
+        }
+        
+        worksheet[cellAddress].s = {
+          fill: {
+            patternType: 'solid',
+            fgColor: { rgb: color.bgColor },
+            bgColor: { rgb: color.bgColor },
+          },
+          font: {
+            color: { rgb: color.fgColor },
+            bold: true,
+          },
+          alignment: {
+            horizontal: 'center',
+            vertical: 'center',
+          },
+        };
+      }
+    });
+  });
+};
+
 export const useDataExport = () => {
   const { toast } = useToast();
 
@@ -301,6 +405,9 @@ export const useDataExport = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     
+    // Apply status coloring
+    applyStatusColoring(worksheet, exportData);
+    
     // Auto-size columns
     const colWidths = Object.keys(exportData[0] || {}).map(key => ({
       wch: Math.max(key.length, 15)
@@ -309,7 +416,11 @@ export const useDataExport = () => {
     
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    // Write with styles support
+    XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`, {
+      cellStyles: true,
+    });
 
     toast({
       title: "Exportação concluída",
