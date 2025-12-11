@@ -134,6 +134,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
       stage_name: '',
       address: contact.address ? `${contact.address}, ${contact.city || ''} - ${contact.state || ''}, CEP ${contact.zip_code || ''}` : '',
     });
+    setArtistSelected(false);
     setCrmSearchOpen(false);
   };
 
