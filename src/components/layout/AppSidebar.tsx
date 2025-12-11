@@ -33,6 +33,10 @@ const navigationItems = [{
   url: "/contratos",
   icon: FileText
 }, {
+  title: "Templates de Contratos",
+  url: "/templates-contratos",
+  icon: FileText
+}, {
   title: "Financeiro",
   url: "/financeiro",
   icon: DollarSign
