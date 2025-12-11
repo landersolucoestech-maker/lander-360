@@ -13,7 +13,7 @@ import { useArtists } from '@/hooks/useArtists';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { AudioUploader } from './AudioUploader';
 import { supabase } from '@/integrations/supabase/client';
-
+import { ArtistAutocomplete } from './ArtistAutocomplete';
 const audioFileSchema = z.object({
   name: z.string().optional(),
   url: z.string().optional(),
@@ -642,7 +642,11 @@ function SongCreditsSection({ songIndex, form }: { songIndex: number; form: any 
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormControl>
-                      <Input placeholder="Nome do compositor" {...field} />
+                      <ArtistAutocomplete 
+                        value={field.value} 
+                        onChange={field.onChange}
+                        placeholder="Nome do compositor"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -686,7 +690,11 @@ function SongCreditsSection({ songIndex, form }: { songIndex: number; form: any 
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormControl>
-                      <Input placeholder="Nome do intérprete" {...field} />
+                      <ArtistAutocomplete 
+                        value={field.value} 
+                        onChange={field.onChange}
+                        placeholder="Nome do intérprete"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -730,7 +738,11 @@ function SongCreditsSection({ songIndex, form }: { songIndex: number; form: any 
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormControl>
-                      <Input placeholder="Nome do produtor" {...field} />
+                      <ArtistAutocomplete 
+                        value={field.value} 
+                        onChange={field.onChange}
+                        placeholder="Nome do produtor"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
