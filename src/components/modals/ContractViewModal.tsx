@@ -211,16 +211,6 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
               </div>
             )}
 
-            {/* Tipo de Contrato */}
-            {contract.contract_type && (
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm font-medium">Tipo de Contrato</span>
-                </div>
-                <div className="font-medium capitalize">{contract.contract_type}</div>
-              </div>
-            )}
           </div>
 
           {/* Valores Section */}
