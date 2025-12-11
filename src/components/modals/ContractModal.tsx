@@ -10,6 +10,7 @@ import { useCreateContract, useUpdateContract } from '@/hooks/useContracts';
 import { useArtists } from '@/hooks/useArtists';
 import { useProjects } from '@/hooks/useProjects';
 import { useCrmContacts } from '@/hooks/useCrm';
+import { useContractTemplates } from '@/hooks/useContractTemplates';
 import { Contract } from '@/types/database';
 import { formatDateForDB } from '@/lib/utils';
 
@@ -29,6 +30,7 @@ export const ContractModal: React.FC<ContractModalProps> = ({
   const { data: artists = [] } = useArtists();
   const { data: projects = [] } = useProjects();
   const { data: crmContacts = [] } = useCrmContacts();
+  const { data: templates = [] } = useContractTemplates();
   
   const companies = [
     // Companies will be loaded from database
@@ -65,6 +67,9 @@ export const ContractModal: React.FC<ContractModalProps> = ({
         notes: data.observations || null,
         observations: data.observations || null,
         terms: data.terms || null,
+        template_id: data.template_id || null,
+        // Store template data as generated_document_content for later use
+        generated_document_content: data.template_data ? JSON.stringify(data.template_data) : null,
       };
 
       console.log('ContractModal contractData to save:', contractData);
@@ -126,7 +131,13 @@ export const ContractModal: React.FC<ContractModalProps> = ({
           isLoading={isLoading}
           artists={artists.map(artist => ({
             id: artist.id,
-            name: artist.name
+            name: artist.name,
+            full_name: artist.full_name || undefined,
+            stage_name: artist.stage_name || undefined,
+            cpf_cnpj: artist.cpf_cnpj || undefined,
+            rg: artist.rg || undefined,
+            full_address: artist.full_address || undefined,
+            artist_types: artist.artist_types || undefined,
           }))}
           companies={companies}
           projects={projects.map(project => ({
@@ -136,8 +147,15 @@ export const ContractModal: React.FC<ContractModalProps> = ({
           contacts={crmContacts.map(contact => ({
             id: contact.id,
             name: contact.name,
-            company: contact.company
+            company: contact.company,
+            document: contact.document || undefined,
+            address: contact.address || undefined,
+            city: contact.city || undefined,
+            state: contact.state || undefined,
+            zip_code: contact.zip_code || undefined,
+            position: contact.position || undefined,
           }))}
+          templates={templates}
         />
       </DialogContent>
     </Dialog>
