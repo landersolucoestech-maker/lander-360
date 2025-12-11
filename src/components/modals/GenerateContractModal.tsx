@@ -107,16 +107,38 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     }
   }, [contract, artists, templates, isOpen]);
 
-  // Update selected template
+  // Update selected template and load default fields
   useEffect(() => {
     if (selectedTemplateId) {
       const template = templates.find(t => t.id === selectedTemplateId);
       if (template) {
         setSelectedTemplate(template);
         setCustomClauses(template.clauses);
+        
+        // Load default fields from template
+        const defaultFields = template.default_fields || {};
+        const companyData = defaultFields.companyData || {};
+        const contractedPartyData = defaultFields.contractedPartyData || {};
+        
+        setContractData(prev => ({
+          ...prev,
+          // Company data from template
+          company_name: companyData.legal_name || companyData.company_name || prev.company_name,
+          company_cnpj: companyData.cnpj || companyData.company_cnpj || prev.company_cnpj,
+          company_address: companyData.address || companyData.company_address || prev.company_address,
+          company_email: companyData.email || companyData.company_email || prev.company_email,
+          // Contracted party data from template (only if not already editing a contract with artist)
+          ...((!contract || !contract.artist_id) && contractedPartyData.full_name ? {
+            contracted_name: contractedPartyData.full_name || '',
+            contracted_cpf_cnpj: contractedPartyData.cpf || contractedPartyData.cnpj || '',
+            contracted_address: contractedPartyData.address || '',
+            contracted_email: contractedPartyData.email || '',
+            contracted_stage_name: contractedPartyData.stage_name || '',
+          } : {}),
+        }));
       }
     }
-  }, [selectedTemplateId, templates]);
+  }, [selectedTemplateId, templates, contract]);
 
   // Generate preview
   useEffect(() => {
