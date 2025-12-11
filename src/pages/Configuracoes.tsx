@@ -10,10 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor, Plus, Pencil, Trash2 } from "lucide-react";
+import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor, Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { IntegrationModal } from "@/components/modals/IntegrationModal";
 import { ContractTemplateModal } from "@/components/modals/ContractTemplateModal";
+import { ContractTemplateViewModal } from "@/components/modals/ContractTemplateViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
@@ -84,7 +85,9 @@ const Configuracoes = () => {
   
   // Contract Templates State
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isTemplateViewModalOpen, setIsTemplateViewModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [templateToView, setTemplateToView] = useState<any>(null);
   const [isDeleteTemplateModalOpen, setIsDeleteTemplateModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<any>(null);
   
@@ -132,6 +135,11 @@ const Configuracoes = () => {
   const handleNewTemplate = () => {
     setSelectedTemplate(null);
     setIsTemplateModalOpen(true);
+  };
+
+  const handleViewTemplate = (template: any) => {
+    setTemplateToView(template);
+    setIsTemplateViewModalOpen(true);
   };
 
   const handleEditTemplate = (template: any) => {
@@ -494,6 +502,9 @@ const Configuracoes = () => {
                             <p className="text-sm text-muted-foreground">{template.description || template.template_type}</p>
                           </div>
                           <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleViewTemplate(template)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => handleEditTemplate(template)}>
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -533,6 +544,12 @@ const Configuracoes = () => {
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
         template={selectedTemplate}
+      />
+
+      <ContractTemplateViewModal
+        isOpen={isTemplateViewModalOpen}
+        onClose={() => setIsTemplateViewModalOpen(false)}
+        template={templateToView}
       />
 
       <DeleteConfirmationModal
