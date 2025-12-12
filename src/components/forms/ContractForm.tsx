@@ -597,39 +597,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                     </Popover>
                   )}
                   
-              {(form.watch('client_type') === 'empresa' || form.watch('client_type') === 'pessoa') && (
-                    <Popover open={crmSearchOpen} onOpenChange={setCrmSearchOpen}>
-                      <PopoverTrigger asChild>
-                        <Button type="button" variant="outline" size="sm">
-                          <Building className="h-4 w-4 mr-2" />
-                          Buscar Contato CRM
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 p-0" align="end">
-                        <Command>
-                          <CommandInput placeholder="Buscar contato..." />
-                          <CommandList>
-                            <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
-                            <CommandGroup>
-                              {contacts.map((contact) => (
-                                <CommandItem
-                                  key={contact.id}
-                                  value={contact.name}
-                                  onSelect={() => handleSelectCrmContact(contact)}
-                                >
-                                  <Building className="h-4 w-4 mr-2" />
-                                  {contact.name}
-                                  {contact.company && (
-                                    <span className="text-muted-foreground ml-2">({contact.company})</span>
-                                  )}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  )}
                 </div>
               </CardTitle>
             </CardHeader>
