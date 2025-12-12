@@ -64,6 +64,7 @@ export const ContractModal: React.FC<ContractModalProps> = ({
         royalty_rate: data.royalties_percentage || null,
         royalties_percentage: data.royalties_percentage || null,
         advance_amount: data.advance_payment || null,
+        financial_support: data.financial_support || null,
         notes: data.observations || null,
         observations: data.observations || null,
         terms: data.terms || null,
@@ -110,6 +111,7 @@ export const ContractModal: React.FC<ContractModalProps> = ({
     fixed_value: (contract as any).fixed_value || (contract as any).value || undefined,
     royalties_percentage: (contract as any).royalties_percentage || contract.royalty_rate || undefined,
     advance_payment: (contract as any).advance_amount || contract.advance_amount || undefined,
+    financial_support: (contract as any).financial_support || undefined,
     observations: (contract as any).observations || contract.notes || undefined,
     terms: (contract as any).terms || undefined,
   } : undefined;
