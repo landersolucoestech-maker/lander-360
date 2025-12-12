@@ -226,10 +226,28 @@ const Projetos = () => {
   };
 
   // Get registration and release status tags for a project
-  const getProjectTags = (projectId: string) => {
+  const getProjectTags = (projectId: string, projectStatus: string | null) => {
+    const tags: { label: string; color: string }[] = [];
+
+    // Status-based tags (for non-completed projects)
+    if (projectStatus === 'draft' || projectStatus === 'rascunho') {
+      tags.push({ label: 'Rascunho', color: 'bg-gray-500 text-white hover:bg-gray-600' });
+      return tags;
+    }
+    
+    if (projectStatus === 'in_progress' || projectStatus === 'em_progresso') {
+      tags.push({ label: 'Em Progresso', color: 'bg-purple-500 text-white hover:bg-purple-600' });
+      return tags;
+    }
+    
+    if (projectStatus === 'cancelled' || projectStatus === 'cancelado') {
+      tags.push({ label: 'Cancelado', color: 'bg-red-600 text-white hover:bg-red-700' });
+      return tags;
+    }
+
+    // For completed projects, check registration and release status
     const hasObra = musicRegistry.some(m => m.project_id === projectId);
     const hasFonograma = phonograms.some(p => {
-      // Check if phonogram is linked to a work from this project
       const linkedWork = musicRegistry.find(m => m.project_id === projectId);
       return linkedWork && p.work_id === linkedWork.id;
     });
@@ -237,22 +255,24 @@ const Projetos = () => {
     const hasRelease = !!projectRelease;
     const isReleased = projectRelease?.status === 'released' || projectRelease?.status === 'lançado';
 
-    const tags: { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }[] = [];
-
-    // Registration status
-    if (hasObra && hasFonograma) {
-      tags.push({ label: 'Registrado', variant: 'default' });
-    } else if (!hasObra || !hasFonograma) {
-      tags.push({ label: 'Registro pendente', variant: 'outline' });
+    // Registration status for completed projects
+    if (!hasObra || !hasFonograma) {
+      // Completed but not yet registered
+      if (projectStatus === 'completed' || projectStatus === 'concluido') {
+        tags.push({ label: 'Pronto para Registro', color: 'bg-cyan-500 text-white hover:bg-cyan-600' });
+      }
+      tags.push({ label: 'Registro Pendente', color: 'bg-yellow-500 text-black hover:bg-yellow-600' });
+    } else {
+      tags.push({ label: 'Registrado', color: 'bg-green-600 text-white hover:bg-green-700' });
     }
 
-    // Release status
-    if (isReleased) {
-      tags.push({ label: 'Lançado', variant: 'default' });
-    } else if (hasObra && hasFonograma && !hasRelease) {
-      tags.push({ label: 'Lançamento pendente', variant: 'secondary' });
-    } else if (hasRelease && !isReleased) {
-      tags.push({ label: 'Lançamento pendente', variant: 'secondary' });
+    // Release status (only if registered)
+    if (hasObra && hasFonograma) {
+      if (isReleased) {
+        tags.push({ label: 'Lançado', color: 'bg-blue-600 text-white hover:bg-blue-700' });
+      } else if (hasRelease || !hasRelease) {
+        tags.push({ label: 'Lançamento Pendente', color: 'bg-orange-500 text-white hover:bg-orange-600' });
+      }
     }
 
     return tags;
@@ -594,13 +614,8 @@ const Projetos = () => {
                                       {details.release_type === 'single' ? 'Single' : details.release_type === 'ep' ? 'EP' : 'Álbum'}
                                     </Badge>
                                   )}
-                                  {getProjectTags(project.id).map((tag, idx) => (
-                                    <Badge key={idx} variant={tag.variant} className={
-                                      tag.label === 'Registrado' ? 'bg-green-600 text-white hover:bg-green-700' :
-                                      tag.label === 'Registro pendente' ? 'bg-yellow-500 text-black hover:bg-yellow-600' :
-                                      tag.label === 'Lançado' ? 'bg-blue-600 text-white hover:bg-blue-700' :
-                                      tag.label === 'Lançamento pendente' ? 'bg-orange-500 text-white hover:bg-orange-600' : ''
-                                    }>
+                                  {getProjectTags(project.id, project.status).map((tag, idx) => (
+                                    <Badge key={idx} className={tag.color}>
                                       {tag.label}
                                     </Badge>
                                   ))}
