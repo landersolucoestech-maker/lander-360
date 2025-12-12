@@ -47,11 +47,53 @@ export class ContractTemplatesService {
 
     if (error) throw error;
     
-    return (data || []).map(item => ({
-      ...item,
-      clauses: Array.isArray(item.clauses) ? item.clauses : JSON.parse(item.clauses as string || '[]'),
-      default_fields: typeof item.default_fields === 'object' ? item.default_fields : JSON.parse(item.default_fields as string || '{}')
-    })) as ContractTemplate[];
+    return (data || []).map(item => {
+      let clauses: ContractClause[] = [];
+      let default_fields: Record<string, any> = {};
+      
+      // Parse clauses
+      if (Array.isArray(item.clauses)) {
+        clauses = item.clauses.map((c: any) => ({
+          id: c.id || '',
+          title: c.title || '',
+          content: c.content || '',
+          isCustom: c.isCustom || false
+        }));
+      } else if (typeof item.clauses === 'string') {
+        try {
+          const parsed = JSON.parse(item.clauses);
+          clauses = Array.isArray(parsed) ? parsed.map((c: any) => ({
+            id: c.id || '',
+            title: c.title || '',
+            content: c.content || '',
+            isCustom: c.isCustom || false
+          })) : [];
+        } catch (e) {
+          console.error('Error parsing clauses:', e);
+          clauses = [];
+        }
+      } else if (item.clauses && typeof item.clauses === 'object') {
+        clauses = [];
+      }
+      
+      // Parse default_fields
+      if (typeof item.default_fields === 'object' && item.default_fields !== null) {
+        default_fields = item.default_fields as Record<string, any>;
+      } else if (typeof item.default_fields === 'string') {
+        try {
+          default_fields = JSON.parse(item.default_fields);
+        } catch (e) {
+          console.error('Error parsing default_fields:', e);
+          default_fields = {};
+        }
+      }
+      
+      return {
+        ...item,
+        clauses,
+        default_fields
+      };
+    }) as ContractTemplate[];
   }
 
   static async getById(id: string): Promise<ContractTemplate | null> {
