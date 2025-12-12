@@ -195,9 +195,7 @@ const musicRegistryColumns = {
   ecad_code: 'Código ECAD',
   isrc: 'ISRC',
   iswc: 'ISWC',
-  key: 'Tonalidade',
-  bpm: 'BPM',
-  duration: 'Duração (segundos)',
+  duration: 'Duração',
   release_date: 'Data de Lançamento',
   writers: 'Compositores',
   publishers: 'Editoras',
@@ -256,12 +254,22 @@ const columnMappings: Record<EntityType, Record<string, string>> = {
 // Columns that should have status coloring applied
 const statusColumns = ['Status', 'Status Contrato'];
 
-const formatValue = (value: any, key: string): any => {
+const formatValue = (value: any, key: string, entityType?: EntityType): any => {
   if (value === null || value === undefined) return '';
   
   // Format dates
   if (key.includes('date') || key === 'created_at' || key === 'updated_at') {
     return formatDateBR(value);
+  }
+  
+  // Format duration for music_registry as m:ss
+  if (key === 'duration' && entityType === 'music_registry') {
+    if (typeof value === 'number') {
+      const minutes = Math.floor(value / 60);
+      const seconds = value % 60;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return value;
   }
   
   // Format arrays
@@ -318,7 +326,7 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     
     Object.entries(columns).forEach(([key, label]) => {
       if (item[key] !== undefined) {
-        transformed[label] = formatValue(item[key], key);
+        transformed[label] = formatValue(item[key], key, entityType);
       } else {
         transformed[label] = '';
       }
