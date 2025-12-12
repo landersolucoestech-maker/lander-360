@@ -368,7 +368,6 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       margin-bottom: 10px;
     }
     .clause-content {
-      text-indent: 2em;
       text-align: justify;
     }
     .signatures {
