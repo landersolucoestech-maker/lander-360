@@ -593,12 +593,6 @@ const Projetos = () => {
                               <div className="space-y-1 min-w-0">
                                 <h3 className="font-medium text-foreground">{project.name}</h3>
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <Badge variant={getStatusVariant(project.status)}>{getStatusLabel(project.status)}</Badge>
-                                  {details?.release_type && (
-                                    <Badge variant="secondary">
-                                      {details.release_type === 'single' ? 'Single' : details.release_type === 'ep' ? 'EP' : 'Álbum'}
-                                    </Badge>
-                                  )}
                                   {(() => {
                                     const tag = getProjectTag(project.id, project.status);
                                     return (
