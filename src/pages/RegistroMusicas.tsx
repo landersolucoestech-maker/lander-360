@@ -781,7 +781,7 @@ const RegistroMusicas = () => {
                                 <h3 className="font-medium text-foreground">{song.title}</h3>
                                 <Badge 
                                   className={
-                                    song.statusDisplay === "Aceita" ? "bg-blue-600 text-white hover:bg-blue-700" :
+                                    (song.statusDisplay === "Aceita" || song.statusDisplay === "Aprovada") ? "bg-blue-600 text-white hover:bg-blue-700" :
                                     song.statusDisplay === "Recusada" ? "bg-red-600 text-white hover:bg-red-700" :
                                     "bg-yellow-500 text-black hover:bg-yellow-600"
                                   }
@@ -931,7 +931,7 @@ const RegistroMusicas = () => {
                                 <h3 className="font-medium text-foreground">{phono.title}</h3>
                                 <Badge 
                                   className={
-                                    phono.statusDisplay === "Aceita" ? "bg-blue-600 text-white hover:bg-blue-700" :
+                                    (phono.statusDisplay === "Aceita" || phono.statusDisplay === "Aprovada") ? "bg-blue-600 text-white hover:bg-blue-700" :
                                     phono.statusDisplay === "Recusada" ? "bg-red-600 text-white hover:bg-red-700" :
                                     "bg-yellow-500 text-black hover:bg-yellow-600"
                                   }
