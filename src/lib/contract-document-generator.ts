@@ -114,10 +114,10 @@ function generatePartiesHTML(templateType: string, data: ContractData, companyDa
       // Lander is CONTRATADO(A), Artist is CONTRATANTE
       return `
         <div class="party">
-          <span class="party-label">CONTRATADO(A):</span> ${landerFullText}, doravante denominado "CONTRATADO(A)".
+          <strong>CONTRATADO(A):</strong> ${landerFullText}, doravante denominado "<strong>CONTRATADO(A)</strong>".
         </div>
         <div class="party">
-          <span class="party-label">CONTRATANTE:</span> ${contractedFullText}, doravante denominado(a) "CONTRATANTE".
+          <strong>CONTRATANTE:</strong> ${contractedFullText}, doravante denominado(a) "<strong>CONTRATANTE</strong>".
         </div>
       `;
     
@@ -125,10 +125,10 @@ function generatePartiesHTML(templateType: string, data: ContractData, companyDa
       // Lander is CONTRATANTE, Collaborator is CONTRATADO(A)
       return `
         <div class="party">
-          <span class="party-label">CONTRATANTE:</span> ${landerFullText}, doravante denominado "CONTRATANTE".
+          <strong>CONTRATANTE:</strong> ${landerFullText}, doravante denominado "<strong>CONTRATANTE</strong>".
         </div>
         <div class="party">
-          <span class="party-label">CONTRATADO(A):</span> ${contractedFullText}, doravante denominado(a) "CONTRATADO(A)".
+          <strong>CONTRATADO(A):</strong> ${contractedFullText}, doravante denominado(a) "<strong>CONTRATADO(A)</strong>".
         </div>
       `;
     
@@ -136,10 +136,10 @@ function generatePartiesHTML(templateType: string, data: ContractData, companyDa
       // Lander is REPRESENTANTE, Artist is REPRESENTADO(A)
       return `
         <div class="party">
-          <span class="party-label">REPRESENTANTE:</span> ${landerFullText}, doravante denominado "REPRESENTANTE".
+          <strong>REPRESENTANTE:</strong> ${landerFullText}, doravante denominado "<strong>REPRESENTANTE</strong>".
         </div>
         <div class="party">
-          <span class="party-label">REPRESENTADO(A):</span> ${contractedFullText}, doravante denominado(a) "REPRESENTADO(A)".
+          <strong>REPRESENTADO(A):</strong> ${contractedFullText}, doravante denominado(a) "<strong>REPRESENTADO(A)</strong>".
         </div>
       `;
   }
