@@ -445,7 +445,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="financial_support">Suporte Financeiro (R$)</Label>
+                  <Label htmlFor="financial_support">Suporte Financeiro Mensal (R$)</Label>
                   <Input
                     id="financial_support"
                     type="number"
