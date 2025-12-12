@@ -300,7 +300,7 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto max-h-[60vh]">
+        <div className="flex-1 overflow-auto max-h-[65vh]">
           <Card className="m-1">
             <CardHeader className="py-3">
               <CardTitle className="text-sm">
@@ -310,7 +310,7 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
             <CardContent>
               {hasPreview ? (
                 <div 
-                  className="border border-border rounded-lg p-4 sm:p-6 bg-white text-black overflow-auto max-h-[50vh]"
+                  className="border border-border rounded-lg p-4 sm:p-6 bg-white text-black"
                   style={{ fontFamily: 'Times New Roman, serif' }}
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
