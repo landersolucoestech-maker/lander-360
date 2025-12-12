@@ -19,7 +19,7 @@ interface ReleaseCardProps {
     status: string;
     type: string;
     cover?: string;
-    approvalStatus?: "pendente" | "aceita" | "recusada" | "em_espera";
+    approvalStatus?: "em_analise" | "aprovado" | "rejeitado" | "pausado";
     priority?: "alta" | "media" | "baixa";
     takedown?: boolean;
     hasMarketingPlan?: boolean;
@@ -110,16 +110,16 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
           {/* Status Badge */}
           {release.takedown ? (
             <Badge className="bg-orange-600 text-white font-bold text-xs px-3 py-1 animate-pulse">TAKEDOWN</Badge>
-          ) : release.approvalStatus === "pendente" ? (
+          ) : release.approvalStatus === "em_analise" ? (
             <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">EM ANÁLISE</Badge>
-          ) : release.approvalStatus === "aceita" ? (
-            <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">ACEITA</Badge>
-          ) : release.approvalStatus === "recusada" ? (
-            <Badge className="bg-destructive text-destructive-foreground font-bold text-xs px-3 py-1">RECUSADA</Badge>
-          ) : release.approvalStatus === "em_espera" ? (
-            <Badge className="bg-blue-500 text-white font-bold text-xs px-3 py-1">EM ESPERA</Badge>
+          ) : release.approvalStatus === "aprovado" ? (
+            <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">APROVADO</Badge>
+          ) : release.approvalStatus === "rejeitado" ? (
+            <Badge className="bg-red-600 text-white font-bold text-xs px-3 py-1">REJEITADO</Badge>
+          ) : release.approvalStatus === "pausado" ? (
+            <Badge className="bg-blue-500 text-white font-bold text-xs px-3 py-1">PAUSADO</Badge>
           ) : (
-            <Badge className="bg-muted text-muted-foreground font-bold text-xs px-3 py-1">SEM STATUS</Badge>
+            <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">EM ANÁLISE</Badge>
           )}
         </div>
 
@@ -159,7 +159,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
           )}
 
           {/* Countdown Timer */}
-          {!timeRemaining.isPast && (release.approvalStatus === "aceita" || !release.approvalStatus) && (
+          {!timeRemaining.isPast && (release.approvalStatus === "aprovado" || !release.approvalStatus) && (
             <div className="pt-2 border-t border-white/20">
               <p className="text-[10px] text-white/50 uppercase tracking-wider mb-2">Tempo restante pra lançamento</p>
               <div className="grid grid-cols-4 gap-1 text-center">

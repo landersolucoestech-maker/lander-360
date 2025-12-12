@@ -34,9 +34,7 @@ const Lancamentos = () => {
       artist: artist?.stage_name || artist?.name || 'Artista Desconhecido',
       cover: release.cover_url,
       releaseDate: release.release_date || new Date().toISOString(),
-      approvalStatus: release.status === 'released' ? 'aceita' : 
-                      release.status === 'cancelled' ? 'recusada' : 
-                      release.status === 'paused' ? 'em_espera' : 'pendente',
+      approvalStatus: release.status || 'em_analise',
       priority: 'media',
     };
   });
@@ -60,7 +58,7 @@ const Lancamentos = () => {
 
   const filterOptions = [
     { key: "type", label: "Tipo", options: ["Single", "EP", "Álbum"] },
-    { key: "status", label: "Status", options: ["Lançado", "Programado", "Em Produção"] },
+    { key: "status", label: "Status", options: ["Em Análise", "Aprovado", "Rejeitado", "Pausado"] },
     { key: "artist", label: "Artista", options: [] }
   ];
 
