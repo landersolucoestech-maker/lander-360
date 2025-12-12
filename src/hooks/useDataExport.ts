@@ -1,5 +1,5 @@
 import { useToast } from '@/hooks/use-toast';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import { formatDateBR } from '@/lib/utils';
 
 // Status color mapping for Excel export
