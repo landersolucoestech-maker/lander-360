@@ -464,10 +464,6 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       </div>
     </div>
 
-    <div class="footer">
-      <p>${companyData.company_name} | ${companyData.company_address}</p>
-      <p>Este documento foi gerado eletronicamente pelo sistema Lander 360º</p>
-    </div>
   </div>
 
   ${footerContent}
