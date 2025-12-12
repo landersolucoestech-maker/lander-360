@@ -408,7 +408,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       ${generatePartiesHTML(template.template_type, data, companyData)}
     </div>
 
-    <p style="text-align: justify;">As partes acima identificadas têm, entre si, justo e acordado o presente instrumento particular, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.</p>
+    <p style="text-align: justify; margin-bottom: 20px;">As partes acima identificadas têm, entre si, justo e acordado o presente instrumento particular, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.</p>
 `;
 
   // Add clauses
