@@ -328,34 +328,35 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
   });
 };
 
-// Apply cell styling for status columns
+// Apply cell styling for ALL columns based on status
 const applyStatusColoring = (worksheet: XLSX.WorkSheet, data: any[]): void => {
   if (data.length === 0) return;
   
   const headers = Object.keys(data[0]);
   
-  // Find status column indices
-  const statusColumnIndices: number[] = [];
+  // Find status column index to get the status value
+  let statusColumnIndex = -1;
   headers.forEach((header, index) => {
     if (statusColumns.includes(header)) {
-      statusColumnIndices.push(index);
+      statusColumnIndex = index;
     }
   });
   
-  if (statusColumnIndices.length === 0) return;
+  if (statusColumnIndex === -1) return;
   
-  // Apply styling to each status cell
+  // Apply styling to ALL cells in each row based on status
   data.forEach((row, rowIndex) => {
-    statusColumnIndices.forEach(colIndex => {
-      const header = headers[colIndex];
-      const cellValue = row[header];
-      const color = getStatusColor(String(cellValue));
-      
-      if (color) {
+    const statusHeader = headers[statusColumnIndex];
+    const statusValue = row[statusHeader];
+    const color = getStatusColor(String(statusValue));
+    
+    if (color) {
+      // Apply color to ALL columns in this row
+      headers.forEach((_, colIndex) => {
         const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex }); // +1 for header row
         
         if (!worksheet[cellAddress]) {
-          worksheet[cellAddress] = { v: cellValue };
+          worksheet[cellAddress] = { v: row[headers[colIndex]] || '' };
         }
         
         worksheet[cellAddress].s = {
@@ -366,15 +367,15 @@ const applyStatusColoring = (worksheet: XLSX.WorkSheet, data: any[]): void => {
           },
           font: {
             color: { rgb: color.fgColor },
-            bold: true,
+            bold: colIndex === statusColumnIndex, // Bold only the status column
           },
           alignment: {
             horizontal: 'center',
             vertical: 'center',
           },
         };
-      }
-    });
+      });
+    }
   });
 };
 

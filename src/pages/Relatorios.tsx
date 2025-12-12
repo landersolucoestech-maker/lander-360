@@ -199,48 +199,51 @@ const Relatorios = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     
-    // Find status columns and apply coloring
+    // Find status column to get status value for each row
     const headers = Object.keys(data[0]);
     const statusColumnLabels = ['Status', 'status', 'Status Contrato'];
-    const statusColumnIndices: number[] = [];
+    let statusColumnIndex = -1;
     headers.forEach((header, index) => {
       if (statusColumnLabels.some(label => header.toLowerCase().includes(label.toLowerCase()))) {
-        statusColumnIndices.push(index);
+        statusColumnIndex = index;
       }
     });
 
-    // Apply styling to status cells
-    data.forEach((row, rowIndex) => {
-      statusColumnIndices.forEach(colIndex => {
-        const header = headers[colIndex];
-        const cellValue = row[header];
-        const color = getStatusColor(String(cellValue || ''));
+    // Apply styling to ALL cells in each row based on status
+    if (statusColumnIndex !== -1) {
+      data.forEach((row, rowIndex) => {
+        const statusHeader = headers[statusColumnIndex];
+        const statusValue = row[statusHeader];
+        const color = getStatusColor(String(statusValue || ''));
         
         if (color) {
-          const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex });
-          
-          if (!worksheet[cellAddress]) {
-            worksheet[cellAddress] = { v: cellValue };
-          }
-          
-          worksheet[cellAddress].s = {
-            fill: {
-              patternType: 'solid',
-              fgColor: { rgb: color.bgColor },
-              bgColor: { rgb: color.bgColor },
-            },
-            font: {
-              color: { rgb: color.fgColor },
-              bold: true,
-            },
-            alignment: {
-              horizontal: 'center',
-              vertical: 'center',
-            },
-          };
+          // Apply color to ALL columns in this row
+          headers.forEach((header, colIndex) => {
+            const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex });
+            
+            if (!worksheet[cellAddress]) {
+              worksheet[cellAddress] = { v: row[header] || '' };
+            }
+            
+            worksheet[cellAddress].s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: color.bgColor },
+                bgColor: { rgb: color.bgColor },
+              },
+              font: {
+                color: { rgb: color.fgColor },
+                bold: colIndex === statusColumnIndex,
+              },
+              alignment: {
+                horizontal: 'center',
+                vertical: 'center',
+              },
+            };
+          });
         }
       });
-    });
+    }
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, report.type);
