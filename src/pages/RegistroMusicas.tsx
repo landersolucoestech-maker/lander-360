@@ -438,10 +438,20 @@ const RegistroMusicas = () => {
   // Export/Import handlers - Phonograms
   const handleExportPhonograms = () => {
     const artistsMap = artists.reduce((acc, artist) => {
-      acc[artist.id] = artist.name;
+      acc[artist.id] = artist.stage_name || artist.name;
       return acc;
     }, {} as Record<string, string>);
-    exportToExcel(phonograms, 'fonogramas', 'Fonogramas', 'phonograms', artistsMap);
+    
+    // Add work_title to each phonogram
+    const enrichedPhonograms = phonograms.map(phonogram => {
+      const work = musicRegistry.find(m => m.id === phonogram.work_id);
+      return {
+        ...phonogram,
+        work_title: work?.title || '',
+      };
+    });
+    
+    exportToExcel(enrichedPhonograms, 'fonogramas', 'Fonogramas', 'phonograms', artistsMap);
   };
 
   const handleImportPhonograms = async (event: React.ChangeEvent<HTMLInputElement>) => {
