@@ -188,18 +188,25 @@ const crmColumns = {
 };
 
 const musicRegistryColumns = {
-  title: 'Título',
+  title: 'Título da Obra',
+  artist_name: 'Artista',
+  project_name: 'Projeto',
   status: 'Status',
   genre: 'Gênero',
+  key: 'Tonalidade',
+  bpm: 'BPM',
+  duration: 'Duração',
   abramus_code: 'Código ABRAMUS',
   ecad_code: 'Código ECAD',
   isrc: 'ISRC',
   iswc: 'ISWC',
-  duration: 'Duração',
   release_date: 'Data de Lançamento',
   writers: 'Compositores',
   publishers: 'Editoras',
-  participants_formatted: 'Participantes',
+  participants_formatted: 'Participantes (Nome, Função, %, Link)',
+  ai_created: 'Criada por IA',
+  ai_generation_type: 'Tipo de Geração IA',
+  ai_elements_formatted: 'Elementos IA',
   created_at: 'Data de Criação',
 };
 
@@ -326,15 +333,41 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     }
     
     // Format participants for music_registry
-    if (entityType === 'music_registry' && item.participants) {
-      const participants = Array.isArray(item.participants) ? item.participants : [];
-      item.participants_formatted = participants.map((p: any) => {
-        const parts = [];
-        if (p.name) parts.push(p.name);
-        if (p.role) parts.push(`(${p.role})`);
-        if (p.percentage) parts.push(`${p.percentage}%`);
-        return parts.join(' ');
-      }).join('; ') || '';
+    if (entityType === 'music_registry') {
+      // Format participants with all details
+      if (item.participants) {
+        const participants = Array.isArray(item.participants) ? item.participants : [];
+        item.participants_formatted = participants.map((p: any) => {
+          const parts = [];
+          if (p.name) parts.push(p.name);
+          if (p.role) parts.push(`(${p.role})`);
+          if (p.percentage) parts.push(`${p.percentage}%`);
+          if (p.link) parts.push(`Link: ${p.link}`);
+          if (p.contract_start_date) parts.push(`Início: ${formatDateBR(p.contract_start_date)}`);
+          return parts.join(' ');
+        }).join('; ') || '';
+      }
+      
+      // Add artist name from artistsMap
+      if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
+        item.artist_name = artistsMap[item.artist_id];
+      }
+      
+      // Format AI fields - these may be stored in participants or separate fields
+      const participantsData = Array.isArray(item.participants) ? item.participants : [];
+      const aiParticipant = participantsData.find((p: any) => p.ai_created !== undefined);
+      
+      item.ai_created = aiParticipant?.ai_created ? 'Sim' : 'Não';
+      item.ai_generation_type = aiParticipant?.ai_generation_type || '';
+      
+      // Format AI elements
+      if (aiParticipant?.ai_elements && Array.isArray(aiParticipant.ai_elements)) {
+        item.ai_elements_formatted = aiParticipant.ai_elements.map((el: any) => {
+          return `${el.element}: ${el.tool_name || ''} - ${el.prompt || ''}`;
+        }).join('; ');
+      } else {
+        item.ai_elements_formatted = '';
+      }
     }
     
     Object.entries(columns).forEach(([key, label]) => {
