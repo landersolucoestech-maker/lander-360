@@ -43,7 +43,7 @@ const releaseSchema = z.object({
   artist_name: z.string().min(1, 'Nome do artista é obrigatório'),
   release_type: z.enum(['single', 'ep', 'album']).optional(),
   release_date: z.string().optional(),
-  status: z.enum(['em_analise', 'aprovado', 'rejeitado', 'pausado']).default('em_analise'),
+  status: z.enum(['em_analise', 'aprovado', 'rejeitado', 'pausado', 'takedown']).default('em_analise'),
   platforms: z.array(z.string()).default([]),
   distribution_notes: z.string().optional(),
   
