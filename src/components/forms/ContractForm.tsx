@@ -173,12 +173,30 @@ export const ContractForm: React.FC<ContractFormProps> = ({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Título do Contrato</Label>
-              <Input
-                id="title"
-                {...form.register('title')}
-                placeholder="Digite o título do contrato"
-              />
+              <Label>Título do Contrato</Label>
+              <Select
+                value={form.watch('title')}
+                onValueChange={(value) => {
+                  form.setValue('title', value);
+                  // Find the template and set service_type accordingly
+                  const template = templates.find(t => t.name === value);
+                  if (template) {
+                    form.setValue('service_type', template.template_type as any);
+                    setSelectedTemplate(template);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o template de contrato" />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.filter(t => t.is_active).map((template) => (
+                    <SelectItem key={template.id} value={template.name}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {form.formState.errors.title && (
                 <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
               )}
