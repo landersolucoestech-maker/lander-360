@@ -434,13 +434,25 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       // Add only composers/authors to participants grid
       const participants: any[] = [];
       if (work.composers && Array.isArray(work.composers)) {
-        work.composers.forEach((c: any) => {
+        const composerCount = work.composers.length;
+        const defaultPercentage = composerCount > 0 ? Math.floor(100 / composerCount) : 0;
+        
+        work.composers.forEach((c: any, index: number) => {
+          // Use existing percentage or distribute evenly
+          let percentage = c.percentage || 0;
+          if (percentage === 0 && composerCount > 0) {
+            // Last composer gets remainder to ensure 100%
+            percentage = index === composerCount - 1 
+              ? 100 - (defaultPercentage * (composerCount - 1))
+              : defaultPercentage;
+          }
+          
           participants.push({
             name: c.name || c,
             role: 'compositor_autor',
             link: '',
             contract_start_date: '',
-            percentage: c.percentage || 0,
+            percentage: percentage,
           });
         });
       }
