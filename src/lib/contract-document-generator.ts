@@ -255,6 +255,14 @@ function replaceVariables(text: string, data: ContractData): string {
     result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
   });
 
+  // Make party labels bold - replace all occurrences
+  const partyLabels = ['REPRESENTANTE', 'REPRESENTADO(A)', 'REPRESENTADO', 'CONTRATANTE', 'CONTRATADO(A)', 'CONTRATADO'];
+  partyLabels.forEach(label => {
+    // Only wrap if not already wrapped in <strong>
+    const regex = new RegExp(`(?<!<strong>)(${label.replace(/[()]/g, '\\$&')})(?!</strong>)`, 'g');
+    result = result.replace(regex, '<strong>$1</strong>');
+  });
+
   return result;
 }
 
