@@ -22,6 +22,7 @@ const templateTypeLabels: Record<string, string> = {
   agenciamento: 'Agenciamento',
   gestao: 'Gestão',
   empresariamento: 'Empresariamento',
+  empresariamento_suporte: 'Empresariamento com suporte',
   producao_musical: 'Produção Musical',
   producao_audiovisual: 'Produção Audiovisual',
   edicao: 'Edição',
