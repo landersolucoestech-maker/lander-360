@@ -718,7 +718,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
   pdf.text(signatures.rightName, rightSigX + sigWidth / 2, yPosition, { align: 'center' });
   yPosition += 4;
   
-  pdf.setFont('times', 'normal');
+  pdf.setFont('times', 'bold');
   pdf.text(signatures.leftLabel, leftSigX + sigWidth / 2, yPosition, { align: 'center' });
   pdf.text(signatures.rightLabel, rightSigX + sigWidth / 2, yPosition, { align: 'center' });
   yPosition += 25;
