@@ -45,13 +45,15 @@ const Contratos = () => {
 
   const serviceTypeLabels: Record<string, string> = {
     empresariamento: 'Empresariamento',
+    empresariamento_suporte: 'Empresariamento com suporte',
     gestao: 'Gestão',
     agenciamento: 'Agenciamento',
     edicao: 'Edição',
     distribuicao: 'Distribuição',
     marketing: 'Marketing',
     producao_musical: 'Produção Musical',
-    producao_audiovisual: 'Produção Audiovisual'
+    producao_audiovisual: 'Produção Audiovisual',
+    licenciamento: 'Licenciamento'
   };
 
   const statusLabels: Record<string, string> = {
