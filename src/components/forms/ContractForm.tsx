@@ -126,6 +126,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
 
   const artistaServiceTypeLabels = {
     empresariamento: 'Empresariamento',
+    empresariamento_suporte: 'Empresariamento com suporte',
     gestao: 'Gestão',
     agenciamento: 'Agenciamento',
     edicao: 'Edição',
@@ -418,7 +419,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
 
             {/* Artista + Agenciamento/Gestão/Empresariamento: Royalties e Adiantamento */}
             {form.watch('client_type') === 'artista' && 
-             ['agenciamento', 'gestao', 'empresariamento'].includes(form.watch('service_type') || '') && (
+             ['agenciamento', 'gestao', 'empresariamento', 'empresariamento_suporte'].includes(form.watch('service_type') || '') && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="royalties_percentage">Royalties (%)</Label>
