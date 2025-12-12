@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Download, Send, Printer, Mail } from 'lucide-react';
 import { ContractTemplate, ContractClause } from '@/services/contractTemplates';
 import { ContractData, downloadContractPDF, generateContractHTML, getContractPDFBlob } from '@/lib/contract-document-generator';
@@ -56,9 +55,13 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
 
   // Load contract data and template when modal opens
   useEffect(() => {
+    if (!contract || !isOpen) {
+      return;
+    }
+    
     // Wait for templates to be loaded
-    if (!contract || !isOpen || templates.length === 0) {
-      console.log('GenerateContractModal - Waiting for data:', { contract: !!contract, isOpen, templatesCount: templates.length });
+    if (templates.length === 0) {
+      console.log('GenerateContractModal - Templates not loaded yet');
       return;
     }
     
@@ -297,7 +300,7 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-auto max-h-[60vh]">
           <Card className="m-1">
             <CardHeader className="py-3">
               <CardTitle className="text-sm">
@@ -307,7 +310,7 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
             <CardContent>
               {hasPreview ? (
                 <div 
-                  className="border border-border rounded-lg p-4 sm:p-6 bg-white text-black min-h-[400px] sm:min-h-[500px] overflow-auto"
+                  className="border border-border rounded-lg p-4 sm:p-6 bg-white text-black overflow-auto max-h-[50vh]"
                   style={{ fontFamily: 'Times New Roman, serif' }}
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
@@ -320,7 +323,7 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
               )}
             </CardContent>
           </Card>
-        </ScrollArea>
+        </div>
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-border">
