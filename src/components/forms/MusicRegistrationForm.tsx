@@ -314,7 +314,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [watchedParticipants, artists, appendParticipant, form]);
 
-  // Auto-distribute 100% equally among composers when Lander Records is NOT an editor
+  // Auto-distribute 100% equally among composers and assign sequential links when Lander Records is NOT an editor
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
@@ -342,19 +342,33 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     const composersTotal = composers.reduce((sum, c) => sum + (c.percentage || 0), 0);
     const hasZeroPercentage = composers.some(c => !c.percentage || c.percentage === 0);
     
-    if (hasZeroPercentage || composersTotal === 0) {
-      // Update each composer's percentage
+    // Check if links need to be assigned (any participant without a link)
+    const needsLinkAssignment = watchedParticipants.some(p => !p.link || p.link === '');
+    
+    if (hasZeroPercentage || composersTotal === 0 || needsLinkAssignment) {
+      // Update each participant with percentage and sequential links
+      let linkCounter = 1;
       const updatedParticipants = watchedParticipants.map((p, index) => {
-        if (composerRoles.includes(p.role?.toLowerCase())) {
+        const isComposer = composerRoles.includes(p.role?.toLowerCase());
+        let percentage = p.percentage;
+        
+        if (isComposer) {
           const composerIndex = composers.findIndex(c => c.name === p.name && c.role === p.role);
           // Last composer gets the remainder to ensure exactly 100%
           const isLastComposer = composerIndex === composers.length - 1;
-          return {
-            ...p,
-            percentage: isLastComposer ? evenPercentage + remainder : evenPercentage,
-          };
+          if (!p.percentage || p.percentage === 0) {
+            percentage = isLastComposer ? evenPercentage + remainder : evenPercentage;
+          }
         }
-        return p;
+        
+        // Assign sequential link if not already set
+        const link = p.link || `Link ${linkCounter++}`;
+        
+        return {
+          ...p,
+          percentage: percentage,
+          link: link,
+        };
       });
 
       form.setValue('participants', updatedParticipants, { shouldValidate: false });
