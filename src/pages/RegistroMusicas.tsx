@@ -358,7 +358,7 @@ const RegistroMusicas = () => {
       const completedProjects = projects.filter(p => p.status === 'completed');
 
       for (const row of data) {
-        const title = row['Título'] || row['title'] || '';
+        const title = row['Título da Obra'] || row['Título'] || row['title'] || '';
         if (!title) continue;
 
         // Try to find matching project by song name
