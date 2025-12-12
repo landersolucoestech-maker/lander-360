@@ -15,10 +15,16 @@ import { useToast } from "@/hooks/use-toast";
 import { useProjects, useDeleteProject, useCreateProject } from "@/hooks/useProjects";
 import { useArtists } from "@/hooks/useArtists";
 import { useDataExport } from "@/hooks/useDataExport";
+import { useMusicRegistry } from "@/hooks/useMusicRegistry";
+import { usePhonograms } from "@/hooks/usePhonograms";
+import { useReleases } from "@/hooks/useReleases";
 
 const Projetos = () => {
   const { data: projects = [], isLoading, error } = useProjects();
   const { data: artists = [] } = useArtists();
+  const { data: musicRegistry = [] } = useMusicRegistry();
+  const { data: phonograms = [] } = usePhonograms();
+  const { data: releases = [] } = useReleases();
   const deleteProjectMutation = useDeleteProject();
   const createProjectMutation = useCreateProject();
   const { exportToExcel, parseExcelFile } = useDataExport();
@@ -219,6 +225,38 @@ const Projetos = () => {
     }
   };
 
+  // Get registration and release status tags for a project
+  const getProjectTags = (projectId: string) => {
+    const hasObra = musicRegistry.some(m => m.project_id === projectId);
+    const hasFonograma = phonograms.some(p => {
+      // Check if phonogram is linked to a work from this project
+      const linkedWork = musicRegistry.find(m => m.project_id === projectId);
+      return linkedWork && p.work_id === linkedWork.id;
+    });
+    const projectRelease = releases.find(r => r.project_id === projectId);
+    const hasRelease = !!projectRelease;
+    const isReleased = projectRelease?.status === 'released' || projectRelease?.status === 'lançado';
+
+    const tags: { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }[] = [];
+
+    // Registration status
+    if (hasObra && hasFonograma) {
+      tags.push({ label: 'Registrado', variant: 'default' });
+    } else if (!hasObra || !hasFonograma) {
+      tags.push({ label: 'Registro pendente', variant: 'outline' });
+    }
+
+    // Release status
+    if (isReleased) {
+      tags.push({ label: 'Lançado', variant: 'default' });
+    } else if (hasObra && hasFonograma && !hasRelease) {
+      tags.push({ label: 'Lançamento pendente', variant: 'secondary' });
+    } else if (hasRelease && !isReleased) {
+      tags.push({ label: 'Lançamento pendente', variant: 'secondary' });
+    }
+
+    return tags;
+  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -549,13 +587,23 @@ const Projetos = () => {
                               </div>
                               <div className="space-y-1 min-w-0">
                                 <h3 className="font-medium text-foreground">{project.name}</h3>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <Badge variant={getStatusVariant(project.status)}>{getStatusLabel(project.status)}</Badge>
                                   {details?.release_type && (
                                     <Badge variant="secondary">
                                       {details.release_type === 'single' ? 'Single' : details.release_type === 'ep' ? 'EP' : 'Álbum'}
                                     </Badge>
                                   )}
+                                  {getProjectTags(project.id).map((tag, idx) => (
+                                    <Badge key={idx} variant={tag.variant} className={
+                                      tag.label === 'Registrado' ? 'bg-green-600 text-white hover:bg-green-700' :
+                                      tag.label === 'Registro pendente' ? 'bg-yellow-500 text-black hover:bg-yellow-600' :
+                                      tag.label === 'Lançado' ? 'bg-blue-600 text-white hover:bg-blue-700' :
+                                      tag.label === 'Lançamento pendente' ? 'bg-orange-500 text-white hover:bg-orange-600' : ''
+                                    }>
+                                      {tag.label}
+                                    </Badge>
+                                  ))}
                                 </div>
                               </div>
                             </div>
