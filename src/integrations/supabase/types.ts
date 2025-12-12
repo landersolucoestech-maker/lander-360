@@ -327,6 +327,7 @@ export type Database = {
           effective_from: string | null
           effective_to: string | null
           end_date: string | null
+          financial_support: number | null
           fixed_value: number | null
           generated_document_content: string | null
           id: string
@@ -364,6 +365,7 @@ export type Database = {
           effective_from?: string | null
           effective_to?: string | null
           end_date?: string | null
+          financial_support?: number | null
           fixed_value?: number | null
           generated_document_content?: string | null
           id?: string
@@ -401,6 +403,7 @@ export type Database = {
           effective_from?: string | null
           effective_to?: string | null
           end_date?: string | null
+          financial_support?: number | null
           fixed_value?: number | null
           generated_document_content?: string | null
           id?: string

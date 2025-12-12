@@ -30,6 +30,7 @@ const contractSchema = z.object({
   fixed_value: z.number().optional(),
   royalties_percentage: z.number().min(0).max(100).optional(),
   advance_payment: z.number().optional(),
+  financial_support: z.number().optional(),
   observations: z.string().optional(),
   terms: z.string().optional(),
 });
@@ -440,6 +441,17 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                     step="0.01"
                     placeholder="0,00"
                     {...form.register('advance_payment', { valueAsNumber: true })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="financial_support">Suporte Financeiro (R$)</Label>
+                  <Input
+                    id="financial_support"
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    {...form.register('financial_support', { valueAsNumber: true })}
                   />
                 </div>
               </>
