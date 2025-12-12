@@ -59,8 +59,24 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     if (contract && isOpen) {
       const artist = artists.find(a => a.id === contract.artist_id);
       
-      // Find matching template based on service_type
-      const matchingTemplate = templates.find(t => t.template_type === contract.service_type);
+      // Find matching template - first by template_id, then by name (title), then by service_type
+      let matchingTemplate = null;
+      
+      if (contract.template_id) {
+        matchingTemplate = templates.find(t => t.id === contract.template_id);
+      }
+      
+      if (!matchingTemplate && contract.title) {
+        matchingTemplate = templates.find(t => t.name === contract.title);
+      }
+      
+      if (!matchingTemplate && contract.service_type) {
+        matchingTemplate = templates.find(t => t.template_type === contract.service_type);
+      }
+
+      console.log('GenerateContractModal - Contract:', contract);
+      console.log('GenerateContractModal - Matching template:', matchingTemplate);
+      console.log('GenerateContractModal - Available templates:', templates);
       
       if (matchingTemplate) {
         setSelectedTemplate(matchingTemplate);
@@ -81,7 +97,7 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
           contracted_email: artist?.email || '',
           contracted_stage_name: artist?.stage_name || '',
           contract_title: contract.title,
-          service_type: contract.service_type || '',
+          service_type: contract.service_type || matchingTemplate.template_type || '',
           start_date: contract.effective_from || contract.start_date || '',
           end_date: contract.effective_to || contract.end_date || '',
           fixed_value: contract.fixed_value || contract.value || undefined,
@@ -90,7 +106,9 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
           work_title: contract.title || '',
         });
       } else {
-        // No template found, use contract data directly
+        // No template found, reset states
+        setSelectedTemplate(null);
+        setCustomClauses([]);
         setContractData(prev => ({
           ...prev,
           contracted_name: artist?.full_name || artist?.name || '',
