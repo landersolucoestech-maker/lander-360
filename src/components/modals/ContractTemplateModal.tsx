@@ -402,7 +402,7 @@ export const ContractTemplateModal: React.FC<ContractTemplateModalProps> = ({
                         rows={4}
                       />
                       <p className="text-xs text-muted-foreground">
-                        Variáveis disponíveis: {'{{contracted_name}}'}, {'{{royalties_percentage}}'}, {'{{start_date}}'}, {'{{end_date}}'}, {'{{fixed_value}}'}, {'{{advance_amount}}'}, {'{{work_title}}'}
+                        Variáveis disponíveis: {'{{contracted_name}}'}, {'{{royalties_percentage}}'}, {'{{start_date}}'}, {'{{end_date}}'}, {'{{fixed_value}}'}, {'{{advance_amount}}'}, {'{{financial_support}}'}, {'{{work_title}}'}
                       </p>
                     </div>
                   </div>
