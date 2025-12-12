@@ -487,27 +487,94 @@ const RegistroMusicas = () => {
       let imported = 0;
 
       for (const row of data) {
+        // Get title from work_title column or title column
+        const title = row['Título da Obra'] || row['Título'] || row['title'] || '';
+        if (!title) continue;
+
+        // Try to find linked work by ABRAMUS code or title
+        const workAbramusCode = row['Código ABRAMUS da Obra'] || row['work_abramus_code'] || '';
+        let workId = null;
+        
+        if (workAbramusCode) {
+          const linkedWork = musicRegistry.find(m => m.abramus_code === workAbramusCode);
+          workId = linkedWork?.id || null;
+        } else {
+          // Try to match by title
+          const linkedWork = musicRegistry.find(m => m.title?.toLowerCase().trim() === title.toLowerCase().trim());
+          workId = linkedWork?.id || null;
+        }
+
+        // Parse duration from m:ss format
+        let duration = null;
+        const durationStr = row['Duração'] || row['duration'] || '';
+        if (durationStr) {
+          if (String(durationStr).includes(':')) {
+            const parts = String(durationStr).split(':');
+            duration = (parseInt(parts[0]) * 60) + parseInt(parts[1] || '0');
+          } else {
+            duration = parseInt(String(durationStr)) || null;
+          }
+        }
+
+        // Parse participants from formatted strings
+        const participants: any[] = [];
+        
+        // Parse producers
+        const producersStr = row['Produtores Fonográficos'] || '';
+        if (producersStr) {
+          String(producersStr).split(';').forEach(p => {
+            const name = p.trim().split('(')[0].trim();
+            const percentMatch = p.match(/\((\d+(?:,\d+)?%?)\)/);
+            const percentage = percentMatch ? parseFloat(percentMatch[1].replace(',', '.').replace('%', '')) : 0;
+            if (name) {
+              participants.push({ name, role: 'produtor_fonografico', percentage });
+            }
+          });
+        }
+
+        // Parse interpreters
+        const interpretersStr = row['Intérpretes'] || '';
+        if (interpretersStr) {
+          String(interpretersStr).split(';').forEach(p => {
+            const name = p.trim().split('(')[0].trim();
+            const percentMatch = p.match(/\((\d+(?:,\d+)?%?)\)/);
+            const percentage = percentMatch ? parseFloat(percentMatch[1].replace(',', '.').replace('%', '')) : 0;
+            if (name) {
+              participants.push({ name, role: 'interprete', percentage });
+            }
+          });
+        }
+
+        // Parse musicians
+        const musiciansStr = row['Músicos Acompanhantes'] || '';
+        if (musiciansStr) {
+          String(musiciansStr).split(';').forEach(p => {
+            const name = p.trim().split('(')[0].trim();
+            const percentMatch = p.match(/\((\d+(?:,\d+)?%?)\)/);
+            const percentage = percentMatch ? parseFloat(percentMatch[1].replace(',', '.').replace('%', '')) : 0;
+            if (name) {
+              participants.push({ name, role: 'musico', percentage });
+            }
+          });
+        }
+
         const phonogramData = {
-          title: row['Título'] || row['title'] || '',
+          title: title,
+          work_id: workId,
           status: row['Status'] || row['status'] || 'pendente',
           genre: row['Gênero'] || row['genre'] || null,
           isrc: row['ISRC'] || row['isrc'] || null,
-          duration: row['Duração (segundos)'] || row['duration'] || null,
-          language: row['Idioma'] || row['language'] || null,
-          label: row['Gravadora'] || row['label'] || null,
-          master_owner: row['Proprietário do Master'] || row['master_owner'] || null,
-          version_type: row['Tipo de Versão'] || row['version_type'] || null,
-          is_remix: row['É Remix'] === 'Sim' || row['is_remix'] === true,
-          remix_artist: row['Artista do Remix'] || row['remix_artist'] || null,
+          duration: duration,
+          label: row['Agregadora'] || row['Gravadora'] || row['label'] || null,
+          version_type: row['Classificação'] || row['version_type'] || null,
           recording_date: row['Data de Gravação'] || row['recording_date'] || null,
-          recording_studio: row['Estúdio de Gravação'] || row['recording_studio'] || null,
-          recording_location: row['Local de Gravação'] || row['recording_location'] || null,
+          recording_location: row['País de Origem'] || row['recording_location'] || null,
+          language: row['Instrumental'] === 'Sim' ? 'instrumental' : null,
+          participants: participants.length > 0 ? participants : null,
         };
 
-        if (phonogramData.title) {
-          await createPhonogram.mutateAsync(phonogramData);
-          imported++;
-        }
+        await createPhonogram.mutateAsync(phonogramData);
+        imported++;
       }
 
       toast({
