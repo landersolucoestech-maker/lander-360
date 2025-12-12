@@ -314,65 +314,98 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [watchedParticipants, artists, appendParticipant, form]);
 
-  // Auto-distribute 100% equally among composers and assign sequential links when Lander Records is NOT an editor
+  // Auto-distribute percentages and assign sequential links based on whether Lander Records is an editor
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
     // Check if Lander Records is an editor
-    const hasLanderEditor = watchedParticipants.some(p => 
+    const landerEditorIndex = watchedParticipants.findIndex(p => 
       p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
     );
-
-    // Only redistribute if Lander is NOT an editor
-    if (hasLanderEditor) return;
+    const hasLanderEditor = landerEditorIndex !== -1;
 
     // Get all composers
     const composerRoles = ['compositor_autor', 'compositor', 'autor'];
-    const composers = watchedParticipants.filter(p => 
-      composerRoles.includes(p.role?.toLowerCase())
-    );
-
-    if (composers.length === 0) return;
-
-    // Calculate what the even distribution should be
-    const evenPercentage = Math.floor(100 / composers.length);
-    const remainder = 100 - (evenPercentage * composers.length);
-
-    // Check if redistribution is needed (if any composer has 0 or total doesn't equal 100)
-    const composersTotal = composers.reduce((sum, c) => sum + (c.percentage || 0), 0);
-    const hasZeroPercentage = composers.some(c => !c.percentage || c.percentage === 0);
     
-    // Check if links need to be assigned (any participant without a link)
+    // Check if links need to be assigned or percentages need updating
     const needsLinkAssignment = watchedParticipants.some(p => !p.link || p.link === '');
+    const hasZeroPercentage = watchedParticipants.some(p => !p.percentage || p.percentage === 0);
     
-    if (hasZeroPercentage || composersTotal === 0 || needsLinkAssignment) {
-      // Update each participant with percentage and sequential links
+    if (!needsLinkAssignment && !hasZeroPercentage) return;
+
+    let updatedParticipants: typeof watchedParticipants;
+
+    if (hasLanderEditor) {
+      // CASE: Lander Records IS an editor
+      // Lander gets Link 1 and 10%, remaining 90% divided among other participants
+      const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
+      const otherCount = otherParticipants.length;
+      
+      // Calculate even distribution of remaining 90%
+      const remainingPercentage = 90;
+      const evenPercentage = otherCount > 0 ? Math.floor(remainingPercentage / otherCount) : 0;
+      const remainder = otherCount > 0 ? remainingPercentage - (evenPercentage * otherCount) : 0;
+      
+      let linkCounter = 2; // Start at 2 since Lander is Link 1
+      let otherIndex = 0;
+      
+      updatedParticipants = watchedParticipants.map((p, idx) => {
+        if (idx === landerEditorIndex) {
+          // Lander Records: Link 1, 10%
+          return {
+            ...p,
+            link: 'Link 1',
+            percentage: 10,
+          };
+        } else {
+          // Other participants: Link 2, 3, 4... and split 90%
+          const isLast = otherIndex === otherCount - 1;
+          const percentage = isLast ? evenPercentage + remainder : evenPercentage;
+          otherIndex++;
+          
+          return {
+            ...p,
+            link: `Link ${linkCounter++}`,
+            percentage: p.percentage && p.percentage > 0 ? p.percentage : percentage,
+          };
+        }
+      });
+    } else {
+      // CASE: Lander Records is NOT an editor
+      // Divide 100% equally among composers, assign sequential links to all
+      const composers = watchedParticipants.filter(p => 
+        composerRoles.includes(p.role?.toLowerCase())
+      );
+
+      if (composers.length === 0) return;
+
+      const evenPercentage = Math.floor(100 / composers.length);
+      const remainder = 100 - (evenPercentage * composers.length);
+
       let linkCounter = 1;
-      const updatedParticipants = watchedParticipants.map((p, index) => {
+      let composerIndex = 0;
+      
+      updatedParticipants = watchedParticipants.map((p) => {
         const isComposer = composerRoles.includes(p.role?.toLowerCase());
         let percentage = p.percentage;
         
         if (isComposer) {
-          const composerIndex = composers.findIndex(c => c.name === p.name && c.role === p.role);
-          // Last composer gets the remainder to ensure exactly 100%
           const isLastComposer = composerIndex === composers.length - 1;
           if (!p.percentage || p.percentage === 0) {
             percentage = isLastComposer ? evenPercentage + remainder : evenPercentage;
           }
+          composerIndex++;
         }
-        
-        // Assign sequential link if not already set
-        const link = p.link || `Link ${linkCounter++}`;
         
         return {
           ...p,
           percentage: percentage,
-          link: link,
+          link: p.link || `Link ${linkCounter++}`,
         };
       });
-
-      form.setValue('participants', updatedParticipants, { shouldValidate: false });
     }
+
+    form.setValue('participants', updatedParticipants, { shouldValidate: false });
   }, [watchedParticipants?.length, form]);
 
   // Reset AI fields when is_ai_created becomes false
