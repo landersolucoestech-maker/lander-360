@@ -107,6 +107,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
 
   const [workDropdownOpen, setWorkDropdownOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<any>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const [participantSearchQuery, setParticipantSearchQuery] = useState('');
   const [isSearchingParticipant, setIsSearchingParticipant] = useState(false);
@@ -389,6 +390,21 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     
     return works;
   }, [projects]);
+
+  // Initialize selectedWork when editing an existing registration
+  useEffect(() => {
+    if (registration && availableWorks.length > 0 && !isInitialized) {
+      // Try to find matching work by title
+      const matchingWork = availableWorks.find(w => 
+        w.title?.toLowerCase().trim() === registration.title?.toLowerCase().trim()
+      );
+      
+      if (matchingWork) {
+        setSelectedWork(matchingWork);
+      }
+      setIsInitialized(true);
+    }
+  }, [registration, availableWorks, isInitialized]);
 
   // Select work from search results
   const handleSelectWork = (work: any) => {
