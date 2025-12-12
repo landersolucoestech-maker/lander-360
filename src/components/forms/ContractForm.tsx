@@ -17,7 +17,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 
 const contractSchema = z.object({
   title: z.string().optional(),
-  client_type: z.enum(['artista', 'empresa']).optional(),
+  client_type: z.enum(['artista', 'empresa', 'pessoa']).optional(),
   service_type: z.enum(['empresariamento', 'gestao', 'agenciamento', 'edicao', 'distribuicao', 'marketing', 'producao_musical', 'producao_audiovisual', 'licenciamento', 'publicidade', 'parceria', 'shows', 'outros']).optional(),
   artist_id: z.string().optional(),
   company_id: z.string().optional(),
@@ -294,6 +294,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                 <SelectContent>
                   <SelectItem value="artista">Artista</SelectItem>
                   <SelectItem value="empresa">Empresa</SelectItem>
+                  <SelectItem value="pessoa">Pessoa</SelectItem>
                 </SelectContent>
               </Select>
               {form.formState.errors.client_type && (
@@ -365,30 +366,37 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               </div>
             )}
 
-            {form.watch('client_type') === 'artista' && (
-              <div className="space-y-2">
-                <Label>Cliente/Artista</Label>
-                <Select
-                  value={form.watch('artist_id')}
-                  onValueChange={(value) => form.setValue('artist_id', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={artists.length > 0 ? "Selecione um artista" : "Nenhum artista cadastrado"} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border z-50">
-                    {artists.length > 0 ? (
-                      artists.map((artist) => (
-                        <SelectItem key={artist.id} value={artist.id}>{artist.name}</SelectItem>
-                      ))
-                    ) : (
-                      <div className="px-2 py-1 text-sm text-muted-foreground">
-                        Nenhum artista cadastrado
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+              {form.watch('client_type') === 'artista' && (
+                <div className="space-y-2">
+                  <Label>Cliente/Artista</Label>
+                  <Select
+                    value={form.watch('artist_id')}
+                    onValueChange={(value) => {
+                      form.setValue('artist_id', value);
+                      // Find artist and populate contracted party data
+                      const selectedArtist = artists.find(a => a.id === value);
+                      if (selectedArtist) {
+                        handleSelectArtist(selectedArtist);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={artists.length > 0 ? "Selecione um artista" : "Nenhum artista cadastrado"} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border z-50">
+                      {artists.length > 0 ? (
+                        artists.map((artist) => (
+                          <SelectItem key={artist.id} value={artist.id}>{artist.name}</SelectItem>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1 text-sm text-muted-foreground">
+                          Nenhum artista cadastrado
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
             {form.watch('client_type') === 'empresa' && companies.length > 0 && (
               <div className="space-y-2">
@@ -582,7 +590,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                     </Popover>
                   )}
                   
-                  {form.watch('client_type') === 'empresa' && (
+              {(form.watch('client_type') === 'empresa' || form.watch('client_type') === 'pessoa') && (
                     <Popover open={crmSearchOpen} onOpenChange={setCrmSearchOpen}>
                       <PopoverTrigger asChild>
                         <Button type="button" variant="outline" size="sm">
@@ -682,7 +690,7 @@ export const ContractForm: React.FC<ContractFormProps> = ({
                     placeholder="000.000.000-00"
                   />
                 </div>
-                {artistSelected && (
+                {form.watch('client_type') === 'artista' && (
                   <div className="space-y-2">
                     <Label>Nome Artístico</Label>
                     <Input
