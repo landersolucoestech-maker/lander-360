@@ -306,6 +306,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       color: #000;
       margin: 0;
       padding: 0;
+      text-align: justify;
     }
     .header-container {
       width: 100%;
@@ -348,6 +349,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     }
     .party {
       margin-bottom: 20px;
+      text-align: justify;
     }
     .party-label {
       font-weight: bold;
