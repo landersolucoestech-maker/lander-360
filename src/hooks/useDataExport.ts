@@ -126,9 +126,9 @@ const releaseColumns = {
   copyright: 'Copyright',
   // Artes
   cover_url: 'Capa do Lançamento',
+  additional_images: 'Imagens Adicionais',
   // Faixas
   tracks_formatted: 'Faixas',
-  created_at: 'Data de Criação',
 };
 
 const contractColumns = {
@@ -467,7 +467,14 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
         item.artist_name = artistsMap[item.artist_id];
       }
       
-      // Format tracks
+      // Format additional images
+      if (item.additional_images && Array.isArray(item.additional_images)) {
+        item.additional_images = item.additional_images.join(', ');
+      } else {
+        item.additional_images = '';
+      }
+      
+      // Format tracks with all fields from form
       if (item.tracks && Array.isArray(item.tracks)) {
         item.tracks_formatted = item.tracks.map((track: any, index: number) => {
           const parts = [];
@@ -477,6 +484,8 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
           if (track.composers?.length) parts.push(`Compositores: ${track.composers.join(', ')}`);
           if (track.performers?.length) parts.push(`Intérpretes: ${track.performers.join(', ')}`);
           if (track.producers?.length) parts.push(`Produtores: ${track.producers.join(', ')}`);
+          if (track.audio_file) parts.push(`Arquivo de Áudio: ${track.audio_file}`);
+          if (track.lyrics) parts.push(`Letra: ${track.lyrics.substring(0, 100)}${track.lyrics.length > 100 ? '...' : ''}`);
           return parts.join(' | ');
         }).join('\n') || '';
       } else {
