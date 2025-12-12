@@ -13,6 +13,7 @@ import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
+import { useProjects } from "@/hooks/useProjects";
 import { useDataExport } from "@/hooks/useDataExport";
 import { formatDateBR } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const Lancamentos = () => {
   const { toast } = useToast();
   const { data: releasesData = [], isLoading, refetch } = useReleases();
   const { data: artists = [] } = useArtists();
+  const { data: projects = [] } = useProjects();
   const deleteRelease = useDeleteRelease();
   const { exportToExcel, parseExcelFile } = useDataExport();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,7 +143,17 @@ const Lancamentos = () => {
       acc[artist.id] = artist.stage_name || artist.name;
       return acc;
     }, {});
-    exportToExcel(releasesData, "lancamentos", "Lançamentos", "releases", artistsMap);
+    
+    // Add project names to releases data
+    const releasesWithProjectNames = releasesData.map((release: any) => {
+      const project = projects.find((p: any) => p.id === release.project_id);
+      return {
+        ...release,
+        project_name: project?.name || '',
+      };
+    });
+    
+    exportToExcel(releasesWithProjectNames, "lancamentos", "Lançamentos", "releases", artistsMap);
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

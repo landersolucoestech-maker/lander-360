@@ -109,16 +109,25 @@ const projectColumns = {
 };
 
 const releaseColumns = {
-  title: 'Título',
-  type: 'Tipo',
+  // Projeto vinculado
+  project_name: 'Projeto Vinculado',
+  // Informações básicas
+  title: 'Título do Lançamento',
+  artist_name: 'Nome do Artista',
   release_type: 'Tipo de Lançamento',
-  status: 'Status',
   release_date: 'Data de Lançamento',
+  status: 'Status',
+  distributors: 'Plataformas de Distribuição',
+  distribution_notes: 'Notas de Distribuição',
+  // Metadados
   genre: 'Gênero',
   language: 'Idioma',
   label: 'Gravadora',
   copyright: 'Copyright',
-  distributors: 'Distribuidoras',
+  // Artes
+  cover_url: 'Capa do Lançamento',
+  // Faixas
+  tracks_formatted: 'Faixas',
   created_at: 'Data de Criação',
 };
 
@@ -438,6 +447,71 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
         if (p.percentage) parts.push(`${p.percentage}%`);
         return parts.join(' ');
       }).join('; ') || '';
+    }
+
+    // Format releases data
+    if (entityType === 'releases') {
+      // Format distributors as platforms
+      if (item.distributors && Array.isArray(item.distributors)) {
+        const platformMap: Record<string, string> = {
+          'onerpm': 'ONErpm',
+          'distrokid': 'DistroKid',
+          '30por1': '30por1',
+          'outras_distribuidoras': 'Outras',
+        };
+        item.distributors = item.distributors.map((d: string) => platformMap[d] || d).join(', ');
+      }
+      
+      // Add artist name from artistsMap
+      if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
+        item.artist_name = artistsMap[item.artist_id];
+      }
+      
+      // Format tracks
+      if (item.tracks && Array.isArray(item.tracks)) {
+        item.tracks_formatted = item.tracks.map((track: any, index: number) => {
+          const parts = [];
+          parts.push(`${index + 1}. ${track.title || 'Sem título'}`);
+          if (track.artist) parts.push(`Artista: ${track.artist}`);
+          if (track.isrc) parts.push(`ISRC: ${track.isrc}`);
+          if (track.composers?.length) parts.push(`Compositores: ${track.composers.join(', ')}`);
+          if (track.performers?.length) parts.push(`Intérpretes: ${track.performers.join(', ')}`);
+          if (track.producers?.length) parts.push(`Produtores: ${track.producers.join(', ')}`);
+          return parts.join(' | ');
+        }).join('\n') || '';
+      } else {
+        item.tracks_formatted = '';
+      }
+      
+      // Map status to Portuguese
+      const statusMap: Record<string, string> = {
+        'planning': 'Em Análise',
+        'em_analise': 'Em Análise',
+        'released': 'Aprovado',
+        'aprovado': 'Aprovado',
+        'cancelled': 'Rejeitado',
+        'rejeitado': 'Rejeitado',
+        'paused': 'Pausado',
+        'pausado': 'Pausado',
+      };
+      item.status = statusMap[item.status] || item.status;
+      
+      // Map release type to Portuguese
+      const typeMap: Record<string, string> = {
+        'single': 'Single',
+        'ep': 'EP',
+        'album': 'Álbum',
+      };
+      item.release_type = typeMap[item.release_type || item.type] || item.release_type || item.type || '';
+      
+      // Map language to Portuguese
+      const langMap: Record<string, string> = {
+        'portugues': 'Português',
+        'ingles': 'Inglês',
+        'espanhol': 'Espanhol',
+        'instrumental': 'Instrumental',
+      };
+      item.language = langMap[item.language] || item.language || '';
     }
 
     Object.entries(columns).forEach(([key, label]) => {
