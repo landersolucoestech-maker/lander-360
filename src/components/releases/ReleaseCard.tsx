@@ -100,13 +100,8 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {/* Top Right Badges - Type and Status */}
-        <div className="absolute top-3 right-3 flex gap-2">
-          {/* Release Type Badge */}
-          <Badge className="bg-purple-600 text-white font-bold text-xs px-3 py-1">
-            {release.type === 'single' ? 'Single' : release.type === 'ep' ? 'EP' : release.type === 'album' ? 'Álbum' : release.type?.toUpperCase() || 'Single'}
-          </Badge>
-          
+        {/* Top Right Badge - Status Only */}
+        <div className="absolute top-3 right-3">
           {/* Status Badge */}
           {release.takedown ? (
             <Badge className="bg-orange-600 text-white font-bold text-xs px-3 py-1 animate-pulse">TAKEDOWN</Badge>
@@ -129,6 +124,10 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
           <div>
             <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate">{release.title}</h3>
             <p className="text-sm text-white/70 truncate">{displayCredits()}</p>
+            {/* Release Type Badge below artist */}
+            <Badge className="bg-purple-600 text-white font-bold text-xs px-3 py-1 mt-2">
+              {release.type === 'single' ? 'Single' : release.type === 'ep' ? 'EP' : release.type === 'album' ? 'Álbum' : release.type?.toUpperCase() || 'Single'}
+            </Badge>
           </div>
 
           {/* Marketing Planning - Only show when there's a marketing plan */}
