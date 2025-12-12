@@ -260,9 +260,18 @@ function replaceVariables(text: string, data: ContractData): string {
   // Make party labels bold - replace all occurrences
   const partyLabels = ['REPRESENTANTE', 'REPRESENTADO(A)', 'REPRESENTADO', 'CONTRATANTE', 'CONTRATADO(A)', 'CONTRATADO'];
   partyLabels.forEach(label => {
-    // Only wrap if not already wrapped in <strong>
-    const regex = new RegExp(`(?<!<strong>)(${label.replace(/[()]/g, '\\$&')})(?!</strong>)`, 'g');
-    result = result.replace(regex, '<strong>$1</strong>');
+    // First, temporarily replace already wrapped labels to protect them
+    const escapedLabel = label.replace(/[()]/g, '\\$&');
+    const wrappedPattern = new RegExp(`<strong>(${escapedLabel})</strong>`, 'g');
+    const placeholder = `__PROTECTED_${label.replace(/[()]/g, '_')}__`;
+    result = result.replace(wrappedPattern, placeholder);
+    
+    // Now wrap unwrapped labels
+    const unwrappedPattern = new RegExp(`(${escapedLabel})`, 'g');
+    result = result.replace(unwrappedPattern, '<strong>$1</strong>');
+    
+    // Restore protected labels
+    result = result.replace(new RegExp(placeholder, 'g'), `<strong>${label}</strong>`);
   });
 
   return result;
