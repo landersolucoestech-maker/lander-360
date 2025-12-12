@@ -310,12 +310,29 @@ const RegistroMusicas = () => {
       return acc;
     }, {} as Record<string, string>);
     
-    // Add project_name to each music registry item
+    // Add project_name and instrumental to each music registry item
     const enrichedMusicRegistry = musicRegistry.map(music => {
       const project = projects.find(p => p.id === music.project_id);
+      let instrumental = false;
+      
+      if (project?.audio_files) {
+        let audioData = project.audio_files as any;
+        if (typeof audioData === 'string') {
+          try {
+            audioData = JSON.parse(audioData);
+          } catch (e) {
+            audioData = null;
+          }
+        }
+        if (audioData) {
+          instrumental = audioData.instrumental === true || audioData.instrumental === 'true';
+        }
+      }
+      
       return {
         ...music,
         project_name: project?.name || '',
+        instrumental: instrumental ? 'Sim' : 'Não',
       };
     });
     
