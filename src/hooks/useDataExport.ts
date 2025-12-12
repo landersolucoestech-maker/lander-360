@@ -193,6 +193,7 @@ const musicRegistryColumns = {
   project_name: 'Projeto',
   status: 'Status',
   genre: 'Gênero',
+  instrumental: 'Instrumental',
   duration: 'Duração',
   abramus_code: 'Código ABRAMUS',
   ecad_code: 'Código ECAD',
