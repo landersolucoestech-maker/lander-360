@@ -780,10 +780,10 @@ const RegistroMusicas = () => {
                               <div className="space-y-1 min-w-0">
                                 <h3 className="font-medium text-foreground">{song.title}</h3>
                                 <Badge 
-                                  variant={
-                                    song.statusDisplay === "Aceita" ? "default" :
-                                    song.statusDisplay === "Recusada" ? "destructive" :
-                                    song.statusDisplay === "Em Análise" ? "outline" : "secondary"
+                                  className={
+                                    song.statusDisplay === "Aceita" ? "bg-green-600 text-white hover:bg-green-700" :
+                                    song.statusDisplay === "Recusada" ? "bg-red-600 text-white hover:bg-red-700" :
+                                    "bg-yellow-500 text-black hover:bg-yellow-600"
                                   }
                                 >
                                   {song.statusDisplay}
@@ -930,10 +930,10 @@ const RegistroMusicas = () => {
                               <div className="space-y-1">
                                 <h3 className="font-medium text-foreground">{phono.title}</h3>
                                 <Badge 
-                                  variant={
-                                    phono.statusDisplay === "Aceita" ? "default" :
-                                    phono.statusDisplay === "Recusada" ? "destructive" :
-                                    phono.statusDisplay === "Em Análise" ? "outline" : "secondary"
+                                  className={
+                                    phono.statusDisplay === "Aceita" ? "bg-green-600 text-white hover:bg-green-700" :
+                                    phono.statusDisplay === "Recusada" ? "bg-red-600 text-white hover:bg-red-700" :
+                                    "bg-yellow-500 text-black hover:bg-yellow-600"
                                   }
                                 >
                                   {phono.statusDisplay}
