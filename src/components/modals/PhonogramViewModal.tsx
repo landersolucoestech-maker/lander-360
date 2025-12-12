@@ -314,10 +314,10 @@ export function PhonogramViewModal({ open, onOpenChange, phonogram }: PhonogramV
                 <label className="text-sm font-medium text-muted-foreground">Status Atual</label>
                 <div className="mt-1">
                   <Badge 
-                    variant={
-                      phonogram.status === "aceita" ? "default" : 
-                      phonogram.status === "recusada" ? "destructive" : 
-                      phonogram.status === "em_analise" ? "outline" : "secondary"
+                    className={
+                      phonogram.status === "aceita" ? "bg-blue-600 text-white" : 
+                      phonogram.status === "recusada" ? "bg-red-600 text-white" : 
+                      "bg-yellow-500 text-black"
                     }
                   >
                     {getStatusDisplay(phonogram.status)}

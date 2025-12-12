@@ -131,12 +131,11 @@ export function MusicViewModal({ open, onOpenChange, song }: MusicViewModalProps
                 <label className="text-sm font-medium text-muted-foreground">Status Atual</label>
                 <div className="mt-1">
                   <Badge 
-                    variant={
-                      song.statusDisplay === "Aceita" ? "default" : 
-                      song.statusDisplay === "Recusada" ? "destructive" : 
-                      song.statusDisplay === "Em Análise" ? "outline" : "secondary"
+                    className={
+                      song.statusDisplay === "Aceita" ? "bg-blue-600 text-white text-sm" : 
+                      song.statusDisplay === "Recusada" ? "bg-red-600 text-white text-sm" : 
+                      "bg-yellow-500 text-black text-sm"
                     }
-                    className="text-sm"
                   >
                     {song.statusDisplay || song.status}
                   </Badge>
