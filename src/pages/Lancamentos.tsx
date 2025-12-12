@@ -58,7 +58,7 @@ const Lancamentos = () => {
 
   const filterOptions = [
     { key: "type", label: "Tipo", options: ["Single", "EP", "Álbum"] },
-    { key: "status", label: "Status", options: ["Em Análise", "Aprovado", "Rejeitado", "Pausado"] },
+    { key: "status", label: "Status", options: ["Em Análise", "Aprovado", "Rejeitado", "Pausado", "Takedown"] },
     { key: "artist", label: "Artista", options: [] }
   ];
 

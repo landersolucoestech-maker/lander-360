@@ -19,7 +19,7 @@ interface ReleaseCardProps {
     status: string;
     type: string;
     cover?: string;
-    approvalStatus?: "em_analise" | "aprovado" | "rejeitado" | "pausado";
+    approvalStatus?: "em_analise" | "aprovado" | "rejeitado" | "pausado" | "takedown";
     priority?: "alta" | "media" | "baixa";
     takedown?: boolean;
     hasMarketingPlan?: boolean;
@@ -103,10 +103,10 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
         {/* Top Right Badge - Status Only */}
         <div className="absolute top-3 right-3">
           {/* Status Badge */}
-          {release.takedown ? (
-            <Badge className="bg-orange-600 text-white font-bold text-xs px-3 py-1 animate-pulse">TAKEDOWN</Badge>
+          {release.takedown || release.approvalStatus === "takedown" ? (
+            <Badge className="bg-purple-600 text-white font-bold text-xs px-3 py-1">TAKEDOWN</Badge>
           ) : release.approvalStatus === "em_analise" ? (
-            <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">EM ANÁLISE</Badge>
+            <Badge className="bg-pink-500 text-white font-bold text-xs px-3 py-1">EM ANÁLISE</Badge>
           ) : release.approvalStatus === "aprovado" ? (
             <Badge className="bg-green-500 text-white font-bold text-xs px-3 py-1">APROVADO</Badge>
           ) : release.approvalStatus === "rejeitado" ? (
@@ -114,7 +114,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
           ) : release.approvalStatus === "pausado" ? (
             <Badge className="bg-blue-500 text-white font-bold text-xs px-3 py-1">PAUSADO</Badge>
           ) : (
-            <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1">EM ANÁLISE</Badge>
+            <Badge className="bg-pink-500 text-white font-bold text-xs px-3 py-1">EM ANÁLISE</Badge>
           )}
         </div>
 
@@ -124,8 +124,8 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
           <div>
             <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate">{release.title}</h3>
             <p className="text-sm text-white/70 truncate">{displayCredits()}</p>
-            {/* Release Type Badge below artist */}
-            <Badge className="bg-purple-600 text-white font-bold text-xs px-3 py-1 mt-2">
+            {/* Release Type Badge below artist - Red color */}
+            <Badge className="bg-red-600 text-white font-bold text-xs px-3 py-1 mt-2">
               {release.type === 'single' ? 'Single' : release.type === 'ep' ? 'EP' : release.type === 'album' ? 'Álbum' : release.type?.toUpperCase() || 'Single'}
             </Badge>
           </div>
