@@ -276,19 +276,19 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     );
 
     const hasLanderEditor = watchedParticipants.some(p => 
-      p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
+      (p.name?.toLowerCase().trim() === 'deyvisson lander andrade 06204919652' || 
+       p.name?.toLowerCase().trim() === 'deyvisson lander andrade') && 
+      p.role === 'editor'
     );
 
     if (landerArtistComposer && !hasLanderEditor) {
-      // Get the composer's percentage to use for Lander Records as editor
-      const composerPercentage = landerArtistComposer.percentage || 0;
-      
+      // Get the composer's percentage to use for editor (will be updated to 10% by other effect)
       appendParticipant({
-        name: 'Lander Records',
+        name: 'Deyvisson Lander Andrade 06204919652',
         role: 'editor',
         link: '',
         contract_start_date: '',
-        percentage: composerPercentage, // Use the same percentage as the composer
+        percentage: 10, // Editor always gets 10%
       });
 
       // Trigger auto contract creation for the artist
@@ -318,9 +318,11 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
-    // Check if Lander Records is an editor
+    // Check if Deyvisson Lander Andrade is an editor
     const landerEditorIndex = watchedParticipants.findIndex(p => 
-      p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
+      (p.name?.toLowerCase().trim() === 'deyvisson lander andrade 06204919652' || 
+       p.name?.toLowerCase().trim() === 'deyvisson lander andrade') && 
+      p.role === 'editor'
     );
     const hasLanderEditor = landerEditorIndex !== -1;
 
@@ -336,8 +338,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     let updatedParticipants: typeof watchedParticipants;
 
     if (hasLanderEditor) {
-      // CASE: Lander Records IS an editor
-      // Lander gets Link 1 and 10%, remaining 90% divided among other participants
+      // CASE: Deyvisson Lander Andrade IS an editor
+      // Deyvisson gets Link 1 and 10%, remaining 90% divided among other participants
       const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
       const otherCount = otherParticipants.length;
       
@@ -351,7 +353,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       
       updatedParticipants = watchedParticipants.map((p, idx) => {
         if (idx === landerEditorIndex) {
-          // Lander Records: Link 1, 10%
+          // Deyvisson Lander Andrade: Link 1, 10%
           return {
             ...p,
             link: 'Link 1',
@@ -371,7 +373,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         }
       });
     } else {
-      // CASE: Lander Records is NOT an editor
+      // CASE: Deyvisson Lander Andrade is NOT an editor
       // Divide 100% equally among composers, assign sequential links to all
       const composers = watchedParticipants.filter(p => 
         composerRoles.includes(p.role?.toLowerCase())
