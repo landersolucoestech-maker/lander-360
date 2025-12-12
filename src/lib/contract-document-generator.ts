@@ -429,7 +429,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
   html += `
     <p style="text-align: justify; margin-top: 40px;">E, por estarem assim justos e contratados, firmam o presente instrumento, em 2 (duas) vias de igual teor, juntamente com 2 (duas) testemunhas.</p>
 
-    <p style="text-align: center; margin-top: 30px;">${companyData.company_address}, ${formatDateBR(new Date().toISOString())}.</p>
+    
 
     <div class="signatures">
       <div class="signature-block">
