@@ -310,8 +310,8 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
   return data.map(item => {
     const transformed: Record<string, any> = {};
     
-    // Add artist name if available
-    if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
+    // Add artist name if available (skip for music_registry as it uses artist_name -> Artista Responsável)
+    if (artistsMap && item.artist_id && artistsMap[item.artist_id] && entityType !== 'music_registry') {
       transformed['Artista'] = artistsMap[item.artist_id];
     }
     
