@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileText, Download, Users, Palette, Search, Filter, Calendar as CalendarIcon, Package, X, Loader2, Music, DollarSign, Disc, FileSignature, Warehouse, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { cn, formatDateBR, formatDateTimeBR, translateStatus, translatePriority, translateCategory } from "@/lib/utils";
-import * as XLSX from "xlsx";
+import XLSX from "xlsx-js-style";
 import {
   useFinancialReport,
   useArtistsReport,
@@ -166,10 +166,85 @@ const Relatorios = () => {
       return;
     }
 
+    // Status color mapping
+    const statusColorMap: Record<string, { fgColor: string; bgColor: string }> = {
+      'em análise': { fgColor: '000000', bgColor: 'FFEB3B' },
+      'em analise': { fgColor: '000000', bgColor: 'FFEB3B' },
+      'em análise na distribuidora': { fgColor: '000000', bgColor: 'FFEB3B' },
+      'em espera': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+      'espera': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+      'pendente': { fgColor: 'FFFFFF', bgColor: 'F44336' },
+      'lançada': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+      'lancada': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+      'lançado': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+      'lancado': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+      'música lançada': { fgColor: 'FFFFFF', bgColor: '2196F3' },
+      'pronta': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'pronto': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'concluído': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'concluido': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'ativo': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'aprovado': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'pronta para registro': { fgColor: 'FFFFFF', bgColor: '4CAF50' },
+      'takedown': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+      'removido': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+      'cancelado': { fgColor: 'FFFFFF', bgColor: '9C27B0' },
+    };
+
+    const getStatusColor = (value: string) => {
+      if (!value) return null;
+      const normalizedValue = value.toLowerCase().trim();
+      return statusColorMap[normalizedValue] || null;
+    };
+
     const worksheet = XLSX.utils.json_to_sheet(data);
+    
+    // Find status columns and apply coloring
+    const headers = Object.keys(data[0]);
+    const statusColumnLabels = ['Status', 'status', 'Status Contrato'];
+    const statusColumnIndices: number[] = [];
+    headers.forEach((header, index) => {
+      if (statusColumnLabels.some(label => header.toLowerCase().includes(label.toLowerCase()))) {
+        statusColumnIndices.push(index);
+      }
+    });
+
+    // Apply styling to status cells
+    data.forEach((row, rowIndex) => {
+      statusColumnIndices.forEach(colIndex => {
+        const header = headers[colIndex];
+        const cellValue = row[header];
+        const color = getStatusColor(String(cellValue || ''));
+        
+        if (color) {
+          const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex });
+          
+          if (!worksheet[cellAddress]) {
+            worksheet[cellAddress] = { v: cellValue };
+          }
+          
+          worksheet[cellAddress].s = {
+            fill: {
+              patternType: 'solid',
+              fgColor: { rgb: color.bgColor },
+              bgColor: { rgb: color.bgColor },
+            },
+            font: {
+              color: { rgb: color.fgColor },
+              bold: true,
+            },
+            alignment: {
+              horizontal: 'center',
+              vertical: 'center',
+            },
+          };
+        }
+      });
+    });
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, report.type);
-    XLSX.writeFile(workbook, `relatorio_${report.id}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(workbook, `relatorio_${report.id}_${new Date().toISOString().split('T')[0]}.xlsx`, { cellStyles: true });
 
     toast({
       title: "Exportação concluída",
