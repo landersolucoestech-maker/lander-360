@@ -435,13 +435,13 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
       <div class="signature-block">
         <div class="signature-line">
           <strong>${signatures.leftName}</strong><br>
-          ${signatures.leftLabel}
+          <strong>${signatures.leftLabel}</strong>
         </div>
       </div>
       <div class="signature-block">
         <div class="signature-line">
           <strong>${signatures.rightName}</strong><br>
-          ${signatures.rightLabel}
+          <strong>${signatures.rightLabel}</strong>
         </div>
       </div>
     </div>
