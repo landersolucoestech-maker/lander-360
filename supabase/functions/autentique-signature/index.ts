@@ -18,13 +18,13 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!AUTENTIQUE_API_KEY) {
-      throw new Error('AUTENTIQUE_API_KEY not configured');
+      throw new Error('AUTENTIQUE_API_KEY não configurada. Configure em Configurações > Secrets.');
     }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { contractId, documentId, action } = await req.json();
+    const { contractId, documentId, action, pdfBase64 } = await req.json();
 
-    console.log('Autentique signature request:', { action, contractId, documentId });
+    console.log('Autentique signature request:', { action, contractId, documentId, hasPdf: !!pdfBase64 });
 
     if (action === 'create') {
       // Fetch contract details
@@ -35,40 +35,67 @@ serve(async (req) => {
         .single();
 
       if (contractError || !contract) {
-        throw new Error('Contract not found');
+        throw new Error('Contrato não encontrado');
       }
 
-      const artistName = contract.artists?.stage_name || contract.artists?.name || 'Artista';
+      const artistName = contract.artists?.full_name || contract.artists?.stage_name || contract.artists?.name || 'Artista';
       const artistEmail = contract.artists?.email;
 
       if (!artistEmail) {
-        throw new Error('Artist email not found - required for digital signature');
+        throw new Error('E-mail do artista não encontrado - necessário para assinatura digital');
       }
 
-      // Create document in Autentique via GraphQL API
-      const mutation = `
-        mutation CreateDocument($document: DocumentInput!) {
-          createDocument(document: $document) {
-            id
-            name
-            signatures {
-              public_id
+      if (!pdfBase64) {
+        throw new Error('PDF do contrato não fornecido - gere a prévia antes de enviar para assinatura');
+      }
+
+      // Autentique uses multipart/form-data for file upload
+      // We need to use their REST API endpoint for document creation with file
+      const formData = new FormData();
+      
+      // Convert base64 to Blob
+      const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const pdfBlob = new Blob([bytes], { type: 'application/pdf' });
+      
+      // GraphQL mutation with file upload
+      const operations = JSON.stringify({
+        query: `
+          mutation CreateDocumentMutation(
+            $document: DocumentInput!,
+            $signers: [SignerInput!]!,
+            $file: Upload!
+          ) {
+            createDocument(
+              document: $document,
+              signers: $signers,
+              file: $file
+            ) {
+              id
               name
-              email
-              signed {
+              refusable
+              sortable
+              created_at
+              signatures {
+                public_id
+                name
+                email
                 created_at
+                action { name }
+                link { short_link }
+                user { id name email }
               }
             }
           }
-        }
-      `;
-
-      const variables = {
-        document: {
-          name: contract.title || `Contrato - ${artistName}`,
-          message: `Por favor, assine o contrato de ${contract.service_type || 'edição'} musical.`,
-          reminder: "WEEKLY",
-          sortable: true,
+        `,
+        variables: {
+          document: {
+            name: contract.title || `Contrato - ${artistName}`,
+          },
           signers: [
             {
               email: artistEmail,
@@ -76,46 +103,64 @@ serve(async (req) => {
               name: artistName
             },
             {
-              email: "contratos@lander360.com", // Company signer
+              email: "contratos@lander360.com",
               action: "SIGN",
               name: "Lander Records"
             }
-          ]
+          ],
+          file: null
         }
-      };
+      });
+
+      const map = JSON.stringify({
+        "0": ["variables.file"]
+      });
+
+      formData.append('operations', operations);
+      formData.append('map', map);
+      formData.append('0', pdfBlob, `contrato-${contractId}.pdf`);
+
+      console.log('Sending to Autentique with file upload...');
 
       const response = await fetch('https://api.autentique.com.br/v2/graphql', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${AUTENTIQUE_API_KEY}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: mutation, variables }),
+        body: formData,
       });
 
       const result = await response.json();
       console.log('Autentique create response:', JSON.stringify(result));
 
       if (result.errors) {
-        throw new Error(result.errors[0]?.message || 'Autentique API error');
+        const errorMessage = result.errors[0]?.message || 'Erro na API do Autentique';
+        console.error('Autentique errors:', result.errors);
+        throw new Error(errorMessage);
       }
 
       const doc = result.data?.createDocument;
       
-      // Update contract with document ID
+      if (!doc?.id) {
+        throw new Error('Documento não foi criado no Autentique');
+      }
+
+      // Update contract with document ID and status
       await supabase
         .from('contracts')
         .update({ 
-          document_url: doc?.id,
-          status: 'pendente'
+          autentique_document_id: doc.id,
+          status: 'pendente',
+          signature_request_date: new Date().toISOString()
         })
         .eq('id', contractId);
 
       return new Response(
         JSON.stringify({ 
           success: true, 
-          documentId: doc?.id,
-          message: 'Document created and sent for signature'
+          documentId: doc.id,
+          message: 'Contrato enviado para assinatura com sucesso',
+          signatures: doc.signatures
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -135,9 +180,14 @@ serve(async (req) => {
               signed {
                 created_at
               }
+              rejected {
+                created_at
+                reason
+              }
             }
             files {
               signed
+              original
             }
           }
         }
@@ -156,24 +206,30 @@ serve(async (req) => {
       console.log('Autentique status response:', JSON.stringify(result));
 
       if (result.errors) {
-        throw new Error(result.errors[0]?.message || 'Autentique API error');
+        throw new Error(result.errors[0]?.message || 'Erro na API do Autentique');
       }
 
       const doc = result.data?.document;
       const allSigned = doc?.signatures?.every((s: any) => s.signed?.created_at);
+      const anyRejected = doc?.signatures?.some((s: any) => s.rejected?.created_at);
       
+      let status = 'pending';
+      if (allSigned) status = 'signed';
+      if (anyRejected) status = 'rejected';
+
       return new Response(
         JSON.stringify({ 
           success: true, 
-          status: allSigned ? 'signed' : 'pending',
+          status,
           signedUrl: allSigned ? doc?.files?.signed : null,
+          originalUrl: doc?.files?.original,
           signatures: doc?.signatures
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    throw new Error('Invalid action');
+    throw new Error('Ação inválida');
 
   } catch (error: any) {
     console.error('Autentique signature error:', error);

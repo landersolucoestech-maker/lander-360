@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Download, Send, Printer, Mail } from 'lucide-react';
 import { ContractTemplate, ContractClause } from '@/services/contractTemplates';
-import { ContractData, downloadContractPDF, generateContractHTML } from '@/lib/contract-document-generator';
+import { ContractData, downloadContractPDF, generateContractHTML, getContractPDFBlob } from '@/lib/contract-document-generator';
 import { useContractTemplates } from '@/hooks/useContractTemplates';
 import { useArtists } from '@/hooks/useArtists';
 import { Contract } from '@/types/database';
@@ -232,7 +232,15 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
         onDocumentGenerated(contract.id, htmlContent);
       }
 
-      const result = await AutoContractService.requestDigitalSignature(contract.id);
+      // Generate PDF as base64 for Autentique
+      const pdfBlob = await getContractPDFBlob(selectedTemplate, contractData, customClauses);
+      const pdfBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      const result = await AutoContractService.requestDigitalSignature(contract.id, pdfBase64);
       
       if (result.success) {
         toast({
