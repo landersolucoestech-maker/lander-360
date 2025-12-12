@@ -69,17 +69,17 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   
   // Template data states
   const [companyData, setCompanyData] = useState({
-    company_name: '',
-    company_type: '',
-    cnpj: '',
-    company_address: '',
-    representative_name: '',
-    representative_nationality: '',
-    representative_marital_status: '',
-    representative_profession: '',
-    representative_rg: '',
-    representative_cpf: '',
-    representative_address: '',
+    company_name: 'Lander Produtora',
+    company_type: 'pessoa jurídica de direito privado',
+    cnpj: '50.056.858/0001-46',
+    company_address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
+    representative_name: 'Deyvisson Lander Andrade',
+    representative_nationality: 'brasileiro',
+    representative_marital_status: 'solteiro',
+    representative_profession: 'empresário',
+    representative_rg: 'MG17905257',
+    representative_cpf: '062.049.196-52',
+    representative_address: 'Rua Professor Cid Pitanga, nº 410, Bairro Vila Império, Governador Valadares/MG, CEP 35050-610',
   });
 
   const [contractedPartyData, setContractedPartyData] = useState({
