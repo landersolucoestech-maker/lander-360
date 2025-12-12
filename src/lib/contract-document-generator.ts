@@ -336,6 +336,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     }
     .content {
       padding: 20px 25mm;
+      text-align: justify;
     }
     .title {
       font-size: 16pt;
@@ -365,6 +366,7 @@ export function generateContractHTML(template: ContractTemplate, data: ContractD
     }
     .clause-content {
       text-indent: 2em;
+      text-align: justify;
     }
     .signatures {
       margin-top: 60px;
