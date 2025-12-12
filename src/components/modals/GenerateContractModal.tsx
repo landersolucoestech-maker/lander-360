@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Download, Send, Eye, Edit2, Plus, Trash2 } from 'lucide-react';
-import { DateInput } from '@/components/ui/date-input';
+import { FileText, Download, Send, Printer, Mail } from 'lucide-react';
 import { ContractTemplate, ContractClause } from '@/services/contractTemplates';
-import { ContractData, downloadContractPDF, generateContractHTML, getContractPDFBlob } from '@/lib/contract-document-generator';
+import { ContractData, downloadContractPDF, generateContractHTML } from '@/lib/contract-document-generator';
 import { useContractTemplates } from '@/hooks/useContractTemplates';
 import { useArtists } from '@/hooks/useArtists';
 import { Contract } from '@/types/database';
 import { AutoContractService } from '@/services/autoContractService';
 import { useToast } from '@/hooks/use-toast';
-import { formatDateBR } from '@/lib/utils';
 
 interface GenerateContractModalProps {
   isOpen: boolean;
@@ -26,19 +18,6 @@ interface GenerateContractModalProps {
   contract?: Contract | null;
   onDocumentGenerated?: (contractId: string, documentContent: string) => void;
 }
-
-const templateTypeLabels: Record<string, string> = {
-  agenciamento: 'Agenciamento',
-  gestao: 'Gestão',
-  empresariamento: 'Empresariamento',
-  producao_musical: 'Produção Musical',
-  producao_audiovisual: 'Produção Audiovisual',
-  edicao: 'Edição',
-  distribuicao: 'Distribuição',
-  marketing: 'Marketing',
-  licenciamento: 'Licenciamento',
-  termo_fonograma: 'Termo de Autorização de Fonograma',
-};
 
 export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
   isOpen,
@@ -50,16 +29,15 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
   const { data: artists = [] } = useArtists();
   const { toast } = useToast();
 
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate | null>(null);
   const [customClauses, setCustomClauses] = useState<ContractClause[]>([]);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
 
   const [contractData, setContractData] = useState<ContractData>({
-    company_name: 'LANDER RECORDS LTDA',
-    company_cnpj: '',
-    company_address: 'São Paulo/SP',
+    company_name: 'Lander Produtora',
+    company_cnpj: '50.056.858/0001-46',
+    company_address: 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
     company_email: 'contato@lander360.com',
     contracted_name: '',
     contracted_cpf_cnpj: '',
@@ -76,110 +54,102 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     work_title: '',
   });
 
-  // Load contract data if editing
+  // Load contract data and template when modal opens
   useEffect(() => {
     if (contract && isOpen) {
       const artist = artists.find(a => a.id === contract.artist_id);
       
-      setContractData(prev => ({
-        ...prev,
-        contracted_name: artist?.full_name || artist?.name || '',
-        contracted_cpf_cnpj: artist?.cpf_cnpj || '',
-        contracted_address: artist?.full_address || '',
-        contracted_email: artist?.email || '',
-        contracted_stage_name: artist?.stage_name || '',
-        contract_title: contract.title,
-        service_type: contract.service_type || '',
-        start_date: contract.effective_from || contract.start_date || '',
-        end_date: contract.effective_to || contract.end_date || '',
-        fixed_value: contract.fixed_value || contract.value || undefined,
-        royalties_percentage: contract.royalties_percentage || contract.royalty_rate || undefined,
-        advance_amount: contract.advance_amount || undefined,
-      }));
-
-      // Find matching template
+      // Find matching template based on service_type
       const matchingTemplate = templates.find(t => t.template_type === contract.service_type);
+      
       if (matchingTemplate) {
-        setSelectedTemplateId(matchingTemplate.id);
         setSelectedTemplate(matchingTemplate);
-        setCustomClauses(matchingTemplate.clauses);
+        setCustomClauses(matchingTemplate.clauses || []);
+        
+        // Load company data from template default_fields
+        const defaultFields = matchingTemplate.default_fields || {};
+        const companyData = defaultFields.companyData || {};
+        
+        setContractData({
+          company_name: companyData.legal_name || companyData.company_name || 'Lander Produtora',
+          company_cnpj: companyData.cnpj || companyData.company_cnpj || '50.056.858/0001-46',
+          company_address: companyData.address || companyData.company_address || 'Rua A, nº 58, Bairro Vila Império, Governador Valadares/MG, CEP 35050-560',
+          company_email: companyData.email || companyData.company_email || 'contato@lander360.com',
+          contracted_name: artist?.full_name || artist?.name || '',
+          contracted_cpf_cnpj: artist?.cpf_cnpj || '',
+          contracted_address: artist?.full_address || '',
+          contracted_email: artist?.email || '',
+          contracted_stage_name: artist?.stage_name || '',
+          contract_title: contract.title,
+          service_type: contract.service_type || '',
+          start_date: contract.effective_from || contract.start_date || '',
+          end_date: contract.effective_to || contract.end_date || '',
+          fixed_value: contract.fixed_value || contract.value || undefined,
+          royalties_percentage: contract.royalties_percentage || contract.royalty_rate || undefined,
+          advance_amount: contract.advance_amount || undefined,
+          work_title: contract.title || '',
+        });
+      } else {
+        // No template found, use contract data directly
+        setContractData(prev => ({
+          ...prev,
+          contracted_name: artist?.full_name || artist?.name || '',
+          contracted_cpf_cnpj: artist?.cpf_cnpj || '',
+          contracted_address: artist?.full_address || '',
+          contracted_email: artist?.email || '',
+          contracted_stage_name: artist?.stage_name || '',
+          contract_title: contract.title,
+          service_type: contract.service_type || '',
+          start_date: contract.effective_from || contract.start_date || '',
+          end_date: contract.effective_to || contract.end_date || '',
+          fixed_value: contract.fixed_value || contract.value || undefined,
+          royalties_percentage: contract.royalties_percentage || contract.royalty_rate || undefined,
+          advance_amount: contract.advance_amount || undefined,
+          work_title: contract.title || '',
+        }));
       }
     }
   }, [contract, artists, templates, isOpen]);
 
-  // Update selected template and load default fields
-  useEffect(() => {
-    if (selectedTemplateId) {
-      const template = templates.find(t => t.id === selectedTemplateId);
-      if (template) {
-        setSelectedTemplate(template);
-        setCustomClauses(template.clauses);
-        
-        // Load default fields from template
-        const defaultFields = template.default_fields || {};
-        const companyData = defaultFields.companyData || {};
-        const contractedPartyData = defaultFields.contractedPartyData || {};
-        
-        setContractData(prev => ({
-          ...prev,
-          // Company data from template
-          company_name: companyData.legal_name || companyData.company_name || prev.company_name,
-          company_cnpj: companyData.cnpj || companyData.company_cnpj || prev.company_cnpj,
-          company_address: companyData.address || companyData.company_address || prev.company_address,
-          company_email: companyData.email || companyData.company_email || prev.company_email,
-          // Contracted party data from template (only if not already editing a contract with artist)
-          ...((!contract || !contract.artist_id) && contractedPartyData.full_name ? {
-            contracted_name: contractedPartyData.full_name || '',
-            contracted_cpf_cnpj: contractedPartyData.cpf || contractedPartyData.cnpj || '',
-            contracted_address: contractedPartyData.address || '',
-            contracted_email: contractedPartyData.email || '',
-            contracted_stage_name: contractedPartyData.stage_name || '',
-          } : {}),
-        }));
-      }
-    }
-  }, [selectedTemplateId, templates, contract]);
-
-  // Generate preview
+  // Generate preview when template or data changes
   useEffect(() => {
     if (selectedTemplate && contractData.contracted_name) {
       const html = generateContractHTML(selectedTemplate, contractData, customClauses);
       setPreviewHtml(html);
+    } else {
+      setPreviewHtml('');
     }
   }, [selectedTemplate, contractData, customClauses]);
 
-  const handleArtistSelect = (artistId: string) => {
-    const artist = artists.find(a => a.id === artistId);
-    if (artist) {
-      setContractData(prev => ({
-        ...prev,
-        contracted_name: artist.full_name || artist.name,
-        contracted_cpf_cnpj: artist.cpf_cnpj || '',
-        contracted_address: artist.full_address || '',
-        contracted_email: artist.email || '',
-        contracted_stage_name: artist.stage_name || '',
-      }));
+  const handlePrint = () => {
+    if (!previewHtml) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Contrato - ${contractData.contract_title}</title>
+            <style>
+              @media print {
+                body { margin: 0; padding: 20px; }
+              }
+            </style>
+          </head>
+          <body>
+            ${previewHtml}
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() { window.close(); }
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
-  };
-
-  const handleAddClause = () => {
-    const newClause: ContractClause = {
-      id: Date.now().toString(),
-      title: '',
-      content: '',
-      isCustom: true,
-    };
-    setCustomClauses([...customClauses, newClause]);
-  };
-
-  const handleUpdateClause = (id: string, field: 'title' | 'content', value: string) => {
-    setCustomClauses(customClauses.map(clause =>
-      clause.id === id ? { ...clause, [field]: value } : clause
-    ));
-  };
-
-  const handleRemoveClause = (id: string) => {
-    setCustomClauses(customClauses.filter(clause => clause.id !== id));
   };
 
   const handleDownloadPDF = async () => {
@@ -201,11 +171,27 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     }
   };
 
+  const handleSendEmail = async () => {
+    if (!contractData.contracted_email) {
+      toast({
+        title: 'E-mail não encontrado',
+        description: 'O contratado não possui e-mail cadastrado.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Funcionalidade em desenvolvimento',
+      description: 'O envio por e-mail será implementado em breve.',
+    });
+  };
+
   const handleSendToSignature = async () => {
     if (!contract || !selectedTemplate) {
       toast({
         title: 'Erro',
-        description: 'Selecione um contrato e template para enviar para assinatura.',
+        description: 'Contrato ou template não encontrado.',
         variant: 'destructive',
       });
       return;
@@ -222,14 +208,12 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
 
     setIsSending(true);
     try {
-      // Generate HTML content and save to contract
       const htmlContent = generateContractHTML(selectedTemplate, contractData, customClauses);
       
       if (onDocumentGenerated) {
         onDocumentGenerated(contract.id, htmlContent);
       }
 
-      // Request digital signature via Autentique
       const result = await AutoContractService.requestDigitalSignature(contract.id);
       
       if (result.success) {
@@ -253,310 +237,87 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     }
   };
 
+  const hasPreview = !!previewHtml;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+      <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <FileText className="h-5 w-5" />
-            Gerar Documento de Contrato
+            Prévia do Contrato
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="data" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="data">Dados</TabsTrigger>
-            <TabsTrigger value="clauses">Cláusulas</TabsTrigger>
-            <TabsTrigger value="preview">Prévia</TabsTrigger>
-          </TabsList>
-
-          <ScrollArea className="flex-1">
-            <TabsContent value="data" className="mt-4 space-y-4 p-1">
-              {/* Template Selection */}
-              <Card>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm">Template do Contrato</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.name}
-                          <Badge variant="secondary" className="ml-2">
-                            {templateTypeLabels[template.template_type]}
-                          </Badge>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
-
-              {/* Contractor Data */}
-              <Card>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm">Dados da Contratante (Lander Records)</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Razão Social</Label>
-                    <Input
-                      value={contractData.company_name}
-                      onChange={(e) => setContractData({ ...contractData, company_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>CNPJ</Label>
-                    <Input
-                      value={contractData.company_cnpj}
-                      onChange={(e) => setContractData({ ...contractData, company_cnpj: e.target.value })}
-                      placeholder="XX.XXX.XXX/0001-XX"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Endereço</Label>
-                    <Input
-                      value={contractData.company_address}
-                      onChange={(e) => setContractData({ ...contractData, company_address: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>E-mail</Label>
-                    <Input
-                      value={contractData.company_email}
-                      onChange={(e) => setContractData({ ...contractData, company_email: e.target.value })}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Contracted Party Data */}
-              <Card>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm">Dados do Contratado</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Selecionar Artista</Label>
-                    <Select onValueChange={handleArtistSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Buscar artista cadastrado..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {artists.map((artist) => (
-                          <SelectItem key={artist.id} value={artist.id}>
-                            {artist.stage_name || artist.name}
-                            {artist.full_name && artist.full_name !== artist.name && (
-                              <span className="text-muted-foreground ml-2">({artist.full_name})</span>
-                            )}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nome Completo</Label>
-                      <Input
-                        value={contractData.contracted_name}
-                        onChange={(e) => setContractData({ ...contractData, contracted_name: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nome Artístico</Label>
-                      <Input
-                        value={contractData.contracted_stage_name}
-                        onChange={(e) => setContractData({ ...contractData, contracted_stage_name: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>CPF/CNPJ</Label>
-                      <Input
-                        value={contractData.contracted_cpf_cnpj}
-                        onChange={(e) => setContractData({ ...contractData, contracted_cpf_cnpj: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>E-mail</Label>
-                      <Input
-                        value={contractData.contracted_email}
-                        onChange={(e) => setContractData({ ...contractData, contracted_email: e.target.value })}
-                      />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                      <Label>Endereço</Label>
-                      <Input
-                        value={contractData.contracted_address}
-                        onChange={(e) => setContractData({ ...contractData, contracted_address: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Contract Details */}
-              <Card>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm">Detalhes do Contrato</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Data de Início</Label>
-                    <DateInput
-                      value={contractData.start_date ? new Date(contractData.start_date) : undefined}
-                      onChange={(date) => setContractData({ ...contractData, start_date: date?.toISOString().split('T')[0] || '' })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Data de Término</Label>
-                    <DateInput
-                      value={contractData.end_date ? new Date(contractData.end_date) : undefined}
-                      onChange={(date) => setContractData({ ...contractData, end_date: date?.toISOString().split('T')[0] || '' })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Royalties (%)</Label>
-                    <Input
-                      type="number"
-                      value={contractData.royalties_percentage || ''}
-                      onChange={(e) => setContractData({ ...contractData, royalties_percentage: parseFloat(e.target.value) || undefined })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Valor Fixo (R$)</Label>
-                    <Input
-                      type="number"
-                      value={contractData.fixed_value || ''}
-                      onChange={(e) => setContractData({ ...contractData, fixed_value: parseFloat(e.target.value) || undefined })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Adiantamento (R$)</Label>
-                    <Input
-                      type="number"
-                      value={contractData.advance_amount || ''}
-                      onChange={(e) => setContractData({ ...contractData, advance_amount: parseFloat(e.target.value) || undefined })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Título da Obra</Label>
-                    <Input
-                      value={contractData.work_title || ''}
-                      onChange={(e) => setContractData({ ...contractData, work_title: e.target.value })}
-                      placeholder="Para contratos de edição/licenciamento"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="clauses" className="mt-4 space-y-4 p-1">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Cláusulas do Contrato</h3>
-                <Button variant="outline" size="sm" onClick={handleAddClause}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Cláusula
-                </Button>
-              </div>
-
-              {customClauses.length === 0 ? (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    <p>Selecione um template para carregar as cláusulas padrão.</p>
-                  </CardContent>
-                </Card>
+        <ScrollArea className="flex-1">
+          <Card className="m-1">
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm">
+                {contractData.contract_title || 'Documento do Contrato'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {hasPreview ? (
+                <div 
+                  className="border border-border rounded-lg p-4 sm:p-6 bg-white text-black min-h-[400px] sm:min-h-[500px] overflow-auto"
+                  style={{ fontFamily: 'Times New Roman, serif' }}
+                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                />
               ) : (
-                customClauses.map((clause, index) => (
-                  <Card key={clause.id}>
-                    <CardHeader className="py-3 flex flex-row items-center justify-between">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs">
-                          Cláusula {index + 1}
-                        </span>
-                        {clause.isCustom && <Badge variant="outline">Personalizada</Badge>}
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveClause(clause.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="space-y-2">
-                        <Label>Título</Label>
-                        <Input
-                          value={clause.title}
-                          onChange={(e) => handleUpdateClause(clause.id, 'title', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Conteúdo</Label>
-                        <Textarea
-                          value={clause.content}
-                          onChange={(e) => handleUpdateClause(clause.id, 'content', e.target.value)}
-                          rows={4}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                <div className="text-center py-12 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Nenhum template encontrado para este tipo de serviço.</p>
+                  <p className="text-sm mt-2">Cadastre um template em Configurações &gt; Templates de Contrato.</p>
+                </div>
               )}
-            </TabsContent>
-
-            <TabsContent value="preview" className="mt-4 p-1">
-              <Card>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Eye className="h-4 w-4" />
-                    Prévia do Documento
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {previewHtml ? (
-                    <div 
-                      className="border border-border rounded-lg p-4 bg-white text-black min-h-[500px] overflow-auto"
-                      style={{ fontFamily: 'Times New Roman, serif' }}
-                      dangerouslySetInnerHTML={{ __html: previewHtml }}
-                    />
-                  ) : (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Preencha os dados e selecione um template para visualizar a prévia.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </ScrollArea>
-        </Tabs>
+            </CardContent>
+          </Card>
+        </ScrollArea>
 
         {/* Actions */}
-        <div className="flex justify-between items-center pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-border">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+            Fechar
           </Button>
-          <div className="flex gap-2">
+          
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
+            <Button
+              variant="outline"
+              onClick={handlePrint}
+              disabled={!hasPreview}
+              className="flex-1 sm:flex-none"
+            >
+              <Printer className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Imprimir</span>
+            </Button>
+            
             <Button
               variant="outline"
               onClick={handleDownloadPDF}
-              disabled={!selectedTemplate || !contractData.contracted_name}
+              disabled={!hasPreview}
+              className="flex-1 sm:flex-none"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Baixar PDF
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Baixar PDF</span>
             </Button>
+            
+            <Button
+              variant="outline"
+              onClick={handleSendEmail}
+              disabled={!hasPreview || !contractData.contracted_email}
+              className="flex-1 sm:flex-none"
+            >
+              <Mail className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">E-mail</span>
+            </Button>
+            
             <Button
               onClick={handleSendToSignature}
-              disabled={!selectedTemplate || !contractData.contracted_name || !contractData.contracted_email || isSending}
+              disabled={!hasPreview || !contractData.contracted_email || isSending}
+              className="flex-1 sm:flex-none"
             >
-              <Send className="h-4 w-4 mr-2" />
-              {isSending ? 'Enviando...' : 'Enviar para Assinatura'}
+              <Send className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{isSending ? 'Enviando...' : 'Autentique'}</span>
             </Button>
           </div>
         </div>
