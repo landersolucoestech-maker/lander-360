@@ -1161,6 +1161,7 @@ export type Database = {
           iswc: string | null
           key: string | null
           participants: Json | null
+          project_id: string | null
           publishers: string[] | null
           release_date: string | null
           status: string | null
@@ -1182,6 +1183,7 @@ export type Database = {
           iswc?: string | null
           key?: string | null
           participants?: Json | null
+          project_id?: string | null
           publishers?: string[] | null
           release_date?: string | null
           status?: string | null
@@ -1203,6 +1205,7 @@ export type Database = {
           iswc?: string | null
           key?: string | null
           participants?: Json | null
+          project_id?: string | null
           publishers?: string[] | null
           release_date?: string | null
           status?: string | null
@@ -1216,6 +1219,13 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_registry_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
