@@ -314,6 +314,53 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [watchedParticipants, artists, appendParticipant, form]);
 
+  // Auto-distribute 100% equally among composers when Lander Records is NOT an editor
+  useEffect(() => {
+    if (!watchedParticipants || watchedParticipants.length === 0) return;
+
+    // Check if Lander Records is an editor
+    const hasLanderEditor = watchedParticipants.some(p => 
+      p.name?.toLowerCase().trim() === 'lander records' && p.role === 'editor'
+    );
+
+    // Only redistribute if Lander is NOT an editor
+    if (hasLanderEditor) return;
+
+    // Get all composers
+    const composerRoles = ['compositor_autor', 'compositor', 'autor'];
+    const composers = watchedParticipants.filter(p => 
+      composerRoles.includes(p.role?.toLowerCase())
+    );
+
+    if (composers.length === 0) return;
+
+    // Calculate what the even distribution should be
+    const evenPercentage = Math.floor(100 / composers.length);
+    const remainder = 100 - (evenPercentage * composers.length);
+
+    // Check if redistribution is needed (if any composer has 0 or total doesn't equal 100)
+    const composersTotal = composers.reduce((sum, c) => sum + (c.percentage || 0), 0);
+    const hasZeroPercentage = composers.some(c => !c.percentage || c.percentage === 0);
+    
+    if (hasZeroPercentage || composersTotal === 0) {
+      // Update each composer's percentage
+      const updatedParticipants = watchedParticipants.map((p, index) => {
+        if (composerRoles.includes(p.role?.toLowerCase())) {
+          const composerIndex = composers.findIndex(c => c.name === p.name && c.role === p.role);
+          // Last composer gets the remainder to ensure exactly 100%
+          const isLastComposer = composerIndex === composers.length - 1;
+          return {
+            ...p,
+            percentage: isLastComposer ? evenPercentage + remainder : evenPercentage,
+          };
+        }
+        return p;
+      });
+
+      form.setValue('participants', updatedParticipants, { shouldValidate: false });
+    }
+  }, [watchedParticipants?.length, form]);
+
   // Reset AI fields when is_ai_created becomes false
   useEffect(() => {
     if (!isAiCreated) {
