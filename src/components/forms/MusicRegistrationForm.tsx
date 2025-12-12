@@ -66,7 +66,7 @@ const musicRegistrationSchema = z.object({
   connected_references: z.array(connectedReferenceSchema).optional(),
   isrc: z.string().optional(),
   iswc: z.string().optional(),
-  status: z.enum(['pendente', 'em_analise', 'aceita', 'recusada']).default('pendente'),
+  status: z.enum(['em_analise', 'aceita', 'recusada']).default('em_analise'),
   artist_id: z.string().optional(),
   project_id: z.string().optional(),
   duration: z.number().optional(),
@@ -791,7 +791,6 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="pendente">Pendente</SelectItem>
                           <SelectItem value="em_analise">Em Análise</SelectItem>
                           <SelectItem value="aceita">Aceita</SelectItem>
                           <SelectItem value="recusada">Recusada</SelectItem>

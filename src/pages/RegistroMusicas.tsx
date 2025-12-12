@@ -118,7 +118,7 @@ const RegistroMusicas = () => {
     {
       key: "status",
       label: "Situação",
-      options: ["Em Análise", "Aceita", "Pendente", "Recusada"]
+      options: ["Em Análise", "Aceita", "Recusada"]
     },
     {
       key: "genre",
