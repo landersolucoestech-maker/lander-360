@@ -339,12 +339,19 @@ export const ContractForm: React.FC<ContractFormProps> = ({
               </Select>
             </div>
 
-            {form.watch('client_type') === 'empresa' && (
+            {(form.watch('client_type') === 'empresa' || form.watch('client_type') === 'pessoa') && (
               <div className="space-y-2">
                 <Label>Contratante/Contato</Label>
                 <Select
                   value={form.watch('contractor_contact')}
-                  onValueChange={(value) => form.setValue('contractor_contact', value)}
+                  onValueChange={(value) => {
+                    form.setValue('contractor_contact', value);
+                    // Find contact and populate contracted party data
+                    const selectedContact = contacts.find(c => c.id === value);
+                    if (selectedContact) {
+                      handleSelectCrmContact(selectedContact);
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={contacts.length > 0 ? "Selecione um contato" : "Nenhum contato cadastrado"} />
