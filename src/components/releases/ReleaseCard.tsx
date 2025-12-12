@@ -131,7 +131,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
                 {release.type === 'single' ? 'Single' : release.type === 'ep' ? 'EP' : release.type === 'album' ? 'Álbum' : release.type?.toUpperCase() || 'Single'}
               </Badge>
               {release.genre && (
-                <Badge className="bg-red-600 text-white font-bold text-xs px-3 py-1">
+                <Badge className="bg-red-600 text-white font-bold text-xs px-3 py-1 capitalize">
                   {release.genre}
                 </Badge>
               )}
