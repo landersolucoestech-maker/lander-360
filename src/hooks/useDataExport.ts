@@ -189,12 +189,10 @@ const crmColumns = {
 
 const musicRegistryColumns = {
   title: 'Título da Obra',
-  artist_name: 'Artista',
+  artist_name: 'Artista Responsável',
   project_name: 'Projeto',
   status: 'Status',
   genre: 'Gênero',
-  key: 'Tonalidade',
-  bpm: 'BPM',
   duration: 'Duração',
   abramus_code: 'Código ABRAMUS',
   ecad_code: 'Código ECAD',
