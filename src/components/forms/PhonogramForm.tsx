@@ -54,7 +54,7 @@ const phonogramSchema = z.object({
   simultaneous_publication: z.boolean().default(false),
   origin_country: z.string().optional(),
   publication_country: z.string().optional(),
-  status: z.enum(['pendente', 'em_analise', 'aceita', 'recusada']).default('pendente'),
+  status: z.enum(['em_analise', 'aceita', 'recusada']).default('em_analise'),
   // Participação
   phonographic_producers: z.array(participantSchema).optional(),
   performers: z.array(participantSchema).optional(),
@@ -1059,11 +1059,10 @@ export function PhonogramForm({
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Pendente" />
+                            <SelectValue placeholder="Em Análise" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="pendente">Pendente</SelectItem>
                           <SelectItem value="em_analise">Em Análise</SelectItem>
                           <SelectItem value="aceita">Aceita</SelectItem>
                           <SelectItem value="recusada">Recusada</SelectItem>
