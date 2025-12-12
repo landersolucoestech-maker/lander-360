@@ -263,40 +263,41 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   // Track if auto contract has been triggered
   const autoContractTriggeredRef = useRef<Set<string>>(new Set());
 
-  // Auto-add Lander Records as editor when exclusive artists are added as COMPOSERS
-  // Also trigger auto contract creation
+  // Auto-add Deyvisson Lander Andrade as editor ALWAYS when there are participants
+  // Also trigger auto contract creation for exclusive artists
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
-    // Check specifically for composers (compositor_autor role)
-    const composerRoles = ['compositor_autor', 'compositor', 'autor'];
-    const landerArtistComposer = watchedParticipants.find(p => 
-      composerRoles.includes(p.role?.toLowerCase()) &&
-      LANDER_RECORDS_EXCLUSIVE_ARTISTS.includes(p.name?.toLowerCase().trim())
-    );
-
+    // Check if Deyvisson is already an editor
     const hasLanderEditor = watchedParticipants.some(p => 
       (p.name?.toLowerCase().trim() === 'deyvisson lander andrade 06204919652' || 
        p.name?.toLowerCase().trim() === 'deyvisson lander andrade') && 
       p.role === 'editor'
     );
 
-    if (landerArtistComposer && !hasLanderEditor) {
-      // Get the composer's percentage to use for editor (will be updated to 10% by other effect)
+    // Always add Deyvisson as editor if not already present and there are other participants
+    if (!hasLanderEditor) {
       appendParticipant({
         name: 'Deyvisson Lander Andrade 06204919652',
         role: 'editor',
-        link: '',
+        link: 'Link 1',
         contract_start_date: '',
         percentage: 10, // Editor always gets 10%
       });
+    }
 
-      // Trigger auto contract creation for the artist
+    // Check for exclusive artists for auto contract creation
+    const composerRoles = ['compositor_autor', 'compositor', 'autor'];
+    const landerArtistComposer = watchedParticipants.find(p => 
+      composerRoles.includes(p.role?.toLowerCase()) &&
+      LANDER_RECORDS_EXCLUSIVE_ARTISTS.includes(p.name?.toLowerCase().trim())
+    );
+
+    if (landerArtistComposer) {
       const artistName = landerArtistComposer.name?.trim();
       if (artistName && !autoContractTriggeredRef.current.has(artistName)) {
         autoContractTriggeredRef.current.add(artistName);
         
-        // Find artist in database to get ID
         const matchedArtist = artists.find(a => 
           a.name?.toLowerCase() === artistName.toLowerCase() ||
           a.stage_name?.toLowerCase() === artistName.toLowerCase() ||
@@ -304,17 +305,13 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         );
 
         if (matchedArtist) {
-          const musicTitle = form.getValues('title') || 'Nova Obra';
-          
-          // Delay contract creation to allow user to fill percentage
-          // Contract will be created on form submit instead
           console.log(`Artista exclusivo detectado: ${artistName}. Contrato será criado ao salvar a obra.`);
         }
       }
     }
-  }, [watchedParticipants, artists, appendParticipant, form]);
+  }, [watchedParticipants?.length, artists, appendParticipant]);
 
-  // Auto-distribute percentages and assign sequential links based on whether Lander Records is an editor
+  // Auto-distribute percentages and assign sequential links - Deyvisson always gets 10%, others split 90%
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
@@ -326,19 +323,19 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     );
     const hasLanderEditor = landerEditorIndex !== -1;
 
-    // Get all composers
-    const composerRoles = ['compositor_autor', 'compositor', 'autor'];
-    
     // Check if links need to be assigned or percentages need updating
     const needsLinkAssignment = watchedParticipants.some(p => !p.link || p.link === '');
     const hasZeroPercentage = watchedParticipants.some(p => !p.percentage || p.percentage === 0);
     
-    if (!needsLinkAssignment && !hasZeroPercentage) return;
+    // Check if Deyvisson doesn't have exactly 10%
+    const landerNeedsUpdate = hasLanderEditor && watchedParticipants[landerEditorIndex]?.percentage !== 10;
+    
+    if (!needsLinkAssignment && !hasZeroPercentage && !landerNeedsUpdate) return;
 
     let updatedParticipants: typeof watchedParticipants;
 
     if (hasLanderEditor) {
-      // CASE: Deyvisson Lander Andrade IS an editor
+      // Deyvisson Lander Andrade IS an editor
       // Deyvisson gets Link 1 and 10%, remaining 90% divided among other participants
       const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
       const otherCount = otherParticipants.length;
@@ -348,7 +345,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       const evenPercentage = otherCount > 0 ? Math.floor(remainingPercentage / otherCount) : 0;
       const remainder = otherCount > 0 ? remainingPercentage - (evenPercentage * otherCount) : 0;
       
-      let linkCounter = 2; // Start at 2 since Lander is Link 1
+      let linkCounter = 2; // Start at 2 since Deyvisson is Link 1
       let otherIndex = 0;
       
       updatedParticipants = watchedParticipants.map((p, idx) => {
@@ -368,13 +365,13 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           return {
             ...p,
             link: `Link ${linkCounter++}`,
-            percentage: p.percentage && p.percentage > 0 ? p.percentage : percentage,
+            percentage: percentage, // Always recalculate to ensure 90% is distributed
           };
         }
       });
     } else {
-      // CASE: Deyvisson Lander Andrade is NOT an editor
-      // Divide 100% equally among composers, assign sequential links to all
+      // This case shouldn't happen since Deyvisson is always added, but keep as fallback
+      const composerRoles = ['compositor_autor', 'compositor', 'autor'];
       const composers = watchedParticipants.filter(p => 
         composerRoles.includes(p.role?.toLowerCase())
       );
