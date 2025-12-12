@@ -199,6 +199,7 @@ const musicRegistryColumns = {
   release_date: 'Data de Lançamento',
   writers: 'Compositores',
   publishers: 'Editoras',
+  participants_formatted: 'Participantes',
   created_at: 'Data de Criação',
 };
 
@@ -322,6 +323,18 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
       const quantity = item.quantity || 0;
       const unitValue = item.unit_value || 0;
       item.total_value = quantity * unitValue;
+    }
+    
+    // Format participants for music_registry
+    if (entityType === 'music_registry' && item.participants) {
+      const participants = Array.isArray(item.participants) ? item.participants : [];
+      item.participants_formatted = participants.map((p: any) => {
+        const parts = [];
+        if (p.name) parts.push(p.name);
+        if (p.role) parts.push(`(${p.role})`);
+        if (p.percentage) parts.push(`${p.percentage}%`);
+        return parts.join(' ');
+      }).join('; ') || '';
     }
     
     Object.entries(columns).forEach(([key, label]) => {
