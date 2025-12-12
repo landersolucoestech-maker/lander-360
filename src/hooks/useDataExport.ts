@@ -211,7 +211,9 @@ const musicRegistryColumns = {
 };
 
 const phonogramColumns = {
-  title: 'Título',
+  title: 'Título do Fonograma',
+  work_title: 'Obra Vinculada',
+  artist_name: 'Artista',
   status: 'Status',
   genre: 'Gênero',
   isrc: 'ISRC',
@@ -225,6 +227,9 @@ const phonogramColumns = {
   recording_date: 'Data de Gravação',
   recording_studio: 'Estúdio de Gravação',
   recording_location: 'Local de Gravação',
+  producers_formatted: 'Produtores Fonográficos',
+  interpreters_formatted: 'Intérpretes',
+  musicians_formatted: 'Músicos Acompanhantes',
   created_at: 'Data de Criação',
 };
 
@@ -370,6 +375,44 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
       }
     }
     
+    // Format participants for phonograms
+    if (entityType === 'phonograms') {
+      // Add artist name from artistsMap
+      if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
+        item.artist_name = artistsMap[item.artist_id];
+      }
+      
+      // Format participants by role
+      const participants = Array.isArray(item.participants) ? item.participants : [];
+      
+      // Produtores Fonográficos
+      const producers = participants.filter((p: any) => p.role === 'produtor_fonografico');
+      item.producers_formatted = producers.map((p: any) => {
+        const parts = [];
+        if (p.name) parts.push(p.name);
+        if (p.percentage) parts.push(`${p.percentage}%`);
+        return parts.join(' ');
+      }).join('; ') || '';
+      
+      // Intérpretes
+      const interpreters = participants.filter((p: any) => p.role === 'interprete');
+      item.interpreters_formatted = interpreters.map((p: any) => {
+        const parts = [];
+        if (p.name) parts.push(p.name);
+        if (p.percentage) parts.push(`${p.percentage}%`);
+        return parts.join(' ');
+      }).join('; ') || '';
+      
+      // Músicos Acompanhantes
+      const musicians = participants.filter((p: any) => p.role === 'musico_acompanhante');
+      item.musicians_formatted = musicians.map((p: any) => {
+        const parts = [];
+        if (p.name) parts.push(p.name);
+        if (p.percentage) parts.push(`${p.percentage}%`);
+        return parts.join(' ');
+      }).join('; ') || '';
+    }
+
     Object.entries(columns).forEach(([key, label]) => {
       if (item[key] !== undefined) {
         transformed[label] = formatValue(item[key], key, entityType);
