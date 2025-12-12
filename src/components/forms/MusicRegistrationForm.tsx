@@ -263,10 +263,16 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   // Track if auto contract has been triggered
   const autoContractTriggeredRef = useRef<Set<string>>(new Set());
 
-  // Auto-add Deyvisson Lander Andrade as editor ALWAYS when there are participants
+  // Track if Deyvisson has been added to prevent infinite loops
+  const deyvissonAddedRef = useRef(false);
+
+  // Auto-add Deyvisson Lander Andrade as editor ALWAYS when there are other participants
   // Also trigger auto contract creation for exclusive artists
   useEffect(() => {
-    if (!watchedParticipants || watchedParticipants.length === 0) return;
+    if (!watchedParticipants || watchedParticipants.length === 0) {
+      deyvissonAddedRef.current = false;
+      return;
+    }
 
     // Check if Deyvisson is already an editor
     const hasLanderEditor = watchedParticipants.some(p => 
@@ -275,15 +281,21 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       p.role === 'editor'
     );
 
-    // Always add Deyvisson as editor if not already present and there are other participants
-    if (!hasLanderEditor) {
+    // Only add Deyvisson if not already present and we haven't already tried to add
+    if (!hasLanderEditor && !deyvissonAddedRef.current) {
+      deyvissonAddedRef.current = true;
       appendParticipant({
         name: 'Deyvisson Lander Andrade 06204919652',
         role: 'editor',
         link: 'Link 1',
         contract_start_date: '',
-        percentage: 10, // Editor always gets 10%
+        percentage: 10,
       });
+      return; // Exit early, the next effect will handle distribution
+    }
+
+    if (hasLanderEditor) {
+      deyvissonAddedRef.current = true;
     }
 
     // Check for exclusive artists for auto contract creation
@@ -309,103 +321,71 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         }
       }
     }
-  }, [watchedParticipants?.length, artists, appendParticipant]);
+  }, [watchedParticipants, artists, appendParticipant]);
 
   // Auto-distribute percentages and assign sequential links - Deyvisson always gets 10%, others split 90%
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
-    // Check if Deyvisson Lander Andrade is an editor
+    // Find Deyvisson's index
     const landerEditorIndex = watchedParticipants.findIndex(p => 
       (p.name?.toLowerCase().trim() === 'deyvisson lander andrade 06204919652' || 
        p.name?.toLowerCase().trim() === 'deyvisson lander andrade') && 
       p.role === 'editor'
     );
-    const hasLanderEditor = landerEditorIndex !== -1;
-
-    // Check if links need to be assigned or percentages need updating
-    const needsLinkAssignment = watchedParticipants.some(p => !p.link || p.link === '');
-    const hasZeroPercentage = watchedParticipants.some(p => !p.percentage || p.percentage === 0);
     
-    // Check if Deyvisson doesn't have exactly 10%
-    const landerNeedsUpdate = hasLanderEditor && watchedParticipants[landerEditorIndex]?.percentage !== 10;
+    if (landerEditorIndex === -1) return; // Wait until Deyvisson is added
+
+    // Check if redistribution is needed
+    const landerParticipant = watchedParticipants[landerEditorIndex];
+    const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
+    const otherCount = otherParticipants.length;
     
-    if (!needsLinkAssignment && !hasZeroPercentage && !landerNeedsUpdate) return;
+    // Calculate expected percentages
+    const expectedLanderPercentage = 10;
+    const remainingPercentage = 90;
+    const evenPercentage = otherCount > 0 ? Math.floor(remainingPercentage / otherCount) : 0;
+    const remainder = otherCount > 0 ? remainingPercentage - (evenPercentage * otherCount) : 0;
+    
+    // Check if any values are incorrect
+    const landerNeedsUpdate = landerParticipant?.percentage !== expectedLanderPercentage || 
+                              landerParticipant?.link !== 'Link 1';
+    
+    const othersNeedUpdate = otherParticipants.some((p, idx) => {
+      const expectedPercentage = idx === otherCount - 1 ? evenPercentage + remainder : evenPercentage;
+      const expectedLink = `Link ${idx + 2}`;
+      return p.percentage !== expectedPercentage || p.link !== expectedLink;
+    });
+    
+    if (!landerNeedsUpdate && !othersNeedUpdate) return;
 
-    let updatedParticipants: typeof watchedParticipants;
-
-    if (hasLanderEditor) {
-      // Deyvisson Lander Andrade IS an editor
-      // Deyvisson gets Link 1 and 10%, remaining 90% divided among other participants
-      const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
-      const otherCount = otherParticipants.length;
-      
-      // Calculate even distribution of remaining 90%
-      const remainingPercentage = 90;
-      const evenPercentage = otherCount > 0 ? Math.floor(remainingPercentage / otherCount) : 0;
-      const remainder = otherCount > 0 ? remainingPercentage - (evenPercentage * otherCount) : 0;
-      
-      let linkCounter = 2; // Start at 2 since Deyvisson is Link 1
-      let otherIndex = 0;
-      
-      updatedParticipants = watchedParticipants.map((p, idx) => {
-        if (idx === landerEditorIndex) {
-          // Deyvisson Lander Andrade: Link 1, 10%
-          return {
-            ...p,
-            link: 'Link 1',
-            percentage: 10,
-          };
-        } else {
-          // Other participants: Link 2, 3, 4... and split 90%
-          const isLast = otherIndex === otherCount - 1;
-          const percentage = isLast ? evenPercentage + remainder : evenPercentage;
-          otherIndex++;
-          
-          return {
-            ...p,
-            link: `Link ${linkCounter++}`,
-            percentage: percentage, // Always recalculate to ensure 90% is distributed
-          };
-        }
-      });
-    } else {
-      // This case shouldn't happen since Deyvisson is always added, but keep as fallback
-      const composerRoles = ['compositor_autor', 'compositor', 'autor'];
-      const composers = watchedParticipants.filter(p => 
-        composerRoles.includes(p.role?.toLowerCase())
-      );
-
-      if (composers.length === 0) return;
-
-      const evenPercentage = Math.floor(100 / composers.length);
-      const remainder = 100 - (evenPercentage * composers.length);
-
-      let linkCounter = 1;
-      let composerIndex = 0;
-      
-      updatedParticipants = watchedParticipants.map((p) => {
-        const isComposer = composerRoles.includes(p.role?.toLowerCase());
-        let percentage = p.percentage;
-        
-        if (isComposer) {
-          const isLastComposer = composerIndex === composers.length - 1;
-          if (!p.percentage || p.percentage === 0) {
-            percentage = isLastComposer ? evenPercentage + remainder : evenPercentage;
-          }
-          composerIndex++;
-        }
+    // Build updated participants array
+    let linkCounter = 2;
+    let otherIndex = 0;
+    
+    const updatedParticipants = watchedParticipants.map((p, idx) => {
+      if (idx === landerEditorIndex) {
+        return {
+          ...p,
+          link: 'Link 1',
+          percentage: 10,
+        };
+      } else {
+        const isLast = otherIndex === otherCount - 1;
+        const percentage = isLast ? evenPercentage + remainder : evenPercentage;
+        const link = `Link ${linkCounter++}`;
+        otherIndex++;
         
         return {
           ...p,
+          link: link,
           percentage: percentage,
-          link: p.link || `Link ${linkCounter++}`,
         };
-      });
-    }
+      }
+    });
 
     form.setValue('participants', updatedParticipants, { shouldValidate: false });
-  }, [watchedParticipants?.length, form]);
+  }, [watchedParticipants, form]);
 
   // Reset AI fields when is_ai_created becomes false
   useEffect(() => {
