@@ -214,6 +214,8 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
     }
   };
 
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
   const handleSendEmail = async () => {
     if (!contractData.contracted_email) {
       toast({
@@ -224,10 +226,53 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
       return;
     }
 
-    toast({
-      title: 'Funcionalidade em desenvolvimento',
-      description: 'O envio por e-mail será implementado em breve.',
-    });
+    if (!selectedTemplate) {
+      toast({
+        title: 'Template não encontrado',
+        description: 'Selecione um template para gerar o contrato.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      // Generate PDF as base64
+      const pdfBlob = await getContractPDFBlob(selectedTemplate, contractData, customClauses);
+      const pdfBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('send-contract-email', {
+        body: {
+          to: contractData.contracted_email,
+          recipientName: contractData.contracted_name || 'Prezado(a)',
+          contractTitle: contractData.contract_title || contract?.title || 'Contrato',
+          pdfBase64: pdfBase64,
+          companyName: contractData.company_name,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'E-mail enviado',
+        description: `O contrato foi enviado para ${contractData.contracted_email}.`,
+      });
+    } catch (error: any) {
+      console.error('Error sending email:', error);
+      toast({
+        title: 'Erro ao enviar e-mail',
+        description: error.message || 'Não foi possível enviar o e-mail.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleSendToSignature = async () => {
@@ -355,11 +400,11 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
             <Button
               variant="outline"
               onClick={handleSendEmail}
-              disabled={!hasPreview || !contractData.contracted_email}
+              disabled={!hasPreview || !contractData.contracted_email || isSendingEmail}
               className="flex-1 sm:flex-none"
             >
               <Mail className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">E-mail</span>
+              <span className="hidden sm:inline">{isSendingEmail ? 'Enviando...' : 'E-mail'}</span>
             </Button>
             
             <Button
