@@ -24,6 +24,7 @@ import { useDataExport } from "@/hooks/useDataExport";
 import { useCreateMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { useCreatePhonogram } from "@/hooks/usePhonograms";
 import { useRef } from "react";
+import { PhonogramService } from "@/services/phonograms";
 
 const RegistroMusicas = () => {
   const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
@@ -242,6 +243,12 @@ const RegistroMusicas = () => {
     setIsDeletingBulkWorks(true);
     try {
       for (const id of selectedWorks) {
+        // First, delete any linked phonograms
+        const linkedPhonograms = await PhonogramService.getByWork(id);
+        for (const phonogram of linkedPhonograms) {
+          await deletePhonogram.mutateAsync(phonogram.id);
+        }
+        // Then delete the music registry entry
         await deleteMusicEntry.mutateAsync(id);
       }
       toast({
@@ -946,6 +953,12 @@ const RegistroMusicas = () => {
               onConfirm={async () => {
                 if (selectedSong) {
                   try {
+                    // First, delete any linked phonograms
+                    const linkedPhonograms = await PhonogramService.getByWork(selectedSong.id);
+                    for (const phonogram of linkedPhonograms) {
+                      await deletePhonogram.mutateAsync(phonogram.id);
+                    }
+                    // Then delete the music registry entry
                     await deleteMusicEntry.mutateAsync(selectedSong.id);
                     setDeleteModalOpen(false);
                     setSelectedSong(null);
@@ -955,7 +968,7 @@ const RegistroMusicas = () => {
                 }
               }}
               title="Excluir Obra"
-              description={`Tem certeza que deseja excluir a obra "${selectedSong?.title}"? Esta ação não pode ser desfeita.`}
+              description={`Tem certeza que deseja excluir a obra "${selectedSong?.title}"? Esta ação excluirá também os fonogramas vinculados e não pode ser desfeita.`}
             />
 
             {/* Phonogram Modals */}
