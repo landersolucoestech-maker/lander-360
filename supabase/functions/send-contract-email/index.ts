@@ -83,11 +83,17 @@ serve(async (req) => {
     });
 
     const result = await emailResponse.json();
-    console.log('Contract email sent:', result);
+    console.log('Contract email result:', result);
 
     if (!emailResponse.ok) {
+      // Check for domain verification error
+      if (result.message && result.message.includes('verify a domain')) {
+        throw new Error('Domínio não verificado no Resend. Para enviar emails para outros destinatários, verifique seu domínio em resend.com/domains');
+      }
       throw new Error(result.message || 'Failed to send email');
     }
+
+    console.log('Contract email sent successfully');
 
     return new Response(
       JSON.stringify({ success: true, result }),
