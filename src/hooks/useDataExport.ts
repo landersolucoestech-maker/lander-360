@@ -210,26 +210,32 @@ const musicRegistryColumns = {
 };
 
 const phonogramColumns = {
-  title: 'Título do Fonograma',
-  work_title: 'Obra Vinculada',
-  artist_name: 'Artista',
-  status: 'Status',
-  genre: 'Gênero',
+  // Vincular Obra
+  work_abramus_code: 'Código ABRAMUS da Obra',
+  work_title: 'Título da Obra',
+  // Dados do Fonograma
+  abramus_code: 'Código ABRAMUS',
+  ecad_code: 'Código ECAD',
+  aggregator: 'Agregadora',
   isrc: 'ISRC',
-  duration: 'Duração (segundos)',
-  language: 'Idioma',
-  label: 'Gravadora',
-  master_owner: 'Proprietário do Master',
-  version_type: 'Tipo de Versão',
-  is_remix: 'É Remix',
-  remix_artist: 'Artista do Remix',
+  is_ai_created: 'Criada por IA',
+  emission_date: 'Data de Emissão',
   recording_date: 'Data de Gravação',
-  recording_studio: 'Estúdio de Gravação',
-  recording_location: 'Local de Gravação',
+  release_date: 'Data de Lançamento',
+  duration: 'Duração',
+  is_instrumental: 'Instrumental',
+  genre: 'Gênero',
+  classification: 'Classificação',
+  media: 'Mídia',
+  is_national: 'Nacional',
+  simultaneous_publication: 'Publicação Simultânea',
+  origin_country: 'País de Origem',
+  publication_country: 'País de Publicação',
+  status: 'Status',
+  // Participação
   producers_formatted: 'Produtores Fonográficos',
   interpreters_formatted: 'Intérpretes',
   musicians_formatted: 'Músicos Acompanhantes',
-  created_at: 'Data de Criação',
 };
 
 const inventoryColumns = {
@@ -376,10 +382,32 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     
     // Format participants for phonograms
     if (entityType === 'phonograms') {
-      // Add artist name from artistsMap
-      if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
-        item.artist_name = artistsMap[item.artist_id];
+      // Get linked work info
+      item.work_abramus_code = item.work_abramus_code || '';
+      item.work_title = item.title || '';
+      
+      // Format duration as m:ss
+      if (item.duration && typeof item.duration === 'number') {
+        const minutes = Math.floor(item.duration / 60);
+        const seconds = item.duration % 60;
+        item.duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
       }
+      
+      // Format boolean fields
+      item.is_instrumental = item.language === 'instrumental' || item.is_instrumental ? 'Sim' : 'Não';
+      item.is_ai_created = item.is_ai_created ? 'Sim' : 'Não';
+      item.is_national = item.is_national ?? true ? 'Sim' : 'Não';
+      item.simultaneous_publication = item.simultaneous_publication ? 'Sim' : 'Não';
+      
+      // Map classification/version_type
+      item.classification = item.version_type || item.classification || '';
+      
+      // Map aggregator/label
+      item.aggregator = item.label || item.aggregator || '';
+      
+      // Map country fields
+      item.origin_country = item.recording_location || item.origin_country || '';
+      item.publication_country = item.publication_country || '';
       
       // Format participants by role
       const participants = Array.isArray(item.participants) ? item.participants : [];
@@ -403,7 +431,7 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
       }).join('; ') || '';
       
       // Músicos Acompanhantes
-      const musicians = participants.filter((p: any) => p.role === 'musico_acompanhante');
+      const musicians = participants.filter((p: any) => p.role === 'musico' || p.role === 'musico_acompanhante');
       item.musicians_formatted = musicians.map((p: any) => {
         const parts = [];
         if (p.name) parts.push(p.name);
