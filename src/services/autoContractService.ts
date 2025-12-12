@@ -48,13 +48,17 @@ export class AutoContractService {
   }
 
   // Request digital signature for a contract via Autentique
-  static async requestDigitalSignature(contractId: string): Promise<{ success: boolean; documentId?: string; error?: string }> {
+  static async requestDigitalSignature(contractId: string, pdfBase64?: string): Promise<{ success: boolean; documentId?: string; error?: string }> {
     try {
       const { data, error } = await supabase.functions.invoke('autentique-signature', {
-        body: { contractId, action: 'create' }
+        body: { contractId, action: 'create', pdfBase64 }
       });
 
       if (error) throw error;
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Erro ao enviar para assinatura');
+      }
       
       return { success: true, documentId: data.documentId };
     } catch (error: any) {
