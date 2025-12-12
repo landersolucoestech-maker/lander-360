@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
+import { useProjects } from "@/hooks/useProjects";
 import { formatDateBR, translateStatus } from "@/lib/utils";
 import { useDataExport } from "@/hooks/useDataExport";
 import { useCreateMusicRegistryEntry } from "@/hooks/useMusicRegistry";
@@ -28,6 +29,7 @@ const RegistroMusicas = () => {
   const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
   const { data: phonograms = [], isLoading: isLoadingPhonograms } = usePhonograms();
   const { data: artists = [] } = useArtists();
+  const { data: projects = [] } = useProjects();
   const deleteMusicEntry = useDeleteMusicRegistryEntry();
   const deletePhonogram = useDeletePhonogram();
   const createMusicEntry = useCreateMusicRegistryEntry();
@@ -318,26 +320,94 @@ const RegistroMusicas = () => {
       const data = await parseExcelFile(file);
       let imported = 0;
 
+      // Get completed projects to match by title
+      const completedProjects = projects.filter(p => p.status === 'completed');
+
       for (const row of data) {
+        const title = row['Título'] || row['title'] || '';
+        if (!title) continue;
+
+        // Try to find matching project by song name
+        let matchedProject = null;
+        let matchedSong = null;
+        let matchedArtistId = null;
+
+        for (const project of completedProjects) {
+          let audioFilesData = project.audio_files as any;
+          
+          if (typeof audioFilesData === 'string') {
+            try {
+              audioFilesData = JSON.parse(audioFilesData);
+            } catch (e) {
+              continue;
+            }
+          }
+          
+          const songs = audioFilesData?.songs || [];
+          const foundSong = songs.find((song: any) => {
+            const songName = song.song_name || song.title || '';
+            return songName.toLowerCase().trim() === title.toLowerCase().trim();
+          });
+
+          if (foundSong) {
+            matchedProject = project;
+            matchedSong = foundSong;
+            matchedArtistId = project.artist_id;
+            break;
+          }
+        }
+
+        // Build participants from project data
+        const participants: any[] = [];
+        
+        if (matchedSong) {
+          // Add composers from project
+          if (matchedSong.composers && Array.isArray(matchedSong.composers)) {
+            matchedSong.composers.forEach((c: any) => {
+              participants.push({
+                name: c.name || c,
+                role: 'compositor_autor',
+                link: '',
+                contract_start_date: '',
+                percentage: c.percentage || 0,
+              });
+            });
+          }
+        }
+
+        // Calculate duration from project data or import file
+        let duration = null;
+        if (matchedSong?.duration_minutes !== undefined && matchedSong?.duration_seconds !== undefined) {
+          duration = (matchedSong.duration_minutes * 60) + (matchedSong.duration_seconds || 0);
+        } else if (row['Duração']) {
+          // Parse duration in m:ss format
+          const durationStr = String(row['Duração']);
+          if (durationStr.includes(':')) {
+            const parts = durationStr.split(':');
+            duration = (parseInt(parts[0]) * 60) + parseInt(parts[1] || '0');
+          } else {
+            duration = parseInt(durationStr) || null;
+          }
+        }
+
         const workData = {
-          title: row['Título'] || row['title'] || '',
+          title: title,
           status: row['Status'] || row['status'] || 'pendente',
-          genre: row['Gênero'] || row['genre'] || null,
+          genre: matchedSong?.genre || row['Gênero'] || row['genre'] || null,
           abramus_code: row['Código ABRAMUS'] || row['abramus_code'] || null,
           ecad_code: row['Código ECAD'] || row['ecad_code'] || null,
-          isrc: row['ISRC'] || row['isrc'] || null,
+          isrc: matchedSong?.isrc || row['ISRC'] || row['isrc'] || null,
           iswc: row['ISWC'] || row['iswc'] || null,
-          key: row['Tonalidade'] || row['key'] || null,
-          bpm: row['BPM'] || row['bpm'] || null,
-          duration: row['Duração (segundos)'] || row['duration'] || null,
-          writers: row['Compositores'] ? String(row['Compositores']).split(',').map(s => s.trim()) : null,
+          duration: duration,
+          artist_id: matchedArtistId || null,
+          participants: participants.length > 0 ? participants : null,
+          writers: matchedSong?.composers?.map((c: any) => c.name || c) || 
+                   (row['Compositores'] ? String(row['Compositores']).split(',').map(s => s.trim()) : null),
           publishers: row['Editoras'] ? String(row['Editoras']).split(',').map(s => s.trim()) : null,
         };
 
-        if (workData.title) {
-          await createMusicEntry.mutateAsync(workData);
-          imported++;
-        }
+        await createMusicEntry.mutateAsync(workData);
+        imported++;
       }
 
       toast({
