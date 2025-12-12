@@ -560,44 +560,8 @@ export const ContractForm: React.FC<ContractFormProps> = ({
           {/* Contracted Party Data */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center justify-between">
-                <span>Dados da Outra Parte (Contratante/Contratado)</span>
-                <div className="flex gap-2">
-                  {form.watch('client_type') === 'artista' && (
-                    <Popover open={artistSearchOpen} onOpenChange={setArtistSearchOpen}>
-                      <PopoverTrigger asChild>
-                        <Button type="button" variant="outline" size="sm">
-                          <User className="h-4 w-4 mr-2" />
-                          Buscar Artista
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 p-0" align="end">
-                        <Command>
-                          <CommandInput placeholder="Buscar artista..." />
-                          <CommandList>
-                            <CommandEmpty>Nenhum artista encontrado.</CommandEmpty>
-                            <CommandGroup>
-                              {artists.map((artist) => (
-                                <CommandItem
-                                  key={artist.id}
-                                  value={artist.name}
-                                  onSelect={() => handleSelectArtist(artist)}
-                                >
-                                  <User className="h-4 w-4 mr-2" />
-                                  {artist.stage_name || artist.name}
-                                  {artist.full_name && artist.full_name !== artist.name && (
-                                    <span className="text-muted-foreground ml-2">({artist.full_name})</span>
-                                  )}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  
-                </div>
+              <CardTitle className="text-base">
+                Dados da Outra Parte (Contratante/Contratado)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
