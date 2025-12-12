@@ -306,10 +306,20 @@ const RegistroMusicas = () => {
   // Export/Import handlers - Works
   const handleExportWorks = () => {
     const artistsMap = artists.reduce((acc, artist) => {
-      acc[artist.id] = artist.name;
+      acc[artist.id] = artist.stage_name || artist.name;
       return acc;
     }, {} as Record<string, string>);
-    exportToExcel(musicRegistry, 'obras_musicais', 'Obras', 'music_registry', artistsMap);
+    
+    // Add project_name to each music registry item
+    const enrichedMusicRegistry = musicRegistry.map(music => {
+      const project = projects.find(p => p.id === music.project_id);
+      return {
+        ...music,
+        project_name: project?.name || '',
+      };
+    });
+    
+    exportToExcel(enrichedMusicRegistry, 'obras_musicais', 'Obras', 'music_registry', artistsMap);
   };
 
   const handleImportWorks = async (event: React.ChangeEvent<HTMLInputElement>) => {
