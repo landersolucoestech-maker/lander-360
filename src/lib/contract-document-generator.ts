@@ -266,7 +266,13 @@ function extractImageUrl(html: string | null): string | null {
 }
 
 export function generateContractHTML(template: ContractTemplate, data: ContractData, customClauses?: ContractClause[]): string {
-  const clauses = customClauses || template.clauses;
+  // Use custom clauses if provided, otherwise use template clauses
+  const clauses = customClauses && customClauses.length > 0 ? customClauses : (template.clauses || []);
+  console.log('generateContractHTML - template:', template.name);
+  console.log('generateContractHTML - customClauses provided:', customClauses?.length || 0);
+  console.log('generateContractHTML - template.clauses:', template.clauses?.length || 0);
+  console.log('generateContractHTML - using clauses count:', clauses.length);
+  
   const companyData = getCompanyData(template);
   
   // Generate header HTML - use template header_html if available, with full width

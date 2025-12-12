@@ -56,8 +56,13 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
 
   // Load contract data and template when modal opens
   useEffect(() => {
-    if (contract && isOpen) {
-      const artist = artists.find(a => a.id === contract.artist_id);
+    // Wait for templates to be loaded
+    if (!contract || !isOpen || templates.length === 0) {
+      console.log('GenerateContractModal - Waiting for data:', { contract: !!contract, isOpen, templatesCount: templates.length });
+      return;
+    }
+    
+    const artist = artists.find(a => a.id === contract.artist_id);
       
       // Find matching template - first by template_id, then by name (title), then by service_type
       let matchingTemplate = null;
@@ -75,12 +80,21 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
       }
 
       console.log('GenerateContractModal - Contract:', contract);
+      console.log('GenerateContractModal - Contract title:', contract.title);
       console.log('GenerateContractModal - Matching template:', matchingTemplate);
-      console.log('GenerateContractModal - Available templates:', templates);
+      console.log('GenerateContractModal - Template clauses:', matchingTemplate?.clauses);
+      console.log('GenerateContractModal - Available templates:', templates.map(t => ({ id: t.id, name: t.name, type: t.template_type, clausesCount: t.clauses?.length })));
       
       if (matchingTemplate) {
+        // Ensure clauses is an array
+        const templateClauses = Array.isArray(matchingTemplate.clauses) 
+          ? matchingTemplate.clauses 
+          : [];
+        
+        console.log('GenerateContractModal - Using clauses:', templateClauses);
+        
         setSelectedTemplate(matchingTemplate);
-        setCustomClauses(matchingTemplate.clauses || []);
+        setCustomClauses(templateClauses);
         
         // Load company data from template default_fields
         const defaultFields = matchingTemplate.default_fields || {};
@@ -126,13 +140,21 @@ export const GenerateContractModal: React.FC<GenerateContractModalProps> = ({
           work_title: contract.title || '',
         }));
       }
-    }
   }, [contract, artists, templates, isOpen]);
 
   // Generate preview when template or data changes
   useEffect(() => {
-    if (selectedTemplate && contractData.contracted_name) {
-      const html = generateContractHTML(selectedTemplate, contractData, customClauses);
+    console.log('Preview generation check - selectedTemplate:', selectedTemplate);
+    console.log('Preview generation check - contractData.contracted_name:', contractData.contracted_name);
+    console.log('Preview generation check - customClauses:', customClauses);
+    
+    if (selectedTemplate) {
+      // Use customClauses if available, otherwise use template clauses
+      const clausesToUse = customClauses.length > 0 ? customClauses : selectedTemplate.clauses || [];
+      console.log('Preview generation - using clauses:', clausesToUse);
+      
+      const html = generateContractHTML(selectedTemplate, contractData, clausesToUse);
+      console.log('Preview generation - generated HTML length:', html.length);
       setPreviewHtml(html);
     } else {
       setPreviewHtml('');
