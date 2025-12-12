@@ -28,6 +28,7 @@ export interface ContractData {
   fixed_value?: number;
   royalties_percentage?: number;
   advance_amount?: number;
+  financial_support?: number;
   
   // Work/phonogram data
   work_title?: string;
@@ -232,6 +233,7 @@ function replaceVariables(text: string, data: ContractData): string {
     '{{royalties_percentage}}': data.royalties_percentage?.toString() || '',
     '{{royalties_percentage_extenso}}': data.royalties_percentage ? numberToWords(data.royalties_percentage) + ' por cento' : '',
     '{{advance_amount}}': data.advance_amount ? formatCurrency(data.advance_amount) : '',
+    '{{financial_support}}': data.financial_support ? formatCurrency(data.financial_support) : '',
     '{{work_title}}': data.work_title || '',
     '{{phonogram_title}}': data.phonogram_title || '',
     '{{isrc}}': data.isrc || '',
