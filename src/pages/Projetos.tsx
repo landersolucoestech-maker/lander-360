@@ -225,57 +225,42 @@ const Projetos = () => {
     }
   };
 
-  // Get registration and release status tags for a project
-  const getProjectTags = (projectId: string, projectStatus: string | null) => {
-    const tags: { label: string; color: string }[] = [];
-
-    // Status-based tags (for non-completed projects)
-    if (projectStatus === 'draft' || projectStatus === 'rascunho') {
-      tags.push({ label: 'Rascunho', color: 'bg-gray-500 text-white hover:bg-gray-600' });
-      return tags;
-    }
-    
-    if (projectStatus === 'in_progress' || projectStatus === 'em_progresso') {
-      tags.push({ label: 'Em Progresso', color: 'bg-purple-500 text-white hover:bg-purple-600' });
-      return tags;
-    }
-    
-    if (projectStatus === 'cancelled' || projectStatus === 'cancelado') {
-      tags.push({ label: 'Cancelado', color: 'bg-red-600 text-white hover:bg-red-700' });
-      return tags;
-    }
-
-    // For completed projects, check registration and release status
+  // Get single status tag for a project based on workflow progression
+  const getProjectTag = (projectId: string, projectStatus: string | null): { label: string; color: string } => {
+    // Check registration and release status
     const hasObra = musicRegistry.some(m => m.project_id === projectId);
     const hasFonograma = phonograms.some(p => {
       const linkedWork = musicRegistry.find(m => m.project_id === projectId);
       return linkedWork && p.work_id === linkedWork.id;
     });
     const projectRelease = releases.find(r => r.project_id === projectId);
-    const hasRelease = !!projectRelease;
     const isReleased = projectRelease?.status === 'released' || projectRelease?.status === 'lançado';
+    const isRegistered = hasObra && hasFonograma;
 
-    // Registration status for completed projects
-    if (!hasObra || !hasFonograma) {
-      // Completed but not yet registered
-      if (projectStatus === 'completed' || projectStatus === 'concluido') {
-        tags.push({ label: 'Pronto para Registro', color: 'bg-cyan-500 text-white hover:bg-cyan-600' });
-      }
-      tags.push({ label: 'Registro Pendente', color: 'bg-yellow-500 text-black hover:bg-yellow-600' });
-    } else {
-      tags.push({ label: 'Registrado', color: 'bg-green-600 text-white hover:bg-green-700' });
+    // Workflow progression (priority order from most advanced to least)
+    if (isReleased) {
+      return { label: 'Lançado', color: 'bg-blue-600 text-white hover:bg-blue-700' };
+    }
+    
+    if (isRegistered) {
+      return { label: 'Lançamento Pendente', color: 'bg-orange-500 text-white hover:bg-orange-600' };
     }
 
-    // Release status (only if registered)
-    if (hasObra && hasFonograma) {
-      if (isReleased) {
-        tags.push({ label: 'Lançado', color: 'bg-blue-600 text-white hover:bg-blue-700' });
-      } else if (hasRelease || !hasRelease) {
-        tags.push({ label: 'Lançamento Pendente', color: 'bg-orange-500 text-white hover:bg-orange-600' });
-      }
+    // Status-based tags (for non-registered projects)
+    if (projectStatus === 'cancelled' || projectStatus === 'cancelado') {
+      return { label: 'Cancelado', color: 'bg-red-600 text-white hover:bg-red-700' };
     }
 
-    return tags;
+    if (projectStatus === 'completed' || projectStatus === 'concluido') {
+      return { label: 'Registro Pendente', color: 'bg-yellow-500 text-black hover:bg-yellow-600' };
+    }
+    
+    if (projectStatus === 'in_progress' || projectStatus === 'em_progresso') {
+      return { label: 'Em Progresso', color: 'bg-purple-500 text-white hover:bg-purple-600' };
+    }
+    
+    // Default: draft
+    return { label: 'Rascunho', color: 'bg-gray-500 text-white hover:bg-gray-600' };
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -614,11 +599,14 @@ const Projetos = () => {
                                       {details.release_type === 'single' ? 'Single' : details.release_type === 'ep' ? 'EP' : 'Álbum'}
                                     </Badge>
                                   )}
-                                  {getProjectTags(project.id, project.status).map((tag, idx) => (
-                                    <Badge key={idx} className={tag.color}>
-                                      {tag.label}
-                                    </Badge>
-                                  ))}
+                                  {(() => {
+                                    const tag = getProjectTag(project.id, project.status);
+                                    return (
+                                      <Badge className={tag.color}>
+                                        {tag.label}
+                                      </Badge>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             </div>
