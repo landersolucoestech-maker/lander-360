@@ -120,3 +120,64 @@ export const useFetchSpotifyMetrics = () => {
     },
   });
 };
+
+// Update monthly listeners manually
+export const useUpdateMonthlyListeners = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ artistId, monthlyListeners }: { artistId: string; monthlyListeners: number }) => {
+      // Check if metrics record exists
+      const { data: existing } = await supabase
+        .from('spotify_metrics')
+        .select('id')
+        .eq('artist_id', artistId)
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('spotify_metrics')
+          .update({ monthly_listeners: monthlyListeners })
+          .eq('id', existing.id);
+
+        if (error) throw error;
+      } else {
+        // Create new record with manual data
+        const { error } = await supabase
+          .from('spotify_metrics')
+          .insert({
+            artist_id: artistId,
+            spotify_artist_id: 'manual-entry',
+            monthly_listeners: monthlyListeners,
+            followers: 0,
+            popularity: 0,
+            total_streams: 0,
+            top_tracks: [],
+            fetched_at: new Date().toISOString(),
+          });
+
+        if (error) throw error;
+      }
+
+      return { success: true };
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['spotify-metrics', variables.artistId] });
+      toast({
+        title: 'Sucesso',
+        description: 'Ouvintes mensais atualizados.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message || 'Falha ao atualizar ouvintes mensais.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
