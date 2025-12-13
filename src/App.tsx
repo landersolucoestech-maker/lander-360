@@ -13,6 +13,7 @@ import Projetos from "./pages/Projetos";
 import RegistroMusicas from "./pages/RegistroMusicas";
 import Lancamentos from "./pages/Lancamentos";
 import Contratos from "./pages/Contratos";
+import ContractTemplates from "./pages/ContractTemplates";
 import Financeiro from "./pages/Financeiro";
 import RegrasCategorização from "./pages/RegrasCategorização";
 import Agenda from "./pages/Agenda";
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="/registro-musicas" element={<ProtectedRoute><RegistroMusicas /></ProtectedRoute>} />
               <Route path="/lancamentos" element={<ProtectedRoute><Lancamentos /></ProtectedRoute>} />
               <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
+              <Route path="/contratos/templates" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
               <Route path="/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
               <Route path="/financeiro/regras" element={<ProtectedRoute><RegrasCategorização /></ProtectedRoute>} />
               <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
