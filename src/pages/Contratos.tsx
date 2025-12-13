@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SearchFilter } from "@/components/filters/SearchFilter";
-import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Upload, Download, Loader2, Trash2, FileSignature } from "lucide-react";
+import { FileText, Plus, Calendar, AlertTriangle, CheckCircle, Upload, Download, Loader2, Trash2, FileSignature, LayoutTemplate } from "lucide-react";
 import { ContractModal } from "@/components/modals/ContractModal";
 import { ContractViewModal } from "@/components/modals/ContractViewModal";
 import { GenerateContractModal } from "@/components/modals/GenerateContractModal";
@@ -19,6 +20,7 @@ import { Contract } from "@/types/database";
 import { formatDateBR } from "@/lib/utils";
 
 const Contratos = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
@@ -183,6 +185,10 @@ const Contratos = () => {
                 <Button variant="outline" className="gap-2" onClick={handleExport} disabled={contracts.length === 0}>
                   <Download className="h-4 w-4" />
                   Exportar
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={() => navigate('/contratos/templates')}>
+                  <LayoutTemplate className="h-4 w-4" />
+                  Templates
                 </Button>
                 <Button className="gap-2" onClick={handleNewContract}>
                   <Plus className="h-4 w-4" />
