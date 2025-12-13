@@ -26,3 +26,9 @@ verify_jwt = true
 
 [functions.fetch-release-metrics]
 verify_jwt = true
+
+[functions.spotify-for-artists-oauth]
+verify_jwt = true
+
+[functions.spotify-for-artists-metrics]
+verify_jwt = true

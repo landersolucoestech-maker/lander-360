@@ -1855,6 +1855,47 @@ export type Database = {
           },
         ]
       }
+      spotify_artist_tokens: {
+        Row: {
+          access_token: string
+          artist_id: string
+          connected_at: string
+          created_at: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          artist_id: string
+          connected_at?: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          artist_id?: string
+          connected_at?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spotify_artist_tokens_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: true
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spotify_metrics: {
         Row: {
           artist_id: string
@@ -1895,6 +1936,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "spotify_metrics_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spotify_oauth_states: {
+        Row: {
+          artist_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          state: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          state: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spotify_oauth_states_artist_id_fkey"
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
