@@ -19,12 +19,14 @@ import {
   AlertCircle,
   CheckCircle2,
   Lightbulb,
-  BarChart3
+  BarChart3,
+  FileDown
 } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
 import { useArtistSpotifyMetrics } from '@/hooks/useSpotifyMetrics';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
 
 interface AnalysisResult {
   summary: string;
@@ -166,6 +168,100 @@ Retorne APENAS o JSON, sem texto adicional.`;
     }
   };
 
+  const handleExportPDF = () => {
+    if (!analysis || !selectedArtist) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxWidth = pageWidth - margin * 2;
+    let y = 20;
+
+    const addText = (text: string, fontSize: number = 10, isBold: boolean = false) => {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      const lines = doc.splitTextToSize(text, maxWidth);
+      lines.forEach((line: string) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, margin, y);
+        y += fontSize * 0.5;
+      });
+      y += 4;
+    };
+
+    const addSection = (title: string, items: string[]) => {
+      addText(title, 12, true);
+      items.forEach((item, i) => {
+        const text = typeof item === 'string' ? item : (item as any).action || JSON.stringify(item);
+        addText(`• ${text}`, 10);
+      });
+      y += 4;
+    };
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Análise de Perfil - ${selectedArtist.stage_name || selectedArtist.name}`, margin, y);
+    y += 12;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, margin, y);
+    y += 12;
+
+    // Summary
+    addText('RESUMO EXECUTIVO', 12, true);
+    addText(analysis.summary, 10);
+    y += 4;
+
+    // Strengths
+    addSection('PONTOS FORTES', analysis.strengths);
+
+    // Weaknesses
+    addSection('PONTOS FRACOS', analysis.weaknesses);
+
+    // Opportunities
+    addSection('OPORTUNIDADES', analysis.opportunities);
+
+    // Recommendations
+    addSection('RECOMENDAÇÕES ESTRATÉGICAS', analysis.recommendations);
+
+    // Content Strategy
+    addText('ESTRATÉGIA DE CONTEÚDO', 12, true);
+    addText(`Plataformas: ${analysis.contentStrategy.platforms.join(', ')}`, 10);
+    addText(`Frequência: ${analysis.contentStrategy.frequency}`, 10);
+    addText(`Tipos de Conteúdo: ${analysis.contentStrategy.contentTypes.join(', ')}`, 10);
+    addText(`Tom: ${analysis.contentStrategy.tone}`, 10);
+    y += 4;
+
+    // Audience Insights
+    addText('INSIGHTS DO PÚBLICO', 12, true);
+    addText(`Demografia: ${analysis.audienceInsights.demographics}`, 10);
+    addText(`Interesses: ${analysis.audienceInsights.interests.join(', ')}`, 10);
+    addText(`Comportamento: ${analysis.audienceInsights.behavior}`, 10);
+    y += 4;
+
+    // Competitive Position
+    addText('POSICIONAMENTO COMPETITIVO', 12, true);
+    addText(analysis.competitivePosition, 10);
+    y += 4;
+
+    // Growth Potential
+    addText('POTENCIAL DE CRESCIMENTO', 12, true);
+    addText(analysis.growthPotential, 10);
+
+    const artistName = (selectedArtist.stage_name || selectedArtist.name).replace(/[^a-zA-Z0-9]/g, '_');
+    doc.save(`Analise_Perfil_${artistName}.pdf`);
+
+    toast({
+      title: 'PDF Exportado',
+      description: 'A análise foi exportada com sucesso.',
+    });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Input Section */}
@@ -282,10 +378,18 @@ Retorne APENAS o JSON, sem texto adicional.`;
       {/* Results Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            Resultado da Análise
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Resultado da Análise
+            </CardTitle>
+            {analysis && (
+              <Button variant="outline" size="sm" onClick={handleExportPDF}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Exportar PDF
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {isAnalyzing ? (
