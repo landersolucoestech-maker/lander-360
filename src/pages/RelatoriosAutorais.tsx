@@ -1,998 +1,357 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Download, Users, Music, Disc, Filter, 
-  CheckCircle, XCircle, AlertTriangle, Edit, FolderKanban, Rocket
+  Users, Music, Disc, Edit, FolderKanban, Rocket, FileText, 
+  DollarSign, Calendar, Package, UserPlus, Briefcase, BarChart3,
+  AlertTriangle, CheckCircle
 } from "lucide-react";
+import { ArtistModal } from "@/components/modals/ArtistModal";
+import { ProjectModal } from "@/components/modals/ProjectModal";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
-import { ProjectModal } from "@/components/modals/ProjectModal";
-import { ArtistModal } from "@/components/modals/ArtistModal";
-import { format } from "date-fns";
-import { translateStatus, formatDateBR } from "@/lib/utils";
-import XLSX from "xlsx-js-style";
-import { useToast } from "@/hooks/use-toast";
-import { useMusicRegistry } from "@/hooks/useMusicRegistry";
-import { usePhonograms } from "@/hooks/usePhonograms";
-import { useArtists } from "@/hooks/useArtists";
-import { useProjects } from "@/hooks/useProjects";
-import { useReleases } from "@/hooks/useReleases";
-import { DateInput } from "@/components/ui/date-input";
+import { ContractModal } from "@/components/modals/ContractModal";
+import { InventoryModal } from "@/components/modals/InventoryModal";
+import { ContactModal } from "@/components/modals/ContactModal";
+import { ServiceModal } from "@/components/modals/ServiceModal";
+import { useAuditData, AuditItem } from "@/hooks/useAuditData";
+import { useCreateFinancialTransaction, useUpdateFinancialTransaction } from "@/hooks/useFinancial";
+import { useCreateAgendaEvent, useUpdateAgendaEvent } from "@/hooks/useAgenda";
+import { useCreateCrmContact, useUpdateCrmContact } from "@/hooks/useCrm";
+import { useCreateService, useUpdateService } from "@/hooks/useServices";
+
+interface AuditSectionProps {
+  title: string;
+  items: AuditItem[];
+  icon: React.ReactNode;
+  onEdit: (item: AuditItem) => void;
+}
+
+const AuditSection = ({ title, items, icon, onEdit }: AuditSectionProps) => {
+  const itemsWithIssues = items.filter(item => item.missingFields.length > 0);
+  const completedItems = items.filter(item => item.missingFields.length === 0);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {icon}
+          <h2 className="text-lg font-semibold">{title}</h2>
+        </div>
+        <div className="flex gap-2">
+          <Badge variant="outline" className="gap-1">
+            <CheckCircle className="h-3 w-3 text-green-600" />
+            {completedItems.length} Completos
+          </Badge>
+          <Badge variant="outline" className="gap-1 border-yellow-500/50 text-yellow-600">
+            <AlertTriangle className="h-3 w-3" />
+            {itemsWithIssues.length} Incompletos
+          </Badge>
+        </div>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">Nenhum registro encontrado</div>
+      ) : (
+        <ScrollArea className="h-[calc(100vh-350px)]">
+          <div className="grid gap-3">
+            {items.map(item => (
+              <Card 
+                key={item.id} 
+                className={item.missingFields.length > 0 ? "border-yellow-500/50" : "border-green-500/30"}
+              >
+                <CardContent className="p-4">
+                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold">{item.name || "Sem nome"}</h3>
+                        {item.missingFields.length === 0 ? (
+                          <Badge variant="outline" className="text-green-600 border-green-500/50">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Completo
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-yellow-600 border-yellow-500/50">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            {item.missingFields.length} campos
+                          </Badge>
+                        )}
+                      </div>
+                      {item.missingFields.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {item.missingFields.map((field, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs bg-yellow-500/10 text-yellow-700">
+                              {field}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onEdit(item)}
+                      className="gap-1 shrink-0"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Editar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
+  );
+};
 
 const RelatoriosAutorais = () => {
-  const { toast } = useToast();
-  const { data: musicRegistry = [], isLoading: isLoadingMusic } = useMusicRegistry();
-  const { data: phonograms = [], isLoading: isLoadingPhonograms } = usePhonograms();
-  const { data: artists = [] } = useArtists();
-  const { data: releases = [], isLoading: isLoadingReleases } = useReleases();
-  const { data: projects = [] } = useProjects();
+  const auditData = useAuditData();
+  const [activeTab, setActiveTab] = useState("artistas");
 
-  // Filter states
-  const [selectedArtist, setSelectedArtist] = useState<string>("all");
-  const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState("artista");
+  const updateCrmContact = useUpdateCrmContact();
+  const updateService = useUpdateService();
 
-  // Edit modals state
-  const [editMusicModalOpen, setEditMusicModalOpen] = useState(false);
-  const [editPhonogramModalOpen, setEditPhonogramModalOpen] = useState(false);
-  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false);
-  const [editArtistModalOpen, setEditArtistModalOpen] = useState(false);
+  // Modal states
+  const [artistModalOpen, setArtistModalOpen] = useState(false);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [musicModalOpen, setMusicModalOpen] = useState(false);
+  const [phonogramModalOpen, setPhonogramModalOpen] = useState(false);
+  const [contractModalOpen, setContractModalOpen] = useState(false);
+  const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+
+  // Selected items for editing
+  const [selectedArtist, setSelectedArtist] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedMusic, setSelectedMusic] = useState<any>(null);
   const [selectedPhonogram, setSelectedPhonogram] = useState<any>(null);
-  const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<any>(null);
-  const [selectedArtistForEdit, setSelectedArtistForEdit] = useState<any>(null);
+  const [selectedContract, setSelectedContract] = useState<any>(null);
+  const [selectedInventory, setSelectedInventory] = useState<any>(null);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [selectedService, setSelectedService] = useState<any>(null);
 
-  const handleEditMusic = (music: any) => {
-    setSelectedMusic(music);
-    setEditMusicModalOpen(true);
-  };
-
-  const handleEditPhonogram = (phono: any) => {
-    setSelectedPhonogram(phono);
-    setEditPhonogramModalOpen(true);
-  };
-
-  const handleEditProject = (project: any) => {
-    setSelectedProjectForEdit(project);
-    setEditProjectModalOpen(true);
-  };
-
-  const handleEditArtist = (artistId: string) => {
-    const artist = artists.find(a => a.id === artistId);
-    if (artist) {
-      setSelectedArtistForEdit(artist);
-      setEditArtistModalOpen(true);
+  const handleContactSubmit = async (data: any) => {
+    if (selectedContact?.id) {
+      await updateCrmContact.mutateAsync({ id: selectedContact.id, ...data });
     }
   };
 
-  // Get artist name helper
-  const getArtistName = (artistId: string | null) => {
-    if (!artistId) return "N/A";
-    const artist = artists.find(a => a.id === artistId);
-    return artist?.stage_name || artist?.name || "N/A";
-  };
-
-  // Filter data based on selections
-  const filteredMusic = useMemo(() => {
-    return musicRegistry.filter(music => {
-      if (selectedArtist !== "all" && music.artist_id !== selectedArtist) return false;
-      if (selectedProjectFilter !== "all" && music.project_id !== selectedProjectFilter) return false;
-      if (selectedStatus !== "all" && music.status !== selectedStatus) return false;
-      if (startDate && music.release_date && new Date(music.release_date) < startDate) return false;
-      if (endDate && music.release_date && new Date(music.release_date) > endDate) return false;
-      return true;
-    });
-  }, [musicRegistry, selectedArtist, selectedProjectFilter, selectedStatus, startDate, endDate]);
-
-  const filteredPhonograms = useMemo(() => {
-    return phonograms.filter(phono => {
-      if (selectedArtist !== "all" && phono.artist_id !== selectedArtist) return false;
-      if (selectedStatus !== "all" && phono.status !== selectedStatus) return false;
-      if (startDate && phono.recording_date && new Date(phono.recording_date) < startDate) return false;
-      if (endDate && phono.recording_date && new Date(phono.recording_date) > endDate) return false;
-      return true;
-    });
-  }, [phonograms, selectedArtist, selectedStatus, startDate, endDate]);
-
-  // Stats by artist with missing fields detection
-  const artistStats = useMemo(() => {
-    const stats: Record<string, { 
-      works: number; 
-      phonograms: number; 
-      verified: number; 
-      pending: number;
-      missingFields: string[];
-    }> = {};
-    
-    // Check artist fields for each artist
-    artists.forEach(artist => {
-      const missingFields: string[] = [];
-      // Dados pessoais
-      if (!artist.full_name) missingFields.push("Nome Completo");
-      if (!artist.stage_name) missingFields.push("Nome Artístico");
-      if (!artist.cpf_cnpj) missingFields.push("CPF/CNPJ");
-      if (!artist.rg) missingFields.push("RG");
-      if (!artist.birth_date) missingFields.push("Data de Nascimento");
-      if (!artist.email) missingFields.push("E-mail");
-      if (!artist.phone) missingFields.push("Telefone");
-      if (!artist.full_address) missingFields.push("Endereço Completo");
-      
-      // Dados bancários
-      if (!artist.bank) missingFields.push("Banco");
-      if (!artist.agency) missingFields.push("Agência");
-      if (!artist.account) missingFields.push("Conta");
-      if (!artist.pix_key) missingFields.push("Chave PIX");
-      if (!artist.account_holder) missingFields.push("Titular da Conta");
-      
-      // Redes sociais
-      if (!artist.spotify_url) missingFields.push("Spotify");
-      if (!artist.instagram_url) missingFields.push("Instagram");
-      if (!artist.youtube_url) missingFields.push("YouTube");
-      if (!artist.tiktok) missingFields.push("TikTok");
-      if (!artist.soundcloud) missingFields.push("SoundCloud");
-      
-      // Dados profissionais
-      if (!artist.genre) missingFields.push("Gênero Musical");
-      if (!artist.profile_type) missingFields.push("Tipo de Perfil");
-      if (!artist.bio) missingFields.push("Biografia");
-      
-      // Distribuidores
-      if (!artist.distributors || artist.distributors.length === 0) missingFields.push("Distribuidores");
-      
-      // Empresário/Responsável (se aplicável)
-      if (artist.profile_type === 'com_empresario' || artist.profile_type === 'gravadora' || artist.profile_type === 'editora') {
-        if (!artist.manager_name) missingFields.push("Nome do Empresário/Responsável");
-        if (!artist.manager_phone) missingFields.push("Telefone do Empresário/Responsável");
-        if (!artist.manager_email) missingFields.push("E-mail do Empresário/Responsável");
-      }
-
-      stats[artist.id] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields };
-    });
-
-    filteredMusic.forEach(music => {
-      const artistId = music.artist_id || "unknown";
-      if (!stats[artistId]) {
-        stats[artistId] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields: [] };
-      }
-      stats[artistId].works++;
-      if ((music as any).royalties_verified) {
-        stats[artistId].verified++;
-      } else {
-        stats[artistId].pending++;
-      }
-    });
-
-    filteredPhonograms.forEach(phono => {
-      const artistId = phono.artist_id || "unknown";
-      if (!stats[artistId]) {
-        stats[artistId] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields: [] };
-      }
-      stats[artistId].phonograms++;
-    });
-
-    return Object.entries(stats)
-      .filter(([artistId]) => artistId !== "unknown")
-      .map(([artistId, data]) => ({
-        artistId,
-        artistName: getArtistName(artistId),
-        ...data
-      }));
-  }, [filteredMusic, filteredPhonograms, artists]);
-
-
-  const handleExportArtistReport = () => {
-    const data = artistStats.map(stat => ({
-      "Artista": stat.artistName,
-      "Total Obras": stat.works,
-      "Total Fonogramas": stat.phonograms,
-      "Royalties Conferidos": stat.verified,
-      "Pendentes Conferência": stat.pending
-    }));
-
-    exportToExcel(data, "relatorio_por_artista");
-  };
-
-  const handleExportWorksReport = () => {
-    const data = filteredMusic.map(music => ({
-      "Título": music.title,
-      "Artista": getArtistName(music.artist_id),
-      "ISWC": music.iswc || "-",
-      "Cód. ECAD": music.ecad_code || "-",
-      "Cód. ABRAMUS": music.abramus_code || "-",
-      "Gênero": music.genre || "-",
-      "Status": translateStatus(music.status),
-      "ISWC Preenchido": music.iswc ? "Sim" : "Não",
-      "ECAD Preenchido": music.ecad_code ? "Sim" : "Não",
-      "ABRAMUS Preenchido": music.abramus_code ? "Sim" : "Não"
-    }));
-
-    exportToExcel(data, "relatorio_obras");
-  };
-
-  const handleExportPhonogramsReport = () => {
-    const data = filteredPhonograms.map(phono => ({
-      "Título": phono.title,
-      "Artista": getArtistName(phono.artist_id),
-      "ISRC": phono.isrc || "-",
-      "Cód. ECAD": (phono as any).ecad_code || "-",
-      "Cód. ABRAMUS": (phono as any).abramus_code || "-",
-      "Gravadora": phono.label || "-",
-      "Status": translateStatus(phono.status),
-      "ISRC Preenchido": phono.isrc ? "Sim" : "Não",
-      "ECAD Preenchido": (phono as any).ecad_code ? "Sim" : "Não",
-      "ABRAMUS Preenchido": (phono as any).abramus_code ? "Sim" : "Não"
-    }));
-
-    exportToExcel(data, "relatorio_fonogramas");
-  };
-
-
-  const exportToExcel = (data: any[], filename: string) => {
-    if (data.length === 0) {
-      toast({
-        title: "Sem dados",
-        description: "Não há dados para exportar.",
-        variant: "destructive",
-      });
-      return;
+  const handleServiceSubmit = async (data: any) => {
+    if (selectedService?.id) {
+      await updateService.mutateAsync({ id: selectedService.id, ...data });
     }
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
-    XLSX.writeFile(workbook, `${filename}_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-
-    toast({
-      title: "Exportação concluída",
-      description: `Arquivo ${filename}.xlsx gerado com sucesso.`,
-    });
   };
 
-  const clearFilters = () => {
-    setSelectedArtist("all");
-    setSelectedProjectFilter("all");
-    setSelectedStatus("all");
-    setStartDate(undefined);
-    setEndDate(undefined);
+  const handleEditArtist = (item: AuditItem) => {
+    setSelectedArtist(item.data);
+    setArtistModalOpen(true);
   };
 
-  // Filtered projects
-  const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
-      if (selectedArtist !== "all" && project.artist_id !== selectedArtist) return false;
-      if (selectedStatus !== "all" && project.status !== selectedStatus) return false;
-      if (startDate && project.start_date && new Date(project.start_date) < startDate) return false;
-      if (endDate && project.end_date && new Date(project.end_date) > endDate) return false;
-      return true;
-    });
-  }, [projects, selectedArtist, selectedStatus, startDate, endDate]);
-
-  // Filtered releases
-  const filteredReleases = useMemo(() => {
-    return releases.filter(release => {
-      if (selectedArtist !== "all" && release.artist_id !== selectedArtist) return false;
-      if (selectedStatus !== "all" && release.status !== selectedStatus) return false;
-      if (startDate && release.release_date && new Date(release.release_date) < startDate) return false;
-      if (endDate && release.release_date && new Date(release.release_date) > endDate) return false;
-      return true;
-    });
-  }, [releases, selectedArtist, selectedStatus, startDate, endDate]);
-
-  // Export functions for projects and releases
-  const handleExportProjectsReport = () => {
-    const data = filteredProjects.map(project => ({
-      "Nome": project.name,
-      "Artista": getArtistName(project.artist_id),
-      "Status": translateStatus(project.status),
-      "Data Início": project.start_date ? formatDateBR(new Date(project.start_date)) : "-",
-      "Data Fim": project.end_date ? formatDateBR(new Date(project.end_date)) : "-",
-      "Orçamento": project.budget || "-",
-      "Descrição": project.description || "-"
-    }));
-
-    exportToExcel(data, "relatorio_projetos");
+  const handleEditProject = (item: AuditItem) => {
+    setSelectedProject(item.data);
+    setProjectModalOpen(true);
   };
 
-  const handleExportReleasesReport = () => {
-    const data = filteredReleases.map(release => ({
-      "Título": release.title,
-      "Artista": getArtistName(release.artist_id),
-      "Tipo": release.release_type || release.type || "-",
-      "Status": translateStatus(release.status),
-      "Data Lançamento": release.release_date ? formatDateBR(new Date(release.release_date)) : "-",
-      "Gênero": release.genre || "-",
-      "Gravadora": release.label || "-",
-      "Copyright": release.copyright || "-"
-    }));
-
-    exportToExcel(data, "relatorio_lancamentos");
+  const handleEditMusic = (item: AuditItem) => {
+    setSelectedMusic(item.data);
+    setMusicModalOpen(true);
   };
 
-  const isLoading = isLoadingMusic || isLoadingPhonograms || isLoadingReleases;
+  const handleEditPhonogram = (item: AuditItem) => {
+    setSelectedPhonogram(item.data);
+    setPhonogramModalOpen(true);
+  };
+
+  const handleEditContract = (item: AuditItem) => {
+    setSelectedContract(item.data);
+    setContractModalOpen(true);
+  };
+
+  const handleEditInventory = (item: AuditItem) => {
+    setSelectedInventory(item.data);
+    setInventoryModalOpen(true);
+  };
+
+  const handleEditContact = (item: AuditItem) => {
+    setSelectedContact(item.data);
+    setContactModalOpen(true);
+  };
+
+  const handleEditService = (item: AuditItem) => {
+    setSelectedService(item.data);
+    setServiceModalOpen(true);
+  };
+
+  const tabs = [
+    { id: "artistas", label: "Artistas", icon: Users, data: auditData.artistsAudit, onEdit: handleEditArtist },
+    { id: "projetos", label: "Projetos", icon: FolderKanban, data: auditData.projectsAudit, onEdit: handleEditProject },
+    { id: "obras", label: "Obras", icon: Music, data: auditData.musicAudit, onEdit: handleEditMusic },
+    { id: "fonogramas", label: "Fonogramas", icon: Disc, data: auditData.phonogramsAudit, onEdit: handleEditPhonogram },
+    { id: "lancamentos", label: "Lançamentos", icon: Rocket, data: auditData.releasesAudit, onEdit: () => {} },
+    { id: "contratos", label: "Contratos", icon: FileText, data: auditData.contractsAudit, onEdit: handleEditContract },
+    { id: "financeiro", label: "Financeiro", icon: DollarSign, data: auditData.financialAudit, onEdit: () => {} },
+    { id: "agenda", label: "Agenda", icon: Calendar, data: auditData.agendaAudit, onEdit: () => {} },
+    { id: "inventario", label: "Inventário", icon: Package, data: auditData.inventoryAudit, onEdit: handleEditInventory },
+    { id: "crm", label: "CRM", icon: UserPlus, data: auditData.crmAudit, onEdit: handleEditContact },
+    { id: "servicos", label: "Serviços", icon: Briefcase, data: auditData.servicesAudit, onEdit: handleEditService },
+  ];
+
+  // Summary stats
+  const totalIncomplete = tabs.reduce((acc, tab) => acc + tab.data.filter(i => i.missingFields.length > 0).length, 0);
+  const totalComplete = tabs.reduce((acc, tab) => acc + tab.data.filter(i => i.missingFields.length === 0).length, 0);
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <header className="flex h-14 lg:h-16 shrink-0 items-center gap-2 border-b border-border px-4 lg:px-6">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
-            <div className="flex-1">
-              <h1 className="text-lg lg:text-xl font-semibold text-foreground">Auditoria</h1>
-              <p className="text-xs lg:text-sm text-muted-foreground">Auditoria de obras, fonogramas, projetos e lançamentos</p>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              <h1 className="text-lg font-semibold">Auditoria de Dados</h1>
             </div>
           </header>
 
-          <main className="flex-1 p-4 lg:p-6 space-y-6">
-            {/* Filters */}
+          <main className="flex-1 p-4 md:p-6 space-y-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total de Registros</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalComplete + totalIncomplete}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Registros Completos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{totalComplete}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Registros Incompletos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-yellow-600">{totalIncomplete}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Taxa de Completude</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {totalComplete + totalIncomplete > 0 
+                      ? Math.round((totalComplete / (totalComplete + totalIncomplete)) * 100) 
+                      : 0}%
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Audit Tabs */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  Filtros
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div className="space-y-2">
-                    <Label>Artista</Label>
-                    <Select value={selectedArtist} onValueChange={setSelectedArtist}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos os artistas" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos os artistas</SelectItem>
-                        {artists.map(artist => (
-                          <SelectItem key={artist.id} value={artist.id}>
-                            {artist.stage_name || artist.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <CardContent className="p-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <ScrollArea className="w-full">
+                    <TabsList className="flex w-max gap-1 mb-4">
+                      {tabs.map(tab => {
+                        const incompleteCount = tab.data.filter(i => i.missingFields.length > 0).length;
+                        return (
+                          <TabsTrigger 
+                            key={tab.id} 
+                            value={tab.id} 
+                            className="gap-2 whitespace-nowrap"
+                          >
+                            <tab.icon className="h-4 w-4" />
+                            <span className="hidden sm:inline">{tab.label}</span>
+                            {incompleteCount > 0 && (
+                              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs bg-yellow-500/20 text-yellow-700">
+                                {incompleteCount}
+                              </Badge>
+                            )}
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+                  </ScrollArea>
 
-                  <div className="space-y-2">
-                    <Label>Projeto</Label>
-                    <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos os projetos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos os projetos</SelectItem>
-                        {projects.map(project => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Status</Label>
-                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos os status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos os status</SelectItem>
-                        <SelectItem value="em_analise">Em Análise</SelectItem>
-                        <SelectItem value="aceita">Aceita</SelectItem>
-                        <SelectItem value="recusada">Recusada</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Data Início</Label>
-                    <DateInput
-                      value={startDate}
-                      onChange={setStartDate}
-                      placeholder="DD/MM/AAAA"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Data Fim</Label>
-                    <DateInput
-                      value={endDate}
-                      onChange={setEndDate}
-                      placeholder="DD/MM/AAAA"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end mt-4">
-                  <Button variant="outline" onClick={clearFilters}>
-                    Limpar Filtros
-                  </Button>
-                </div>
+                  {tabs.map(tab => (
+                    <TabsContent key={tab.id} value={tab.id}>
+                      <AuditSection 
+                        title={`Auditoria de ${tab.label}`}
+                        items={tab.data}
+                        icon={<tab.icon className="h-5 w-5" />}
+                        onEdit={tab.onEdit}
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </CardContent>
             </Card>
-
-            {/* Report Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid grid-cols-5 w-full lg:w-auto">
-                <TabsTrigger value="artista" className="gap-2">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Por Artista</span>
-                </TabsTrigger>
-                <TabsTrigger value="projetos" className="gap-2">
-                  <FolderKanban className="h-4 w-4" />
-                  <span className="hidden sm:inline">Projetos</span>
-                </TabsTrigger>
-                <TabsTrigger value="obras" className="gap-2">
-                  <Music className="h-4 w-4" />
-                  <span className="hidden sm:inline">Obras</span>
-                </TabsTrigger>
-                <TabsTrigger value="fonogramas" className="gap-2">
-                  <Disc className="h-4 w-4" />
-                  <span className="hidden sm:inline">Fonogramas</span>
-                </TabsTrigger>
-                <TabsTrigger value="lancamentos" className="gap-2">
-                  <Rocket className="h-4 w-4" />
-                  <span className="hidden sm:inline">Lançamentos</span>
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Por Artista Tab */}
-              <TabsContent value="artista" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Relatório por Artista</h2>
-                  <Button onClick={handleExportArtistReport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : artistStats.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhum dado encontrado</div>
-                ) : (
-                  <div className="grid gap-4">
-                    {artistStats.map(stat => (
-                      <Card key={stat.artistId} className={stat.missingFields.length > 0 ? "border-yellow-500/50" : ""}>
-                        <CardContent className="p-4">
-                          <div className="flex flex-col gap-4">
-                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.missingFields.length > 0 ? 'bg-yellow-500/10' : 'bg-primary/10'}`}>
-                                  <Users className={`h-5 w-5 ${stat.missingFields.length > 0 ? 'text-yellow-600' : 'text-primary'}`} />
-                                </div>
-                                <div>
-                                  <h3 className="font-semibold">{stat.artistName}</h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    {stat.works} obras • {stat.phonograms} fonogramas
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4 flex-wrap">
-                                <div className="text-center">
-                                  <div className="text-2xl font-bold text-green-600">{stat.verified}</div>
-                                  <div className="text-xs text-muted-foreground">Conferidos</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-2xl font-bold text-yellow-600">{stat.pending}</div>
-                                  <div className="text-xs text-muted-foreground">Pendentes</div>
-                                </div>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => handleEditArtist(stat.artistId)}
-                                  className="gap-1"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                  Editar
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {stat.missingFields.length > 0 && (
-                              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                  <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-                                    Campos não preenchidos ({stat.missingFields.length})
-                                  </span>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                  {stat.missingFields.map((field, idx) => (
-                                    <Badge key={idx} variant="outline" className="text-xs border-yellow-500 text-yellow-700 dark:text-yellow-400">
-                                      {field}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* Obras Tab */}
-              <TabsContent value="obras" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Relatório de Obras</h2>
-                  <Button onClick={handleExportWorksReport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
-                </div>
-
-                {/* KPIs de Pendências */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Total Obras</p>
-                          <p className="text-2xl font-bold">{filteredMusic.length}</p>
-                        </div>
-                        <Music className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Com ISWC</p>
-                          <p className="text-2xl font-bold text-green-600">{filteredMusic.filter(m => m.iswc).length}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Sem ISWC</p>
-                          <p className="text-2xl font-bold text-yellow-600">{filteredMusic.filter(m => !m.iswc).length}</p>
-                        </div>
-                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Sem ECAD/ABRAMUS</p>
-                          <p className="text-2xl font-bold text-red-600">{filteredMusic.filter(m => !m.ecad_code && !m.abramus_code).length}</p>
-                        </div>
-                        <XCircle className="h-8 w-8 text-red-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : filteredMusic.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhuma obra encontrada</div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-3">Título</th>
-                              <th className="text-left p-3">Artista</th>
-                              <th className="text-left p-3">ISWC</th>
-                              <th className="text-left p-3">Cód. ECAD</th>
-                              <th className="text-left p-3">Cód. ABRAMUS</th>
-                              <th className="text-left p-3">Status</th>
-                              <th className="text-center p-3">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredMusic.map(music => (
-                              <tr key={music.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="p-3 font-medium">{music.title}</td>
-                                <td className="p-3">{getArtistName(music.artist_id)}</td>
-                                <td className="p-3">
-                                  {music.iswc ? (
-                                    <span className="text-green-600">{music.iswc}</span>
-                                  ) : (
-                                    <span className="text-yellow-600">Não preenchido</span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  {music.ecad_code ? (
-                                    <span className="text-green-600">{music.ecad_code}</span>
-                                  ) : (
-                                    <span className="text-yellow-600">Não preenchido</span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  {music.abramus_code ? (
-                                    <span className="text-green-600">{music.abramus_code}</span>
-                                  ) : (
-                                    <span className="text-yellow-600">Não preenchido</span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  <Badge variant="outline">{translateStatus(music.status)}</Badge>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditMusic(music)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* Fonogramas Tab */}
-              <TabsContent value="fonogramas" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Relatório de Fonogramas</h2>
-                  <Button onClick={handleExportPhonogramsReport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
-                </div>
-
-                {/* KPIs de Pendências */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Total Fonogramas</p>
-                          <p className="text-2xl font-bold">{filteredPhonograms.length}</p>
-                        </div>
-                        <Disc className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Com ISRC</p>
-                          <p className="text-2xl font-bold text-green-600">{filteredPhonograms.filter(p => p.isrc).length}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Sem ISRC</p>
-                          <p className="text-2xl font-bold text-yellow-600">{filteredPhonograms.filter(p => !p.isrc).length}</p>
-                        </div>
-                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Sem ECAD/ABRAMUS</p>
-                          <p className="text-2xl font-bold text-red-600">{filteredPhonograms.filter(p => !(p as any).ecad_code && !(p as any).abramus_code).length}</p>
-                        </div>
-                        <XCircle className="h-8 w-8 text-red-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : filteredPhonograms.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhum fonograma encontrado</div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-3">Título</th>
-                              <th className="text-left p-3">Artista</th>
-                              <th className="text-left p-3">ISRC</th>
-                              <th className="text-left p-3">Cód. ECAD</th>
-                              <th className="text-left p-3">Cód. ABRAMUS</th>
-                              <th className="text-left p-3">Gravadora</th>
-                              <th className="text-left p-3">Status</th>
-                              <th className="text-center p-3">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredPhonograms.map(phono => (
-                              <tr key={phono.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="p-3 font-medium">{phono.title}</td>
-                                <td className="p-3">{getArtistName(phono.artist_id)}</td>
-                                <td className="p-3">
-                                  {phono.isrc ? (
-                                    <span className="text-green-600">{phono.isrc}</span>
-                                  ) : (
-                                    <span className="text-yellow-600">Não preenchido</span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  {(phono as any).ecad_code ? (
-                                    <span className="text-green-600">{(phono as any).ecad_code}</span>
-                                  ) : (
-                                    <span className="text-yellow-600">Não preenchido</span>
-                                  )}
-                                </td>
-                                <td className="p-3">
-                                  {(phono as any).abramus_code ? (
-                                    <span className="text-green-600">{(phono as any).abramus_code}</span>
-                                  ) : (
-                                    <span className="text-yellow-600">Não preenchido</span>
-                                  )}
-                                </td>
-                                <td className="p-3">{phono.label || "-"}</td>
-                                <td className="p-3">
-                                  <Badge variant="outline">{translateStatus(phono.status)}</Badge>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditPhonogram(phono)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* Projetos Tab */}
-              <TabsContent value="projetos" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Relatório de Projetos</h2>
-                  <Button onClick={handleExportProjectsReport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
-                </div>
-
-                {/* KPIs de Projetos */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Total Projetos</p>
-                          <p className="text-2xl font-bold">{filteredProjects.length}</p>
-                        </div>
-                        <FolderKanban className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Concluídos</p>
-                          <p className="text-2xl font-bold text-green-600">{filteredProjects.filter(p => p.status === 'completed').length}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Em Progresso</p>
-                          <p className="text-2xl font-bold text-yellow-600">{filteredProjects.filter(p => p.status === 'in_progress').length}</p>
-                        </div>
-                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Rascunho</p>
-                          <p className="text-2xl font-bold text-gray-600">{filteredProjects.filter(p => p.status === 'draft' || p.status === 'planning').length}</p>
-                        </div>
-                        <XCircle className="h-8 w-8 text-gray-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : filteredProjects.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhum projeto encontrado</div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-3">Nome</th>
-                              <th className="text-left p-3">Artista</th>
-                              <th className="text-left p-3">Status</th>
-                              <th className="text-left p-3">Data Início</th>
-                              <th className="text-left p-3">Data Fim</th>
-                              <th className="text-center p-3">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredProjects.map(project => (
-                              <tr key={project.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="p-3 font-medium">{project.name}</td>
-                                <td className="p-3">{getArtistName(project.artist_id)}</td>
-                                <td className="p-3">
-                                  <Badge variant="outline">{translateStatus(project.status)}</Badge>
-                                </td>
-                                <td className="p-3">{project.start_date ? formatDateBR(new Date(project.start_date)) : "-"}</td>
-                                <td className="p-3">{project.end_date ? formatDateBR(new Date(project.end_date)) : "-"}</td>
-                                <td className="p-3 text-center">
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditProject(project)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* Lançamentos Tab */}
-              <TabsContent value="lancamentos" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Relatório de Lançamentos</h2>
-                  <Button onClick={handleExportReleasesReport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
-                </div>
-
-                {/* KPIs de Lançamentos */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Total Lançamentos</p>
-                          <p className="text-2xl font-bold">{filteredReleases.length}</p>
-                        </div>
-                        <Rocket className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Aceitos</p>
-                          <p className="text-2xl font-bold text-green-600">{filteredReleases.filter(r => r.status === 'aceita').length}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Em Análise</p>
-                          <p className="text-2xl font-bold text-yellow-600">{filteredReleases.filter(r => r.status === 'em_analise' || r.status === 'planning').length}</p>
-                        </div>
-                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Recusados</p>
-                          <p className="text-2xl font-bold text-red-600">{filteredReleases.filter(r => r.status === 'recusada').length}</p>
-                        </div>
-                        <XCircle className="h-8 w-8 text-red-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : filteredReleases.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhum lançamento encontrado</div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-3">Título</th>
-                              <th className="text-left p-3">Artista</th>
-                              <th className="text-left p-3">Tipo</th>
-                              <th className="text-left p-3">Data Lançamento</th>
-                              <th className="text-left p-3">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredReleases.map(release => (
-                              <tr key={release.id} className="border-t border-border hover:bg-muted/30">
-                                <td className="p-3 font-medium">{release.title}</td>
-                                <td className="p-3">{getArtistName(release.artist_id)}</td>
-                                <td className="p-3">{release.release_type || release.type || "-"}</td>
-                                <td className="p-3">{release.release_date ? formatDateBR(new Date(release.release_date)) : "-"}</td>
-                                <td className="p-3">
-                                  <Badge variant="outline">{translateStatus(release.status)}</Badge>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-            </Tabs>
           </main>
         </SidebarInset>
       </div>
 
-      {/* Edit Modals */}
+      {/* Modals */}
+      <ArtistModal
+        open={artistModalOpen}
+        onOpenChange={setArtistModalOpen}
+        artist={selectedArtist}
+        mode="edit"
+      />
+      <ProjectModal
+        open={projectModalOpen}
+        onOpenChange={setProjectModalOpen}
+        project={selectedProject}
+        mode="edit"
+      />
       <MusicEditModal
-        open={editMusicModalOpen}
-        onOpenChange={setEditMusicModalOpen}
+        open={musicModalOpen}
+        onOpenChange={setMusicModalOpen}
         song={selectedMusic}
       />
       <PhonogramEditModal
-        open={editPhonogramModalOpen}
-        onOpenChange={setEditPhonogramModalOpen}
+        open={phonogramModalOpen}
+        onOpenChange={setPhonogramModalOpen}
         phonogram={selectedPhonogram}
       />
-      <ProjectModal
-        open={editProjectModalOpen}
-        onOpenChange={setEditProjectModalOpen}
-        project={selectedProjectForEdit}
-        mode="edit"
+      <ContractModal
+        isOpen={contractModalOpen}
+        onClose={() => setContractModalOpen(false)}
+        contract={selectedContract}
       />
-      <ArtistModal
-        open={editArtistModalOpen}
-        onOpenChange={setEditArtistModalOpen}
-        artist={selectedArtistForEdit}
-        mode="edit"
+      <InventoryModal
+        isOpen={inventoryModalOpen}
+        onClose={() => setInventoryModalOpen(false)}
+        equipment={selectedInventory}
+        isEditMode={true}
+      />
+      <ContactModal
+        open={contactModalOpen}
+        onOpenChange={setContactModalOpen}
+        initialData={selectedContact}
+        onSubmit={handleContactSubmit}
+      />
+      <ServiceModal
+        isOpen={serviceModalOpen}
+        onClose={() => setServiceModalOpen(false)}
+        service={selectedService}
+        onSubmit={handleServiceSubmit}
       />
     </SidebarProvider>
   );
