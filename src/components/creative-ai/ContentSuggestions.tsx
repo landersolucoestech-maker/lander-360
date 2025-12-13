@@ -54,7 +54,7 @@ export const ContentSuggestions = () => {
       const result = await generateSuggestions.mutateAsync({
         artistData: artist,
         objective,
-        channel: channel || undefined,
+        channel: channel && channel !== 'all' ? channel : undefined,
       });
 
       if (Array.isArray(result)) {
@@ -158,7 +158,7 @@ export const ContentSuggestions = () => {
                   <SelectValue placeholder="Todos os canais" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="instagram">Instagram</SelectItem>
                   <SelectItem value="tiktok">TikTok</SelectItem>
                   <SelectItem value="youtube">YouTube</SelectItem>
