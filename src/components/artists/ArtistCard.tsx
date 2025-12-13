@@ -387,7 +387,10 @@ export function ArtistCard({
                               <span className="text-[9px]">Ouvintes/Mês</span>
                             </div>
                             <div className="text-base font-bold text-foreground">
-                              {spotifyMetrics.monthly_listeners !== null && spotifyMetrics.monthly_listeners !== undefined
+                              {spotifyMetrics.monthly_listeners !== null &&
+                               spotifyMetrics.monthly_listeners !== undefined &&
+                               spotifyMetrics.monthly_listeners > 0 &&
+                               spotifyMetrics.monthly_listeners !== spotifyMetrics.followers
                                 ? formatNumber(spotifyMetrics.monthly_listeners)
                                 : 'N/D'}
                             </div>
