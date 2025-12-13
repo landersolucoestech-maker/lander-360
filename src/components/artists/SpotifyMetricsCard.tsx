@@ -112,8 +112,8 @@ export function SpotifyMetricsCard({ artistId, spotifyUrl }: SpotifyMetricsCardP
           </div>
           <div className="bg-muted/50 rounded-lg p-4 text-center">
             <TrendingUp className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-            <p className="text-2xl font-bold">{metrics?.popularity || 0}</p>
-            <p className="text-sm text-muted-foreground">Popularidade</p>
+            <p className="text-2xl font-bold">{metrics?.monthly_listeners ?? 0}</p>
+            <p className="text-sm text-muted-foreground">Ouvintes mensais</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-4 text-center">
             <Music2 className="h-6 w-6 mx-auto mb-2 text-purple-500" />
