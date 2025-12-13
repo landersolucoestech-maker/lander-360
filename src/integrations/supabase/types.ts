@@ -1129,6 +1129,285 @@ export type Database = {
           },
         ]
       }
+      learning_badges: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          points: number | null
+          stage_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          points?: number | null
+          stage_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          points?: number | null
+          stage_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_badges_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_lessons: {
+        Row: {
+          content_text: string | null
+          content_type: Database["public"]["Enums"]["learning_content_type"]
+          content_url: string | null
+          created_at: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["learning_difficulty"] | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          lesson_order: number
+          title: string
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_text?: string | null
+          content_type?: Database["public"]["Enums"]["learning_content_type"]
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["learning_difficulty"] | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          lesson_order: number
+          title: string
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_text?: string | null
+          content_type?: Database["public"]["Enums"]["learning_content_type"]
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["learning_difficulty"] | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          lesson_order?: number
+          title?: string
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_lessons_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "learning_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_notes: {
+        Row: {
+          created_at: string
+          id: string
+          is_bookmarked: boolean | null
+          lesson_id: string
+          note_text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean | null
+          lesson_id: string
+          note_text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean | null
+          lesson_id?: string
+          note_text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_notes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learning_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          lesson_id: string
+          started_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: string
+          started_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          started_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "learning_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_stages: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          stage_number: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          stage_number: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          stage_number?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      learning_topics: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          stage_id: string
+          title: string
+          topic_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          stage_id: string
+          title: string
+          topic_order: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          stage_id?: string
+          title?: string
+          topic_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_topics_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "learning_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "learning_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_attempts: {
         Row: {
           attempt_count: number
@@ -2455,6 +2734,8 @@ export type Database = {
         | "juridico"
         | "artista"
         | "produtor_artistico"
+      learning_content_type: "video" | "text" | "pdf" | "link" | "template"
+      learning_difficulty: "beginner" | "intermediate" | "advanced"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2593,6 +2874,8 @@ export const Constants = {
         "artista",
         "produtor_artistico",
       ],
+      learning_content_type: ["video", "text", "pdf", "link", "template"],
+      learning_difficulty: ["beginner", "intermediate", "advanced"],
     },
   },
 } as const
