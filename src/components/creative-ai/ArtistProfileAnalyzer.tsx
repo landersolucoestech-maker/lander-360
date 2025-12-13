@@ -168,7 +168,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!analysis || !selectedArtist) return;
 
     const doc = new jsPDF();
@@ -176,6 +176,30 @@ Retorne APENAS o JSON, sem texto adicional.`;
     const margin = 20;
     const maxWidth = pageWidth - margin * 2;
     let y = 20;
+
+    // Load and add logo
+    try {
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve, reject) => {
+        logoImg.onload = () => resolve();
+        logoImg.onerror = reject;
+        logoImg.src = '/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png';
+      });
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = logoImg.width;
+      canvas.height = logoImg.height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(logoImg, 0, 0);
+      const logoDataUrl = canvas.toDataURL('image/png');
+      
+      doc.addImage(logoDataUrl, 'PNG', margin, y, 30, 30);
+      y += 35;
+    } catch (error) {
+      console.error('Failed to load logo:', error);
+      // Continue without logo
+    }
 
     const addText = (text: string, fontSize: number = 10, isBold: boolean = false) => {
       doc.setFontSize(fontSize);
