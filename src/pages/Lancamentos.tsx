@@ -27,6 +27,23 @@ const Lancamentos = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
 
+  // Map database status to UI approval status
+  const mapDbStatusToApprovalStatus = (dbStatus: string | undefined): 'em_analise' | 'aprovado' | 'rejeitado' | 'pausado' | 'takedown' => {
+    if (!dbStatus) return 'em_analise';
+    switch (dbStatus) {
+      case 'released': return 'aprovado';
+      case 'cancelled': return 'rejeitado';
+      case 'paused': return 'pausado';
+      case 'takedown': return 'takedown';
+      case 'aprovado': return 'aprovado';
+      case 'rejeitado': return 'rejeitado';
+      case 'pausado': return 'pausado';
+      case 'em_analise': return 'em_analise';
+      case 'planning':
+      default: return 'em_analise';
+    }
+  };
+
   const allReleases = releasesData.map((release: any) => {
     const artist = artists.find((a: any) => a.id === release.artist_id);
     return {
@@ -34,7 +51,7 @@ const Lancamentos = () => {
       artist: artist?.stage_name || artist?.name || 'Artista Desconhecido',
       cover: release.cover_url,
       releaseDate: release.release_date || new Date().toISOString(),
-      approvalStatus: release.status || 'em_analise',
+      approvalStatus: mapDbStatusToApprovalStatus(release.status),
       priority: 'media',
     };
   });
@@ -313,11 +330,12 @@ const Lancamentos = () => {
                             {selectedRelease.type || selectedRelease.release_type || 'Single'}
                           </span>
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            selectedRelease.approvalStatus === 'aceita' ? 'bg-green-500/10 text-green-500' :
-                            selectedRelease.approvalStatus === 'pendente' ? 'bg-yellow-500/10 text-yellow-500' :
-                            selectedRelease.approvalStatus === 'recusada' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'
+                            selectedRelease.approvalStatus === 'aprovado' ? 'bg-green-500/10 text-green-500' :
+                            selectedRelease.approvalStatus === 'em_analise' ? 'bg-yellow-500/10 text-yellow-500' :
+                            selectedRelease.approvalStatus === 'rejeitado' ? 'bg-red-500/10 text-red-500' :
+                            selectedRelease.approvalStatus === 'pausado' ? 'bg-blue-500/10 text-blue-500' : 'bg-yellow-500/10 text-yellow-500'
                           }`}>
-                            {selectedRelease.approvalStatus === 'aceita' ? 'Aceita' : selectedRelease.approvalStatus === 'pendente' ? 'Pendente' : selectedRelease.approvalStatus === 'recusada' ? 'Recusada' : 'Em Espera'}
+                            {selectedRelease.approvalStatus === 'aprovado' ? 'Aprovado' : selectedRelease.approvalStatus === 'em_analise' ? 'Em Análise' : selectedRelease.approvalStatus === 'rejeitado' ? 'Rejeitado' : selectedRelease.approvalStatus === 'pausado' ? 'Pausado' : 'Em Análise'}
                           </span>
                           {selectedRelease.hasMarketingPlan && (
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
