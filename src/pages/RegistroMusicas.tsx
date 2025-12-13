@@ -833,7 +833,7 @@ const RegistroMusicas = () => {
                               </div>
                               <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Gênero</div>
-                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate capitalize">
                                   {song.genre || "-"}
                                 </div>
                               </div>
