@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgendaService } from '@/services/agenda';
 import { useToast } from '@/hooks/use-toast';
+import { NotificationService } from '@/services/notificationService';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 // Query keys
 export const agendaQueryKeys = {
@@ -55,20 +59,63 @@ export const useEventsByArtist = (artistId: string) => {
   });
 };
 
+// Helper to send WhatsApp notification for new event
+const sendEventNotification = async (event: any, artistId: string) => {
+  try {
+    // Fetch artist data
+    const { data: artist } = await supabase
+      .from('artists')
+      .select('name, stage_name, phone, email')
+      .eq('id', artistId)
+      .single();
+
+    if (!artist?.phone && !artist?.email) {
+      console.log('Artist has no phone or email, skipping notification');
+      return;
+    }
+
+    const eventDate = format(new Date(event.start_date), "dd/MM/yyyy", { locale: ptBR });
+    const eventTime = event.start_time || 'Horário a definir';
+
+    await NotificationService.notifyArtistAboutEvent(
+      artist.phone || '',
+      artist.email || '',
+      event.title,
+      eventDate,
+      eventTime,
+      event.location
+    );
+
+    console.log('Notification sent to artist:', artist.stage_name || artist.name);
+  } catch (error) {
+    console.error('Error sending event notification:', error);
+  }
+};
+
 // Create agenda event mutation
 export const useCreateAgendaEvent = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: { title: string; start_date: string; description?: string; location?: string; event_type?: string; artist_id?: string }) => AgendaService.create(data),
-    onSuccess: (newEvent) => {
+    mutationFn: (data: { title: string; start_date: string; description?: string; location?: string; event_type?: string; artist_id?: string; start_time?: string }) => AgendaService.create(data),
+    onSuccess: async (newEvent, variables) => {
       queryClient.invalidateQueries({ queryKey: agendaQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: agendaQueryKeys.upcoming() });
-      toast({
-        title: 'Sucesso',
-        description: `Evento "${newEvent.title}" criado com sucesso.`,
-      });
+      
+      // Send WhatsApp/Email notification if artist is linked
+      if (variables.artist_id) {
+        await sendEventNotification(newEvent, variables.artist_id);
+        toast({
+          title: 'Evento criado',
+          description: `Evento "${newEvent.title}" criado e notificação enviada ao artista.`,
+        });
+      } else {
+        toast({
+          title: 'Sucesso',
+          description: `Evento "${newEvent.title}" criado com sucesso.`,
+        });
+      }
     },
     onError: (error) => {
       console.error('Error creating agenda event:', error);
