@@ -64,7 +64,7 @@ const MarketingMetricas = () => {
               />
               <DashboardCard
                 title="Engajamento Médio"
-                value={metricsLoading ? "..." : `${averageEngagement.toFixed(1)}%`}
+                value={metricsLoading ? "..." : `${Math.min(averageEngagement, 100).toFixed(1)}%`}
                 description="taxa de interação"
                 icon={Heart}
                 trend={{ value: 15.2, isPositive: true }}
@@ -78,7 +78,7 @@ const MarketingMetricas = () => {
               />
               <DashboardCard
                 title="ROI Médio"
-                value={campaignsLoading ? "..." : `${Math.round(averageRoas * 100)}%`}
+                value={campaignsLoading ? "..." : `${Math.min(Math.round(averageRoas * 100), 100)}%`}
                 description="retorno sobre investimento"
                 icon={TrendingUp}
                 trend={{ value: 25.3, isPositive: true }}

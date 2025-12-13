@@ -460,3 +460,19 @@ export function translateGenre(genre: string | null | undefined): string {
   const normalizedGenre = genre.toLowerCase().trim()
   return genreMap[normalizedGenre] || genre.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
+
+/**
+ * Limita um valor de porcentagem a um máximo de 100%
+ * Útil para exibição de KPIs e indicadores
+ */
+export function capPercentage(value: number, max: number = 100): number {
+  return Math.min(Math.max(value, 0), max)
+}
+
+/**
+ * Formata uma porcentagem limitando a 100% e adicionando sufixo %
+ */
+export function formatPercentageCapped(value: number, decimals: number = 0): string {
+  const capped = capPercentage(value)
+  return `${capped.toFixed(decimals)}%`
+}
