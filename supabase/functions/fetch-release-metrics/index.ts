@@ -48,6 +48,8 @@ async function getSpotifyToken(): Promise<string | null> {
 }
 
 // Search for track on Spotify and get metrics
+// NOTE: Spotify public API doesn't provide real stream counts
+// This returns popularity score (0-100) which we store as-is
 async function getSpotifyMetrics(token: string, trackName: string, artistName: string): Promise<MetricsData | null> {
   try {
     const query = encodeURIComponent(`track:${trackName} artist:${artistName}`);
@@ -71,12 +73,13 @@ async function getSpotifyMetrics(token: string, trackName: string, artistName: s
       return null;
     }
 
-    // Spotify API doesn't provide stream counts directly
-    // We use popularity score (0-100) as a proxy metric
-    // For actual stream counts, you'd need Spotify for Artists API
+    console.log('Spotify track found:', track.name, 'by', track.artists?.[0]?.name, 'popularity:', track.popularity);
+
+    // Return 0 streams since we don't have real data
+    // Spotify for Artists API would be needed for real stream counts
     return {
       platform: 'spotify',
-      streams: track.popularity * 10000, // Estimated based on popularity
+      streams: 0, // No real stream data available from public API
       views: 0,
       saves: 0,
       playlist_adds: 0,
@@ -139,6 +142,7 @@ async function getYouTubeMetrics(apiKey: string, trackName: string, artistName: 
 }
 
 // Get Deezer metrics (public API, no auth required)
+// NOTE: Deezer public API doesn't provide stream counts
 async function getDeezerMetrics(trackName: string, artistName: string): Promise<MetricsData | null> {
   try {
     const query = encodeURIComponent(`track:"${trackName}" artist:"${artistName}"`);
@@ -159,15 +163,14 @@ async function getDeezerMetrics(trackName: string, artistName: string): Promise<
       return null;
     }
 
-    // Get album details for more metrics
-    const albumResponse = await fetch(`https://api.deezer.com/album/${track.album?.id}`);
-    const albumData = albumResponse.ok ? await albumResponse.json() : null;
+    console.log('Deezer track found:', track.title, 'by', track.artist?.name);
 
+    // Return 0 streams since Deezer doesn't provide real stream counts
     return {
       platform: 'deezer',
-      streams: track.rank || 0, // Deezer rank as proxy for popularity
+      streams: 0, // No real stream data available from public API
       views: 0,
-      saves: albumData?.fans || 0,
+      saves: 0,
       playlist_adds: 0,
     };
   } catch (error) {
