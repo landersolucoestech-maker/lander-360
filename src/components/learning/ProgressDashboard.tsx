@@ -6,8 +6,19 @@ import {
   LearningProgress,
   LearningUserBadge,
 } from '@/hooks/useLearningHub';
-import { Award, Trophy, Target, Zap, Star, Crown, Heart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { 
+  Award, 
+  Trophy, 
+  Target, 
+  Zap, 
+  Star, 
+  BookOpen,
+  Rocket,
+  Users,
+  FileText,
+  Calendar,
+  BarChart3,
+} from 'lucide-react';
 
 interface ProgressDashboardProps {
   stages: LearningStage[];
@@ -20,9 +31,13 @@ const badgeIcons: Record<string, React.ElementType> = {
   Award,
   Star,
   Zap,
-  Heart,
   Trophy,
-  Crown,
+  BookOpen,
+  Rocket,
+  Users,
+  FileText,
+  Calendar,
+  BarChart3,
 };
 
 export const ProgressDashboard = ({
