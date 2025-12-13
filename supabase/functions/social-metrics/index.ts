@@ -359,45 +359,79 @@ async function getDeezerFollowers(deezerUrl: string): Promise<number | null> {
   }
 }
 
-// Scrape Apple Music followers (limited - Apple doesn't expose follower counts easily)
+// Fetch Apple Music data using iTunes Search API
 async function getAppleMusicFollowers(appleMusicUrl: string): Promise<number | null> {
   if (!appleMusicUrl) return null;
   
   try {
     console.log('Fetching Apple Music for:', appleMusicUrl);
     
-    // Apple Music doesn't have a public API for follower counts
-    // We can try to scrape but it's very limited
-    const response = await fetch(appleMusicUrl, {
+    // Extract artist ID from Apple Music URL
+    // Format: https://music.apple.com/br/artist/artist-name/1234567890
+    const artistIdMatch = appleMusicUrl.match(/\/artist\/[^/]+\/(\d+)/);
+    if (!artistIdMatch) {
+      console.log('Could not extract Apple Music artist ID from URL');
+      return null;
+    }
+    
+    const artistId = artistIdMatch[1];
+    console.log('Apple Music artist ID:', artistId);
+    
+    // Use iTunes Search API to get artist info
+    const response = await fetch(`https://itunes.apple.com/lookup?id=${artistId}&entity=musicArtist`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
       },
     });
     
     if (!response.ok) {
-      console.log('Apple Music fetch failed');
+      console.log('Apple Music API failed with status:', response.status);
       return null;
     }
     
-    const html = await response.text();
+    const data = await response.json();
     
-    // Try to find any listener/follower data in the page
+    if (!data.results || data.results.length === 0) {
+      console.log('No Apple Music artist found');
+      return null;
+    }
+    
+    // iTunes API doesn't return follower counts directly
+    // But we can try scraping the web page as fallback
+    const scrapeResponse = await fetch(appleMusicUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    
+    if (!scrapeResponse.ok) {
+      console.log('Apple Music scrape failed');
+      return null;
+    }
+    
+    const html = await scrapeResponse.text();
+    
+    // Try to find listener/follower data
     const patterns = [
-      /(\d+(?:[.,]\d+)?[MK]?)\s*(?:listeners|monthly listeners)/i,
-      /"listenerCount":\s*(\d+)/i,
+      /(\d+(?:[.,]\d+)?[MK]?)\s*(?:listeners|monthly listeners|ouvintes)/i,
+      /"listenerCount":\s*"?(\d+)"?/i,
+      /data-testid="listeners"[^>]*>(\d+(?:[.,]\d+)?[MK]?)/i,
     ];
     
     for (const pattern of patterns) {
       const match = html.match(pattern);
       if (match) {
         let value = match[1].replace(',', '.');
-        if (value.endsWith('M')) {
+        if (value.toUpperCase().endsWith('M')) {
           return Math.round(parseFloat(value) * 1000000);
-        } else if (value.endsWith('K')) {
+        } else if (value.toUpperCase().endsWith('K')) {
           return Math.round(parseFloat(value) * 1000);
         }
-        return parseInt(value.replace(/\./g, ''), 10);
+        const count = parseInt(value.replace(/\./g, ''), 10);
+        console.log('Apple Music listeners found:', count);
+        return count;
       }
     }
     

@@ -433,11 +433,12 @@ export function ArtistCard({
                       <div className="bg-muted/50 rounded-lg p-1.5 border border-border">
                         <div className="flex items-center gap-1 mb-0.5">
                           <FaApple className="h-3 w-3 text-foreground" />
-                          <span className="text-[9px] font-medium text-foreground">Apple</span>
+                          <span className="text-[9px] font-medium text-foreground">Apple Music</span>
                         </div>
                         <div className="text-sm font-bold text-foreground">
                           {socialMetrics?.apple?.followers ? formatNumber(socialMetrics.apple.followers) : 'N/D'}
                         </div>
+                        <div className="text-[8px] text-muted-foreground">Seguidores</div>
                       </div>
                       <div className="bg-muted/50 rounded-lg p-1.5 border border-border">
                         <div className="flex items-center gap-1 mb-0.5">
@@ -447,6 +448,7 @@ export function ArtistCard({
                         <div className="text-sm font-bold text-foreground">
                           {socialMetrics?.deezer?.followers ? formatNumber(socialMetrics.deezer.followers) : 'N/D'}
                         </div>
+                        <div className="text-[8px] text-muted-foreground">Fãs</div>
                       </div>
                     </div>
                   </div>
