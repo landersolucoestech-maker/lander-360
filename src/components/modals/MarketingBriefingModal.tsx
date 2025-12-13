@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MarketingBriefingForm } from "@/components/forms/MarketingBriefingForm";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useCreateMarketingBriefing } from "@/hooks/useMarketing";
 
 interface MarketingBriefingModalProps {
   isOpen: boolean;
@@ -11,13 +11,11 @@ interface MarketingBriefingModalProps {
 
 export const MarketingBriefingModal = ({ isOpen, onClose, initialData }: MarketingBriefingModalProps) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createBriefing = useCreateMarketingBriefing();
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
     try {
-      // TODO: Implement actual briefing service
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      await createBriefing.mutateAsync(data);
       
       toast({
         title: "Briefing Salvo",
@@ -30,8 +28,6 @@ export const MarketingBriefingModal = ({ isOpen, onClose, initialData }: Marketi
         description: "Erro ao salvar briefing.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

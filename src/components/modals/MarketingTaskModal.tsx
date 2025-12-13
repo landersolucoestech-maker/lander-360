@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MarketingTaskForm } from "@/components/forms/MarketingTaskForm";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useCreateMarketingTask } from "@/hooks/useMarketing";
 
 interface MarketingTaskModalProps {
   isOpen: boolean;
@@ -11,13 +11,11 @@ interface MarketingTaskModalProps {
 
 export const MarketingTaskModal = ({ isOpen, onClose, initialData }: MarketingTaskModalProps) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createTask = useCreateMarketingTask();
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
     try {
-      // TODO: Implement actual task service
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      await createTask.mutateAsync(data);
       
       toast({
         title: "Tarefa Salva",
@@ -30,8 +28,6 @@ export const MarketingTaskModal = ({ isOpen, onClose, initialData }: MarketingTa
         description: "Erro ao salvar tarefa.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
