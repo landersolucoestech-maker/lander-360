@@ -244,20 +244,34 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const aiGenerationType = form.watch('ai_generation_type');
   const watchedParticipants = form.watch('participants');
 
-  // Artistas exclusivos da produtora - quando são compositores, Lander Records é editora
-  // Verificar pelo nome real (full_name) pois no registro de obras vai o nome civil
+  // Artistas exclusivos da produtora - quando aparecem, Deyvisson Lander é editor
+  // Lista expandida com todos os artistas indicados pelo usuário
   const LANDER_RECORDS_EXCLUSIVE_ARTISTS = [
+    // Nomes artísticos
+    'mc looiz',
+    'mc diogo da gv',
+    'mc degê',
+    'mc dege',
+    'dj lael',
+    'lael',
+    'dj stay',
+    'mc dh do provi',
+    'mc nath',
+    'mano raro',
+    'dj md tr3ze',
+    'dj md tr3zê',
+    'rapha radamá',
+    'rapha radama',
+    'mc me',
+    'mc zm',
+    'mc mary',
+    'deyvisson lander andrade 06204919652',
+    'deyvisson lander andrade',
     // Nomes reais (full_name) - usados no registro de obras
     'allison batista barbosa militano',  // DJ Stay
     'david alexandre ferreira aires',    // DJ MD TR3ZE
     'diogo junior pereira',              // MC Diogo da GV
     'raphael lopes de souza',            // Rapha Radamá
-    // Nomes artísticos (fallback)
-    'dj stay',
-    'dj md tr3ze', 
-    'mc diogo da gv',
-    'rapha radamá',
-    'rapha radama',
   ];
 
   // Track if auto contract has been triggered
@@ -266,13 +280,18 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   // Track if Deyvisson has been added to prevent infinite loops
   const deyvissonAddedRef = useRef(false);
 
-  // Auto-add Deyvisson Lander Andrade as editor ALWAYS when there are other participants
+  // Auto-add Deyvisson Lander Andrade as editor when ANY exclusive artist appears
   // Also trigger auto contract creation for exclusive artists
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) {
       deyvissonAddedRef.current = false;
       return;
     }
+
+    // Check if ANY participant is an exclusive artist (any role, not just composers)
+    const hasExclusiveArtist = watchedParticipants.some(p => 
+      LANDER_RECORDS_EXCLUSIVE_ARTISTS.includes(p.name?.toLowerCase().trim())
+    );
 
     // Check if Deyvisson is already an editor
     const hasLanderEditor = watchedParticipants.some(p => 
@@ -281,8 +300,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       p.role === 'editor'
     );
 
-    // Only add Deyvisson if not already present and we haven't already tried to add
-    if (!hasLanderEditor && !deyvissonAddedRef.current) {
+    // Only add Deyvisson if an exclusive artist is present and editor not already added
+    if (hasExclusiveArtist && !hasLanderEditor && !deyvissonAddedRef.current) {
       deyvissonAddedRef.current = true;
       appendParticipant({
         name: 'Deyvisson Lander Andrade 06204919652',
