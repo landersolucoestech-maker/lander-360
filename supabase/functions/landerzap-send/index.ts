@@ -125,50 +125,105 @@ serve(async (req) => {
 });
 
 async function sendSMS(phone: string, message: string): Promise<{ success: boolean; error: string }> {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+  const accessKeyId = Deno.env.get('AWS_ACCESS_KEY_ID');
+  const secretAccessKey = Deno.env.get('AWS_SECRET_ACCESS_KEY');
+  const region = Deno.env.get('AWS_REGION') || 'us-east-1';
 
-  if (!accountSid || !authToken || !twilioPhone) {
-    return { success: false, error: 'Credenciais Twilio não configuradas' };
+  if (!accessKeyId || !secretAccessKey) {
+    return { success: false, error: 'Credenciais AWS não configuradas' };
   }
 
   try {
-    // Formatar número para SMS
+    // Formatar número para E.164
     let formattedPhone = phone.replace(/\D/g, '');
     if (!formattedPhone.startsWith('55')) {
       formattedPhone = '55' + formattedPhone;
     }
+    formattedPhone = '+' + formattedPhone;
 
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${btoa(`${accountSid}:${authToken}`)}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          To: `+${formattedPhone}`,
-          From: twilioPhone,
-          Body: message,
-        }),
-      }
-    );
-
-    const result = await response.json();
+    // AWS SNS API request
+    const host = `sns.${region}.amazonaws.com`;
+    const endpoint = `https://${host}/`;
     
-    if (response.ok) {
-      console.log('SMS enviado:', result.sid);
+    const params = new URLSearchParams({
+      Action: 'Publish',
+      Message: message,
+      PhoneNumber: formattedPhone,
+      Version: '2010-03-31',
+    });
+
+    // Create AWS Signature v4
+    const method = 'POST';
+    const service = 'sns';
+    const now = new Date();
+    const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+    const dateStamp = amzDate.substring(0, 8);
+
+    const canonicalUri = '/';
+    const canonicalQuerystring = '';
+    const payloadHash = await sha256(params.toString());
+    const canonicalHeaders = `content-type:application/x-www-form-urlencoded\nhost:${host}\nx-amz-date:${amzDate}\n`;
+    const signedHeaders = 'content-type;host;x-amz-date';
+    const canonicalRequest = `${method}\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+    const algorithm = 'AWS4-HMAC-SHA256';
+    const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+    const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${await sha256(canonicalRequest)}`;
+
+    const signingKey = await getSignatureKey(secretAccessKey, dateStamp, region, service);
+    const signature = await hmacHex(signingKey, stringToSign);
+
+    const authorizationHeader = `${algorithm} Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Amz-Date': amzDate,
+        'Authorization': authorizationHeader,
+      },
+      body: params.toString(),
+    });
+
+    const resultText = await response.text();
+    
+    if (response.ok && resultText.includes('<MessageId>')) {
+      console.log('SMS enviado via AWS SNS');
       return { success: true, error: '' };
     } else {
-      console.error('Erro Twilio SMS:', result);
-      return { success: false, error: result.message || 'Erro ao enviar SMS' };
+      console.error('Erro AWS SNS:', resultText);
+      return { success: false, error: 'Erro ao enviar SMS via AWS SNS' };
     }
   } catch (error) {
     console.error('Erro ao enviar SMS:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
   }
+}
+
+// AWS Signature v4 helper functions
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmac(key: ArrayBuffer, message: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  return await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
+}
+
+async function hmacHex(key: ArrayBuffer, message: string): Promise<string> {
+  const result = await hmac(key, message);
+  return Array.from(new Uint8Array(result)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function getSignatureKey(key: string, dateStamp: string, region: string, service: string): Promise<ArrayBuffer> {
+  const kDate = await hmac(new TextEncoder().encode('AWS4' + key).buffer as ArrayBuffer, dateStamp);
+  const kRegion = await hmac(kDate, region);
+  const kService = await hmac(kRegion, service);
+  return await hmac(kService, 'aws4_request');
 }
 
 async function sendEmail(email: string, name: string, message: string): Promise<{ success: boolean; error: string }> {
