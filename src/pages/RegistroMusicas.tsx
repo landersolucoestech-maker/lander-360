@@ -117,8 +117,8 @@ const RegistroMusicas = () => {
   const filterOptions = [
     {
       key: "status",
-      label: "Situação",
-      options: ["Em Análise", "Aceita", "Recusada"]
+      label: "Status",
+      options: ["Em Análise", "Aprovada", "Recusada"]
     },
     {
       key: "genre",
