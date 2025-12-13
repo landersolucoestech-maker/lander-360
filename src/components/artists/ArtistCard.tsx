@@ -375,7 +375,11 @@ export function ArtistCard({
                               <Headphones className="h-2.5 w-2.5" />
                               <span className="text-[9px]">Ouvintes/Mês</span>
                             </div>
-                            <div className="text-base font-bold text-foreground">{spotifyMetrics.monthly_listeners ? formatNumber(spotifyMetrics.monthly_listeners) : 'N/D'}</div>
+                            <div className="text-base font-bold text-foreground">
+                              {spotifyMetrics.monthly_listeners !== null && spotifyMetrics.monthly_listeners !== undefined
+                                ? formatNumber(spotifyMetrics.monthly_listeners)
+                                : 'N/D'}
+                            </div>
                           </div>
                           <div>
                             <div className="flex items-center gap-1 text-green-500 mb-0.5">
