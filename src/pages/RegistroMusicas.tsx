@@ -69,6 +69,14 @@ const RegistroMusicas = () => {
   const [isBulkDeletePhonogramsModalOpen, setIsBulkDeletePhonogramsModalOpen] = useState(false);
   const [isDeletingBulkPhonograms, setIsDeletingBulkPhonograms] = useState(false);
 
+  // Filter states - Works
+  const [worksSearchTerm, setWorksSearchTerm] = useState("");
+  const [worksFilters, setWorksFilters] = useState<Record<string, string>>({});
+
+  // Filter states - Phonograms
+  const [phonogramsSearchTerm, setPhonogramsSearchTerm] = useState("");
+  const [phonogramsFilters, setPhonogramsFilters] = useState<Record<string, string>>({});
+
   const getStatusDisplay = (status: string | null) => {
     return translateStatus(status) || 'Pendente';
   };
@@ -129,14 +137,18 @@ const RegistroMusicas = () => {
 
   // Work handlers
   const handleSearchWorks = (searchTerm: string) => {
-    filterWorks(searchTerm, {});
+    setWorksSearchTerm(searchTerm);
+    filterWorks(searchTerm, worksFilters);
   };
 
   const handleFilterWorks = (filters: Record<string, string>) => {
-    filterWorks("", filters);
+    setWorksFilters(filters);
+    filterWorks(worksSearchTerm, filters);
   };
 
   const handleClearWorks = () => {
+    setWorksSearchTerm("");
+    setWorksFilters({});
     setFilteredSongs(allSongs);
   };
 
@@ -167,14 +179,18 @@ const RegistroMusicas = () => {
 
   // Phonogram handlers
   const handleSearchPhonograms = (searchTerm: string) => {
-    filterPhonograms(searchTerm, {});
+    setPhonogramsSearchTerm(searchTerm);
+    filterPhonograms(searchTerm, phonogramsFilters);
   };
 
   const handleFilterPhonograms = (filters: Record<string, string>) => {
-    filterPhonograms("", filters);
+    setPhonogramsFilters(filters);
+    filterPhonograms(phonogramsSearchTerm, filters);
   };
 
   const handleClearPhonograms = () => {
+    setPhonogramsSearchTerm("");
+    setPhonogramsFilters({});
     setFilteredPhonograms(allPhonograms);
   };
 
