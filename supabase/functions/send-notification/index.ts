@@ -139,21 +139,26 @@ serve(async (req) => {
   }
 });
 
-// Format phone number to E.164 format
+// Format phone number to E.164 format - accepts any format
 function formatPhoneNumber(phone: string): string {
+  if (!phone) return '';
+  
   // Remove all non-digits
   const digits = phone.replace(/\D/g, '');
+  
+  // If empty after cleaning, return empty
+  if (!digits) return '';
   
   // If already has country code (starts with 55 for Brazil)
   if (digits.startsWith('55') && digits.length >= 12) {
     return `+${digits}`;
   }
   
-  // Add Brazil country code
-  if (digits.length === 11 || digits.length === 10) {
+  // Add Brazil country code for 10-11 digit numbers
+  if (digits.length >= 10 && digits.length <= 11) {
     return `+55${digits}`;
   }
   
-  // Return as-is with + prefix
+  // For other lengths, just add + prefix
   return `+${digits}`;
 }
