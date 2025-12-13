@@ -217,30 +217,33 @@ const Agenda = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
-                  <p className="text-muted-foreground">Gerencie eventos, shows e compromissos</p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Agenda</h1>
+                  <p className="text-sm text-muted-foreground">Gerencie eventos, shows e compromissos</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input type="file" ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
                   {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  Importar
+                  <span className="hidden sm:inline">Importar</span>
                 </Button>
-                <Button variant="outline" className="gap-2" onClick={handleExport} disabled={events.length === 0}>
+                <Button variant="outline" size="sm" className="gap-1" onClick={handleExport} disabled={events.length === 0}>
                   <Download className="h-4 w-4" />
-                  Exportar
+                  <span className="hidden sm:inline">Exportar</span>
                 </Button>
-                <Button className="gap-2" onClick={handleNewEvent}><Plus className="h-4 w-4" />Novo Evento</Button>
+                <Button size="sm" className="gap-1" onClick={handleNewEvent}>
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Novo Evento</span>
+                </Button>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <DashboardCard title="Total de Eventos" value={totalEvents.toString()} description="este mês" icon={CalendarIcon} trend={{ value: 0, isPositive: true }} />
               <DashboardCard title="Eventos Confirmados" value={confirmedEvents.toString()} description="confirmados" icon={CheckSquare} trend={{ value: 0, isPositive: true }} />
               <DashboardCard title="Próximos Eventos" value={upcomingEvents.toString()} description="nos próximos dias" icon={Clock} trend={{ value: 0, isPositive: true }} />
@@ -284,49 +287,42 @@ const Agenda = () => {
                           <span className="text-sm font-medium text-muted-foreground">{selectedItems.length > 0 ? `${selectedItems.length} de ${filteredEvents.length} selecionados` : "Selecionar todos"}</span>
                         </div>
                         {filteredEvents.map((event) => (
-                          <div key={event.id} className="flex items-center gap-3">
-                            <Checkbox checked={selectedItems.includes(event.id)} onCheckedChange={(checked) => handleSelectItem(event.id, !!checked)} />
-                            <div className="flex-1 flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
-                              <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                          <div key={event.id} className="flex flex-col sm:flex-row sm:items-start gap-3">
+                            <Checkbox checked={selectedItems.includes(event.id)} onCheckedChange={(checked) => handleSelectItem(event.id, !!checked)} className="mt-4 sm:mt-6" />
+                            <div className="flex-1 flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-3">
+                              <div className="flex items-start gap-3">
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                   event.event_type === "shows" ? "bg-purple-100 dark:bg-purple-900/20" :
                                   event.event_type === "sessoes_estudio" ? "bg-red-100 dark:bg-red-900/20" :
                                   event.event_type === "ensaios" ? "bg-blue-100 dark:bg-blue-900/20" : "bg-green-100 dark:bg-green-900/20"
                                 }`}>
-                                  {event.event_type === "shows" ? <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" /> :
-                                   event.event_type === "sessoes_estudio" ? <CalendarIcon className="h-6 w-6 text-red-600 dark:text-red-400" /> :
-                                   event.event_type === "ensaios" ? <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" /> :
-                                   <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />}
+                                  {event.event_type === "shows" ? <Users className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" /> :
+                                   event.event_type === "sessoes_estudio" ? <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" /> :
+                                   event.event_type === "ensaios" ? <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" /> :
+                                   <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />}
                                 </div>
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="font-medium text-foreground">{event.event_name}</h3>
-                                    {event.artists && <span className="text-muted-foreground">— {event.artists.stage_name || event.artists.name}</span>}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="secondary">{eventTypeLabels[event.event_type as keyof typeof eventTypeLabels]}</Badge>
-                                    <Badge variant={event.status === "confirmado" ? "default" : event.status === "cancelado" ? "destructive" : "secondary"}>{statusLabels[event.status]}</Badge>
+                                <div className="space-y-1 min-w-0">
+                                  <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{event.event_name}</h3>
+                                  <div className="flex flex-wrap items-center gap-1">
+                                    <Badge variant="secondary" className="text-xs">{eventTypeLabels[event.event_type as keyof typeof eventTypeLabels]}</Badge>
+                                    <Badge variant={event.status === "confirmado" ? "default" : event.status === "cancelado" ? "destructive" : "secondary"} className="text-xs">{statusLabels[event.status]}</Badge>
                                   </div>
                                 </div>
                               </div>
                               
-                              <div className="flex items-center gap-6 text-sm">
-                                {event.location && (
+                              {/* Info + Actions */}
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pl-12 lg:pl-0">
+                                <div className="hidden sm:flex items-center gap-4 text-xs">
                                   <div className="text-center">
-                                    <div className="text-muted-foreground">Local</div>
-                                    <div className="font-medium flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</div>
+                                    <div className="text-muted-foreground">Data</div>
+                                    <div className="font-medium">{formatDateFullBR(new Date(event.start_date))}</div>
                                   </div>
-                                )}
-                                {event.venue_name && <div className="text-center"><div className="text-muted-foreground">Venue</div><div className="font-medium">{event.venue_name}</div></div>}
-                                <div className="text-center">
-                                  <div className="text-muted-foreground">Data</div>
-                                  <div className="font-medium flex items-center gap-1"><CalendarIcon className="h-3 w-3" />{formatDateFullBR(new Date(event.start_date))}</div>
+                                  {event.start_time && <div className="text-center"><div className="text-muted-foreground">Horário</div><div className="font-medium">{event.start_time}</div></div>}
                                 </div>
-                                {event.start_time && <div className="text-center"><div className="text-muted-foreground">Horário</div><div className="font-medium flex items-center gap-1"><Clock className="h-3 w-3" />{event.start_time}</div></div>}
-                                <div className="flex items-center gap-2">
-                                  <Button variant="outline" size="sm" onClick={() => handleViewEvent(event)}>Ver</Button>
-                                  <Button variant="outline" size="sm" onClick={() => handleEditEvent(event)}>Editar</Button>
-                                  <Button variant="outline" size="sm" onClick={() => handleDeleteEvent(event)}>Excluir</Button>
+                                <div className="flex gap-2">
+                                  <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewEvent(event)}>Ver</Button>
+                                  <Button variant="outline" size="sm" className="text-xs" onClick={() => handleEditEvent(event)}>Editar</Button>
+                                  <Button variant="outline" size="sm" className="text-xs" onClick={() => handleDeleteEvent(event)}>Excluir</Button>
                                 </div>
                               </div>
                             </div>

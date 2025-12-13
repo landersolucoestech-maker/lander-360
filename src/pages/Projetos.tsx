@@ -495,12 +495,12 @@ const Projetos = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Projetos</h1>
-                  <p className="text-muted-foreground">Gestão completa de projetos musicais</p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Projetos</h1>
+                  <p className="text-sm text-muted-foreground">Gestão completa de projetos musicais</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -605,32 +605,31 @@ const Projetos = () => {
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-6 text-sm">
+                            {/* Info Grid - Hidden on mobile, shown on lg+ */}
+                            <div className="hidden lg:flex items-center gap-4 text-sm">
                               {firstSong && (
                                 <>
                                   <div className="text-center">
-                                    <div className="text-muted-foreground">Compositores</div>
-                                    <div className="font-medium">{firstSong.composers?.map((c: any) => c.name).filter(Boolean).join(', ') || '-'}</div>
+                                    <div className="text-muted-foreground text-xs">Compositores</div>
+                                    <div className="font-medium text-xs truncate max-w-[120px]">{firstSong.composers?.map((c: any) => c.name).filter(Boolean).join(', ') || '-'}</div>
                                   </div>
                                   <div className="text-center">
-                                    <div className="text-muted-foreground">Intérpretes</div>
-                                    <div className="font-medium">{firstSong.performers?.map((p: any) => p.name).filter(Boolean).join(', ') || '-'}</div>
+                                    <div className="text-muted-foreground text-xs">Intérpretes</div>
+                                    <div className="font-medium text-xs truncate max-w-[120px]">{firstSong.performers?.map((p: any) => p.name).filter(Boolean).join(', ') || '-'}</div>
                                   </div>
                                   <div className="text-center">
-                                    <div className="text-muted-foreground">Produtores</div>
-                                    <div className="font-medium">{firstSong.producers?.map((p: any) => p.name).filter(Boolean).join(', ') || '-'}</div>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="text-muted-foreground">Gênero</div>
-                                    <div className="font-medium">{firstSong.genre || '-'}</div>
+                                    <div className="text-muted-foreground text-xs">Gênero</div>
+                                    <div className="font-medium text-xs">{firstSong.genre || '-'}</div>
                                   </div>
                                 </>
                               )}
-                              <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleViewProject(project)}>Ver</Button>
-                                <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>Editar</Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDeleteProject(project)}>Excluir</Button>
-                              </div>
+                            </div>
+                            
+                            {/* Actions */}
+                            <div className="flex items-center gap-2 sm:ml-auto">
+                              <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewProject(project)}>Ver</Button>
+                              <Button variant="outline" size="sm" className="text-xs" onClick={() => handleEditProject(project)}>Editar</Button>
+                              <Button variant="outline" size="sm" className="text-xs" onClick={() => handleDeleteProject(project)}>Excluir</Button>
                             </div>
                           </div>
                         </div>

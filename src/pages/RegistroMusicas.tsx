@@ -19,7 +19,7 @@ import { useMusicRegistry, useDeleteMusicRegistryEntry } from "@/hooks/useMusicR
 import { usePhonograms, useDeletePhonogram } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
-import { formatDateBR, translateStatus } from "@/lib/utils";
+import { formatDateBR, translateStatus, cn } from "@/lib/utils";
 import { useDataExport } from "@/hooks/useDataExport";
 import { useCreateMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { useCreatePhonogram } from "@/hooks/usePhonograms";
@@ -633,27 +633,29 @@ const RegistroMusicas = () => {
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-4 space-y-4">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground">Registro de Músicas</h1>
-                  <p className="text-muted-foreground">
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Registro de Músicas</h1>
+                  <p className="text-sm text-muted-foreground">
                     Registro e controle de obras musicais e fonogramas
                   </p>
                 </div>
               </div>
               <Button 
-                className="gap-2" 
+                className="gap-2 text-sm" 
+                size="sm"
                 onClick={() => activeTab === "obras" ? setNewMusicModalOpen(true) : setNewPhonogramModalOpen(true)}
               >
                 <Plus className="h-4 w-4" />
-                {activeTab === "obras" ? "Nova Obra" : "Novo Fonograma"}
+                <span className="hidden sm:inline">{activeTab === "obras" ? "Nova Obra" : "Novo Fonograma"}</span>
+                <span className="sm:hidden">Novo</span>
               </Button>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <DashboardCard
                 title="Total de Obras e Fonogramas"
                 value={currentKPIs.total}
@@ -781,73 +783,76 @@ const RegistroMusicas = () => {
                         {filteredSongs.map((song) => (
                           <div
                             key={song.id}
-                            className="grid grid-cols-[auto_1fr_auto] gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
-                            <div className="flex items-center">
+                            {/* Checkbox + Title Section */}
+                            <div className="flex items-center gap-3 min-w-0">
                               <Checkbox
                                 checked={selectedWorks.includes(song.id)}
                                 onCheckedChange={(checked) => handleSelectWork(song.id, !!checked)}
                               />
-                            </div>
-                            <div className="flex items-center gap-4 min-w-0">
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Music className="h-6 w-6 text-primary" />
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Music className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                               </div>
-                              <div className="space-y-1 min-w-0">
-                                <h3 className="font-medium text-foreground">{song.title}</h3>
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{song.title}</h3>
                                 <Badge 
-                                  className={
+                                  className={cn(
+                                    "text-xs",
                                     (song.statusDisplay === "Aceita" || song.statusDisplay === "Aprovada") ? "bg-blue-600 text-white hover:bg-blue-700" :
                                     song.statusDisplay === "Recusada" ? "bg-red-600 text-white hover:bg-red-700" :
                                     "bg-yellow-500 text-black hover:bg-yellow-600"
-                                  }
+                                  )}
                                 >
                                   {song.statusDisplay}
                                 </Badge>
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-4 text-sm flex-shrink-0">
-                              <div className="text-left min-w-[100px]">
+                            {/* Info Grid - Responsive */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:items-center gap-2 lg:gap-4 text-sm pl-10 lg:pl-0">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Cód. ABRAMUS</div>
-                                <div className="font-medium text-foreground">{song.abramus_code || "-"}</div>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">{song.abramus_code || "-"}</div>
                               </div>
-                              <div className="text-left min-w-[100px]">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Cód. ECAD</div>
-                                <div className="font-medium text-foreground">{song.ecad_code || "-"}</div>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">{song.ecad_code || "-"}</div>
                               </div>
-                              <div className="text-left min-w-[180px]">
-                                <div className="text-muted-foreground text-xs">Compositores/Autor</div>
-                                <div className="font-medium text-foreground" title={song.composers?.join(", ") || "-"}>
+                              <div className="text-left col-span-2 sm:col-span-1">
+                                <div className="text-muted-foreground text-xs">Compositores</div>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate" title={song.composers?.join(", ") || "-"}>
                                   {song.composers?.join(", ") || "-"}
                                 </div>
                               </div>
-                              <div className="text-left min-w-[120px]">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Editora</div>
-                                <div className="font-medium text-foreground" title={song.publishers?.join(", ") || "-"}>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate" title={song.publishers?.join(", ") || "-"}>
                                   {song.publishers?.join(", ") || "-"}
                                 </div>
                               </div>
-                              <div className="text-left min-w-[100px]">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Gênero</div>
-                                <div className="font-medium text-foreground">
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">
                                   {song.genre || "-"}
                                 </div>
                               </div>
-                              <div className="flex gap-2 flex-shrink-0">
-                                <Button variant="outline" size="sm" onClick={() => handleViewSong(song)}>
-                                  Ver
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleEditSong(song)}>
-                                  Editar
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => {
-                                  setSelectedSong(song);
-                                  setDeleteModalOpen(true);
-                                }}>
-                                  Excluir
-                                </Button>
-                              </div>
+                            </div>
+
+                            {/* Actions - Responsive */}
+                            <div className="flex gap-2 flex-shrink-0 pl-10 lg:pl-0 lg:ml-auto">
+                              <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => handleViewSong(song)}>
+                                Ver
+                              </Button>
+                              <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => handleEditSong(song)}>
+                                Editar
+                              </Button>
+                              <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => {
+                                setSelectedSong(song);
+                                setDeleteModalOpen(true);
+                              }}>
+                                Excluir
+                              </Button>
                             </div>
                           </div>
                         ))}
@@ -939,75 +944,74 @@ const RegistroMusicas = () => {
                         {filteredPhonograms.map((phono) => (
                           <div
                             key={phono.id}
-                            className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
-                            <Checkbox
-                              checked={selectedPhonograms.includes(phono.id)}
-                              onCheckedChange={(checked) => handleSelectPhonogram(phono.id, !!checked)}
-                            />
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <Disc className="h-6 w-6 text-primary" />
+                            {/* Checkbox + Title Section */}
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Checkbox
+                                checked={selectedPhonograms.includes(phono.id)}
+                                onCheckedChange={(checked) => handleSelectPhonogram(phono.id, !!checked)}
+                              />
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Disc className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                               </div>
-                              <div className="space-y-1">
-                                <h3 className="font-medium text-foreground">{phono.title}</h3>
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{phono.title}</h3>
                                 <Badge 
-                                  className={
+                                  className={cn(
+                                    "text-xs",
                                     (phono.statusDisplay === "Aceita" || phono.statusDisplay === "Aprovada") ? "bg-blue-600 text-white hover:bg-blue-700" :
                                     phono.statusDisplay === "Recusada" ? "bg-red-600 text-white hover:bg-red-700" :
                                     "bg-yellow-500 text-black hover:bg-yellow-600"
-                                  }
+                                  )}
                                 >
                                   {phono.statusDisplay}
                                 </Badge>
                               </div>
                             </div>
                             
-                            <div className="flex items-center gap-3 text-sm">
-                              <div className="text-center">
+                            {/* Info Grid - Responsive */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:items-center gap-2 lg:gap-4 text-sm pl-10 lg:pl-0">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Cód Abramus</div>
-                                <div className="font-medium text-foreground text-xs">{(phono as any).abramus_code || "-"}</div>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">{(phono as any).abramus_code || "-"}</div>
                               </div>
-                              <div className="text-center">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">Cód ECAD</div>
-                                <div className="font-medium text-foreground text-xs">{(phono as any).ecad_code || "-"}</div>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">{(phono as any).ecad_code || "-"}</div>
                               </div>
-                              <div className="text-center">
+                              <div className="text-left">
                                 <div className="text-muted-foreground text-xs">ISRC</div>
-                                <div className="font-medium text-foreground text-xs">{phono.isrc || "-"}</div>
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">{phono.isrc || "-"}</div>
                               </div>
-                              <div className="text-center flex-1">
+                              <div className="text-left col-span-2 sm:col-span-1">
                                 <div className="text-muted-foreground text-xs">Compositores</div>
-                                <div className="font-medium text-foreground text-xs truncate">
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">
                                   {(phono as any).workComposers?.join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="text-center flex-1">
+                              <div className="text-left hidden sm:block">
                                 <div className="text-muted-foreground text-xs">Intérpretes</div>
-                                <div className="font-medium text-foreground text-xs truncate">
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">
                                   {phono.participants?.filter((p: any) => p.role === 'interprete').map((p: any) => p.name).join(', ') || "-"}
                                 </div>
                               </div>
-                              <div className="text-center flex-1">
-                                <div className="text-muted-foreground text-xs">Músicos</div>
-                                <div className="font-medium text-foreground text-xs truncate">
-                                  {phono.participants?.filter((p: any) => p.role === 'musico' || p.role === 'musico_acompanhante').map((p: any) => p.name).join(', ') || "-"}
-                                </div>
-                              </div>
-                              <div className="flex gap-2 ml-auto">
-                                <Button variant="outline" size="sm" onClick={() => handleViewPhonogram(phono)}>
-                                  Ver
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleEditPhonogram(phono)}>
-                                  Editar
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => {
-                                  setSelectedPhonogram(phono);
-                                  setDeletePhonogramModalOpen(true);
-                                }}>
-                                  Excluir
-                                </Button>
-                              </div>
+                            </div>
+
+                            {/* Actions - Responsive */}
+                            <div className="flex gap-2 flex-shrink-0 pl-10 lg:pl-0 lg:ml-auto">
+                              <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => handleViewPhonogram(phono)}>
+                                Ver
+                              </Button>
+                              <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => handleEditPhonogram(phono)}>
+                                Editar
+                              </Button>
+                              <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => {
+                                setSelectedPhonogram(phono);
+                                setDeletePhonogramModalOpen(true);
+                              }}>
+                                Excluir
+                              </Button>
                             </div>
                           </div>
                         ))}

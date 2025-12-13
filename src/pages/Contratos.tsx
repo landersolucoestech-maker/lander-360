@@ -256,58 +256,62 @@ const Contratos = () => {
                         const totalValue = (contract as any).fixed_value || contract.advance_amount || 0;
                         
                         return (
-                          <div key={contract.id} className="flex items-center gap-3">
-                            <Checkbox checked={selectedItems.includes(contract.id)} onCheckedChange={(checked) => handleSelectItem(contract.id, !!checked)} />
-                            <div className="flex-1 flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                                  <FileText className="h-6 w-6 text-primary" />
+                          <div key={contract.id} className="flex flex-col sm:flex-row sm:items-start gap-3">
+                            <Checkbox 
+                              checked={selectedItems.includes(contract.id)} 
+                              onCheckedChange={(checked) => handleSelectItem(contract.id, !!checked)} 
+                              className="mt-4 sm:mt-6"
+                            />
+                            <div className="flex-1 flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-4">
+                              <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                                 </div>
-                                <div className="space-y-1">
-                                  <h3 className="font-medium text-foreground">{(contract as any).title || contract.contract_type}</h3>
-                                  {(contract as any).artists && <p className="text-sm text-muted-foreground">Artista: {(contract as any).artists.stage_name || (contract as any).artists.name}</p>}
-                                  <div className="flex items-center gap-2">
-                                    {(contract as any).service_type && <Badge variant="secondary">{serviceTypeLabels[(contract as any).service_type as keyof typeof serviceTypeLabels]}</Badge>}
-                                    <Badge variant={(contract as any).status === "assinado" ? "default" : (contract as any).status === "expirado" || (contract as any).status === "rescindido" ? "destructive" : (contract as any).status === "pendente" ? "secondary" : "outline"}>
+                                <div className="space-y-1 min-w-0">
+                                  <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{(contract as any).title || contract.contract_type}</h3>
+                                  {(contract as any).artists && <p className="text-xs sm:text-sm text-muted-foreground truncate">Artista: {(contract as any).artists.stage_name || (contract as any).artists.name}</p>}
+                                  <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                    {(contract as any).service_type && <Badge variant="secondary" className="text-xs">{serviceTypeLabels[(contract as any).service_type as keyof typeof serviceTypeLabels]}</Badge>}
+                                    <Badge variant={(contract as any).status === "assinado" ? "default" : (contract as any).status === "expirado" || (contract as any).status === "rescindido" ? "destructive" : (contract as any).status === "pendente" ? "secondary" : "outline"} className="text-xs">
                                       {statusLabels[(contract as any).status as keyof typeof statusLabels] || 'Ativo'}
                                     </Badge>
-                                    {(contract as any).client_type && <Badge variant="outline">{(contract as any).client_type === 'artista' ? 'Artista' : 'Empresa'}</Badge>}
                                   </div>
-                                  {(contract as any).responsible_person && <p className="text-sm text-muted-foreground">Responsável: {(contract as any).responsible_person}</p>}
                                 </div>
                               </div>
                               
-                              <div className="flex items-center gap-6 text-sm">
+                              {/* Info Grid */}
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:items-center gap-2 lg:gap-4 text-xs sm:text-sm pl-12 lg:pl-0">
                                 {((contract as any).start_date || (contract as any).end_date || contract.effective_from || contract.effective_to) && (
-                                  <div className="text-center">
-                                    <div className="text-muted-foreground">Período</div>
-                                    <div className="font-medium">{formatDateBR((contract as any).start_date || contract.effective_from)} - {formatDateBR((contract as any).end_date || contract.effective_to)}</div>
+                                  <div className="text-left lg:text-center">
+                                    <div className="text-muted-foreground text-xs">Período</div>
+                                    <div className="font-medium text-xs sm:text-sm">{formatDateBR((contract as any).start_date || contract.effective_from)} - {formatDateBR((contract as any).end_date || contract.effective_to)}</div>
                                   </div>
                                 )}
                                 {totalValue > 0 && (
-                                  <div className="text-center">
-                                    <div className="text-muted-foreground">Valor</div>
-                                    <div className="font-medium text-foreground">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}</div>
-                                    {(contract.royalty_rate || (contract as any).royalties_percentage) && <div className="text-xs text-muted-foreground">+ {contract.royalty_rate || (contract as any).royalties_percentage}% royalties</div>}
+                                  <div className="text-left lg:text-center">
+                                    <div className="text-muted-foreground text-xs">Valor</div>
+                                    <div className="font-medium text-foreground text-xs sm:text-sm">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}</div>
                                   </div>
                                 )}
                                 {daysToExpire !== null && (
-                                  <div className="text-center">
-                                    <div className="text-muted-foreground">Vencimento</div>
-                                    <div className={`font-medium ${daysToExpire < 0 ? "text-destructive" : daysToExpire < 30 ? "text-orange-600" : "text-foreground"}`}>
+                                  <div className="text-left lg:text-center">
+                                    <div className="text-muted-foreground text-xs">Vencimento</div>
+                                    <div className={`font-medium text-xs sm:text-sm ${daysToExpire < 0 ? "text-destructive" : daysToExpire < 30 ? "text-orange-600" : "text-foreground"}`}>
                                       {daysToExpire < 0 ? "Vencido" : daysToExpire === 0 ? "Hoje" : `${daysToExpire} dias`}
                                     </div>
                                   </div>
                                 )}
-                                <div className="flex items-center gap-2">
-                                  <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)}>Ver</Button>
-                                  <Button variant="outline" size="sm" onClick={() => handleEditContract(contract)}>Editar</Button>
-                                  <Button variant="outline" size="sm" onClick={() => handleGenerateDocument(contract)} className="gap-1">
-                                    <FileSignature className="h-3 w-3" />
-                                    Gerar
-                                  </Button>
-                                  <Button variant="outline" size="sm" onClick={() => handleDeleteContract(contract)}>Excluir</Button>
-                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex flex-wrap gap-2 pl-12 lg:pl-0 lg:ml-auto">
+                                <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewContract(contract)}>Ver</Button>
+                                <Button variant="outline" size="sm" className="text-xs" onClick={() => handleEditContract(contract)}>Editar</Button>
+                                <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => handleGenerateDocument(contract)}>
+                                  <FileSignature className="h-3 w-3" />
+                                  <span className="hidden sm:inline">Gerar</span>
+                                </Button>
+                                <Button variant="outline" size="sm" className="text-xs" onClick={() => handleDeleteContract(contract)}>Excluir</Button>
                               </div>
                             </div>
                           </div>
