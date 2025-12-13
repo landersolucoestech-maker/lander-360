@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, BarChart3, FileText, History, Lightbulb, Zap, Globe } from 'lucide-react';
+import { Sparkles, MessageSquare, BarChart3, FileText, History, Lightbulb, Zap, Globe, UserCircle } from 'lucide-react';
 import { CreativeIdeaGenerator } from '@/components/creative-ai/CreativeIdeaGenerator';
 import { CreativeAIChatbot } from '@/components/creative-ai/CreativeAIChatbot';
 import { CreativeAIAnalytics } from '@/components/creative-ai/CreativeAIAnalytics';
@@ -10,6 +10,7 @@ import { CreativeAIHistory } from '@/components/creative-ai/CreativeAIHistory';
 import { ContentSuggestions } from '@/components/creative-ai/ContentSuggestions';
 import { CreativeAIAutomations } from '@/components/creative-ai/CreativeAIAutomations';
 import { SpotifyPitchGenerator } from '@/components/creative-ai/SpotifyPitchGenerator';
+import { ArtistProfileAnalyzer } from '@/components/creative-ai/ArtistProfileAnalyzer';
 import { useCreativeAIStats } from '@/hooks/useCreativeAI';
 
 const IACriativa = () => {
@@ -61,6 +62,10 @@ const IACriativa = () => {
                   <Lightbulb className="h-4 w-4" />
                   Gerador de Ideias
                 </TabsTrigger>
+                <TabsTrigger value="profile" className="flex items-center gap-2">
+                  <UserCircle className="h-4 w-4" />
+                  Análise de Perfil
+                </TabsTrigger>
                 <TabsTrigger value="content" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Sugestões de Conteúdo
@@ -89,6 +94,10 @@ const IACriativa = () => {
 
               <TabsContent value="generator" className="mt-6">
                 <CreativeIdeaGenerator />
+              </TabsContent>
+
+              <TabsContent value="profile" className="mt-6">
+                <ArtistProfileAnalyzer />
               </TabsContent>
 
               <TabsContent value="content" className="mt-6">
