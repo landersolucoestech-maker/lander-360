@@ -8,11 +8,13 @@ const corsHeaders = {
 
 const SPOTIFY_CLIENT_ID = Deno.env.get('SPOTIFY_CLIENT_ID');
 const SPOTIFY_CLIENT_SECRET = Deno.env.get('SPOTIFY_CLIENT_SECRET');
+const SPOTIFY_REFRESH_TOKEN = Deno.env.get('SPOTIFY_REFRESH_TOKEN');
 
 interface SpotifyTokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
+  refresh_token?: string;
 }
 
 interface SpotifyArtist {
@@ -35,8 +37,41 @@ interface SpotifyTrack {
   };
 }
 
-// Get Spotify access token using Client Credentials flow
-async function getSpotifyToken(): Promise<string> {
+// Get Spotify access token using Refresh Token (user-authenticated)
+async function getSpotifyTokenWithRefresh(): Promise<string> {
+  if (!SPOTIFY_REFRESH_TOKEN) {
+    console.log('No refresh token available, falling back to client credentials');
+    return getSpotifyTokenClientCredentials();
+  }
+
+  try {
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`),
+      },
+      body: `grant_type=refresh_token&refresh_token=${SPOTIFY_REFRESH_TOKEN}`,
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Failed to refresh token:', error);
+      // Fallback to client credentials
+      return getSpotifyTokenClientCredentials();
+    }
+
+    const data: SpotifyTokenResponse = await response.json();
+    console.log('Successfully refreshed Spotify token');
+    return data.access_token;
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    return getSpotifyTokenClientCredentials();
+  }
+}
+
+// Fallback: Get Spotify access token using Client Credentials flow
+async function getSpotifyTokenClientCredentials(): Promise<string> {
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
@@ -191,9 +226,9 @@ serve(async (req) => {
       );
     }
 
-    // Get Spotify access token
-    const token = await getSpotifyToken();
-    console.log('Got Spotify token');
+    // Get Spotify access token (prefer refresh token for authenticated access)
+    const token = await getSpotifyTokenWithRefresh();
+    console.log('Got Spotify token (using refresh token:', !!SPOTIFY_REFRESH_TOKEN, ')');
 
     // Fetch artist data
     const artist = await getSpotifyArtist(token, spotifyId);
@@ -203,7 +238,7 @@ serve(async (req) => {
     const topTracks = await getTopTracks(token, spotifyId);
     console.log('Got top tracks:', topTracks.length);
 
-    // Fetch monthly listeners via scraping (sem fallback para seguidores)
+    // Fetch monthly listeners via scraping
     let monthlyListeners = await getMonthlyListeners(spotifyId);
     console.log('Got monthly listeners from scraping:', monthlyListeners);
 
@@ -213,6 +248,8 @@ serve(async (req) => {
     }
 
     // Calculate estimated total streams from top tracks popularity
+    // Note: Real stream counts are NOT available via public API
+    // This is an estimation based on popularity score
     const estimatedStreams = topTracks.reduce((sum, track) => {
       // Rough estimation: popularity 100 = ~1B streams, scales logarithmically
       const streamEstimate = Math.pow(10, (track.popularity / 20) + 4);
