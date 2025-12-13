@@ -42,16 +42,16 @@ export function ReleaseMetricsBadge({ releaseId, variant = 'inline' }: ReleaseMe
       return (
         <div className="grid grid-cols-3 gap-2 mt-2">
           <div className="bg-black/40 rounded-lg p-2 text-center">
-            <div className="text-[10px] text-white/50 uppercase mb-1">Spotify</div>
-            <div className="text-sm font-bold text-white">-</div>
+            <div className="text-[10px] text-green-400 uppercase mb-1">Spotify</div>
+            <div className="text-sm font-bold text-white/50">—</div>
           </div>
           <div className="bg-black/40 rounded-lg p-2 text-center">
-            <div className="text-[10px] text-white/50 uppercase mb-1">YouTube</div>
-            <div className="text-sm font-bold text-white">-</div>
+            <div className="text-[10px] text-red-400 uppercase mb-1">YouTube</div>
+            <div className="text-sm font-bold text-white/50">—</div>
           </div>
           <div className="bg-black/40 rounded-lg p-2 text-center">
-            <div className="text-[10px] text-white/50 uppercase mb-1">Deezer</div>
-            <div className="text-sm font-bold text-white">-</div>
+            <div className="text-[10px] text-purple-400 uppercase mb-1">Deezer</div>
+            <div className="text-sm font-bold text-white/50">—</div>
           </div>
         </div>
       );
@@ -63,21 +63,21 @@ export function ReleaseMetricsBadge({ releaseId, variant = 'inline' }: ReleaseMe
     return (
       <div className="grid grid-cols-3 gap-2 mt-2">
         <div className="bg-black/40 rounded-lg p-2 text-center">
-          <div className="text-[10px] text-white/50 uppercase mb-1">Spotify</div>
+          <div className="text-[10px] text-green-400 uppercase mb-1">Spotify</div>
           <div className="text-sm font-bold text-white">
-            {spotify?.streams ? formatNumber(spotify.streams) : '-'}
+            {spotify?.streams ? formatNumber(spotify.streams) : '—'}
           </div>
         </div>
         <div className="bg-black/40 rounded-lg p-2 text-center">
-          <div className="text-[10px] text-white/50 uppercase mb-1">YouTube</div>
+          <div className="text-[10px] text-red-400 uppercase mb-1">YouTube</div>
           <div className="text-sm font-bold text-white">
-            {youtube?.views ? formatNumber(youtube.views) : '-'}
+            {youtube?.views ? formatNumber(youtube.views) : '—'}
           </div>
         </div>
         <div className="bg-black/40 rounded-lg p-2 text-center">
-          <div className="text-[10px] text-white/50 uppercase mb-1">Deezer</div>
+          <div className="text-[10px] text-purple-400 uppercase mb-1">Deezer</div>
           <div className="text-sm font-bold text-white">
-            {deezer?.streams ? formatNumber(deezer.streams) : '-'}
+            {deezer?.streams ? formatNumber(deezer.streams) : '—'}
           </div>
         </div>
       </div>
