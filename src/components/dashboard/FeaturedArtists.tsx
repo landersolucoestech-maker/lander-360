@@ -1,10 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, TrendingUp, Music, Calendar } from "lucide-react";
+import { Star, TrendingUp, Music, Calendar, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface FeaturedArtist {
   id: string;
@@ -18,26 +19,24 @@ interface FeaturedArtist {
 }
 
 export function FeaturedArtists() {
+  const navigate = useNavigate();
+  
   const { data: artists, isLoading } = useQuery({
     queryKey: ['featured-artists'],
     queryFn: async (): Promise<FeaturedArtist[]> => {
-      // Fetch artists with their releases and recent activity
       const { data: artistsData, error: artistsError } = await supabase
         .from('artists')
         .select('id, name, stage_name, image_url, genre')
         .limit(50);
 
       if (artistsError) throw artistsError;
-
       if (!artistsData || artistsData.length === 0) return [];
 
-      // Get release counts per artist
       const { data: releases } = await supabase
         .from('releases')
         .select('artist_id')
         .not('artist_id', 'is', null);
 
-      // Get recent agenda events (last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
@@ -47,12 +46,9 @@ export function FeaturedArtists() {
         .gte('start_date', thirtyDaysAgo.toISOString())
         .not('artist_id', 'is', null);
 
-      // Calculate relevance score for each artist
       const artistsWithScores = artistsData.map(artist => {
         const releaseCount = releases?.filter(r => r.artist_id === artist.id).length || 0;
         const recentActivity = events?.filter(e => e.artist_id === artist.id).length || 0;
-        
-        // Relevance score based on releases (40%), recent activity (60%)
         const relevanceScore = (releaseCount * 40) + (recentActivity * 60);
 
         return {
@@ -63,7 +59,6 @@ export function FeaturedArtists() {
         };
       });
 
-      // Sort by relevance score and return top 4
       return artistsWithScores
         .sort((a, b) => b.relevanceScore - a.relevanceScore)
         .slice(0, 4);
@@ -92,11 +87,7 @@ export function FeaturedArtists() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex flex-col items-center gap-2 p-4 border border-border rounded-lg">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-3 w-16" />
-              </div>
+              <Skeleton key={i} className="h-[280px] w-full rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -140,39 +131,97 @@ export function FeaturedArtists() {
           {artists.map((artist, index) => (
             <div
               key={artist.id}
-              className="flex flex-col items-center gap-2 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors relative"
+              className="relative overflow-hidden rounded-xl bg-card border border-border group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 w-full h-[280px]"
+              onClick={() => navigate('/artistas')}
             >
-              {index === 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-yellow-500 text-yellow-950">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  #1
-                </Badge>
-              )}
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={artist.image_url || undefined} alt={artist.stage_name || artist.name} />
-                <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                  {getInitials(artist.stage_name || artist.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-center">
-                <p className="font-medium text-foreground truncate max-w-[120px]">
-                  {artist.stage_name || artist.name}
-                </p>
-                {artist.genre && (
-                  <p className="text-xs text-muted-foreground truncate max-w-[120px]">
-                    {artist.genre}
-                  </p>
+              {/* Background Image */}
+              <div className="relative w-full h-full">
+                {artist.image_url ? (
+                  <img
+                    src={artist.image_url}
+                    alt={artist.stage_name || artist.name}
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                  />
+                ) : (
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 via-background to-primary/10 flex items-center justify-center">
+                    <User className="h-16 w-16 text-primary/40" />
+                  </div>
                 )}
-              </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Music className="h-3 w-3" />
-                  {artist.releaseCount}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {artist.recentActivity}
-                </span>
+
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+                {/* Top Right Badge - Ranking */}
+                <div className="absolute top-3 right-3 flex gap-2">
+                  {index === 0 && (
+                    <Badge className="bg-yellow-500 text-yellow-950 font-bold text-xs px-3 py-1">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      #1
+                    </Badge>
+                  )}
+                  {index === 1 && (
+                    <Badge className="bg-gray-400 text-gray-900 font-bold text-xs px-3 py-1">
+                      #2
+                    </Badge>
+                  )}
+                  {index === 2 && (
+                    <Badge className="bg-amber-600 text-white font-bold text-xs px-3 py-1">
+                      #3
+                    </Badge>
+                  )}
+                  {index === 3 && (
+                    <Badge className="bg-white/20 text-white font-bold text-xs px-3 py-1">
+                      #4
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
+                  {/* Name and Genre */}
+                  <div>
+                    <h3 className="text-lg font-bold text-white uppercase tracking-wide truncate">
+                      {artist.stage_name || artist.name}
+                    </h3>
+                    <div className="flex gap-2 mt-2">
+                      {artist.genre && (
+                        <Badge className="bg-red-600 text-white font-bold text-xs px-3 py-1 capitalize">
+                          {artist.genre}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="bg-black/50 rounded px-2 py-2">
+                      <div className="flex items-center justify-center gap-1 text-white/70 text-xs mb-1">
+                        <Music className="h-3 w-3" />
+                        <span>Lançamentos</span>
+                      </div>
+                      <div className="text-lg font-bold text-white">{artist.releaseCount}</div>
+                    </div>
+                    <div className="bg-black/50 rounded px-2 py-2">
+                      <div className="flex items-center justify-center gap-1 text-white/70 text-xs mb-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>Atividades</span>
+                      </div>
+                      <div className="text-lg font-bold text-white">{artist.recentActivity}</div>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <Button
+                    size="sm"
+                    className="w-full bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/artistas');
+                    }}
+                  >
+                    Ver Perfil
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
