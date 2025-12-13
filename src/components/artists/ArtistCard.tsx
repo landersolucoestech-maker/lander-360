@@ -334,55 +334,55 @@ export function ArtistCard({
                     <span className="text-xs text-muted-foreground ml-2">Carregando métricas...</span>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-4">
-                    {/* Left - Instagram & TikTok */}
-                    <div className="space-y-2">
-                      <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg p-3 border border-pink-500/20">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FaInstagram className="h-4 w-4 text-pink-500" />
-                          <span className="text-xs font-medium text-foreground">Instagram</span>
-                        </div>
-                        <div className="text-lg font-bold text-foreground">N/D</div>
-                        <div className="text-[10px] text-muted-foreground">Seguidores</div>
+                  <div className="grid grid-cols-6 gap-2">
+                    {/* Instagram */}
+                    <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg p-2 border border-pink-500/20">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FaInstagram className="h-3.5 w-3.5 text-pink-500" />
+                        <span className="text-[10px] font-medium text-foreground">Instagram</span>
                       </div>
-                      <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FaTiktok className="h-4 w-4 text-foreground" />
-                          <span className="text-xs font-medium text-foreground">TikTok</span>
-                        </div>
-                        <div className="text-lg font-bold text-foreground">N/D</div>
-                        <div className="text-[10px] text-muted-foreground">Seguidores</div>
-                      </div>
+                      <div className="text-base font-bold text-foreground">N/D</div>
+                      <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
 
-                    {/* Center - Spotify */}
-                    <div className="bg-gradient-to-b from-green-500/10 to-green-500/5 rounded-lg p-3 border border-green-500/20">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FaSpotify className="h-5 w-5 text-green-500" />
-                        <span className="text-sm font-medium text-foreground">Spotify</span>
+                    {/* TikTok */}
+                    <div className="bg-muted/50 rounded-lg p-2 border border-border">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FaTiktok className="h-3.5 w-3.5 text-foreground" />
+                        <span className="text-[10px] font-medium text-foreground">TikTok</span>
+                      </div>
+                      <div className="text-base font-bold text-foreground">N/D</div>
+                      <div className="text-[9px] text-muted-foreground">Seguidores</div>
+                    </div>
+
+                    {/* Spotify */}
+                    <div className="col-span-2 bg-gradient-to-b from-green-500/10 to-green-500/5 rounded-lg p-2 border border-green-500/20">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <FaSpotify className="h-4 w-4 text-green-500" />
+                        <span className="text-xs font-medium text-foreground">Spotify</span>
                       </div>
                       {spotifyMetrics ? (
-                        <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-2">
                           <div>
                             <div className="flex items-center gap-1 text-green-500 mb-0.5">
-                              <Users className="h-3 w-3" />
-                              <span className="text-[10px]">Seguidores</span>
+                              <Users className="h-2.5 w-2.5" />
+                              <span className="text-[9px]">Seguidores</span>
                             </div>
-                            <div className="text-xl font-bold text-foreground">{formatNumber(spotifyMetrics.followers)}</div>
+                            <div className="text-base font-bold text-foreground">{formatNumber(spotifyMetrics.followers)}</div>
                           </div>
                           <div>
                             <div className="flex items-center gap-1 text-green-500 mb-0.5">
-                              <Headphones className="h-3 w-3" />
-                              <span className="text-[10px]">Ouvintes/Mês</span>
+                              <Headphones className="h-2.5 w-2.5" />
+                              <span className="text-[9px]">Ouvintes/Mês</span>
                             </div>
-                            <div className="text-xl font-bold text-foreground">{spotifyMetrics.monthly_listeners ? formatNumber(spotifyMetrics.monthly_listeners) : 'N/D'}</div>
+                            <div className="text-base font-bold text-foreground">{spotifyMetrics.monthly_listeners ? formatNumber(spotifyMetrics.monthly_listeners) : 'N/D'}</div>
                           </div>
                           <div>
                             <div className="flex items-center gap-1 text-green-500 mb-0.5">
-                              <BarChart3 className="h-3 w-3" />
-                              <span className="text-[10px]">Streams Top 5</span>
+                              <BarChart3 className="h-2.5 w-2.5" />
+                              <span className="text-[9px]">Streams Top 5</span>
                             </div>
-                            <div className="text-xl font-bold text-foreground">{formatNumber(totalStreams)}</div>
+                            <div className="text-base font-bold text-foreground">{formatNumber(totalStreams)}</div>
                           </div>
                         </div>
                       ) : (
@@ -390,31 +390,31 @@ export function ArtistCard({
                       )}
                     </div>
 
-                    {/* Right - YouTube, Apple, Deezer */}
-                    <div className="space-y-2">
-                      <div className="bg-red-500/10 rounded-lg p-3 border border-red-500/20">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FaYoutube className="h-4 w-4 text-red-500" />
-                          <span className="text-xs font-medium text-foreground">YouTube</span>
-                        </div>
-                        <div className="text-lg font-bold text-foreground">N/D</div>
-                        <div className="text-[10px] text-muted-foreground">Inscritos</div>
+                    {/* YouTube */}
+                    <div className="bg-red-500/10 rounded-lg p-2 border border-red-500/20">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FaYoutube className="h-3.5 w-3.5 text-red-500" />
+                        <span className="text-[10px] font-medium text-foreground">YouTube</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-muted/50 rounded-lg p-2 border border-border">
-                          <div className="flex items-center gap-1 mb-1">
-                            <FaApple className="h-3 w-3 text-foreground" />
-                            <span className="text-[10px] font-medium text-foreground">Apple</span>
-                          </div>
-                          <div className="text-sm font-bold text-foreground">N/D</div>
+                      <div className="text-base font-bold text-foreground">N/D</div>
+                      <div className="text-[9px] text-muted-foreground">Inscritos</div>
+                    </div>
+
+                    {/* Apple & Deezer */}
+                    <div className="space-y-1">
+                      <div className="bg-muted/50 rounded-lg p-1.5 border border-border">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <FaApple className="h-3 w-3 text-foreground" />
+                          <span className="text-[9px] font-medium text-foreground">Apple</span>
                         </div>
-                        <div className="bg-muted/50 rounded-lg p-2 border border-border">
-                          <div className="flex items-center gap-1 mb-1">
-                            <FaDeezer className="h-3 w-3 text-foreground" />
-                            <span className="text-[10px] font-medium text-foreground">Deezer</span>
-                          </div>
-                          <div className="text-sm font-bold text-foreground">N/D</div>
+                        <div className="text-sm font-bold text-foreground">N/D</div>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-1.5 border border-border">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <FaDeezer className="h-3 w-3 text-foreground" />
+                          <span className="text-[9px] font-medium text-foreground">Deezer</span>
                         </div>
+                        <div className="text-sm font-bold text-foreground">N/D</div>
                       </div>
                     </div>
                   </div>
