@@ -781,8 +781,9 @@ export function PhonogramForm({
     });
   };
 
-  // Filtrar obras para etapa 1
+  // Filter works to only show those with status 'aceita' (completed/approved) for step 1
   const filteredWorksStep1 = works.filter((work: any) => {
+    if (work.status !== 'aceita') return false;
     const searchLower = workSearchTerm.toLowerCase();
     return work.title?.toLowerCase().includes(searchLower) || work.abramus_code?.toLowerCase().includes(searchLower);
   });
@@ -812,7 +813,7 @@ export function PhonogramForm({
                 <ScrollArea className="h-[300px] border rounded-lg">
                   <div className="p-2 space-y-2">
                     {filteredWorksStep1.length === 0 ? <p className="text-center text-muted-foreground py-8">
-                        Nenhuma obra encontrada. Registre uma obra antes de criar um fonograma.
+                        Nenhuma obra com status "Aceita" encontrada. Registre e aprove uma obra primeiro.
                       </p> : filteredWorksStep1.map((work: any) => <div key={work.id} className={cn("p-4 border rounded-lg cursor-pointer transition-colors", selectedWork?.id === work.id ? "border-primary bg-primary/10" : "hover:bg-accent/50")} onClick={() => handleStep1WorkSelect(work)}>
                           <div className="flex items-center gap-2">
                             {selectedWork?.id === work.id && <Check className="h-4 w-4 text-primary" />}
