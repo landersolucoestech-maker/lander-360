@@ -22,7 +22,7 @@ import Inventario from "./pages/Inventario";
 import Usuarios from "./pages/Usuarios";
 import Relatorios from "./pages/Relatorios";
 import RelatoriosAutorais from "./pages/RelatoriosAutorais";
-import GestaoRoyalties from "./pages/GestaoRoyalties";
+import GestaoShares from "./pages/GestaoShares";
 import CRM from "./pages/CRM";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -74,7 +74,7 @@ const App = () => (
               <Route path="/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
               <Route path="/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
               <Route path="/relatorios-autorais" element={<ProtectedRoute><RelatoriosAutorais /></ProtectedRoute>} />
-              <Route path="/gestao-royalties" element={<ProtectedRoute><GestaoRoyalties /></ProtectedRoute>} />
+              <Route path="/gestao-shares" element={<ProtectedRoute><GestaoShares /></ProtectedRoute>} />
               <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
               <Route path="/servicos" element={<ProtectedRoute><Servicos /></ProtectedRoute>} />
               {/* Marketing routes */}

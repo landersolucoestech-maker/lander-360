@@ -57,8 +57,8 @@ const navigationItems = [{
   url: "/servicos",
   icon: Briefcase
 }, {
-  title: "Gestão de Royalties",
-  url: "/gestao-royalties",
+  title: "Gestão de Shares",
+  url: "/gestao-shares",
   icon: Scale
 }, {
   title: "Auditoria",

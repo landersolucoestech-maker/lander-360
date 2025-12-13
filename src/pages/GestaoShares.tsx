@@ -28,7 +28,7 @@ interface ParticipantRoyalty {
   shareStatus: 'pending' | 'applied' | 'not_applied';
 }
 
-const GestaoRoyalties = () => {
+const GestaoShares = () => {
   const { toast } = useToast();
   const { data: releases = [], isLoading } = useReleases();
   const { data: artists = [] } = useArtists();
@@ -262,7 +262,7 @@ const GestaoRoyalties = () => {
           <header className="flex h-14 lg:h-16 shrink-0 items-center gap-2 border-b border-border px-4 lg:px-6">
             <SidebarTrigger className="-ml-1" />
             <div className="flex-1">
-              <h1 className="text-lg lg:text-xl font-semibold text-foreground">Gestão de Royalties</h1>
+              <h1 className="text-lg lg:text-xl font-semibold text-foreground">Gestão de Shares</h1>
               <p className="text-xs lg:text-sm text-muted-foreground">Conferência de share aplicado nos lançamentos</p>
             </div>
             <Button onClick={handleExport} className="gap-2">
@@ -629,4 +629,4 @@ const GestaoRoyalties = () => {
   );
 };
 
-export default GestaoRoyalties;
+export default GestaoShares;
