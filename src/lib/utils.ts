@@ -129,6 +129,9 @@ export function translateStatus(status: string | null | undefined): string {
     'registrado': 'Registrado',
     'em_analise': 'Em Análise',
     'pendente': 'Pendente',
+    'aceita': 'Aprovada',
+    'aprovada': 'Aprovada',
+    'recusada': 'Recusada',
     
     // Status de contratos
     'signed': 'Assinado',
