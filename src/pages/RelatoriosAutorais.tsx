@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Users, Music, Disc, Edit, FolderKanban, Rocket, FileText, 
   DollarSign, Calendar, Package, UserPlus, Briefcase, BarChart3,
@@ -19,6 +20,9 @@ import { ContractModal } from "@/components/modals/ContractModal";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { ServiceModal } from "@/components/modals/ServiceModal";
+import { FinancialTransactionModal } from "@/components/modals/FinancialTransactionModal";
+import { AgendaEventModal } from "@/components/modals/AgendaEventModal";
+import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { useAuditData, AuditItem } from "@/hooks/useAuditData";
 import { useCreateFinancialTransaction, useUpdateFinancialTransaction } from "@/hooks/useFinancial";
 import { useCreateAgendaEvent, useUpdateAgendaEvent } from "@/hooks/useAgenda";
@@ -118,6 +122,8 @@ const RelatoriosAutorais = () => {
 
   const updateCrmContact = useUpdateCrmContact();
   const updateService = useUpdateService();
+  const updateFinancialTransaction = useUpdateFinancialTransaction();
+  const updateAgendaEvent = useUpdateAgendaEvent();
 
   // Modal states
   const [artistModalOpen, setArtistModalOpen] = useState(false);
@@ -128,6 +134,9 @@ const RelatoriosAutorais = () => {
   const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [financialModalOpen, setFinancialModalOpen] = useState(false);
+  const [agendaModalOpen, setAgendaModalOpen] = useState(false);
+  const [releaseModalOpen, setReleaseModalOpen] = useState(false);
 
   // Selected items for editing
   const [selectedArtist, setSelectedArtist] = useState<any>(null);
@@ -138,6 +147,9 @@ const RelatoriosAutorais = () => {
   const [selectedInventory, setSelectedInventory] = useState<any>(null);
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [selectedService, setSelectedService] = useState<any>(null);
+  const [selectedFinancial, setSelectedFinancial] = useState<any>(null);
+  const [selectedAgenda, setSelectedAgenda] = useState<any>(null);
+  const [selectedRelease, setSelectedRelease] = useState<any>(null);
 
   const handleContactSubmit = async (data: any) => {
     if (selectedContact?.id) {
@@ -191,15 +203,42 @@ const RelatoriosAutorais = () => {
     setServiceModalOpen(true);
   };
 
+  const handleEditFinancial = (item: AuditItem) => {
+    setSelectedFinancial(item.data);
+    setFinancialModalOpen(true);
+  };
+
+  const handleEditAgenda = (item: AuditItem) => {
+    setSelectedAgenda(item.data);
+    setAgendaModalOpen(true);
+  };
+
+  const handleEditRelease = (item: AuditItem) => {
+    setSelectedRelease(item.data);
+    setReleaseModalOpen(true);
+  };
+
+  const handleFinancialSubmit = async (data: any) => {
+    if (selectedFinancial?.id) {
+      await updateFinancialTransaction.mutateAsync({ id: selectedFinancial.id, ...data });
+    }
+  };
+
+  const handleAgendaSubmit = async (data: any) => {
+    if (selectedAgenda?.id) {
+      await updateAgendaEvent.mutateAsync({ id: selectedAgenda.id, ...data });
+    }
+  };
+
   const tabs = [
     { id: "artistas", label: "Artistas", icon: Users, data: auditData.artistsAudit, onEdit: handleEditArtist },
     { id: "projetos", label: "Projetos", icon: FolderKanban, data: auditData.projectsAudit, onEdit: handleEditProject },
     { id: "obras", label: "Obras", icon: Music, data: auditData.musicAudit, onEdit: handleEditMusic },
     { id: "fonogramas", label: "Fonogramas", icon: Disc, data: auditData.phonogramsAudit, onEdit: handleEditPhonogram },
-    { id: "lancamentos", label: "Lançamentos", icon: Rocket, data: auditData.releasesAudit, onEdit: () => {} },
+    { id: "lancamentos", label: "Lançamentos", icon: Rocket, data: auditData.releasesAudit, onEdit: handleEditRelease },
     { id: "contratos", label: "Contratos", icon: FileText, data: auditData.contractsAudit, onEdit: handleEditContract },
-    { id: "financeiro", label: "Financeiro", icon: DollarSign, data: auditData.financialAudit, onEdit: () => {} },
-    { id: "agenda", label: "Agenda", icon: Calendar, data: auditData.agendaAudit, onEdit: () => {} },
+    { id: "financeiro", label: "Financeiro", icon: DollarSign, data: auditData.financialAudit, onEdit: handleEditFinancial },
+    { id: "agenda", label: "Agenda", icon: Calendar, data: auditData.agendaAudit, onEdit: handleEditAgenda },
     { id: "inventario", label: "Inventário", icon: Package, data: auditData.inventoryAudit, onEdit: handleEditInventory },
     { id: "crm", label: "CRM", icon: UserPlus, data: auditData.crmAudit, onEdit: handleEditContact },
     { id: "servicos", label: "Serviços", icon: Briefcase, data: auditData.servicesAudit, onEdit: handleEditService },
@@ -353,6 +392,41 @@ const RelatoriosAutorais = () => {
         service={selectedService}
         onSubmit={handleServiceSubmit}
       />
+      <FinancialTransactionModal
+        isOpen={financialModalOpen}
+        onClose={() => setFinancialModalOpen(false)}
+        transaction={selectedFinancial}
+        onSubmit={handleFinancialSubmit}
+        isLoading={updateFinancialTransaction.isPending}
+      />
+      <AgendaEventModal
+        isOpen={agendaModalOpen}
+        onClose={() => setAgendaModalOpen(false)}
+        event={selectedAgenda ? {
+          ...selectedAgenda,
+          event_name: selectedAgenda.title || selectedAgenda.event_name,
+        } : undefined}
+        onSubmit={handleAgendaSubmit}
+        isLoading={updateAgendaEvent.isPending}
+      />
+      <Dialog open={releaseModalOpen} onOpenChange={setReleaseModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Lançamento</DialogTitle>
+          </DialogHeader>
+          <ReleaseForm 
+            release={selectedRelease} 
+            onSuccess={() => { 
+              setReleaseModalOpen(false); 
+              setSelectedRelease(null); 
+            }} 
+            onCancel={() => { 
+              setReleaseModalOpen(false); 
+              setSelectedRelease(null); 
+            }} 
+          />
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
