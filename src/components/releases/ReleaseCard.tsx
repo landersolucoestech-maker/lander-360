@@ -196,10 +196,10 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
 
           {/* Action Buttons - Always visible */}
           <div className={!timeRemaining.isPast ? "pt-2" : "pt-2 border-t border-white/20"}>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 size="sm"
-                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8 min-w-[60px]"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewDetails(release);
@@ -209,7 +209,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
               </Button>
               <Button
                 size="sm"
-                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8 min-w-[60px]"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit?.(release);
@@ -219,13 +219,24 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
               </Button>
               <Button
                 size="sm"
-                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8 min-w-[60px]"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete?.(release);
                 }}
               >
                 Excluir
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 bg-green-600/80 hover:bg-green-600 text-white text-xs h-8 min-w-[80px] gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewMetrics?.(release);
+                }}
+              >
+                <BarChart3 className="h-3 w-3" />
+                Métricas
               </Button>
             </div>
           </div>
