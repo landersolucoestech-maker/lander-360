@@ -196,7 +196,7 @@ export const CreativeIdeaGenerator = () => {
             <Label>Artista *</Label>
             <Select 
               value={params.artistId || ''} 
-              onValueChange={(value) => setParams(prev => ({ ...prev, artistId: value }))}
+              onValueChange={(value) => setParams(prev => ({ ...prev, artistId: value, musicId: undefined }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o artista" />
@@ -217,12 +217,13 @@ export const CreativeIdeaGenerator = () => {
             <Select 
               value={params.musicId || ''} 
               onValueChange={(value) => setParams(prev => ({ ...prev, musicId: value }))}
+              disabled={!params.artistId}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a obra (opcional)" />
+                <SelectValue placeholder={params.artistId ? "Selecione a obra (opcional)" : "Selecione um artista primeiro"} />
               </SelectTrigger>
               <SelectContent>
-                {musics?.filter(music => music.id).map(music => (
+                {musics?.filter(music => music.id && music.artist_id === params.artistId).map(music => (
                   <SelectItem key={music.id} value={music.id}>
                     {music.title}
                   </SelectItem>
