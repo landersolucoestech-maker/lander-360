@@ -186,7 +186,7 @@ async function sendEmail(email: string, name: string, message: string): Promise<
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Lander 360° <noreply@landerrecords.com>',
+        from: 'Lander 360° <noreply@painel.landerrecords.com>',
         to: [email],
         subject: `Mensagem de Lander 360°`,
         html: `
