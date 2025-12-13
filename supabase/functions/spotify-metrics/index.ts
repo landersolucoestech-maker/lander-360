@@ -150,6 +150,12 @@ async function getMonthlyListeners(spotifyArtistId: string): Promise<number> {
 function extractSpotifyId(spotifyUrl: string): string | null {
   if (!spotifyUrl) return null;
   
+  // Only accept artist URLs, not user URLs or other types
+  if (spotifyUrl.includes('/user/')) {
+    console.log('Skipping user URL, not an artist URL:', spotifyUrl);
+    return null;
+  }
+  
   // Handle direct ID
   if (!spotifyUrl.includes('/') && !spotifyUrl.includes('?')) {
     return spotifyUrl;
