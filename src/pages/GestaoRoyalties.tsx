@@ -496,40 +496,9 @@ const GestaoRoyalties = () => {
           </DialogHeader>
 
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <Label>Royalties Conferidos</Label>
-                <Switch checked={royaltiesVerified} onCheckedChange={setRoyaltiesVerified} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Share Aplicado na Distribuidora</Label>
-                <Select 
-                  value={shareApplied === true ? "yes" : shareApplied === false ? "no" : "pending"} 
-                  onValueChange={(v) => setShareApplied(v === "yes" ? true : v === "no" ? false : null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pendente</SelectItem>
-                    <SelectItem value="yes">Sim - Recebeu</SelectItem>
-                    <SelectItem value="no">Não - Não Recebeu</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Percentual Total Enviado (%)</Label>
-              <Input 
-                type="number" 
-                step="0.01"
-                max="100"
-                value={percentualEnviado}
-                onChange={(e) => setPercentualEnviado(e.target.value)}
-                placeholder="0"
-              />
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <Label>Royalties Conferidos</Label>
+              <Switch checked={royaltiesVerified} onCheckedChange={setRoyaltiesVerified} />
             </div>
 
             {/* Participants Royalties Section */}

@@ -93,14 +93,40 @@ const RelatoriosAutorais = () => {
     });
   }, [phonograms, selectedArtist, selectedStatus, startDate, endDate]);
 
-  // Stats by artist
+  // Stats by artist with missing fields detection
   const artistStats = useMemo(() => {
-    const stats: Record<string, { works: number; phonograms: number; verified: number; pending: number }> = {};
+    const stats: Record<string, { 
+      works: number; 
+      phonograms: number; 
+      verified: number; 
+      pending: number;
+      missingFields: string[];
+    }> = {};
     
+    // Check artist fields for each artist
+    artists.forEach(artist => {
+      const missingFields: string[] = [];
+      if (!artist.full_name) missingFields.push("Nome Completo");
+      if (!artist.cpf_cnpj) missingFields.push("CPF/CNPJ");
+      if (!artist.email) missingFields.push("E-mail");
+      if (!artist.phone) missingFields.push("Telefone");
+      if (!artist.full_address) missingFields.push("Endereço");
+      if (!artist.bank) missingFields.push("Banco");
+      if (!artist.agency) missingFields.push("Agência");
+      if (!artist.account) missingFields.push("Conta");
+      if (!artist.pix_key) missingFields.push("Chave PIX");
+      if (!artist.spotify_url) missingFields.push("Spotify");
+      if (!artist.instagram_url) missingFields.push("Instagram");
+      if (!artist.genre) missingFields.push("Gênero Musical");
+      if (!artist.profile_type) missingFields.push("Tipo de Perfil");
+
+      stats[artist.id] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields };
+    });
+
     filteredMusic.forEach(music => {
       const artistId = music.artist_id || "unknown";
       if (!stats[artistId]) {
-        stats[artistId] = { works: 0, phonograms: 0, verified: 0, pending: 0 };
+        stats[artistId] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields: [] };
       }
       stats[artistId].works++;
       if ((music as any).royalties_verified) {
@@ -113,16 +139,18 @@ const RelatoriosAutorais = () => {
     filteredPhonograms.forEach(phono => {
       const artistId = phono.artist_id || "unknown";
       if (!stats[artistId]) {
-        stats[artistId] = { works: 0, phonograms: 0, verified: 0, pending: 0 };
+        stats[artistId] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields: [] };
       }
       stats[artistId].phonograms++;
     });
 
-    return Object.entries(stats).map(([artistId, data]) => ({
-      artistId,
-      artistName: getArtistName(artistId),
-      ...data
-    }));
+    return Object.entries(stats)
+      .filter(([artistId]) => artistId !== "unknown")
+      .map(([artistId, data]) => ({
+        artistId,
+        artistName: getArtistName(artistId),
+        ...data
+      }));
   }, [filteredMusic, filteredPhonograms, artists]);
 
 
@@ -398,30 +426,50 @@ const RelatoriosAutorais = () => {
                 ) : (
                   <div className="grid gap-4">
                     {artistStats.map(stat => (
-                      <Card key={stat.artistId}>
+                      <Card key={stat.artistId} className={stat.missingFields.length > 0 ? "border-yellow-500/50" : ""}>
                         <CardContent className="p-4">
-                          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                                <Users className="h-5 w-5 text-primary" />
+                          <div className="flex flex-col gap-4">
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.missingFields.length > 0 ? 'bg-yellow-500/10' : 'bg-primary/10'}`}>
+                                  <Users className={`h-5 w-5 ${stat.missingFields.length > 0 ? 'text-yellow-600' : 'text-primary'}`} />
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold">{stat.artistName}</h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {stat.works} obras • {stat.phonograms} fonogramas
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <h3 className="font-semibold">{stat.artistName}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {stat.works} obras • {stat.phonograms} fonogramas
-                                </p>
+                              <div className="flex gap-4 flex-wrap">
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-green-600">{stat.verified}</div>
+                                  <div className="text-xs text-muted-foreground">Conferidos</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-yellow-600">{stat.pending}</div>
+                                  <div className="text-xs text-muted-foreground">Pendentes</div>
+                                </div>
                               </div>
                             </div>
-                            <div className="flex gap-4 flex-wrap">
-                              <div className="text-center">
-                                <div className="text-2xl font-bold text-green-600">{stat.verified}</div>
-                                <div className="text-xs text-muted-foreground">Conferidos</div>
+                            
+                            {stat.missingFields.length > 0 && (
+                              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                  <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                                    Campos não preenchidos ({stat.missingFields.length})
+                                  </span>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {stat.missingFields.map((field, idx) => (
+                                    <Badge key={idx} variant="outline" className="text-xs border-yellow-500 text-yellow-700 dark:text-yellow-400">
+                                      {field}
+                                    </Badge>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-2xl font-bold text-yellow-600">{stat.pending}</div>
-                                <div className="text-xs text-muted-foreground">Pendentes</div>
-                              </div>
-                            </div>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
