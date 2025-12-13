@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { 
   CheckCircle, XCircle, Upload, Edit, Download, Filter,
-  Share2, Image, Plus, Trash2, Users, Search
+  Share2, Image, Plus, Trash2, Users, Search, Eye, Check
 } from "lucide-react";
 import { cn, formatDateBR, translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
@@ -103,6 +103,24 @@ const GestaoShares = () => {
     }
   });
 
+  // Mutation to update pending share
+  const updatePendingShare = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const { error } = await supabase
+        .from('pending_shares')
+        .update(data)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-shares'] });
+      toast({
+        title: "Share atualizado",
+        description: "O share foi atualizado com sucesso.",
+      });
+    }
+  });
+
   // Filter states
   const [selectedArtist, setSelectedArtist] = useState<string>("all");
   const [verificationFilter, setVerificationFilter] = useState<string>("all");
@@ -113,6 +131,19 @@ const GestaoShares = () => {
   // Pending shares modal (músicas que precisam receber share)
   const [pendingSharesModalOpen, setPendingSharesModalOpen] = useState(false);
   const [pendingShareData, setPendingShareData] = useState({
+    musicTitle: "",
+    artistName: "",
+    participantName: "",
+    participantRole: "Compositor",
+    sharePercentage: "",
+    notes: ""
+  });
+
+  // View/Edit pending share modal
+  const [viewPendingShareModal, setViewPendingShareModal] = useState(false);
+  const [editPendingShareModal, setEditPendingShareModal] = useState(false);
+  const [selectedPendingShare, setSelectedPendingShare] = useState<any>(null);
+  const [editingPendingShareData, setEditingPendingShareData] = useState({
     musicTitle: "",
     artistName: "",
     participantName: "",
@@ -608,7 +639,7 @@ const GestaoShares = () => {
                           <th className="text-left p-3">Participante</th>
                           <th className="text-left p-3">Função</th>
                           <th className="text-right p-3">%</th>
-                          <th className="text-left p-3">Observações</th>
+                          <th className="text-left p-3">Status</th>
                           <th className="text-center p-3">Ações</th>
                         </tr>
                       </thead>
@@ -622,16 +653,70 @@ const GestaoShares = () => {
                               <Badge variant="outline">{share.participant_role}</Badge>
                             </td>
                             <td className="p-3 text-right">{share.share_percentage ? `${share.share_percentage}%` : "-"}</td>
-                            <td className="p-3 text-muted-foreground max-w-xs truncate">{share.notes || "-"}</td>
-                            <td className="p-3 text-center">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => deletePendingShare.mutate(share.id)}
-                                disabled={deletePendingShare.isPending}
+                            <td className="p-3">
+                              <Badge 
+                                variant={share.status === 'received' ? 'default' : 'secondary'}
+                                className={share.status === 'received' ? 'bg-green-600' : ''}
                               >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
+                                {share.status === 'received' ? 'Recebido' : 'Pendente'}
+                              </Badge>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center justify-center gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPendingShare(share);
+                                    setViewPendingShareModal(true);
+                                  }}
+                                >
+                                  Ver
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPendingShare(share);
+                                    setEditingPendingShareData({
+                                      musicTitle: share.music_title || "",
+                                      artistName: share.artist_name || "",
+                                      participantName: share.participant_name || "",
+                                      participantRole: share.participant_role || "Compositor",
+                                      sharePercentage: share.share_percentage ? String(share.share_percentage) : "",
+                                      notes: share.notes || ""
+                                    });
+                                    setEditPendingShareModal(true);
+                                  }}
+                                >
+                                  Editar
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => deletePendingShare.mutate(share.id)}
+                                  disabled={deletePendingShare.isPending}
+                                >
+                                  Excluir
+                                </Button>
+                                {share.status !== 'received' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="text-green-600 hover:text-green-700"
+                                    onClick={() => {
+                                      updatePendingShare.mutate({
+                                        id: share.id,
+                                        data: { status: 'received' }
+                                      });
+                                    }}
+                                    disabled={updatePendingShare.isPending}
+                                  >
+                                    <Check className="h-4 w-4 mr-1" />
+                                    Recebido
+                                  </Button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -919,6 +1004,175 @@ const GestaoShares = () => {
               }}
             >
               {createPendingShare.isPending ? "Salvando..." : "Registrar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Pending Share Modal */}
+      <Dialog open={viewPendingShareModal} onOpenChange={setViewPendingShareModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Share Pendente</DialogTitle>
+          </DialogHeader>
+          {selectedPendingShare && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground text-xs">Música</Label>
+                  <p className="font-medium">{selectedPendingShare.music_title}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Artista</Label>
+                  <p>{selectedPendingShare.artist_name || "-"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Participante</Label>
+                  <p>{selectedPendingShare.participant_name}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Função</Label>
+                  <Badge variant="outline">{selectedPendingShare.participant_role}</Badge>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Percentual</Label>
+                  <p>{selectedPendingShare.share_percentage ? `${selectedPendingShare.share_percentage}%` : "-"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Status</Label>
+                  <Badge 
+                    variant={selectedPendingShare.status === 'received' ? 'default' : 'secondary'}
+                    className={selectedPendingShare.status === 'received' ? 'bg-green-600' : ''}
+                  >
+                    {selectedPendingShare.status === 'received' ? 'Recebido' : 'Pendente'}
+                  </Badge>
+                </div>
+              </div>
+              {selectedPendingShare.notes && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Observações</Label>
+                  <p className="text-sm">{selectedPendingShare.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewPendingShareModal(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Pending Share Modal */}
+      <Dialog open={editPendingShareModal} onOpenChange={setEditPendingShareModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Share Pendente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Título da Música *</Label>
+                <Input
+                  value={editingPendingShareData.musicTitle}
+                  onChange={(e) => setEditingPendingShareData({ ...editingPendingShareData, musicTitle: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Nome do Artista</Label>
+                <Input
+                  value={editingPendingShareData.artistName}
+                  onChange={(e) => setEditingPendingShareData({ ...editingPendingShareData, artistName: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Quem deve receber o share *</Label>
+                <Input
+                  value={editingPendingShareData.participantName}
+                  onChange={(e) => setEditingPendingShareData({ ...editingPendingShareData, participantName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Função</Label>
+                <Select 
+                  value={editingPendingShareData.participantRole} 
+                  onValueChange={(value) => setEditingPendingShareData({ ...editingPendingShareData, participantRole: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Compositor">Compositor</SelectItem>
+                    <SelectItem value="Produtor">Produtor</SelectItem>
+                    <SelectItem value="Intérprete">Intérprete</SelectItem>
+                    <SelectItem value="Músico">Músico</SelectItem>
+                    <SelectItem value="Editor">Editor</SelectItem>
+                    <SelectItem value="Artista Principal">Artista Principal</SelectItem>
+                    <SelectItem value="Gravadora">Gravadora</SelectItem>
+                    <SelectItem value="Empresário">Empresário</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Percentual do Share (%)</Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={editingPendingShareData.sharePercentage}
+                onChange={(e) => setEditingPendingShareData({ ...editingPendingShareData, sharePercentage: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Observações</Label>
+              <Textarea
+                value={editingPendingShareData.notes}
+                onChange={(e) => setEditingPendingShareData({ ...editingPendingShareData, notes: e.target.value })}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditPendingShareModal(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              disabled={updatePendingShare.isPending}
+              onClick={() => {
+                if (!editingPendingShareData.musicTitle || !editingPendingShareData.participantName) {
+                  toast({
+                    title: "Campos obrigatórios",
+                    description: "Preencha o título da música e quem deve receber o share.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                updatePendingShare.mutate({
+                  id: selectedPendingShare.id,
+                  data: {
+                    music_title: editingPendingShareData.musicTitle,
+                    artist_name: editingPendingShareData.artistName || null,
+                    participant_name: editingPendingShareData.participantName,
+                    participant_role: editingPendingShareData.participantRole,
+                    share_percentage: editingPendingShareData.sharePercentage ? parseFloat(editingPendingShareData.sharePercentage) : null,
+                    notes: editingPendingShareData.notes || null
+                  }
+                });
+                
+                setEditPendingShareModal(false);
+              }}
+            >
+              {updatePendingShare.isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
