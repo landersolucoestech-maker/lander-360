@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useReleaseMetrics, useFetchReleaseMetrics, useUpdateManualMetrics } from '@/hooks/useReleaseMetrics';
 import { RefreshCw, Music, Eye, Heart, Loader2 } from 'lucide-react';
-import { FaSpotify, FaYoutube, FaDeezer } from 'react-icons/fa';
+import { FaSpotify, FaYoutube, FaDeezer, FaApple } from 'react-icons/fa';
 import { formatDateTimeBR } from '@/lib/utils';
 
 interface ReleaseMetricsModalProps {
@@ -31,6 +31,7 @@ export function ReleaseMetricsModal({ open, onOpenChange, release }: ReleaseMetr
   
   const [manualValues, setManualValues] = useState({
     spotify: { streams: 0 },
+    apple_music: { streams: 0 },
     youtube: { views: 0 },
     deezer: { streams: 0 },
   });
@@ -70,6 +71,16 @@ export function ReleaseMetricsModal({ open, onOpenChange, release }: ReleaseMetr
       metric: metrics?.byPlatform.spotify,
       primaryLabel: 'Streams',
       primaryValue: metrics?.byPlatform.spotify?.streams || 0,
+    },
+    {
+      key: 'apple_music',
+      name: 'Apple Music',
+      icon: FaApple,
+      color: 'text-pink-500',
+      bgColor: 'bg-pink-500/10',
+      metric: metrics?.byPlatform.apple_music,
+      primaryLabel: 'Streams',
+      primaryValue: metrics?.byPlatform.apple_music?.streams || 0,
     },
     {
       key: 'youtube',
@@ -247,6 +258,38 @@ export function ReleaseMetricsModal({ open, onOpenChange, release }: ReleaseMetr
                       <Button
                         size="sm"
                         onClick={() => handleManualUpdate('spotify')}
+                        disabled={updateManual.isPending}
+                      >
+                        Salvar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Apple Music Manual */}
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <FaApple className="h-5 w-5 text-pink-500" />
+                    <span className="font-medium">Apple Music</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <Label>Streams</Label>
+                      <Input
+                        type="number"
+                        value={manualValues.apple_music.streams}
+                        onChange={(e) => setManualValues(prev => ({
+                          ...prev,
+                          apple_music: { streams: parseInt(e.target.value) || 0 }
+                        }))}
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button
+                        size="sm"
+                        onClick={() => handleManualUpdate('apple_music')}
                         disabled={updateManual.isPending}
                       >
                         Salvar
