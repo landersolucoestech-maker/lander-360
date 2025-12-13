@@ -11,9 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { 
-  DollarSign, CheckCircle, XCircle, AlertTriangle, Upload,
-  TrendingUp, TrendingDown, Minus, Edit, Download, Filter,
-  Share2, Disc, Image
+  CheckCircle, XCircle, Upload, Edit, Download, Filter,
+  Share2, Image
 } from "lucide-react";
 import { cn, formatDateBR, translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
@@ -40,8 +39,7 @@ const GestaoRoyalties = () => {
 
   // Form states
   const [royaltiesVerified, setRoyaltiesVerified] = useState(false);
-  const [royaltiesExpected, setRoyaltiesExpected] = useState("");
-  const [royaltiesReceived, setRoyaltiesReceived] = useState("");
+  const [percentualEnviado, setPercentualEnviado] = useState("");
   const [shareApplied, setShareApplied] = useState<boolean | null>(null);
   const [royaltiesNotes, setRoyaltiesNotes] = useState("");
 
@@ -83,31 +81,20 @@ const GestaoRoyalties = () => {
     const shareNotApplied = releases.filter(r => (r as any).royalties_share_applied === false).length;
     const sharePending = releases.filter(r => (r as any).royalties_share_applied === null).length;
 
-    const totalExpected = releases.reduce(
-      (sum, item) => sum + ((item as any).royalties_expected || 0), 0
-    );
-    const totalReceived = releases.reduce(
-      (sum, item) => sum + ((item as any).royalties_received || 0), 0
-    );
-
     return {
       total,
       verified,
       pending: total - verified,
       shareApplied: shareAppliedCount,
       shareNotApplied,
-      sharePending,
-      totalExpected,
-      totalReceived,
-      divergence: totalExpected - totalReceived
+      sharePending
     };
   }, [releases]);
 
   const handleEdit = (release: any) => {
     setSelectedRelease(release);
     setRoyaltiesVerified((release as any).royalties_verified || false);
-    setRoyaltiesExpected(String((release as any).royalties_expected || ""));
-    setRoyaltiesReceived(String((release as any).royalties_received || ""));
+    setPercentualEnviado(String((release as any).royalties_expected || ""));
     setShareApplied((release as any).royalties_share_applied);
     setRoyaltiesNotes((release as any).royalties_notes || "");
     setEditModalOpen(true);
@@ -118,8 +105,7 @@ const GestaoRoyalties = () => {
 
     const updateData = {
       royalties_verified: royaltiesVerified,
-      royalties_expected: parseFloat(royaltiesExpected) || 0,
-      royalties_received: parseFloat(royaltiesReceived) || 0,
+      royalties_expected: parseFloat(percentualEnviado) || 0,
       royalties_share_applied: shareApplied,
       royalties_notes: royaltiesNotes,
       royalties_verified_at: royaltiesVerified ? new Date().toISOString() : null
@@ -153,9 +139,7 @@ const GestaoRoyalties = () => {
       "Conferido": (release as any).royalties_verified ? "Sim" : "Não",
       "Share Aplicado": (release as any).royalties_share_applied === true ? "Sim" : 
                         (release as any).royalties_share_applied === false ? "Não" : "Pendente",
-      "Valor Esperado": (release as any).royalties_expected || 0,
-      "Valor Recebido": (release as any).royalties_received || 0,
-      "Divergência": ((release as any).royalties_expected || 0) - ((release as any).royalties_received || 0),
+      "Percentual (%)": (release as any).royalties_expected || 0,
       "Observações": (release as any).royalties_notes || ""
     }));
 
@@ -205,7 +189,7 @@ const GestaoRoyalties = () => {
 
           <main className="flex-1 p-4 lg:p-6 space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -247,39 +231,6 @@ const GestaoRoyalties = () => {
                       <p className="text-2xl font-bold text-red-600">{stats.shareNotApplied}</p>
                     </div>
                     <XCircle className="h-8 w-8 text-red-600" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Esperado</p>
-                      <p className="text-lg font-bold">R$ {stats.totalExpected.toFixed(2)}</p>
-                    </div>
-                    <DollarSign className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Divergência</p>
-                      <p className={cn(
-                        "text-lg font-bold",
-                        stats.divergence > 0 ? "text-red-600" : stats.divergence < 0 ? "text-green-600" : ""
-                      )}>
-                        R$ {Math.abs(stats.divergence).toFixed(2)}
-                      </p>
-                    </div>
-                    {stats.divergence > 0 ? (
-                      <TrendingDown className="h-8 w-8 text-red-600" />
-                    ) : stats.divergence < 0 ? (
-                      <TrendingUp className="h-8 w-8 text-green-600" />
-                    ) : (
-                      <Minus className="h-8 w-8 text-muted-foreground" />
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -388,15 +339,12 @@ const GestaoRoyalties = () => {
                           <th className="text-left p-3">Data</th>
                           <th className="text-center p-3">Conferido</th>
                           <th className="text-center p-3">Share</th>
-                          <th className="text-right p-3">Esperado</th>
-                          <th className="text-right p-3">Recebido</th>
-                          <th className="text-right p-3">Divergência</th>
+                          <th className="text-right p-3">Percentual (%)</th>
                           <th className="text-center p-3">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredReleases.map(release => {
-                          const divergence = ((release as any).royalties_expected || 0) - ((release as any).royalties_received || 0);
                           return (
                             <tr key={release.id} className="border-t border-border hover:bg-muted/30">
                               <td className="p-3">
@@ -434,14 +382,7 @@ const GestaoRoyalties = () => {
                                   <Badge variant="outline">Pendente</Badge>
                                 )}
                               </td>
-                              <td className="p-3 text-right">R$ {((release as any).royalties_expected || 0).toFixed(2)}</td>
-                              <td className="p-3 text-right">R$ {((release as any).royalties_received || 0).toFixed(2)}</td>
-                              <td className={cn(
-                                "p-3 text-right font-medium",
-                                divergence > 0 ? "text-red-600" : divergence < 0 ? "text-green-600" : ""
-                              )}>
-                                R$ {Math.abs(divergence).toFixed(2)}
-                              </td>
+                              <td className="p-3 text-right">{((release as any).royalties_expected || 0)}%</td>
                               <td className="p-3 text-center">
                                 <Button variant="ghost" size="sm" onClick={() => handleEdit(release)}>
                                   <Edit className="h-4 w-4" />
@@ -493,43 +434,17 @@ const GestaoRoyalties = () => {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Valor Esperado (R$)</Label>
-                <Input 
-                  type="number" 
-                  step="0.01"
-                  value={royaltiesExpected}
-                  onChange={(e) => setRoyaltiesExpected(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Valor Recebido (R$)</Label>
-                <Input 
-                  type="number" 
-                  step="0.01"
-                  value={royaltiesReceived}
-                  onChange={(e) => setRoyaltiesReceived(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Percentual Enviado (%)</Label>
+              <Input 
+                type="number" 
+                step="0.01"
+                max="100"
+                value={percentualEnviado}
+                onChange={(e) => setPercentualEnviado(e.target.value)}
+                placeholder="0"
+              />
             </div>
-
-            {royaltiesExpected && royaltiesReceived && (
-              <div className={cn(
-                "p-3 rounded-lg text-center",
-                parseFloat(royaltiesExpected) - parseFloat(royaltiesReceived) > 0 
-                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                  : parseFloat(royaltiesExpected) - parseFloat(royaltiesReceived) < 0
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-muted"
-              )}>
-                <p className="text-sm font-medium">
-                  Divergência: R$ {Math.abs(parseFloat(royaltiesExpected) - parseFloat(royaltiesReceived)).toFixed(2)}
-                </p>
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label>Observações</Label>
