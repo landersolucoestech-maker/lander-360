@@ -20,6 +20,7 @@ export interface MetricsSummary {
   totalSaves: number;
   byPlatform: {
     spotify: ReleaseMetric | null;
+    apple_music: ReleaseMetric | null;
     youtube: ReleaseMetric | null;
     deezer: ReleaseMetric | null;
   };
@@ -35,7 +36,7 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
           totalStreams: 0,
           totalViews: 0,
           totalSaves: 0,
-          byPlatform: { spotify: null, youtube: null, deezer: null },
+          byPlatform: { spotify: null, apple_music: null, youtube: null, deezer: null },
           lastUpdated: null,
         };
       }
@@ -59,7 +60,7 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
           totalStreams: 0,
           totalViews: 0,
           totalSaves: 0,
-          byPlatform: { spotify: null, youtube: null, deezer: null },
+          byPlatform: { spotify: null, apple_music: null, youtube: null, deezer: null },
           lastUpdated: null,
         };
       }
@@ -75,21 +76,22 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
       }
 
       const spotify = platformMetrics['spotify'] || null;
+      const apple_music = platformMetrics['apple_music'] || null;
       const youtube = platformMetrics['youtube'] || null;
       const deezer = platformMetrics['deezer'] || null;
 
-      const totalStreams = (spotify?.streams || 0) + (deezer?.streams || 0);
+      const totalStreams = (spotify?.streams || 0) + (apple_music?.streams || 0) + (deezer?.streams || 0);
       const totalViews = youtube?.views || 0;
-      const totalSaves = (spotify?.saves || 0) + (youtube?.saves || 0) + (deezer?.saves || 0);
+      const totalSaves = (spotify?.saves || 0) + (apple_music?.saves || 0) + (youtube?.saves || 0) + (deezer?.saves || 0);
 
-      const dates = [spotify?.fetched_at, youtube?.fetched_at, deezer?.fetched_at].filter(Boolean) as string[];
+      const dates = [spotify?.fetched_at, apple_music?.fetched_at, youtube?.fetched_at, deezer?.fetched_at].filter(Boolean) as string[];
       const lastUpdated = dates.length > 0 ? dates.sort().reverse()[0] : null;
 
       return {
         totalStreams,
         totalViews,
         totalSaves,
-        byPlatform: { spotify, youtube, deezer },
+        byPlatform: { spotify, apple_music, youtube, deezer },
         lastUpdated,
       };
     },
