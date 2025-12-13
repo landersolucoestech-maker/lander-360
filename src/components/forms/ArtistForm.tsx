@@ -848,7 +848,7 @@ export function ArtistForm({
 
               <FormField control={form.control} name="apple_music" render={({
               field
-            }) => <FormItem className="md:col-span-2">
+            }) => <FormItem>
                     <FormLabel>Apple Music</FormLabel>
                     <FormControl>
                       <Input placeholder="https://music.apple.com/artist/..." {...field} />
