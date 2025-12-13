@@ -40,7 +40,7 @@ const CRM = () => {
   const totalContacts = contacts.length;
   const hotLeads = contacts.filter((c) => c.status === "quente").length;
   const closedDeals = contacts.filter((c) => c.status === "fechado").length;
-  const conversionRate = totalContacts > 0 ? Math.round((closedDeals / totalContacts) * 100) : 0;
+  const conversionRate = totalContacts > 0 ? Math.min(Math.round((closedDeals / totalContacts) * 100), 100) : 0;
 
   const prospects = contacts.filter((c) => c.status === "frio" || c.status === "morno").length;
   const qualified = contacts.filter((c) => c.status === "quente").length;

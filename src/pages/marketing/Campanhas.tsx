@@ -137,14 +137,14 @@ const MarketingCampanhas = () => {
               />
               <DashboardCard 
                 title="ROI Médio" 
-                value={`${avgRoas.toFixed(0)}%`} 
+                value={`${Math.min(avgRoas, 100).toFixed(0)}%`} 
                 description="retorno sobre investimento" 
                 icon={TrendingUp} 
                 trend={{ value: 0, isPositive: true }} 
               />
               <DashboardCard 
                 title="Taxa de Conversão" 
-                value={`${avgCtr.toFixed(1)}%`} 
+                value={`${Math.min(avgCtr, 100).toFixed(1)}%`} 
                 description="média geral" 
                 icon={BarChart3} 
                 trend={{ value: 0, isPositive: true }} 

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, capPercentage } from "@/lib/utils";
 
 interface DashboardCardProps {
   title: string;
@@ -51,7 +51,7 @@ export function DashboardCard({
                 "text-[10px] sm:text-xs font-medium flex-shrink-0",
                 trend.isPositive ? "text-success" : "text-destructive"
               )}>
-                {trend.isPositive ? "+" : ""}{trend.value}%
+                {trend.isPositive ? "+" : ""}{capPercentage(trend.value)}%
               </p>
             )}
           </div>

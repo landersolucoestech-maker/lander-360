@@ -100,13 +100,14 @@ export class DashboardService {
         DashboardService.getRecentActivities()
       ]);
 
-      // Calculate trends (percentage change from last month)
+      // Calculate trends (percentage change from last month) - capped at 100%
       const calculateTrend = (current: number, previous: number) => {
         if (previous === 0) {
           return { value: current > 0 ? 100 : 0, isPositive: current >= 0 };
         }
         const change = ((current - previous) / previous) * 100;
-        return { value: Math.abs(Math.round(change * 10) / 10), isPositive: change >= 0 };
+        const cappedValue = Math.min(Math.abs(Math.round(change * 10) / 10), 100);
+        return { value: cappedValue, isPositive: change >= 0 };
       };
 
       const worksAddedThisMonth = totalWorks - worksLastMonth;

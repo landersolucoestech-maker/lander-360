@@ -256,7 +256,7 @@ const RelatoriosAutorais = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {totalComplete + totalIncomplete > 0 
-                      ? Math.round((totalComplete / (totalComplete + totalIncomplete)) * 100) 
+                      ? Math.min(Math.round((totalComplete / (totalComplete + totalIncomplete)) * 100), 100) 
                       : 0}%
                   </div>
                 </CardContent>

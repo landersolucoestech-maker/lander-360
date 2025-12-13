@@ -131,7 +131,7 @@ const MarketingTarefas = () => {
               />
               <DashboardCard
                 title="Taxa de Conclusão"
-                value={taskStats.total > 0 ? `${Math.round((taskStats.completed / taskStats.total) * 100)}%` : "0%"}
+                value={taskStats.total > 0 ? `${Math.min(Math.round((taskStats.completed / taskStats.total) * 100), 100)}%` : "0%"}
                 description="no prazo"
                 icon={Users}
               />
@@ -174,7 +174,7 @@ const MarketingTarefas = () => {
                   <CardTitle className="text-sm font-medium">Produtividade</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{Math.round((filteredTasks.filter(t => t.status === 'Concluída' || t.status === 'completed').length / Math.max(filteredTasks.length, 1)) * 100)}%</div>
+                  <div className="text-2xl font-bold">{Math.min(Math.round((filteredTasks.filter(t => t.status === 'Concluída' || t.status === 'completed').length / Math.max(filteredTasks.length, 1)) * 100), 100)}%</div>
                   <p className="text-xs text-muted-foreground">vs semana passada</p>
                 </CardContent>
               </Card>

@@ -79,10 +79,13 @@ const Artistas = () => {
     }).length;
     const musicTrend = musicPrev30 > 0 ? ((musicLast30 - musicPrev30) / musicPrev30) * 100 : musicLast30 > 0 ? 100 : 0;
 
+    // Cap all percentage values at 100%
+    const capAt100 = (val: number) => Math.min(Math.abs(val), 100);
+
     return {
-      artists: { value: Math.abs(Number(artistsTrend.toFixed(1))), isPositive: artistsTrend >= 0 },
-      contracts: { value: Math.abs(Number(contractsTrend.toFixed(1))), isPositive: contractsTrend >= 0 },
-      music: { value: Math.abs(Number(musicTrend.toFixed(1))), isPositive: musicTrend >= 0 },
+      artists: { value: capAt100(Number(artistsTrend.toFixed(1))), isPositive: artistsTrend >= 0 },
+      contracts: { value: capAt100(Number(contractsTrend.toFixed(1))), isPositive: contractsTrend >= 0 },
+      music: { value: capAt100(Number(musicTrend.toFixed(1))), isPositive: musicTrend >= 0 },
     };
   }, [artists, activeContracts, musicRegistry]);
 

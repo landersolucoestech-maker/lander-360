@@ -613,7 +613,7 @@ const Financeiro = () => {
                   style: 'currency',
                   currency: 'BRL'
                 }).format(lucroLiquido)}
-                description={`margem de ${receitas > 0 ? ((lucroLiquido / receitas) * 100).toFixed(1) : 0}%`}
+                description={`margem de ${receitas > 0 ? Math.min(((lucroLiquido / receitas) * 100), 100).toFixed(1) : 0}%`}
                 icon={TrendingUp}
                 trend={{ value: 0, isPositive: true }}
               />
