@@ -828,7 +828,7 @@ const GestaoShares = () => {
                     ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
                     : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                 )}>
-                  Total: {totalParticipantPercentage.toFixed(2)}%
+                  Total: {Math.min(totalParticipantPercentage, 100).toFixed(2)}%
                   {totalParticipantPercentage !== 100 && " (deve somar 100%)"}
                 </div>
               )}
