@@ -1,6 +1,7 @@
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { FeaturedArtists } from "@/components/dashboard/FeaturedArtists";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -179,6 +180,9 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Featured Artists */}
+            <FeaturedArtists />
 
             {/* Quick Actions */}
             <QuickActions />
