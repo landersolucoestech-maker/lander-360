@@ -10,13 +10,237 @@ import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { ReleaseMetricsModal } from "@/components/modals/ReleaseMetricsModal";
-import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Loader2 } from "lucide-react";
+import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Loader2, Disc, Users, FileText, BarChart3 } from "lucide-react";
+import { FaSpotify, FaApple, FaYoutube, FaDeezer } from "react-icons/fa";
+import { useReleaseMetrics } from "@/hooks/useReleaseMetrics";
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useDataExport } from "@/hooks/useDataExport";
 import { formatDateBR } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+
+// Helper function to format numbers
+function formatNumber(num: number): string {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+}
+
+// Component to display release details with metrics
+function ReleaseDetailsContent({ release }: { release: any }) {
+  const { data: metrics } = useReleaseMetrics(release?.id);
+  
+  // Parse tracks from JSON if needed
+  const tracks = Array.isArray(release.tracks) ? release.tracks : [];
+  
+  const getDistributorLabel = (id: string) => {
+    const map: Record<string, string> = {
+      'onerpm': 'ONErpm',
+      'distrokid': 'DistroKid',
+      '30por1': '30por1',
+      'outras_distribuidoras': 'Outras',
+    };
+    return map[id] || id;
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header with cover and basic info */}
+      <div className="flex gap-6">
+        {(release.cover || release.cover_url) && (
+          <div className="flex-shrink-0">
+            <img src={release.cover || release.cover_url} alt={release.title} className="w-40 h-40 object-cover rounded-lg shadow-md" />
+          </div>
+        )}
+        <div className="flex-1 space-y-3">
+          <div>
+            <h3 className="text-2xl font-bold">{release.title}</h3>
+            <p className="text-lg text-muted-foreground">{release.artist}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+              {release.type || release.release_type || 'Single'}
+            </span>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+              release.approvalStatus === 'aprovado' ? 'bg-green-500/10 text-green-500' :
+              release.approvalStatus === 'em_analise' ? 'bg-yellow-500/10 text-yellow-500' :
+              release.approvalStatus === 'rejeitado' ? 'bg-red-500/10 text-red-500' :
+              release.approvalStatus === 'pausado' ? 'bg-blue-500/10 text-blue-500' : 'bg-yellow-500/10 text-yellow-500'
+            }`}>
+              {release.approvalStatus === 'aprovado' ? 'Aprovado' : release.approvalStatus === 'em_analise' ? 'Em Análise' : release.approvalStatus === 'rejeitado' ? 'Rejeitado' : release.approvalStatus === 'pausado' ? 'Pausado' : 'Em Análise'}
+            </span>
+            {release.hasMarketingPlan && (
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                release.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
+                release.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-500'
+              }`}>
+                Prioridade: {release.priority === 'alta' ? 'Alta' : release.priority === 'media' ? 'Média' : 'Baixa'}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Metadata grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Status</label>
+          <p className="font-medium capitalize">{release.status || '-'}</p>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Data de Lançamento</label>
+          <p className="font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            {formatDateBR(release.releaseDate || release.release_date)}
+          </p>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Gênero</label>
+          <p className="font-medium capitalize">{release.genre || '-'}</p>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Idioma</label>
+          <p className="font-medium capitalize">{release.language || '-'}</p>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Gravadora</label>
+          <p className="font-medium">{release.label || '-'}</p>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Copyright</label>
+          <p className="font-medium">{release.copyright || '-'}</p>
+        </div>
+      </div>
+
+      {/* Distributors */}
+      {release.distributors && release.distributors.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">Distribuidoras</label>
+          <div className="flex flex-wrap gap-2">
+            {release.distributors.map((dist: string, index: number) => (
+              <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                {getDistributorLabel(dist)}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Distribution Notes */}
+      {release.distribution_notes && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Notas de Distribuição
+          </label>
+          <p className="text-sm bg-muted/30 p-3 rounded-lg">{release.distribution_notes}</p>
+        </div>
+      )}
+
+      {/* Streaming Metrics */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <BarChart3 className="h-4 w-4" />
+          Métricas de Streaming
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <FaSpotify className="h-5 w-5 text-green-500 mx-auto mb-1" />
+            <div className="text-xs text-muted-foreground mb-1">Spotify</div>
+            <div className="font-bold">
+              {metrics?.byPlatform?.spotify?.streams ? formatNumber(metrics.byPlatform.spotify.streams) : '—'}
+            </div>
+          </div>
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <FaApple className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+            <div className="text-xs text-muted-foreground mb-1">Apple Music</div>
+            <div className="font-bold">
+              {metrics?.byPlatform?.apple_music?.streams ? formatNumber(metrics.byPlatform.apple_music.streams) : '—'}
+            </div>
+          </div>
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <FaYoutube className="h-5 w-5 text-red-500 mx-auto mb-1" />
+            <div className="text-xs text-muted-foreground mb-1">YouTube</div>
+            <div className="font-bold">
+              {metrics?.byPlatform?.youtube?.views ? formatNumber(metrics.byPlatform.youtube.views) : '—'}
+            </div>
+          </div>
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
+            <FaDeezer className="h-5 w-5 text-purple-500 mx-auto mb-1" />
+            <div className="text-xs text-muted-foreground mb-1">Deezer</div>
+            <div className="font-bold">
+              {metrics?.byPlatform?.deezer?.streams ? formatNumber(metrics.byPlatform.deezer.streams) : '—'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tracks */}
+      {tracks.length > 0 && (
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <Disc className="h-4 w-4" />
+            Faixas ({tracks.length})
+          </label>
+          <div className="space-y-3">
+            {tracks.map((track: any, index: number) => (
+              <div key={index} className="bg-muted/30 rounded-lg p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <p className="font-medium">{track.title || 'Sem título'}</p>
+                      <p className="text-sm text-muted-foreground">{track.artist || release.artist}</p>
+                    </div>
+                  </div>
+                  {track.isrc && (
+                    <span className="text-xs bg-secondary px-2 py-1 rounded">ISRC: {track.isrc}</span>
+                  )}
+                </div>
+                
+                {/* Credits */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                  {track.composers && track.composers.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Compositores: </span>
+                      <span>{track.composers.join(', ')}</span>
+                    </div>
+                  )}
+                  {track.performers && track.performers.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Intérpretes: </span>
+                      <span>{track.performers.join(', ')}</span>
+                    </div>
+                  )}
+                  {track.producers && track.producers.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Produtores: </span>
+                      <span>{track.producers.join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lyrics preview */}
+                {track.lyrics && (
+                  <div className="mt-2">
+                    <span className="text-xs text-muted-foreground">Letra: </span>
+                    <span className="text-xs">{track.lyrics.substring(0, 100)}{track.lyrics.length > 100 ? '...' : ''}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Lancamentos = () => {
   const { toast } = useToast();
@@ -320,83 +544,7 @@ const Lancamentos = () => {
                   </DialogTitle>
                 </DialogHeader>
                 {selectedRelease && (
-                  <div className="space-y-6">
-                    <div className="flex gap-6">
-                      {(selectedRelease.cover || selectedRelease.cover_url) && (
-                        <div className="flex-shrink-0">
-                          <img src={selectedRelease.cover || selectedRelease.cover_url} alt={selectedRelease.title} className="w-40 h-40 object-cover rounded-lg shadow-md" />
-                        </div>
-                      )}
-                      <div className="flex-1 space-y-3">
-                        <div>
-                          <h3 className="text-2xl font-bold">{selectedRelease.title}</h3>
-                          <p className="text-lg text-muted-foreground">{selectedRelease.artist}</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                            {selectedRelease.type || selectedRelease.release_type || 'Single'}
-                          </span>
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            selectedRelease.approvalStatus === 'aprovado' ? 'bg-green-500/10 text-green-500' :
-                            selectedRelease.approvalStatus === 'em_analise' ? 'bg-yellow-500/10 text-yellow-500' :
-                            selectedRelease.approvalStatus === 'rejeitado' ? 'bg-red-500/10 text-red-500' :
-                            selectedRelease.approvalStatus === 'pausado' ? 'bg-blue-500/10 text-blue-500' : 'bg-yellow-500/10 text-yellow-500'
-                          }`}>
-                            {selectedRelease.approvalStatus === 'aprovado' ? 'Aprovado' : selectedRelease.approvalStatus === 'em_analise' ? 'Em Análise' : selectedRelease.approvalStatus === 'rejeitado' ? 'Rejeitado' : selectedRelease.approvalStatus === 'pausado' ? 'Pausado' : 'Em Análise'}
-                          </span>
-                          {selectedRelease.hasMarketingPlan && (
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              selectedRelease.priority === 'alta' ? 'bg-destructive/10 text-destructive' :
-                              selectedRelease.priority === 'media' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-500'
-                            }`}>
-                              Prioridade: {selectedRelease.priority === 'alta' ? 'Alta' : selectedRelease.priority === 'media' ? 'Média' : 'Baixa'}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Status</label>
-                        <p className="font-medium capitalize">{selectedRelease.status || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Data de Lançamento</label>
-                        <p className="font-medium flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          {formatDateBR(selectedRelease.releaseDate || selectedRelease.release_date)}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Gênero</label>
-                        <p className="font-medium capitalize">{selectedRelease.genre || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Idioma</label>
-                        <p className="font-medium capitalize">{selectedRelease.language || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Gravadora</label>
-                        <p className="font-medium">{selectedRelease.label || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Copyright</label>
-                        <p className="font-medium">{selectedRelease.copyright || '-'}</p>
-                      </div>
-                    </div>
-
-                    {selectedRelease.distributors && selectedRelease.distributors.length > 0 && (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Distribuidoras</label>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedRelease.distributors.map((dist: string, index: number) => (
-                            <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{dist}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <ReleaseDetailsContent release={selectedRelease} />
                 )}
               </DialogContent>
             </Dialog>
