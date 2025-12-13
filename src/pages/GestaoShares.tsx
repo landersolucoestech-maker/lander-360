@@ -841,6 +841,8 @@ const GestaoShares = () => {
                     <SelectItem value="Músico">Músico</SelectItem>
                     <SelectItem value="Editor">Editor</SelectItem>
                     <SelectItem value="Artista Principal">Artista Principal</SelectItem>
+                    <SelectItem value="Gravadora">Gravadora</SelectItem>
+                    <SelectItem value="Empresário">Empresário</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
