@@ -110,6 +110,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const [registrationMode, setRegistrationMode] = useState<'existing' | 'new' | null>('new');
 
   const [workDropdownOpen, setWorkDropdownOpen] = useState(false);
+  const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedWork, setSelectedWork] = useState<any>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   
@@ -467,12 +469,14 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [isAiCreated, aiGenerationType, form]);
 
+  // Filter only completed projects for dropdown
+  const completedProjects = React.useMemo(() => {
+    return projects.filter(project => project.status === 'completed');
+  }, [projects]);
+
   // Build list of available works from completed projects only
   const availableWorks = React.useMemo(() => {
     const works: any[] = [];
-    
-    // Filter only completed projects
-    const completedProjects = projects.filter(project => project.status === 'completed');
     
     // Add works from completed projects audio_files
     completedProjects.forEach(project => {
@@ -915,6 +919,120 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         {/* Form Data */}
         {currentStep === 2 && (
           <>
+        {/* Seleção de Projeto Concluído */}
+        <Card className="bg-card">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Vincular a Projeto Concluído
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+              <Popover open={projectDropdownOpen} onOpenChange={setProjectDropdownOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={projectDropdownOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedProject
+                      ? `${selectedProject.name}${selectedProject.description ? ` - ${selectedProject.description}` : ''}`
+                      : "Selecione um projeto concluído..."}
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar projeto..." />
+                    <CommandList>
+                      <CommandEmpty>
+                        {completedProjects.length === 0 
+                          ? "Nenhum projeto concluído encontrado. Complete um projeto primeiro."
+                          : "Nenhum projeto encontrado."}
+                      </CommandEmpty>
+                      <CommandGroup heading="Projetos Concluídos">
+                        {completedProjects.map((project) => {
+                          const artistData = artists.find(a => a.id === project.artist_id);
+                          const artistName = artistData?.stage_name || artistData?.name || '';
+                          return (
+                            <CommandItem
+                              key={project.id}
+                              value={project.name}
+                              onSelect={() => {
+                                setSelectedProject(project);
+                                form.setValue('project_id', project.id);
+                                form.setValue('artist_id', project.artist_id || '');
+                                
+                                // Auto-fill from project audio_files
+                                let audioFilesData = project.audio_files as any;
+                                if (typeof audioFilesData === 'string') {
+                                  try {
+                                    audioFilesData = JSON.parse(audioFilesData);
+                                  } catch (e) {
+                                    audioFilesData = null;
+                                  }
+                                }
+                                
+                                const songs = audioFilesData?.songs || [];
+                                if (songs.length > 0) {
+                                  const firstSong = songs[0];
+                                  form.setValue('title', firstSong.song_name || firstSong.title || '');
+                                  form.setValue('genre', firstSong.genre?.toLowerCase() || '');
+                                  if (firstSong.lyrics) {
+                                    form.setValue('lyrics', firstSong.lyrics);
+                                  }
+                                  if (firstSong.duration_minutes || firstSong.duration_seconds) {
+                                    form.setValue('duration_minutes', firstSong.duration_minutes || 0);
+                                    form.setValue('duration_seconds', firstSong.duration_seconds || 0);
+                                  }
+                                  if (firstSong.instrumental === 'sim' || firstSong.is_instrumental) {
+                                    form.setValue('is_instrumental', true);
+                                  }
+                                }
+                                
+                                setProjectDropdownOpen(false);
+                                toast({
+                                  title: "Projeto selecionado",
+                                  description: `Dados do projeto "${project.name}" carregados.`
+                                });
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedProject?.id === project.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">{project.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {artistName && `${artistName} • `}
+                                  {project.description || 'Sem descrição'}
+                                </span>
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              
+              {selectedProject && (
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-sm">
+                    <strong>Projeto:</strong> {selectedProject.name}
+                    {selectedProject.description && ` - ${selectedProject.description}`}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Dados Principais da Obra */}
         <Card className="bg-card">
           <CardHeader className="pb-4">

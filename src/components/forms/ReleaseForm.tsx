@@ -158,22 +158,37 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const { data: existingMetrics } = useReleaseMetrics(release?.id);
   const updateManualMetrics = useUpdateManualMetrics();
 
-  // Filtrar apenas projetos que possuem fonograma registrado com mesmo nome
+  // Filtrar projetos que estão: concluídos + com obra registrada + com fonograma registrado
   const availableProjects = useMemo(() => {
-    // Obter títulos dos fonogramas registrados (lowercase para comparação)
+    // Obter títulos das obras registradas com status 'aceita'
+    const registeredWorkTitles = new Set(
+      musicRegistry
+        .filter(w => w.status === 'aceita')
+        .map(w => w.title?.toLowerCase().trim())
+        .filter(Boolean)
+    );
+    
+    // Obter títulos dos fonogramas registrados
     const phonogramTitles = new Set(
       phonograms.map(p => p.title?.toLowerCase().trim()).filter(Boolean)
     );
     
-    // Filtrar projetos concluídos que têm fonograma com mesmo nome
+    // Filtrar projetos concluídos que têm obra registrada e fonograma com mesmo nome
     return projects.filter(project => {
       if (project.status !== 'completed') return false;
       
-      // Verificar se existe fonograma com o mesmo nome do projeto
       const projectName = project.name?.toLowerCase().trim();
-      return projectName && phonogramTitles.has(projectName);
+      if (!projectName) return false;
+      
+      // Verificar se existe obra registrada com o mesmo nome
+      const hasRegisteredWork = registeredWorkTitles.has(projectName);
+      
+      // Verificar se existe fonograma com o mesmo nome
+      const hasPhonogram = phonogramTitles.has(projectName);
+      
+      return hasRegisteredWork && hasPhonogram;
     });
-  }, [projects, phonograms]);
+  }, [projects, musicRegistry, phonograms]);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>(() => {
     // Initialize with existing cover when editing
     if (release?.cover_url || release?.cover_art) {
@@ -589,7 +604,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
                     <SelectContent>
                       {availableProjects.length === 0 ? (
                         <div className="p-2 text-sm text-muted-foreground text-center">
-                          Nenhum projeto disponível. É necessário ter projeto concluído com obra e fonograma registrados.
+                          Nenhum projeto disponível. Fluxo: Projeto Concluído → Obra Registrada (Aceita) → Fonograma Registrado.
                         </div>
                       ) : (
                         availableProjects.map((project) => (
