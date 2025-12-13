@@ -132,15 +132,15 @@ export const CreativeAIHistory = () => {
               </div>
             </div>
             <Select 
-              value={filters.artistId || ''} 
-              onValueChange={(value) => setFilters(prev => ({ ...prev, artistId: value || undefined }))}
+              value={filters.artistId || 'all'} 
+              onValueChange={(value) => setFilters(prev => ({ ...prev, artistId: value === 'all' ? undefined : value }))}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Artista" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
-                {artists?.map(artist => (
+                <SelectItem value="all">Todos</SelectItem>
+                {artists?.filter(artist => artist.id).map(artist => (
                   <SelectItem key={artist.id} value={artist.id}>
                     {artist.stage_name || artist.name}
                   </SelectItem>
@@ -148,14 +148,14 @@ export const CreativeAIHistory = () => {
               </SelectContent>
             </Select>
             <Select 
-              value={filters.objective || ''} 
-              onValueChange={(value) => setFilters(prev => ({ ...prev, objective: value || undefined }))}
+              value={filters.objective || 'all'} 
+              onValueChange={(value) => setFilters(prev => ({ ...prev, objective: value === 'all' ? undefined : value }))}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Objetivo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="campanha">Campanha</SelectItem>
                 <SelectItem value="post">Post</SelectItem>
                 <SelectItem value="roteiro">Roteiro</SelectItem>
@@ -163,14 +163,14 @@ export const CreativeAIHistory = () => {
               </SelectContent>
             </Select>
             <Select 
-              value={filters.status || ''} 
-              onValueChange={(value) => setFilters(prev => ({ ...prev, status: value || undefined }))}
+              value={filters.status || 'all'} 
+              onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? undefined : value }))}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="saved">Salvas</SelectItem>
                 <SelectItem value="used">Usadas</SelectItem>
                 <SelectItem value="archived">Arquivadas</SelectItem>

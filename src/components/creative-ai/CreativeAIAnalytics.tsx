@@ -99,13 +99,13 @@ export const CreativeAIAnalytics = () => {
         <CardContent className="pt-6">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex-1 min-w-[200px]">
-              <Select value={selectedArtist} onValueChange={setSelectedArtist}>
+              <Select value={selectedArtist || 'all'} onValueChange={(value) => setSelectedArtist(value === 'all' ? '' : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filtrar por artista" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os artistas</SelectItem>
-                  {artists?.map(artist => (
+                  <SelectItem value="all">Todos os artistas</SelectItem>
+                  {artists?.filter(artist => artist.id).map(artist => (
                     <SelectItem key={artist.id} value={artist.id}>
                       {artist.stage_name || artist.name}
                     </SelectItem>
