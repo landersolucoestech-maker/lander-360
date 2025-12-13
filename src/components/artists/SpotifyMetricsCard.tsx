@@ -17,10 +17,21 @@ export function SpotifyMetricsCard({ artistId, spotifyUrl }: SpotifyMetricsCardP
   const fetchMetrics = useFetchSpotifyMetrics();
   const [showAllTracks, setShowAllTracks] = useState(false);
 
+  const isValidSpotifyArtistUrl =
+    !!spotifyUrl &&
+    spotifyUrl !== 'Não temos' &&
+    spotifyUrl !== 'Não tem' &&
+    spotifyUrl.includes('spotify') &&
+    spotifyUrl.includes('/artist/') &&
+    !spotifyUrl.includes('/user/');
+
   const handleRefresh = () => {
+    if (!isValidSpotifyArtistUrl) {
+      console.warn('Invalid Spotify URL, skipping Spotify metrics refresh', spotifyUrl);
+      return;
+    }
     fetchMetrics.mutate({ artistId, spotifyUrl });
   };
-
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';

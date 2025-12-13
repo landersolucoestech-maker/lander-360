@@ -58,20 +58,19 @@ export function ArtistCard({
   
   // Spotify metrics
   const spotifyUrl = artist.socialMedia?.spotify || '';
+  const isValidSpotifyArtistUrl =
+    !!spotifyUrl &&
+    spotifyUrl !== 'Não temos' &&
+    spotifyUrl !== 'Não tem' &&
+    spotifyUrl.includes('spotify') &&
+    spotifyUrl.includes('/artist/') &&
+    !spotifyUrl.includes('/user/');
   const { data: spotifyMetrics, isLoading: isLoadingMetrics } = useArtistSpotifyMetrics(artist.id.toString());
   const fetchSpotifyMetrics = useFetchSpotifyMetrics();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Auto-fetch Spotify metrics on mount and every 60 seconds
   useEffect(() => {
-    // Only valid artist URLs - skip user URLs and invalid entries
-    const isValidSpotifyArtistUrl = spotifyUrl && 
-      spotifyUrl !== 'Não temos' && 
-      spotifyUrl !== 'Não tem' && 
-      spotifyUrl.includes('spotify') &&
-      spotifyUrl.includes('/artist/') &&
-      !spotifyUrl.includes('/user/');
-    
     if (!isValidSpotifyArtistUrl) return;
 
     // Initial fetch if no metrics
@@ -87,10 +86,10 @@ export function ArtistCard({
     }, 60000); // 60 seconds
 
     return () => clearInterval(intervalId);
-  }, [spotifyUrl, spotifyMetrics, isLoadingMetrics, isRefreshing]);
+  }, [spotifyUrl, spotifyMetrics, isLoadingMetrics, isRefreshing, isValidSpotifyArtistUrl]);
 
   const handleRefreshSpotify = async () => {
-    if (!spotifyUrl || isRefreshing) return;
+    if (!isValidSpotifyArtistUrl || isRefreshing) return;
     setIsRefreshing(true);
     try {
       await fetchSpotifyMetrics.mutateAsync({
@@ -306,7 +305,7 @@ export function ArtistCard({
             </div>
 
             {/* Bottom Row - Streaming Metrics */}
-            {spotifyUrl && (
+            {isValidSpotifyArtistUrl && (
               <div className="pt-4 border-t border-border">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-foreground">Métricas de Plataformas</h4>
