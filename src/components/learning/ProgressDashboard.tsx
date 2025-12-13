@@ -12,11 +12,13 @@ import {
   Target, 
   Zap, 
   Star, 
-  BookOpen,
   Rocket,
+  Music,
+  Disc,
+  Package,
+  FolderKanban,
   Users,
-  FileText,
-  Calendar,
+  ShieldCheck,
   BarChart3,
 } from 'lucide-react';
 
@@ -28,16 +30,18 @@ interface ProgressDashboardProps {
 }
 
 const badgeIcons: Record<string, React.ElementType> = {
-  Award,
-  Star,
-  Zap,
-  Trophy,
-  BookOpen,
-  Rocket,
-  Users,
-  FileText,
-  Calendar,
-  BarChart3,
+  'award': Award,
+  'star': Star,
+  'zap': Zap,
+  'trophy': Trophy,
+  'rocket': Rocket,
+  'music': Music,
+  'disc': Disc,
+  'package': Package,
+  'folder-kanban': FolderKanban,
+  'users': Users,
+  'shield-check': ShieldCheck,
+  'bar-chart-3': BarChart3,
 };
 
 export const ProgressDashboard = ({
@@ -160,7 +164,7 @@ export const ProgressDashboard = ({
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {userBadges.map((ub) => {
-                const Icon = badgeIcons[ub.badge?.icon || 'Award'] || Award;
+                const Icon = badgeIcons[ub.badge?.icon || 'award'] || Award;
 
                 return (
                   <div
