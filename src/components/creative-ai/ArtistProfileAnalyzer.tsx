@@ -184,7 +184,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
       await new Promise<void>((resolve, reject) => {
         logoImg.onload = () => resolve();
         logoImg.onerror = reject;
-        logoImg.src = '/lovable-uploads/lander-logo-transparent.png';
+        logoImg.src = '/lovable-uploads/lander-logo-black.png';
       });
       
       const canvas = document.createElement('canvas');
@@ -194,8 +194,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
       ctx?.drawImage(logoImg, 0, 0);
       const logoDataUrl = canvas.toDataURL('image/png');
       
-      doc.addImage(logoDataUrl, 'PNG', margin, y, 60, 60);
-      y += 65;
+      doc.addImage(logoDataUrl, 'PNG', margin, y, 80, 80);
+      y += 85;
     } catch (error) {
       console.error('Failed to load logo:', error);
       // Continue without logo
