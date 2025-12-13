@@ -125,10 +125,7 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
           {/* Title and Credits */}
           <div>
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate flex-1">{release.title}</h3>
-              <ReleaseMetricsBadge releaseId={release.id} />
-            </div>
+            <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate">{release.title}</h3>
             <p className="text-sm text-white/70 truncate">{displayCredits()}</p>
             {/* Release Type and Genre Badges - Red color */}
             <div className="flex gap-2 mt-2">
@@ -141,6 +138,8 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
                 </Badge>
               )}
             </div>
+            {/* Streaming Metrics Grid */}
+            <ReleaseMetricsBadge releaseId={release.id} variant="grid" />
           </div>
 
           {/* Marketing Planning - Only show when there's a marketing plan */}
