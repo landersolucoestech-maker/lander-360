@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -10,9 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Search, Plus, Star, Archive, Trash2, MoreHorizontal, Send, Mail, MessageCircle, Loader2, Phone, User } from "lucide-react";
+import { Search, Plus, Star, Archive, Trash2, MoreHorizontal, Send, Mail, MessageCircle, Loader2, Phone, User, ChevronsUpDown, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -65,6 +66,8 @@ const LanderZap = () => {
   const [selectedContactId, setSelectedContactId] = useState<string>("");
   const [newMessageText, setNewMessageText] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [contactSearchOpen, setContactSearchOpen] = useState(false);
+  const [contactSearchTerm, setContactSearchTerm] = useState("");
 
   // Buscar conversas
   const { data: conversations = [], isLoading: loadingConversations } = useQuery({
@@ -649,57 +652,114 @@ const LanderZap = () => {
             {/* Destinatário */}
             <div className="space-y-2">
               <Label>Destinatário</Label>
-              <Select value={selectedContactId} onValueChange={setSelectedContactId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um contato" />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                    Artistas
-                  </div>
-                  {contacts.filter(c => c.type === 'artist').map(contact => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      <div className="flex items-center gap-2">
+              <Popover open={contactSearchOpen} onOpenChange={setContactSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={contactSearchOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {selectedContactId ? (
+                      <span className="flex items-center gap-2">
                         <User className="h-3 w-3" />
-                        <span>{contact.name}</span>
-                        {newMessageChannel === 'whatsapp' && contact.phone && (
-                          <span className="text-xs text-muted-foreground">{contact.phone}</span>
-                        )}
-                        {newMessageChannel === 'email' && contact.email && (
-                          <span className="text-xs text-muted-foreground">{contact.email}</span>
-                        )}
-                        {newMessageChannel === 'whatsapp' && !contact.phone && (
-                          <Badge variant="outline" className="text-destructive border-destructive text-[10px]">
-                            Sem telefone
-                          </Badge>
-                        )}
-                        {newMessageChannel === 'email' && !contact.email && (
-                          <Badge variant="outline" className="text-destructive border-destructive text-[10px]">
-                            Sem email
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-t mt-1 pt-2">
-                    Contatos CRM
-                  </div>
-                  {contacts.filter(c => c.type === 'crm').map(contact => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      <div className="flex items-center gap-2">
-                        <User className="h-3 w-3" />
-                        <span>{contact.name}</span>
-                        {newMessageChannel === 'whatsapp' && contact.phone && (
-                          <span className="text-xs text-muted-foreground">{contact.phone}</span>
-                        )}
-                        {newMessageChannel === 'email' && contact.email && (
-                          <span className="text-xs text-muted-foreground">{contact.email}</span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                        {contacts.find(c => c.id === selectedContactId)?.name || "Selecione..."}
+                      </span>
+                    ) : (
+                      "Buscar contato..."
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 bg-popover" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                  <Command>
+                    <CommandInput 
+                      placeholder="Digite para buscar..." 
+                      value={contactSearchTerm}
+                      onValueChange={setContactSearchTerm}
+                    />
+                    <CommandList>
+                      <CommandEmpty>Nenhum contato encontrado.</CommandEmpty>
+                      <CommandGroup heading="Artistas">
+                        {contacts
+                          .filter(c => c.type === 'artist')
+                          .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+                          .map(contact => (
+                            <CommandItem
+                              key={contact.id}
+                              value={contact.name}
+                              onSelect={() => {
+                                setSelectedContactId(contact.id);
+                                setContactSearchOpen(false);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex items-center gap-2 flex-1">
+                                <User className="h-3 w-3 text-muted-foreground" />
+                                <span>{contact.name}</span>
+                                {newMessageChannel === 'whatsapp' && contact.phone && (
+                                  <span className="text-xs text-muted-foreground ml-auto">{contact.phone}</span>
+                                )}
+                                {newMessageChannel === 'email' && contact.email && (
+                                  <span className="text-xs text-muted-foreground ml-auto">{contact.email}</span>
+                                )}
+                                {newMessageChannel === 'whatsapp' && !contact.phone && (
+                                  <Badge variant="outline" className="text-destructive border-destructive text-[10px] ml-auto">
+                                    Sem telefone
+                                  </Badge>
+                                )}
+                                {newMessageChannel === 'email' && !contact.email && (
+                                  <Badge variant="outline" className="text-destructive border-destructive text-[10px] ml-auto">
+                                    Sem email
+                                  </Badge>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                      <CommandGroup heading="Contatos CRM">
+                        {contacts
+                          .filter(c => c.type === 'crm')
+                          .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+                          .map(contact => (
+                            <CommandItem
+                              key={contact.id}
+                              value={contact.name}
+                              onSelect={() => {
+                                setSelectedContactId(contact.id);
+                                setContactSearchOpen(false);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex items-center gap-2 flex-1">
+                                <User className="h-3 w-3 text-muted-foreground" />
+                                <span>{contact.name}</span>
+                                {newMessageChannel === 'whatsapp' && contact.phone && (
+                                  <span className="text-xs text-muted-foreground ml-auto">{contact.phone}</span>
+                                )}
+                                {newMessageChannel === 'email' && contact.email && (
+                                  <span className="text-xs text-muted-foreground ml-auto">{contact.email}</span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               {selectedContact && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   {newMessageChannel === 'whatsapp' ? (
