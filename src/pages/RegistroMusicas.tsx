@@ -828,6 +828,12 @@ const RegistroMusicas = () => {
                                   {song.publishers?.join(", ") || "-"}
                                 </div>
                               </div>
+                              <div className="text-left min-w-[100px]">
+                                <div className="text-muted-foreground text-xs">Gênero</div>
+                                <div className="font-medium text-foreground">
+                                  {song.genre || "-"}
+                                </div>
+                              </div>
                               <div className="flex gap-2 flex-shrink-0">
                                 <Button variant="outline" size="sm" onClick={() => handleViewSong(song)}>
                                   Ver
