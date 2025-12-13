@@ -669,9 +669,9 @@ const RegistroMusicas = () => {
                 icon={FileText}
               />
               <DashboardCard
-                title="Em Revisão"
+                title="Em Análise"
                 value={currentKPIs.inReview}
-                description="em análise"
+                description="aguardando aprovação"
                 icon={Clock}
               />
               <DashboardCard
