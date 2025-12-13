@@ -140,6 +140,18 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
             </div>
             {/* Streaming Metrics Grid */}
             <ReleaseMetricsBadge releaseId={release.id} variant="grid" />
+            {onViewMetrics && (
+              <Button
+                size="sm"
+                className="mt-2 w-full bg-white/20 hover:bg-white/30 text-white text-xs h-7"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewMetrics(release);
+                }}
+              >
+                Ver métricas
+              </Button>
+            )}
           </div>
 
           {/* Marketing Planning - Only show when there's a marketing plan */}
