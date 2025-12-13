@@ -610,18 +610,18 @@ const RegistroMusicas = () => {
 
   const worksKPIs = {
     total: allSongs.length,
-    pending: allSongs.filter(s => s.statusDisplay === "Pendente").length,
-    inReview: allSongs.filter(s => s.statusDisplay === "Em Análise").length,
-    accepted: allSongs.filter(s => s.statusDisplay === "Aceita").length,
-    approvalRate: allSongs.length > 0 ? Math.round((allSongs.filter(s => s.statusDisplay === "Aceita").length / allSongs.length) * 100) : 0,
+    pending: allSongs.filter(s => ['Pendente', 'pendente', 'draft', 'Rascunho'].includes(s.statusDisplay) || !s.status).length,
+    inReview: allSongs.filter(s => ['Em Análise', 'em_analise', 'Em análise'].includes(s.statusDisplay) || s.status === 'em_analise').length,
+    accepted: allSongs.filter(s => ['Aprovada', 'Aceita', 'aceita', 'aprovada'].includes(s.statusDisplay) || s.status === 'aceita').length,
+    approvalRate: allSongs.length > 0 ? Math.round((allSongs.filter(s => ['Aprovada', 'Aceita', 'aceita', 'aprovada'].includes(s.statusDisplay) || s.status === 'aceita').length / allSongs.length) * 100) : 0,
   };
 
   const phonogramsKPIs = {
     total: allPhonograms.length,
-    pending: allPhonograms.filter(s => s.statusDisplay === "Pendente").length,
-    inReview: allPhonograms.filter(s => s.statusDisplay === "Em Análise").length,
-    accepted: allPhonograms.filter(s => s.statusDisplay === "Aceita").length,
-    approvalRate: allPhonograms.length > 0 ? Math.round((allPhonograms.filter(s => s.statusDisplay === "Aceita").length / allPhonograms.length) * 100) : 0,
+    pending: allPhonograms.filter(s => ['Pendente', 'pendente', 'draft', 'Rascunho'].includes(s.statusDisplay) || !s.status).length,
+    inReview: allPhonograms.filter(s => ['Em Análise', 'em_analise', 'Em análise'].includes(s.statusDisplay) || s.status === 'em_analise').length,
+    accepted: allPhonograms.filter(s => ['Aprovada', 'Aceita', 'aceita', 'aprovada'].includes(s.statusDisplay) || s.status === 'aceita').length,
+    approvalRate: allPhonograms.length > 0 ? Math.round((allPhonograms.filter(s => ['Aprovada', 'Aceita', 'aceita', 'aprovada'].includes(s.statusDisplay) || s.status === 'aceita').length / allPhonograms.length) * 100) : 0,
   };
 
   const currentKPIs = activeTab === "obras" ? worksKPIs : phonogramsKPIs;
