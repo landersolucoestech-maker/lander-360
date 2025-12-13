@@ -1550,6 +1550,50 @@ export type Database = {
           },
         ]
       }
+      release_streaming_metrics: {
+        Row: {
+          created_at: string
+          fetched_at: string
+          id: string
+          platform: string
+          playlist_adds: number | null
+          release_id: string
+          saves: number | null
+          streams: number | null
+          views: number | null
+        }
+        Insert: {
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          platform: string
+          playlist_adds?: number | null
+          release_id: string
+          saves?: number | null
+          streams?: number | null
+          views?: number | null
+        }
+        Update: {
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          platform?: string
+          playlist_adds?: number | null
+          release_id?: string
+          saves?: number | null
+          streams?: number | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "release_streaming_metrics_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       releases: {
         Row: {
           artist_id: string | null

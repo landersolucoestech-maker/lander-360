@@ -9,6 +9,7 @@ import { ReleaseForm } from "@/components/forms/ReleaseForm";
 import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
+import { ReleaseMetricsModal } from "@/components/modals/ReleaseMetricsModal";
 import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useReleases, useDeleteRelease } from "@/hooks/useReleases";
@@ -62,6 +63,7 @@ const Lancamentos = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
   const [releaseToDelete, setReleaseToDelete] = useState<any>(null);
 
   useEffect(() => {
@@ -139,6 +141,11 @@ const Lancamentos = () => {
   const handleDeleteRelease = (release: any) => {
     setReleaseToDelete(release);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleViewMetrics = (release: any) => {
+    setSelectedRelease(release);
+    setIsMetricsModalOpen(true);
   };
 
   const confirmDeleteRelease = async () => {
@@ -273,7 +280,7 @@ const Lancamentos = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {filteredReleases.map((release) => (
-                      <ReleaseCard key={release.id} release={release} onViewDetails={handleViewDetails} onEdit={handleEditRelease} onDelete={handleDeleteRelease} />
+                      <ReleaseCard key={release.id} release={release} onViewDetails={handleViewDetails} onEdit={handleEditRelease} onDelete={handleDeleteRelease} onViewMetrics={handleViewMetrics} />
                     ))}
                   </div>
                 )}
@@ -393,6 +400,19 @@ const Lancamentos = () => {
                 )}
               </DialogContent>
             </Dialog>
+
+            {/* Metrics Modal */}
+            {selectedRelease && (
+              <ReleaseMetricsModal 
+                open={isMetricsModalOpen} 
+                onOpenChange={setIsMetricsModalOpen} 
+                release={{
+                  id: selectedRelease.id,
+                  title: selectedRelease.title,
+                  artistName: selectedRelease.artist,
+                }}
+              />
+            )}
           </div>
         </SidebarInset>
       </div>
