@@ -1,110 +1,28 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, LogOut, Briefcase, FileSearch, Scale, MessageCircle } from "lucide-react";
+import { Megaphone, Settings, ChevronDown, LogOut, Palette } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-const navigationItems = [{
-  title: "Dashboard",
-  url: "/",
-  icon: LayoutDashboard
-}, {
-  title: "Artistas",
-  url: "/artistas",
-  icon: Users
-}, {
-  title: "Projetos",
-  url: "/projetos",
-  icon: FolderOpen
-}, {
-  title: "Registro de Músicas",
-  url: "/registro-musicas",
-  icon: Music
-}, {
-  title: "Lançamentos",
-  url: "/lancamentos",
-  icon: Upload
-}, {
-  title: "Contratos",
-  url: "/contratos",
-  icon: FileText
-}, {
-  title: "Financeiro",
-  url: "/financeiro",
-  icon: DollarSign
-}, {
-  title: "Agenda",
-  url: "/agenda",
-  icon: Calendar
-}, {
-  title: "Nota Fiscal",
-  url: "/nota-fiscal",
-  icon: Receipt
-}, {
-  title: "Inventário",
-  url: "/inventario",
-  icon: Package
-}, {
-  title: "CRM",
-  url: "/crm",
-  icon: UserCheck
-}, {
-  title: "Serviços",
-  url: "/servicos",
-  icon: Briefcase
-}, {
-  title: "Gestão de Shares",
-  url: "/gestao-shares",
-  icon: Scale
-}, {
-  title: "Auditoria",
-  url: "/relatorios-autorais",
-  icon: FileSearch
-}, {
-  title: "Usuários",
-  url: "/usuarios",
-  icon: UserCog
-}, {
-  title: "Relatórios",
-  url: "/relatorios",
-  icon: BarChart3
-}, {
-  title: "LanderZap",
-  url: "/lander",
-  icon: MessageCircle
-}];
-const marketingItems = [{
-  title: "Visão Geral",
-  url: "/marketing/visao-geral"
-}, {
-  title: "Planejamento de Campanhas",
-  url: "/marketing/campanhas"
-}, {
-  title: "Gestão de Tarefas",
-  url: "/marketing/tarefas"
-}, {
-  title: "Calendário de Conteúdo",
-  url: "/marketing/calendario"
-}, {
-  title: "Métricas e Resultados",
-  url: "/marketing/metricas"
-}, {
-  title: "Central de Briefing",
-  url: "/marketing/briefing"
-}, {
-  title: "IA Criativa",
-  url: "/marketing/ia-criativa"
-}];
+import { useUserRole } from "@/hooks/useUserRole";
+import { 
+  navigationConfig, 
+  marketingItems, 
+  getFilteredNavigation, 
+  getFilteredMarketingItems, 
+  shouldShowMarketing,
+  roleDisplayNames 
+} from "@/lib/permissions";
+
 interface AppSidebarProps {
   className?: string;
 }
-export function AppSidebar({
-  className
-}: AppSidebarProps) {
+
+export function AppSidebar({ className }: AppSidebarProps) {
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const location = useLocation();
@@ -112,6 +30,41 @@ export function AppSidebar({
   const currentPath = location.pathname;
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { roles, primaryRole, isLoading: rolesLoading } = useUserRole();
+
+  // Filter navigation based on user roles
+  const filteredNavigation = useMemo(() => {
+    if (rolesLoading || roles.length === 0) {
+      // While loading, show full menu for admin/manager legacy users
+      return navigationConfig;
+    }
+    return getFilteredNavigation(roles);
+  }, [roles, rolesLoading]);
+
+  const filteredMarketingItems = useMemo(() => {
+    if (rolesLoading || roles.length === 0) {
+      return marketingItems;
+    }
+    return getFilteredMarketingItems(roles);
+  }, [roles, rolesLoading]);
+
+  const showMarketing = useMemo(() => {
+    if (rolesLoading || roles.length === 0) return true;
+    return shouldShowMarketing(roles);
+  }, [roles, rolesLoading]);
+
+  // Separate items: main items (before Marketing) and bottom items (after Marketing)
+  const mainNavigationItems = filteredNavigation.filter(item => 
+    !['Relatórios', 'Auditoria', 'LanderZap', 'Usuários', 'Configurações', 'Aparência'].includes(item.title)
+  );
+
+  const bottomNavigationItems = filteredNavigation.filter(item => 
+    ['Relatórios', 'Auditoria', 'LanderZap', 'Usuários'].includes(item.title)
+  );
+
+  const settingsItems = filteredNavigation.filter(item => 
+    ['Configurações', 'Aparência'].includes(item.title)
+  );
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
@@ -142,12 +95,17 @@ export function AppSidebar({
 
   const isActive = (url: string) => {
     if (url === "/") return currentPath === "/";
+    if (url.includes('#')) {
+      const baseUrl = url.split('#')[0];
+      return currentPath === baseUrl;
+    }
     return currentPath.startsWith(url);
   };
 
-  const isMarketingActive = marketingItems.some(item => currentPath.startsWith(item.url));
+  const isMarketingActive = filteredMarketingItems.some(item => currentPath.startsWith(item.url));
 
-  return <Sidebar className={cn("border-r border-sidebar-border", className)}>
+  return (
+    <Sidebar className={cn("border-r border-sidebar-border", className)}>
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center">
@@ -155,6 +113,9 @@ export function AppSidebar({
           </div>
           <div>
             <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">LANDER 360º</h1>
+            {!rolesLoading && roles.length > 0 && (
+              <p className="text-xs text-muted-foreground">{roleDisplayNames[primaryRole]}</p>
+            )}
           </div>
         </div>
       </SidebarHeader>
@@ -163,7 +124,9 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {navigationItems.map(item => <SidebarMenuItem key={item.title}>
+              {/* Main navigation items */}
+              {mainNavigationItems.map(item => (
+                <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className={cn(
                     "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     isActive(item.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -173,30 +136,55 @@ export function AppSidebar({
                       <span className="font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
-                </SidebarMenuItem>)}
+                </SidebarMenuItem>
+              ))}
 
               {/* Marketing dropdown */}
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => setIsMarketingOpen(!isMarketingOpen)} className={cn(
-                  "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-3 px-3 py-2.5 rounded-md",
-                  isMarketingActive && "bg-sidebar-accent text-sidebar-accent-foreground"
-                )}>
-                  <Megaphone className="h-4 w-4" />
-                  <span className="font-medium">Marketing</span>
-                  <ChevronDown className={cn("h-4 w-4 transition-transform ml-auto", isMarketingOpen && "rotate-180")} />
-                </SidebarMenuButton>
-                {isMarketingOpen && <SidebarMenuSub className="mt-1 space-y-1">
-                    {marketingItems.map(subItem => <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild className={cn(
-                          isActive(subItem.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
-                        )}>
-                          <Link to={subItem.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md ml-6">
-                            <span className="font-medium text-sm">{subItem.title}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>)}
-                  </SidebarMenuSub>}
-              </SidebarMenuItem>
+              {showMarketing && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    onClick={() => setIsMarketingOpen(!isMarketingOpen)} 
+                    className={cn(
+                      "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-3 px-3 py-2.5 rounded-md",
+                      isMarketingActive && "bg-sidebar-accent text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <Megaphone className="h-4 w-4" />
+                    <span className="font-medium">Marketing</span>
+                    <ChevronDown className={cn("h-4 w-4 transition-transform ml-auto", isMarketingOpen && "rotate-180")} />
+                  </SidebarMenuButton>
+                  {isMarketingOpen && (
+                    <SidebarMenuSub className="mt-1 space-y-1">
+                      {filteredMarketingItems.map(subItem => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild className={cn(
+                            isActive(subItem.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
+                          )}>
+                            <Link to={subItem.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md ml-6">
+                              <span className="font-medium text-sm">{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
+                </SidebarMenuItem>
+              )}
+
+              {/* Bottom navigation items (after Marketing) */}
+              {bottomNavigationItems.map(item => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild className={cn(
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    isActive(item.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
+                  )}>
+                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
+                      <item.icon className="h-4 w-4" />
+                      <span className="font-medium">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -204,17 +192,20 @@ export function AppSidebar({
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className={cn(
-                  "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  isActive("/configuracoes") && "bg-sidebar-accent text-sidebar-accent-foreground"
-                )}>
-                  <Link to="/configuracoes" className="flex items-center gap-3 px-3 py-2">
-                    <Settings className="h-4 w-4" />
-                    <span className="font-medium">Configurações</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {/* Settings items */}
+              {settingsItems.map(item => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild className={cn(
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    isActive(item.url) && "bg-sidebar-accent text-sidebar-accent-foreground"
+                  )}>
+                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
+                      <item.icon className="h-4 w-4" />
+                      <span className="font-medium">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
               <SidebarMenuItem>
                 <ThemeToggle />
               </SidebarMenuItem>
@@ -250,5 +241,6 @@ export function AppSidebar({
           {isLoggingOut ? "Saindo..." : "Sair"}
         </Button>
       </SidebarFooter>
-    </Sidebar>;
+    </Sidebar>
+  );
 }
