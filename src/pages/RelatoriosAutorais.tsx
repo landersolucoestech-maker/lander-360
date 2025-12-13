@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  FileText, Download, Users, Music, Disc, Filter, 
-  CheckCircle, XCircle, AlertTriangle
+  Download, Users, Music, Disc, Filter, 
+  CheckCircle, XCircle, AlertTriangle, Edit
 } from "lucide-react";
+import { MusicEditModal } from "@/components/modals/MusicEditModal";
+import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
 import { format } from "date-fns";
 import { translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
@@ -35,6 +37,22 @@ const RelatoriosAutorais = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("artista");
+
+  // Edit modals state
+  const [editMusicModalOpen, setEditMusicModalOpen] = useState(false);
+  const [editPhonogramModalOpen, setEditPhonogramModalOpen] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState<any>(null);
+  const [selectedPhonogram, setSelectedPhonogram] = useState<any>(null);
+
+  const handleEditMusic = (music: any) => {
+    setSelectedMusic(music);
+    setEditMusicModalOpen(true);
+  };
+
+  const handleEditPhonogram = (phono: any) => {
+    setSelectedPhonogram(phono);
+    setEditPhonogramModalOpen(true);
+  };
 
   // Get artist name helper
   const getArtistName = (artistId: string | null) => {
@@ -417,6 +435,7 @@ const RelatoriosAutorais = () => {
                               <th className="text-left p-3">Cód. ECAD</th>
                               <th className="text-left p-3">Cód. ABRAMUS</th>
                               <th className="text-left p-3">Status</th>
+                              <th className="text-center p-3">Ações</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -447,6 +466,11 @@ const RelatoriosAutorais = () => {
                                 </td>
                                 <td className="p-3">
                                   <Badge variant="outline">{translateStatus(music.status)}</Badge>
+                                </td>
+                                <td className="p-3 text-center">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditMusic(music)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
                                 </td>
                               </tr>
                             ))}
@@ -534,6 +558,7 @@ const RelatoriosAutorais = () => {
                               <th className="text-left p-3">Cód. ABRAMUS</th>
                               <th className="text-left p-3">Gravadora</th>
                               <th className="text-left p-3">Status</th>
+                              <th className="text-center p-3">Ações</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -566,6 +591,11 @@ const RelatoriosAutorais = () => {
                                 <td className="p-3">
                                   <Badge variant="outline">{translateStatus(phono.status)}</Badge>
                                 </td>
+                                <td className="p-3 text-center">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditPhonogram(phono)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -579,6 +609,18 @@ const RelatoriosAutorais = () => {
           </main>
         </SidebarInset>
       </div>
+
+      {/* Edit Modals */}
+      <MusicEditModal
+        open={editMusicModalOpen}
+        onOpenChange={setEditMusicModalOpen}
+        song={selectedMusic}
+      />
+      <PhonogramEditModal
+        open={editPhonogramModalOpen}
+        onOpenChange={setEditPhonogramModalOpen}
+        phonogram={selectedPhonogram}
+      />
     </SidebarProvider>
   );
 };
