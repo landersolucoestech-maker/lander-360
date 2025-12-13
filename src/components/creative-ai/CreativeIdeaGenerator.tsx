@@ -190,7 +190,7 @@ export const CreativeIdeaGenerator = () => {
                 <SelectValue placeholder="Selecione o artista" />
               </SelectTrigger>
               <SelectContent>
-                {artists?.map(artist => (
+                {artists?.filter(artist => artist.id).map(artist => (
                   <SelectItem key={artist.id} value={artist.id}>
                     {artist.stage_name || artist.name}
                   </SelectItem>
@@ -210,7 +210,7 @@ export const CreativeIdeaGenerator = () => {
                 <SelectValue placeholder="Selecione a obra (opcional)" />
               </SelectTrigger>
               <SelectContent>
-                {musics?.map(music => (
+                {musics?.filter(music => music.id).map(music => (
                   <SelectItem key={music.id} value={music.id}>
                     {music.title}
                   </SelectItem>
