@@ -93,6 +93,59 @@ async function getTopTracks(token: string, spotifyArtistId: string, market = 'BR
   return data.tracks || [];
 }
 
+// Scrape monthly listeners from Spotify page
+async function getMonthlyListeners(spotifyArtistId: string): Promise<number> {
+  try {
+    const url = `https://open.spotify.com/artist/${spotifyArtistId}`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+      },
+    });
+
+    if (!response.ok) {
+      console.log('Failed to fetch Spotify page for monthly listeners');
+      return 0;
+    }
+
+    const html = await response.text();
+    
+    // Try to find monthly listeners in the HTML
+    // Pattern 1: Look for "X monthly listeners" text
+    const listenersMatch = html.match(/(\d[\d,\.]*)\s*(?:monthly listeners|ouvintes mensais)/i);
+    if (listenersMatch) {
+      const cleanNumber = listenersMatch[1].replace(/[,\.]/g, '');
+      const parsed = parseInt(cleanNumber, 10);
+      console.log('Extracted monthly listeners:', parsed);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    // Pattern 2: Look in meta tags or JSON-LD
+    const metaMatch = html.match(/"monthlyListeners"\s*:\s*"?(\d+)"?/i);
+    if (metaMatch) {
+      const parsed = parseInt(metaMatch[1], 10);
+      console.log('Extracted monthly listeners from meta:', parsed);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    // Pattern 3: Look for listeners count in script data
+    const scriptMatch = html.match(/listeners['"]\s*:\s*['"]?(\d+)['"]?/i);
+    if (scriptMatch) {
+      const parsed = parseInt(scriptMatch[1], 10);
+      console.log('Extracted monthly listeners from script:', parsed);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    console.log('Could not extract monthly listeners from page');
+    return 0;
+  } catch (error) {
+    console.error('Error scraping monthly listeners:', error);
+    return 0;
+  }
+}
+
 // Extract Spotify artist ID from URL
 function extractSpotifyId(spotifyUrl: string): string | null {
   if (!spotifyUrl) return null;
@@ -144,13 +197,24 @@ serve(async (req) => {
     const topTracks = await getTopTracks(token, spotifyId);
     console.log('Got top tracks:', topTracks.length);
 
+    // Fetch monthly listeners via scraping
+    const monthlyListeners = await getMonthlyListeners(spotifyId);
+    console.log('Got monthly listeners:', monthlyListeners);
+
+    // Calculate estimated total streams from top tracks popularity
+    const estimatedStreams = topTracks.reduce((sum, track) => {
+      // Rough estimation: popularity 100 = ~1B streams, scales logarithmically
+      const streamEstimate = Math.pow(10, (track.popularity / 20) + 4);
+      return sum + streamEstimate;
+    }, 0);
+
     const metricsData = {
       artist_id: artistId,
       spotify_artist_id: spotifyId,
       followers: artist.followers?.total || 0,
       popularity: artist.popularity || 0,
-      monthly_listeners: 0, // Not available via public API
-      total_streams: 0, // Not available via public API
+      monthly_listeners: monthlyListeners,
+      total_streams: Math.round(estimatedStreams),
       top_tracks: topTracks.slice(0, 10).map(track => ({
         id: track.id,
         name: track.name,
@@ -159,6 +223,7 @@ serve(async (req) => {
         spotify_url: track.external_urls?.spotify,
         album_name: track.album?.name,
         album_image: track.album?.images?.[0]?.url,
+        streams: Math.round(Math.pow(10, (track.popularity / 20) + 4)), // Estimated streams
       })),
       fetched_at: new Date().toISOString(),
     };

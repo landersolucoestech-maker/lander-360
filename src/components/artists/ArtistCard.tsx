@@ -62,12 +62,26 @@ export function ArtistCard({
   const fetchSpotifyMetrics = useFetchSpotifyMetrics();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Auto-fetch Spotify metrics if not yet fetched and has spotify URL
+  // Auto-fetch Spotify metrics on mount and every 60 seconds
   useEffect(() => {
-    if (spotifyUrl && !spotifyMetrics && !isLoadingMetrics && !isRefreshing) {
+    const isValidSpotifyUrl = spotifyUrl && spotifyUrl !== 'Não temos' && spotifyUrl !== 'Não tem' && spotifyUrl.includes('spotify');
+    
+    if (!isValidSpotifyUrl) return;
+
+    // Initial fetch if no metrics
+    if (!spotifyMetrics && !isLoadingMetrics && !isRefreshing) {
       handleRefreshSpotify();
     }
-  }, [spotifyUrl, spotifyMetrics, isLoadingMetrics]);
+
+    // Set up auto-refresh every 60 seconds
+    const intervalId = setInterval(() => {
+      if (!isRefreshing) {
+        handleRefreshSpotify();
+      }
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(intervalId);
+  }, [spotifyUrl, spotifyMetrics, isLoadingMetrics, isRefreshing]);
 
   const handleRefreshSpotify = async () => {
     if (!spotifyUrl || isRefreshing) return;
