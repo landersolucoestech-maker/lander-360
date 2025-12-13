@@ -4,19 +4,15 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  FileText, Download, Users, Music, Disc, Filter, Calendar, 
-  Building2, CheckCircle, XCircle, AlertTriangle, DollarSign,
-  TrendingUp, TrendingDown, Minus
+  FileText, Download, Users, Music, Disc, Filter, 
+  CheckCircle, XCircle, AlertTriangle
 } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn, formatDateBR, translateStatus } from "@/lib/utils";
+import { translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
 import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
@@ -39,8 +35,6 @@ const RelatoriosAutorais = () => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("artista");
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<any>(null);
 
   // Get artist name helper
   const getArtistName = (artistId: string | null) => {
@@ -103,28 +97,6 @@ const RelatoriosAutorais = () => {
     }));
   }, [filteredMusic, filteredPhonograms, artists]);
 
-  // ECAD/Associações report data
-  const ecadReport = useMemo(() => {
-    const worksWithCodes = filteredMusic.filter(m => m.ecad_code || m.abramus_code);
-    const worksWithoutCodes = filteredMusic.filter(m => !m.ecad_code && !m.abramus_code);
-    const phonogramsWithCodes = filteredPhonograms.filter(p => (p as any).ecad_code || (p as any).abramus_code || p.isrc);
-    const phonogramsWithoutCodes = filteredPhonograms.filter(p => !(p as any).ecad_code && !(p as any).abramus_code && !p.isrc);
-
-    return {
-      totalWorks: filteredMusic.length,
-      worksRegistered: worksWithCodes.length,
-      worksPending: worksWithoutCodes.length,
-      totalPhonograms: filteredPhonograms.length,
-      phonogramsRegistered: phonogramsWithCodes.length,
-      phonogramsPending: phonogramsWithoutCodes.length,
-      details: {
-        worksWithCodes,
-        worksWithoutCodes,
-        phonogramsWithCodes,
-        phonogramsWithoutCodes
-      }
-    };
-  }, [filteredMusic, filteredPhonograms]);
 
   const handleExportArtistReport = () => {
     const data = artistStats.map(stat => ({
@@ -147,10 +119,9 @@ const RelatoriosAutorais = () => {
       "Cód. ABRAMUS": music.abramus_code || "-",
       "Gênero": music.genre || "-",
       "Status": translateStatus(music.status),
-      "Royalties Conferidos": (music as any).royalties_verified ? "Sim" : "Não",
-      "Valor Esperado": (music as any).royalties_expected || 0,
-      "Valor Recebido": (music as any).royalties_received || 0,
-      "Divergência": ((music as any).royalties_expected || 0) - ((music as any).royalties_received || 0)
+      "ISWC Preenchido": music.iswc ? "Sim" : "Não",
+      "ECAD Preenchido": music.ecad_code ? "Sim" : "Não",
+      "ABRAMUS Preenchido": music.abramus_code ? "Sim" : "Não"
     }));
 
     exportToExcel(data, "relatorio_obras");
@@ -165,42 +136,14 @@ const RelatoriosAutorais = () => {
       "Cód. ABRAMUS": (phono as any).abramus_code || "-",
       "Gravadora": phono.label || "-",
       "Status": translateStatus(phono.status),
-      "Royalties Conferidos": (phono as any).royalties_verified ? "Sim" : "Não",
-      "Valor Esperado": (phono as any).royalties_expected || 0,
-      "Valor Recebido": (phono as any).royalties_received || 0,
-      "Divergência": ((phono as any).royalties_expected || 0) - ((phono as any).royalties_received || 0)
+      "ISRC Preenchido": phono.isrc ? "Sim" : "Não",
+      "ECAD Preenchido": (phono as any).ecad_code ? "Sim" : "Não",
+      "ABRAMUS Preenchido": (phono as any).abramus_code ? "Sim" : "Não"
     }));
 
     exportToExcel(data, "relatorio_fonogramas");
   };
 
-  const handleExportEcadReport = () => {
-    const worksData = filteredMusic.map(music => ({
-      "Tipo": "Obra",
-      "Título": music.title,
-      "Artista": getArtistName(music.artist_id),
-      "ISWC": music.iswc || "-",
-      "Cód. ECAD": music.ecad_code || "-",
-      "Cód. ABRAMUS": music.abramus_code || "-",
-      "Compositores": music.writers?.join(", ") || "-",
-      "Editoras": music.publishers?.join(", ") || "-",
-      "Status Registro": (music.ecad_code || music.abramus_code) ? "Registrado" : "Pendente"
-    }));
-
-    const phonogramData = filteredPhonograms.map(phono => ({
-      "Tipo": "Fonograma",
-      "Título": phono.title,
-      "Artista": getArtistName(phono.artist_id),
-      "ISRC": phono.isrc || "-",
-      "Cód. ECAD": (phono as any).ecad_code || "-",
-      "Cód. ABRAMUS": (phono as any).abramus_code || "-",
-      "Gravadora": phono.label || "-",
-      "Proprietário Master": phono.master_owner || "-",
-      "Status Registro": ((phono as any).ecad_code || (phono as any).abramus_code || phono.isrc) ? "Registrado" : "Pendente"
-    }));
-
-    exportToExcel([...worksData, ...phonogramData], "relatorio_ecad_associacoes");
-  };
 
   const exportToExcel = (data: any[], filename: string) => {
     if (data.length === 0) {
@@ -335,7 +278,7 @@ const RelatoriosAutorais = () => {
 
             {/* Report Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full lg:w-auto">
+              <TabsList className="grid grid-cols-3 w-full lg:w-auto">
                 <TabsTrigger value="artista" className="gap-2">
                   <Users className="h-4 w-4" />
                   Por Artista
@@ -347,10 +290,6 @@ const RelatoriosAutorais = () => {
                 <TabsTrigger value="fonogramas" className="gap-2">
                   <Disc className="h-4 w-4" />
                   Fonogramas
-                </TabsTrigger>
-                <TabsTrigger value="ecad" className="gap-2">
-                  <Building2 className="h-4 w-4" />
-                  ECAD/Associações
                 </TabsTrigger>
               </TabsList>
 
@@ -413,6 +352,54 @@ const RelatoriosAutorais = () => {
                   </Button>
                 </div>
 
+                {/* KPIs de Pendências */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Obras</p>
+                          <p className="text-2xl font-bold">{filteredMusic.length}</p>
+                        </div>
+                        <Music className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Com ISWC</p>
+                          <p className="text-2xl font-bold text-green-600">{filteredMusic.filter(m => m.iswc).length}</p>
+                        </div>
+                        <CheckCircle className="h-8 w-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Sem ISWC</p>
+                          <p className="text-2xl font-bold text-yellow-600">{filteredMusic.filter(m => !m.iswc).length}</p>
+                        </div>
+                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Sem ECAD/ABRAMUS</p>
+                          <p className="text-2xl font-bold text-red-600">{filteredMusic.filter(m => !m.ecad_code && !m.abramus_code).length}</p>
+                        </div>
+                        <XCircle className="h-8 w-8 text-red-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 {isLoading ? (
                   <div className="text-center py-12 text-muted-foreground">Carregando...</div>
                 ) : filteredMusic.length === 0 ? (
@@ -428,46 +415,41 @@ const RelatoriosAutorais = () => {
                               <th className="text-left p-3">Artista</th>
                               <th className="text-left p-3">ISWC</th>
                               <th className="text-left p-3">Cód. ECAD</th>
+                              <th className="text-left p-3">Cód. ABRAMUS</th>
                               <th className="text-left p-3">Status</th>
-                              <th className="text-left p-3">Conferido</th>
-                              <th className="text-right p-3">Esperado</th>
-                              <th className="text-right p-3">Recebido</th>
-                              <th className="text-right p-3">Divergência</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredMusic.map(music => {
-                              const divergence = ((music as any).royalties_expected || 0) - ((music as any).royalties_received || 0);
-                              return (
-                                <tr key={music.id} className="border-t border-border hover:bg-muted/30">
-                                  <td className="p-3 font-medium">{music.title}</td>
-                                  <td className="p-3">{getArtistName(music.artist_id)}</td>
-                                  <td className="p-3">{music.iswc || "-"}</td>
-                                  <td className="p-3">{music.ecad_code || "-"}</td>
-                                  <td className="p-3">
-                                    <Badge variant="outline">{translateStatus(music.status)}</Badge>
-                                  </td>
-                                  <td className="p-3">
-                                    {(music as any).royalties_verified ? (
-                                      <CheckCircle className="h-4 w-4 text-green-600" />
-                                    ) : (
-                                      <XCircle className="h-4 w-4 text-muted-foreground" />
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-right">R$ {((music as any).royalties_expected || 0).toFixed(2)}</td>
-                                  <td className="p-3 text-right">R$ {((music as any).royalties_received || 0).toFixed(2)}</td>
-                                  <td className={cn(
-                                    "p-3 text-right font-medium",
-                                    divergence > 0 ? "text-red-600" : divergence < 0 ? "text-green-600" : ""
-                                  )}>
-                                    {divergence > 0 && <TrendingDown className="inline h-4 w-4 mr-1" />}
-                                    {divergence < 0 && <TrendingUp className="inline h-4 w-4 mr-1" />}
-                                    {divergence === 0 && <Minus className="inline h-4 w-4 mr-1" />}
-                                    R$ {Math.abs(divergence).toFixed(2)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                            {filteredMusic.map(music => (
+                              <tr key={music.id} className="border-t border-border hover:bg-muted/30">
+                                <td className="p-3 font-medium">{music.title}</td>
+                                <td className="p-3">{getArtistName(music.artist_id)}</td>
+                                <td className="p-3">
+                                  {music.iswc ? (
+                                    <span className="text-green-600">{music.iswc}</span>
+                                  ) : (
+                                    <span className="text-yellow-600">Não preenchido</span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {music.ecad_code ? (
+                                    <span className="text-green-600">{music.ecad_code}</span>
+                                  ) : (
+                                    <span className="text-yellow-600">Não preenchido</span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {music.abramus_code ? (
+                                    <span className="text-green-600">{music.abramus_code}</span>
+                                  ) : (
+                                    <span className="text-yellow-600">Não preenchido</span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <Badge variant="outline">{translateStatus(music.status)}</Badge>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                       </div>
@@ -486,6 +468,54 @@ const RelatoriosAutorais = () => {
                   </Button>
                 </div>
 
+                {/* KPIs de Pendências */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Fonogramas</p>
+                          <p className="text-2xl font-bold">{filteredPhonograms.length}</p>
+                        </div>
+                        <Disc className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Com ISRC</p>
+                          <p className="text-2xl font-bold text-green-600">{filteredPhonograms.filter(p => p.isrc).length}</p>
+                        </div>
+                        <CheckCircle className="h-8 w-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Sem ISRC</p>
+                          <p className="text-2xl font-bold text-yellow-600">{filteredPhonograms.filter(p => !p.isrc).length}</p>
+                        </div>
+                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Sem ECAD/ABRAMUS</p>
+                          <p className="text-2xl font-bold text-red-600">{filteredPhonograms.filter(p => !(p as any).ecad_code && !(p as any).abramus_code).length}</p>
+                        </div>
+                        <XCircle className="h-8 w-8 text-red-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 {isLoading ? (
                   <div className="text-center py-12 text-muted-foreground">Carregando...</div>
                 ) : filteredPhonograms.length === 0 ? (
@@ -500,155 +530,46 @@ const RelatoriosAutorais = () => {
                               <th className="text-left p-3">Título</th>
                               <th className="text-left p-3">Artista</th>
                               <th className="text-left p-3">ISRC</th>
+                              <th className="text-left p-3">Cód. ECAD</th>
+                              <th className="text-left p-3">Cód. ABRAMUS</th>
                               <th className="text-left p-3">Gravadora</th>
                               <th className="text-left p-3">Status</th>
-                              <th className="text-left p-3">Conferido</th>
-                              <th className="text-right p-3">Esperado</th>
-                              <th className="text-right p-3">Recebido</th>
-                              <th className="text-right p-3">Divergência</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredPhonograms.map(phono => {
-                              const divergence = ((phono as any).royalties_expected || 0) - ((phono as any).royalties_received || 0);
-                              return (
-                                <tr key={phono.id} className="border-t border-border hover:bg-muted/30">
-                                  <td className="p-3 font-medium">{phono.title}</td>
-                                  <td className="p-3">{getArtistName(phono.artist_id)}</td>
-                                  <td className="p-3">{phono.isrc || "-"}</td>
-                                  <td className="p-3">{phono.label || "-"}</td>
-                                  <td className="p-3">
-                                    <Badge variant="outline">{translateStatus(phono.status)}</Badge>
-                                  </td>
-                                  <td className="p-3">
-                                    {(phono as any).royalties_verified ? (
-                                      <CheckCircle className="h-4 w-4 text-green-600" />
-                                    ) : (
-                                      <XCircle className="h-4 w-4 text-muted-foreground" />
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-right">R$ {((phono as any).royalties_expected || 0).toFixed(2)}</td>
-                                  <td className="p-3 text-right">R$ {((phono as any).royalties_received || 0).toFixed(2)}</td>
-                                  <td className={cn(
-                                    "p-3 text-right font-medium",
-                                    divergence > 0 ? "text-red-600" : divergence < 0 ? "text-green-600" : ""
-                                  )}>
-                                    {divergence > 0 && <TrendingDown className="inline h-4 w-4 mr-1" />}
-                                    {divergence < 0 && <TrendingUp className="inline h-4 w-4 mr-1" />}
-                                    {divergence === 0 && <Minus className="inline h-4 w-4 mr-1" />}
-                                    R$ {Math.abs(divergence).toFixed(2)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                            {filteredPhonograms.map(phono => (
+                              <tr key={phono.id} className="border-t border-border hover:bg-muted/30">
+                                <td className="p-3 font-medium">{phono.title}</td>
+                                <td className="p-3">{getArtistName(phono.artist_id)}</td>
+                                <td className="p-3">
+                                  {phono.isrc ? (
+                                    <span className="text-green-600">{phono.isrc}</span>
+                                  ) : (
+                                    <span className="text-yellow-600">Não preenchido</span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {(phono as any).ecad_code ? (
+                                    <span className="text-green-600">{(phono as any).ecad_code}</span>
+                                  ) : (
+                                    <span className="text-yellow-600">Não preenchido</span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {(phono as any).abramus_code ? (
+                                    <span className="text-green-600">{(phono as any).abramus_code}</span>
+                                  ) : (
+                                    <span className="text-yellow-600">Não preenchido</span>
+                                  )}
+                                </td>
+                                <td className="p-3">{phono.label || "-"}</td>
+                                <td className="p-3">
+                                  <Badge variant="outline">{translateStatus(phono.status)}</Badge>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* ECAD/Associações Tab */}
-              <TabsContent value="ecad" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Relatório ECAD/Associações</h2>
-                  <Button onClick={handleExportEcadReport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
-                </div>
-
-                {/* Summary Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Obras Registradas</p>
-                          <p className="text-2xl font-bold text-green-600">{ecadReport.worksRegistered}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Obras Pendentes</p>
-                          <p className="text-2xl font-bold text-yellow-600">{ecadReport.worksPending}</p>
-                        </div>
-                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Fonogramas Registrados</p>
-                          <p className="text-2xl font-bold text-green-600">{ecadReport.phonogramsRegistered}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Fonogramas Pendentes</p>
-                          <p className="text-2xl font-bold text-yellow-600">{ecadReport.phonogramsPending}</p>
-                        </div>
-                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Pending Items List */}
-                {(ecadReport.worksPending > 0 || ecadReport.phonogramsPending > 0) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                        Itens Pendentes de Registro
-                      </CardTitle>
-                      <CardDescription>
-                        Obras e fonogramas sem código ECAD/ABRAMUS
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {ecadReport.details.worksWithoutCodes.slice(0, 10).map(music => (
-                          <div key={music.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <Music className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{music.title}</p>
-                                <p className="text-sm text-muted-foreground">{getArtistName(music.artist_id)} • Obra</p>
-                              </div>
-                            </div>
-                            <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                              Sem Código
-                            </Badge>
-                          </div>
-                        ))}
-                        {ecadReport.details.phonogramsWithoutCodes.slice(0, 10).map(phono => (
-                          <div key={phono.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <Disc className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{phono.title}</p>
-                                <p className="text-sm text-muted-foreground">{getArtistName(phono.artist_id)} • Fonograma</p>
-                              </div>
-                            </div>
-                            <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                              Sem ISRC/Código
-                            </Badge>
-                          </div>
-                        ))}
                       </div>
                     </CardContent>
                   </Card>
