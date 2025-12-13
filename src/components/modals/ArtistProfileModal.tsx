@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud } from "react-icons/fa";
 import { formatDateBR } from "@/lib/utils";
+import { SpotifyMetricsCard } from "@/components/artists/SpotifyMetricsCard";
 
 interface ArtistProfileModalProps {
   open: boolean;
@@ -275,6 +276,17 @@ export function ArtistProfileModal({
           </div>
 
           <Separator />
+
+          {/* Métricas do Spotify */}
+          {(artist.spotify_url || artist.spotify_id) && (
+            <>
+              <SpotifyMetricsCard 
+                artistId={artist.id} 
+                spotifyUrl={artist.spotify_url || artist.spotify_id}
+              />
+              <Separator />
+            </>
+          )}
 
           {/* Redes Sociais */}
           <div>

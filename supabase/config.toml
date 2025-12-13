@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.google-calendar-sync]
 verify_jwt = true
+
+[functions.spotify-metrics]
+verify_jwt = true

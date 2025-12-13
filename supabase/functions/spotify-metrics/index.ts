@@ -1,0 +1,211 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.86.2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const SPOTIFY_CLIENT_ID = Deno.env.get('SPOTIFY_CLIENT_ID');
+const SPOTIFY_CLIENT_SECRET = Deno.env.get('SPOTIFY_CLIENT_SECRET');
+
+interface SpotifyTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+}
+
+interface SpotifyArtist {
+  id: string;
+  name: string;
+  followers: { total: number };
+  popularity: number;
+  images: { url: string }[];
+}
+
+interface SpotifyTrack {
+  id: string;
+  name: string;
+  popularity: number;
+  preview_url: string | null;
+  external_urls: { spotify: string };
+  album: {
+    name: string;
+    images: { url: string }[];
+  };
+}
+
+// Get Spotify access token using Client Credentials flow
+async function getSpotifyToken(): Promise<string> {
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`),
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Failed to get Spotify token:', error);
+    throw new Error('Failed to authenticate with Spotify');
+  }
+
+  const data: SpotifyTokenResponse = await response.json();
+  return data.access_token;
+}
+
+// Get artist data from Spotify
+async function getSpotifyArtist(token: string, spotifyArtistId: string): Promise<SpotifyArtist> {
+  const response = await fetch(`https://api.spotify.com/v1/artists/${spotifyArtistId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Failed to get artist:', error);
+    throw new Error(`Failed to get artist: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// Get artist's top tracks
+async function getTopTracks(token: string, spotifyArtistId: string, market = 'BR'): Promise<SpotifyTrack[]> {
+  const response = await fetch(
+    `https://api.spotify.com/v1/artists/${spotifyArtistId}/top-tracks?market=${market}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    console.error('Failed to get top tracks');
+    return [];
+  }
+
+  const data = await response.json();
+  return data.tracks || [];
+}
+
+// Extract Spotify artist ID from URL
+function extractSpotifyId(spotifyUrl: string): string | null {
+  if (!spotifyUrl) return null;
+  
+  // Handle direct ID
+  if (!spotifyUrl.includes('/') && !spotifyUrl.includes('?')) {
+    return spotifyUrl;
+  }
+  
+  // Handle URLs like https://open.spotify.com/artist/1234567890
+  const match = spotifyUrl.match(/artist\/([a-zA-Z0-9]+)/);
+  return match ? match[1] : null;
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { artistId, spotifyArtistId, spotifyUrl, action } = await req.json();
+
+    console.log('Request received:', { artistId, spotifyArtistId, spotifyUrl, action });
+
+    // Extract spotify ID from URL if provided
+    let spotifyId = spotifyArtistId || extractSpotifyId(spotifyUrl || '');
+
+    if (!spotifyId) {
+      return new Response(
+        JSON.stringify({ error: 'Spotify artist ID or URL is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get Spotify access token
+    const token = await getSpotifyToken();
+    console.log('Got Spotify token');
+
+    // Fetch artist data
+    const artist = await getSpotifyArtist(token, spotifyId);
+    console.log('Got artist data:', artist.name);
+
+    // Fetch top tracks
+    const topTracks = await getTopTracks(token, spotifyId);
+    console.log('Got top tracks:', topTracks.length);
+
+    const metricsData = {
+      artist_id: artistId,
+      spotify_artist_id: spotifyId,
+      followers: artist.followers?.total || 0,
+      popularity: artist.popularity || 0,
+      monthly_listeners: 0, // Not available via public API
+      total_streams: 0, // Not available via public API
+      top_tracks: topTracks.slice(0, 10).map(track => ({
+        id: track.id,
+        name: track.name,
+        popularity: track.popularity,
+        preview_url: track.preview_url,
+        spotify_url: track.external_urls?.spotify,
+        album_name: track.album?.name,
+        album_image: track.album?.images?.[0]?.url,
+      })),
+      fetched_at: new Date().toISOString(),
+    };
+
+    // Save metrics to database if artistId provided
+    if (artistId) {
+      const { error: insertError } = await supabase
+        .from('spotify_metrics')
+        .insert(metricsData);
+
+      if (insertError) {
+        console.error('Error saving metrics:', insertError);
+        // Continue anyway, we'll return the data
+      } else {
+        console.log('Metrics saved successfully');
+      }
+
+      // Also update the artist's spotify_id if not set
+      const { error: updateError } = await supabase
+        .from('artists')
+        .update({ spotify_id: spotifyId })
+        .eq('id', artistId)
+        .is('spotify_id', null);
+
+      if (updateError) {
+        console.error('Error updating artist spotify_id:', updateError);
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: {
+          ...metricsData,
+          artist_name: artist.name,
+          artist_image: artist.images?.[0]?.url,
+        },
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Error in spotify-metrics function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

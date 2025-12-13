@@ -1754,6 +1754,53 @@ export type Database = {
           },
         ]
       }
+      spotify_metrics: {
+        Row: {
+          artist_id: string
+          created_at: string
+          fetched_at: string
+          followers: number | null
+          id: string
+          monthly_listeners: number | null
+          popularity: number | null
+          spotify_artist_id: string
+          top_tracks: Json | null
+          total_streams: number | null
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          fetched_at?: string
+          followers?: number | null
+          id?: string
+          monthly_listeners?: number | null
+          popularity?: number | null
+          spotify_artist_id: string
+          top_tracks?: Json | null
+          total_streams?: number | null
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          fetched_at?: string
+          followers?: number | null
+          id?: string
+          monthly_listeners?: number | null
+          popularity?: number | null
+          spotify_artist_id?: string
+          top_tracks?: Json | null
+          total_streams?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spotify_metrics_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
