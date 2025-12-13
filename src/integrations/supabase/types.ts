@@ -1164,6 +1164,12 @@ export type Database = {
           project_id: string | null
           publishers: string[] | null
           release_date: string | null
+          royalties_expected: number | null
+          royalties_notes: string | null
+          royalties_received: number | null
+          royalties_share_applied: boolean | null
+          royalties_verified: boolean | null
+          royalties_verified_at: string | null
           status: string | null
           title: string
           updated_at: string
@@ -1186,6 +1192,12 @@ export type Database = {
           project_id?: string | null
           publishers?: string[] | null
           release_date?: string | null
+          royalties_expected?: number | null
+          royalties_notes?: string | null
+          royalties_received?: number | null
+          royalties_share_applied?: boolean | null
+          royalties_verified?: boolean | null
+          royalties_verified_at?: string | null
           status?: string | null
           title: string
           updated_at?: string
@@ -1208,6 +1220,12 @@ export type Database = {
           project_id?: string | null
           publishers?: string[] | null
           release_date?: string | null
+          royalties_expected?: number | null
+          royalties_notes?: string | null
+          royalties_received?: number | null
+          royalties_share_applied?: boolean | null
+          royalties_verified?: boolean | null
+          royalties_verified_at?: string | null
           status?: string | null
           title?: string
           updated_at?: string
@@ -1265,11 +1283,13 @@ export type Database = {
       }
       phonograms: {
         Row: {
+          abramus_code: string | null
           artist_id: string | null
           audio_url: string | null
           created_at: string
           created_by: string | null
           duration: number | null
+          ecad_code: string | null
           genre: string | null
           id: string
           is_remix: boolean | null
@@ -1282,6 +1302,12 @@ export type Database = {
           recording_location: string | null
           recording_studio: string | null
           remix_artist: string | null
+          royalties_expected: number | null
+          royalties_notes: string | null
+          royalties_received: number | null
+          royalties_share_applied: boolean | null
+          royalties_verified: boolean | null
+          royalties_verified_at: string | null
           status: string | null
           title: string
           updated_at: string
@@ -1289,11 +1315,13 @@ export type Database = {
           work_id: string | null
         }
         Insert: {
+          abramus_code?: string | null
           artist_id?: string | null
           audio_url?: string | null
           created_at?: string
           created_by?: string | null
           duration?: number | null
+          ecad_code?: string | null
           genre?: string | null
           id?: string
           is_remix?: boolean | null
@@ -1306,6 +1334,12 @@ export type Database = {
           recording_location?: string | null
           recording_studio?: string | null
           remix_artist?: string | null
+          royalties_expected?: number | null
+          royalties_notes?: string | null
+          royalties_received?: number | null
+          royalties_share_applied?: boolean | null
+          royalties_verified?: boolean | null
+          royalties_verified_at?: string | null
           status?: string | null
           title: string
           updated_at?: string
@@ -1313,11 +1347,13 @@ export type Database = {
           work_id?: string | null
         }
         Update: {
+          abramus_code?: string | null
           artist_id?: string | null
           audio_url?: string | null
           created_at?: string
           created_by?: string | null
           duration?: number | null
+          ecad_code?: string | null
           genre?: string | null
           id?: string
           is_remix?: boolean | null
@@ -1330,6 +1366,12 @@ export type Database = {
           recording_location?: string | null
           recording_studio?: string | null
           remix_artist?: string | null
+          royalties_expected?: number | null
+          royalties_notes?: string | null
+          royalties_received?: number | null
+          royalties_share_applied?: boolean | null
+          royalties_verified?: boolean | null
+          royalties_verified_at?: string | null
           status?: string | null
           title?: string
           updated_at?: string
