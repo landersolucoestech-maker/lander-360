@@ -14,6 +14,7 @@ import {
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
 import { ProjectModal } from "@/components/modals/ProjectModal";
+import { ArtistModal } from "@/components/modals/ArtistModal";
 import { format } from "date-fns";
 import { translateStatus, formatDateBR } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
@@ -45,9 +46,11 @@ const RelatoriosAutorais = () => {
   const [editMusicModalOpen, setEditMusicModalOpen] = useState(false);
   const [editPhonogramModalOpen, setEditPhonogramModalOpen] = useState(false);
   const [editProjectModalOpen, setEditProjectModalOpen] = useState(false);
+  const [editArtistModalOpen, setEditArtistModalOpen] = useState(false);
   const [selectedMusic, setSelectedMusic] = useState<any>(null);
   const [selectedPhonogram, setSelectedPhonogram] = useState<any>(null);
   const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<any>(null);
+  const [selectedArtistForEdit, setSelectedArtistForEdit] = useState<any>(null);
 
   const handleEditMusic = (music: any) => {
     setSelectedMusic(music);
@@ -62,6 +65,14 @@ const RelatoriosAutorais = () => {
   const handleEditProject = (project: any) => {
     setSelectedProjectForEdit(project);
     setEditProjectModalOpen(true);
+  };
+
+  const handleEditArtist = (artistId: string) => {
+    const artist = artists.find(a => a.id === artistId);
+    if (artist) {
+      setSelectedArtistForEdit(artist);
+      setEditArtistModalOpen(true);
+    }
   };
 
   // Get artist name helper
@@ -441,7 +452,7 @@ const RelatoriosAutorais = () => {
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex gap-4 flex-wrap">
+                              <div className="flex items-center gap-4 flex-wrap">
                                 <div className="text-center">
                                   <div className="text-2xl font-bold text-green-600">{stat.verified}</div>
                                   <div className="text-xs text-muted-foreground">Conferidos</div>
@@ -450,6 +461,15 @@ const RelatoriosAutorais = () => {
                                   <div className="text-2xl font-bold text-yellow-600">{stat.pending}</div>
                                   <div className="text-xs text-muted-foreground">Pendentes</div>
                                 </div>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => handleEditArtist(stat.artistId)}
+                                  className="gap-1"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  Editar
+                                </Button>
                               </div>
                             </div>
                             
@@ -941,6 +961,12 @@ const RelatoriosAutorais = () => {
         open={editProjectModalOpen}
         onOpenChange={setEditProjectModalOpen}
         project={selectedProjectForEdit}
+        mode="edit"
+      />
+      <ArtistModal
+        open={editArtistModalOpen}
+        onOpenChange={setEditArtistModalOpen}
+        artist={selectedArtistForEdit}
         mode="edit"
       />
     </SidebarProvider>
