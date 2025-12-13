@@ -17,6 +17,14 @@ interface FeaturedArtist {
   releaseCount: number;
   recentActivity: number;
   relevanceScore: number;
+  stats?: {
+    projetos: number;
+    obras: number;
+    fonogramas: number;
+    lancamentos: number;
+    streams: string;
+  };
+  [key: string]: any;
 }
 
 export function FeaturedArtists() {
@@ -34,30 +42,41 @@ export function FeaturedArtists() {
       if (artistsError) throw artistsError;
       if (!artistsData || artistsData.length === 0) return [];
 
-      const { data: releases } = await supabase
-        .from('releases')
-        .select('artist_id')
-        .not('artist_id', 'is', null);
+      // Fetch all related data for statistics
+      const [releasesRes, eventsRes, projectsRes, musicRegistryRes, phonogramsRes] = await Promise.all([
+        supabase.from('releases').select('artist_id').not('artist_id', 'is', null),
+        supabase.from('agenda_events').select('artist_id').gte('start_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()).not('artist_id', 'is', null),
+        supabase.from('projects').select('artist_id').not('artist_id', 'is', null),
+        supabase.from('music_registry').select('artist_id').not('artist_id', 'is', null),
+        supabase.from('phonograms').select('artist_id').not('artist_id', 'is', null)
+      ]);
 
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { data: events } = await supabase
-        .from('agenda_events')
-        .select('artist_id')
-        .gte('start_date', thirtyDaysAgo.toISOString())
-        .not('artist_id', 'is', null);
+      const releases = releasesRes.data || [];
+      const events = eventsRes.data || [];
+      const projects = projectsRes.data || [];
+      const musicRegistry = musicRegistryRes.data || [];
+      const phonograms = phonogramsRes.data || [];
 
       const artistsWithScores = artistsData.map(artist => {
-        const releaseCount = releases?.filter(r => r.artist_id === artist.id).length || 0;
-        const recentActivity = events?.filter(e => e.artist_id === artist.id).length || 0;
+        const releaseCount = releases.filter(r => r.artist_id === artist.id).length;
+        const recentActivity = events.filter(e => e.artist_id === artist.id).length;
+        const projectCount = projects.filter(p => p.artist_id === artist.id).length;
+        const obrasCount = musicRegistry.filter(m => m.artist_id === artist.id).length;
+        const fonogramasCount = phonograms.filter(f => f.artist_id === artist.id).length;
         const relevanceScore = (releaseCount * 40) + (recentActivity * 60);
 
         return {
           ...artist,
           releaseCount,
           recentActivity,
-          relevanceScore
+          relevanceScore,
+          stats: {
+            projetos: projectCount,
+            obras: obrasCount,
+            fonogramas: fonogramasCount,
+            lancamentos: releaseCount,
+            streams: '—'
+          }
         };
       });
 
@@ -67,7 +86,7 @@ export function FeaturedArtists() {
     }
   });
 
-  const handleViewProfile = (artist: any) => {
+  const handleViewProfile = (artist: FeaturedArtist) => {
     setSelectedArtist(artist);
     setIsModalOpen(true);
   };
