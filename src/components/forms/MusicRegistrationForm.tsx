@@ -105,6 +105,10 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const createMusicEntry = useCreateMusicRegistryEntry();
   const updateMusicEntry = useUpdateMusicRegistryEntry();
 
+  // Two-step form state - skip step 1 if editing
+  const [currentStep, setCurrentStep] = useState<1 | 2>(registration?.id ? 2 : 1);
+  const [registrationMode, setRegistrationMode] = useState<'existing' | 'new' | null>(registration?.id ? 'existing' : null);
+
   const [workDropdownOpen, setWorkDropdownOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<any>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -793,63 +797,133 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Buscar Obra Existente */}
-        <Card className="bg-card">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Buscar Obra Existente</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Popover open={workDropdownOpen} onOpenChange={setWorkDropdownOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={workDropdownOpen}
-                  className="w-full justify-between"
-                >
-                  {selectedWork ? selectedWork.title : "Selecione uma obra existente..."}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0 min-w-[var(--radix-popover-trigger-width)]" align="start">
-                <Command>
-                  <CommandInput placeholder="Buscar obra..." />
-                  <CommandList>
-                    <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
-                    <CommandGroup heading="Obras Disponíveis">
-                      {availableWorks.map((work) => (
-                        <CommandItem
-                          key={work.id}
-                          value={work.label}
-                          onSelect={() => handleSelectWork(work)}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedWork?.id === work.id ? "opacity-100" : "opacity-0"
+        {/* Step 1: Mode Selection */}
+        {currentStep === 1 && (
+          <Card className="bg-card">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">Etapa 1: Selecione o Tipo de Registro</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Option: Select from existing project */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <RadioGroup
+                    value={registrationMode || ''}
+                    onValueChange={(value) => setRegistrationMode(value as 'existing' | 'new')}
+                    className="flex flex-col gap-4"
+                  >
+                    <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setRegistrationMode('existing')}>
+                      <RadioGroupItem value="existing" id="existing" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="existing" className="text-base font-medium cursor-pointer">
+                          Buscar Obra Existente (Projeto Concluído)
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Selecione uma obra já cadastrada em um projeto concluído para preencher automaticamente os dados
+                        </p>
+                        {registrationMode === 'existing' && (
+                          <div className="mt-4">
+                            <Popover open={workDropdownOpen} onOpenChange={setWorkDropdownOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={workDropdownOpen}
+                                  className="w-full justify-between"
+                                >
+                                  {selectedWork ? selectedWork.title : "Selecione uma obra existente..."}
+                                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0 min-w-[var(--radix-popover-trigger-width)]" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Buscar obra..." />
+                                  <CommandList>
+                                    <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                                    <CommandGroup heading="Obras Disponíveis">
+                                      {availableWorks.map((work) => (
+                                        <CommandItem
+                                          key={work.id}
+                                          value={work.label}
+                                          onSelect={() => {
+                                            handleSelectWork(work);
+                                            setWorkDropdownOpen(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              selectedWork?.id === work.id ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          <div className="flex flex-col">
+                                            <span>{work.title}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                              {work.genre ? `${work.genre} • ` : ''}{work.project_name}
+                                            </span>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            {availableWorks.length === 0 && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Nenhuma obra cadastrada em projetos concluídos.
+                              </p>
                             )}
-                          />
-                          <div className="flex flex-col">
-                            <span>{work.title}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {work.genre ? `${work.genre} • ` : ''}{work.project_name}
-                            </span>
                           </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            
-            {availableWorks.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Nenhuma obra cadastrada em projetos. Preencha os campos abaixo para criar uma nova.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => setRegistrationMode('new')}>
+                      <RadioGroupItem value="new" id="new" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="new" className="text-base font-medium cursor-pointer">
+                          Criar Nova Obra
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Preencha manualmente todos os dados para registrar uma nova obra musical
+                        </p>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+
+              {/* Navigation buttons */}
+              <div className="flex justify-between pt-4 border-t">
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={() => setCurrentStep(2)}
+                  disabled={registrationMode === 'existing' && !selectedWork}
+                >
+                  Próxima Etapa
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Form Data */}
+        {currentStep === 2 && (
+          <>
+            {/* Step indicator */}
+            <div className="flex items-center justify-between mb-4">
+              <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)} className="gap-2">
+                <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
+                Voltar para Etapa 1
+              </Button>
+              <span className="text-sm text-muted-foreground">Etapa 2: Dados da Obra</span>
+            </div>
+
 
         {/* Dados Principais da Obra */}
         <Card className="bg-card">
@@ -1821,6 +1895,8 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             </div>
           </DialogContent>
         </Dialog>
+          </>
+        )}
       </form>
     </Form>
   );

@@ -105,6 +105,11 @@ export function PhonogramForm({
   const { data: crmContacts = [] } = useCrmContacts();
   const createPhonogram = useCreatePhonogram();
   const updatePhonogram = useUpdatePhonogram();
+  
+  // Two-step form state - skip step 1 if editing
+  const [currentStep, setCurrentStep] = useState<1 | 2>(phonogram?.id ? 2 : 1);
+  const [selectedWork, setSelectedWorkState] = useState<any>(phonogram?.work_id ? works.find(w => w.id === phonogram.work_id) : null);
+  
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
   const [workSearchTerm, setWorkSearchTerm] = useState('');
   // Abrir seções se houver participantes ao editar
@@ -784,31 +789,130 @@ export function PhonogramForm({
     });
   };
 
+  // Filtrar obras para etapa 1
+  const filteredWorksStep1 = works.filter((work: any) => {
+    const searchLower = workSearchTerm.toLowerCase();
+    return work.title?.toLowerCase().includes(searchLower) ||
+           work.abramus_code?.toLowerCase().includes(searchLower);
+  });
+
+  // Handle work selection in step 1
+  const handleStep1WorkSelect = (work: any) => {
+    setSelectedWorkState(work);
+    handleSelectWork(work);
+  };
+
   return <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
-        {/* Vincular Obra */}
-        <Card className="bg-card border-border">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-12 gap-4 items-end">
-              <div className="col-span-10">
-                <FormField control={form.control} name="work_title" render={({
-                field
-              }) => <FormItem>
-                      <FormLabel>Título da Obra</FormLabel>
-                      <FormControl>
-                        <Input placeholder="O título da obra será exibido aqui. Clique no botão para pesquisar." {...field} readOnly className="bg-muted/50" />
-                      </FormControl>
-                    </FormItem>} />
+        {/* Step 1: Work Selection */}
+        {currentStep === 1 && (
+          <Card className="bg-card">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">Etapa 1: Vincular Obra</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-sm text-muted-foreground">
+                Selecione uma obra musical registrada para vincular ao fonograma que será criado.
+              </p>
+              
+              {/* Search input */}
+              <div className="space-y-4">
+                <Input 
+                  placeholder="Buscar por título ou código ABRAMUS..." 
+                  value={workSearchTerm} 
+                  onChange={e => setWorkSearchTerm(e.target.value)} 
+                />
+                
+                {/* Works list */}
+                <ScrollArea className="h-[300px] border rounded-lg">
+                  <div className="p-2 space-y-2">
+                    {filteredWorksStep1.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        Nenhuma obra encontrada. Registre uma obra antes de criar um fonograma.
+                      </p>
+                    ) : (
+                      filteredWorksStep1.map((work: any) => (
+                        <div 
+                          key={work.id} 
+                          className={cn(
+                            "p-4 border rounded-lg cursor-pointer transition-colors",
+                            selectedWork?.id === work.id 
+                              ? "border-primary bg-primary/10" 
+                              : "hover:bg-accent/50"
+                          )}
+                          onClick={() => handleStep1WorkSelect(work)}
+                        >
+                          <div className="flex items-center gap-2">
+                            {selectedWork?.id === work.id && (
+                              <Check className="h-4 w-4 text-primary" />
+                            )}
+                            <div>
+                              <div className="font-medium">{work.title}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {work.abramus_code && `ABRAMUS: ${work.abramus_code}`}
+                                {work.genre && ` • ${work.genre}`}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
-              <div className="col-span-2">
-                <Button type="button" onClick={() => setWorkSearchOpen(true)} className="w-full gap-2">
-                  <Search className="h-4 w-4" />
-                  Pesquisar
+
+              {/* Navigation buttons */}
+              <div className="flex justify-between pt-4 border-t">
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={() => setCurrentStep(2)}
+                  disabled={!selectedWork}
+                >
+                  Próxima Etapa
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Form Data */}
+        {currentStep === 2 && (
+          <>
+            {/* Step indicator */}
+            <div className="flex items-center justify-between mb-4">
+              <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)} className="gap-2">
+                <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
+                Voltar para Etapa 1
+              </Button>
+              <span className="text-sm text-muted-foreground">Etapa 2: Dados do Fonograma</span>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Vincular Obra - now read-only summary */}
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-12 gap-4 items-end">
+                  <div className="col-span-10">
+                    <FormField control={form.control} name="work_title" render={({
+                    field
+                  }) => <FormItem>
+                          <FormLabel>Título da Obra Vinculada</FormLabel>
+                          <FormControl>
+                            <Input placeholder="O título da obra será exibido aqui." {...field} readOnly className="bg-muted/50" />
+                          </FormControl>
+                        </FormItem>} />
+                  </div>
+                  <div className="col-span-2">
+                    <Button type="button" onClick={() => setWorkSearchOpen(true)} variant="outline" className="w-full gap-2">
+                      <Search className="h-4 w-4" />
+                      Alterar
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
         {/* Dados do Fonograma */}
         <Card className="bg-card border-border">
@@ -1346,6 +1450,8 @@ export function PhonogramForm({
             </div>
           </DialogContent>
         </Dialog>
+          </>
+        )}
       </form>
     </Form>;
 }
