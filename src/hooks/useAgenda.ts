@@ -62,31 +62,69 @@ export const useEventsByArtist = (artistId: string) => {
 // Helper to send WhatsApp notification for new event
 const sendEventNotification = async (event: any, artistId: string) => {
   try {
-    // Fetch artist data
+    // Fetch artist data with manager info
     const { data: artist } = await supabase
       .from('artists')
-      .select('name, stage_name, phone, email')
+      .select('name, stage_name, phone, email, manager_name, manager_phone, manager_email, record_label_name')
       .eq('id', artistId)
       .single();
 
-    if (!artist?.phone && !artist?.email) {
-      console.log('Artist has no phone or email, skipping notification');
+    if (!artist) {
+      console.log('Artist not found, skipping notification');
       return;
     }
 
     const eventDate = format(new Date(event.start_date), "dd/MM/yyyy", { locale: ptBR });
     const eventTime = event.start_time || 'Horário a definir';
+    const artistName = artist.stage_name || artist.name;
 
-    await NotificationService.notifyArtistAboutEvent(
-      artist.phone || '',
-      artist.email || '',
-      event.title,
-      eventDate,
-      eventTime,
-      event.location
-    );
+    const notificationPromises: Promise<any>[] = [];
 
-    console.log('Notification sent to artist:', artist.stage_name || artist.name);
+    // 1. Notify Artist
+    if (artist.phone || artist.email) {
+      notificationPromises.push(
+        NotificationService.notifyArtistAboutEvent(
+          artist.phone || '',
+          artist.email || '',
+          event.title,
+          eventDate,
+          eventTime,
+          event.location
+        )
+      );
+      console.log('Notification queued for artist:', artistName);
+    }
+
+    // 2. Notify Manager/Empresário
+    if (artist.manager_phone || artist.manager_email) {
+      const managerMessage = `🎵 Lander 360º - Novo Evento\n\n` +
+        `Artista: ${artistName}\n` +
+        `Evento: ${event.title}\n` +
+        `Data: ${eventDate}\n` +
+        `Horário: ${eventTime}\n` +
+        (event.location ? `Local: ${event.location}\n` : '') +
+        `\nAcesse a plataforma para mais detalhes.`;
+
+      if (artist.manager_phone) {
+        notificationPromises.push(
+          NotificationService.sendWhatsApp(artist.manager_phone, managerMessage)
+        );
+        console.log('Notification queued for manager:', artist.manager_name);
+      }
+      if (artist.manager_email) {
+        notificationPromises.push(
+          NotificationService.sendEmail(
+            artist.manager_email,
+            `Novo Evento: ${event.title} - ${artistName}`,
+            managerMessage.replace(/\n/g, '<br>')
+          )
+        );
+      }
+    }
+
+    // Execute all notifications in parallel
+    await Promise.allSettled(notificationPromises);
+    console.log('All notifications sent for event:', event.title);
   } catch (error) {
     console.error('Error sending event notification:', error);
   }
