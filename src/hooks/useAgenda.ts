@@ -62,10 +62,10 @@ export const useEventsByArtist = (artistId: string) => {
 // Helper to send WhatsApp notification for new event
 const sendEventNotification = async (event: any, artistId: string) => {
   try {
-    // Fetch artist data with manager info
+    // Fetch artist data with manager and label info
     const { data: artist } = await supabase
       .from('artists')
-      .select('name, stage_name, phone, email, manager_name, manager_phone, manager_email, record_label_name')
+      .select('name, stage_name, phone, email, manager_name, manager_phone, manager_email, record_label_name, label_contact_name, label_contact_phone, label_contact_email')
       .eq('id', artistId)
       .single();
 
@@ -79,6 +79,14 @@ const sendEventNotification = async (event: any, artistId: string) => {
     const artistName = artist.stage_name || artist.name;
 
     const notificationPromises: Promise<any>[] = [];
+
+    const baseMessage = (recipientType: string) => `🎵 Lander 360º - Novo Evento\n\n` +
+      `Artista: ${artistName}\n` +
+      `Evento: ${event.title}\n` +
+      `Data: ${eventDate}\n` +
+      `Horário: ${eventTime}\n` +
+      (event.location ? `Local: ${event.location}\n` : '') +
+      `\nAcesse a plataforma para mais detalhes.`;
 
     // 1. Notify Artist
     if (artist.phone || artist.email) {
@@ -97,13 +105,7 @@ const sendEventNotification = async (event: any, artistId: string) => {
 
     // 2. Notify Manager/Empresário
     if (artist.manager_phone || artist.manager_email) {
-      const managerMessage = `🎵 Lander 360º - Novo Evento\n\n` +
-        `Artista: ${artistName}\n` +
-        `Evento: ${event.title}\n` +
-        `Data: ${eventDate}\n` +
-        `Horário: ${eventTime}\n` +
-        (event.location ? `Local: ${event.location}\n` : '') +
-        `\nAcesse a plataforma para mais detalhes.`;
+      const managerMessage = baseMessage('manager');
 
       if (artist.manager_phone) {
         notificationPromises.push(
@@ -117,6 +119,33 @@ const sendEventNotification = async (event: any, artistId: string) => {
             artist.manager_email,
             `Novo Evento: ${event.title} - ${artistName}`,
             managerMessage.replace(/\n/g, '<br>')
+          )
+        );
+      }
+    }
+
+    // 3. Notify Record Label/Gravadora
+    if (artist.label_contact_phone || artist.label_contact_email) {
+      const labelMessage = `🎵 Lander 360º - Novo Evento (${artist.record_label_name || 'Gravadora'})\n\n` +
+        `Artista: ${artistName}\n` +
+        `Evento: ${event.title}\n` +
+        `Data: ${eventDate}\n` +
+        `Horário: ${eventTime}\n` +
+        (event.location ? `Local: ${event.location}\n` : '') +
+        `\nAcesse a plataforma para mais detalhes.`;
+
+      if (artist.label_contact_phone) {
+        notificationPromises.push(
+          NotificationService.sendWhatsApp(artist.label_contact_phone, labelMessage)
+        );
+        console.log('Notification queued for label:', artist.record_label_name);
+      }
+      if (artist.label_contact_email) {
+        notificationPromises.push(
+          NotificationService.sendEmail(
+            artist.label_contact_email,
+            `Novo Evento: ${event.title} - ${artistName}`,
+            labelMessage.replace(/\n/g, '<br>')
           )
         );
       }

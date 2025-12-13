@@ -120,6 +120,9 @@ export type Database = {
           image_url: string | null
           instagram: string | null
           instagram_url: string | null
+          label_contact_email: string | null
+          label_contact_name: string | null
+          label_contact_phone: string | null
           legal_name: string | null
           manager_email: string | null
           manager_name: string | null
@@ -165,6 +168,9 @@ export type Database = {
           image_url?: string | null
           instagram?: string | null
           instagram_url?: string | null
+          label_contact_email?: string | null
+          label_contact_name?: string | null
+          label_contact_phone?: string | null
           legal_name?: string | null
           manager_email?: string | null
           manager_name?: string | null
@@ -210,6 +216,9 @@ export type Database = {
           image_url?: string | null
           instagram?: string | null
           instagram_url?: string | null
+          label_contact_email?: string | null
+          label_contact_name?: string | null
+          label_contact_phone?: string | null
           legal_name?: string | null
           manager_email?: string | null
           manager_name?: string | null

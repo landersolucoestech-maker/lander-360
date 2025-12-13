@@ -66,6 +66,9 @@ const artistSchema = z.object({
   // Tipo de Perfil e Dados do Responsável
   profile_type: z.string().min(1, 'Tipo de perfil é obrigatório'),
   record_label_name: z.string().optional(),
+  label_contact_name: z.string().optional(),
+  label_contact_phone: z.string().optional(),
+  label_contact_email: z.string().email('Email inválido').optional().or(z.literal('')),
   manager_name: z.string().optional(),
   manager_phone: z.string().optional(),
   manager_email: z.string().email('Email inválido').optional().or(z.literal('')),
@@ -135,6 +138,9 @@ export function ArtistForm({
       apple_music: (artist as any)?.apple_music_url || '',
       profile_type: artist?.profile_type || '',
       record_label_name: (artist as any)?.record_label_name || '',
+      label_contact_name: (artist as any)?.label_contact_name || '',
+      label_contact_phone: (artist as any)?.label_contact_phone || '',
+      label_contact_email: (artist as any)?.label_contact_email || '',
       manager_name: artist?.manager_name || '',
       manager_phone: artist?.manager_phone || '',
       manager_email: artist?.manager_email || '',
@@ -331,6 +337,9 @@ export function ArtistForm({
         apple_music_url: data.apple_music || null,
         profile_type: data.profile_type,
         record_label_name: data.record_label_name || null,
+        label_contact_name: data.label_contact_name || null,
+        label_contact_phone: data.label_contact_phone || null,
+        label_contact_email: data.label_contact_email || null,
         manager_name: data.manager_name || null,
         manager_phone: data.manager_phone || null,
         manager_email: data.manager_email || null,
@@ -935,6 +944,41 @@ export function ArtistForm({
                         </Popover>
                         <FormMessage />
                       </FormItem>} />
+              )}
+
+              {/* Campos de Contato da Gravadora */}
+              {showRecordLabelFields && (
+                <>
+                  <FormField control={form.control} name="label_contact_name" render={({
+                    field
+                  }) => <FormItem>
+                          <FormLabel>Nome do Contato na Gravadora</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome do contato responsável" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>} />
+
+                  <FormField control={form.control} name="label_contact_phone" render={({
+                    field
+                  }) => <FormItem>
+                          <FormLabel>Telefone da Gravadora</FormLabel>
+                          <FormControl>
+                            <Input placeholder="(11) 99999-9999" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>} />
+
+                  <FormField control={form.control} name="label_contact_email" render={({
+                    field
+                  }) => <FormItem>
+                          <FormLabel>E-mail da Gravadora</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="contato@gravadora.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>} />
+                </>
               )}
 
               {showManagerFields && <>
