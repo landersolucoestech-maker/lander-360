@@ -736,7 +736,7 @@ const GestaoShares = () => {
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar Royalties</DialogTitle>
+            <DialogTitle>Editar Share</DialogTitle>
             <DialogDescription>
               {selectedRelease?.title}
             </DialogDescription>
@@ -744,7 +744,7 @@ const GestaoShares = () => {
 
           <div className="space-y-6">
             <div className="flex items-center justify-between p-3 border rounded-lg">
-              <Label>Royalties Conferidos</Label>
+              <Label>Share Enviado</Label>
               <Switch checked={royaltiesVerified} onCheckedChange={setRoyaltiesVerified} />
             </div>
 
