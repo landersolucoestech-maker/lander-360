@@ -1,9 +1,9 @@
-import { BarChart3, Eye, Music } from 'lucide-react';
 import { useReleaseMetrics } from '@/hooks/useReleaseMetrics';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ReleaseMetricsBadgeProps {
   releaseId: string;
+  variant?: 'inline' | 'grid';
 }
 
 function formatNumber(num: number): string {
@@ -16,35 +16,79 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
-export function ReleaseMetricsBadge({ releaseId }: ReleaseMetricsBadgeProps) {
+export function ReleaseMetricsBadge({ releaseId, variant = 'inline' }: ReleaseMetricsBadgeProps) {
   const { data: metrics, isLoading } = useReleaseMetrics(releaseId);
 
   if (isLoading) {
+    return variant === 'grid' ? (
+      <div className="grid grid-cols-3 gap-2 mt-2">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    ) : (
+      <Skeleton className="h-4 w-16" />
+    );
+  }
+
+  const spotify = metrics?.byPlatform?.spotify;
+  const youtube = metrics?.byPlatform?.youtube;
+  const deezer = metrics?.byPlatform?.deezer;
+
+  const hasAnyMetrics = spotify || youtube || deezer;
+
+  if (!hasAnyMetrics) {
+    if (variant === 'grid') {
+      return (
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          <div className="bg-black/40 rounded-lg p-2 text-center">
+            <div className="text-[10px] text-white/50 uppercase mb-1">Spotify</div>
+            <div className="text-sm font-bold text-white">-</div>
+          </div>
+          <div className="bg-black/40 rounded-lg p-2 text-center">
+            <div className="text-[10px] text-white/50 uppercase mb-1">YouTube</div>
+            <div className="text-sm font-bold text-white">-</div>
+          </div>
+          <div className="bg-black/40 rounded-lg p-2 text-center">
+            <div className="text-[10px] text-white/50 uppercase mb-1">Deezer</div>
+            <div className="text-sm font-bold text-white">-</div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  if (variant === 'grid') {
     return (
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-4 w-16" />
+      <div className="grid grid-cols-3 gap-2 mt-2">
+        <div className="bg-black/40 rounded-lg p-2 text-center">
+          <div className="text-[10px] text-white/50 uppercase mb-1">Spotify</div>
+          <div className="text-sm font-bold text-white">
+            {spotify?.streams ? formatNumber(spotify.streams) : '-'}
+          </div>
+        </div>
+        <div className="bg-black/40 rounded-lg p-2 text-center">
+          <div className="text-[10px] text-white/50 uppercase mb-1">YouTube</div>
+          <div className="text-sm font-bold text-white">
+            {youtube?.views ? formatNumber(youtube.views) : '-'}
+          </div>
+        </div>
+        <div className="bg-black/40 rounded-lg p-2 text-center">
+          <div className="text-[10px] text-white/50 uppercase mb-1">Deezer</div>
+          <div className="text-sm font-bold text-white">
+            {deezer?.streams ? formatNumber(deezer.streams) : '-'}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!metrics || (metrics.totalStreams === 0 && metrics.totalViews === 0)) {
-    return null;
-  }
-
   return (
-    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-      {metrics.totalStreams > 0 && (
-        <div className="flex items-center gap-1" title="Total Streams">
-          <Music className="h-3 w-3" />
-          <span>{formatNumber(metrics.totalStreams)}</span>
-        </div>
-      )}
-      {metrics.totalViews > 0 && (
-        <div className="flex items-center gap-1" title="YouTube Views">
-          <Eye className="h-3 w-3" />
-          <span>{formatNumber(metrics.totalViews)}</span>
-        </div>
-      )}
+    <div className="flex items-center gap-2 text-[10px] text-white/70">
+      {spotify?.streams ? <span>Sp: {formatNumber(spotify.streams)}</span> : null}
+      {youtube?.views ? <span>YT: {formatNumber(youtube.views)}</span> : null}
+      {deezer?.streams ? <span>Dz: {formatNumber(deezer.streams)}</span> : null}
     </div>
   );
 }
