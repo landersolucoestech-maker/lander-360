@@ -14,7 +14,8 @@ import { useMarketingCampaigns } from '@/hooks/useMarketing';
 import { useGenerateIdeas, useSaveIdea, useUpdateIdea, GenerateIdeasParams } from '@/hooks/useCreativeAI';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-
+import { AIProviderSelector } from './AIProviderSelector';
+import { AIProvider } from '@/hooks/useAI';
 interface GeneratedIdea {
   title: string;
   description: string;
@@ -73,6 +74,7 @@ export const CreativeIdeaGenerator = () => {
   const [generatedIdeas, setGeneratedIdeas] = useState<GeneratedIdea[]>([]);
   const [editingIdea, setEditingIdea] = useState<GeneratedIdea | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider | 'auto'>('auto');
 
   const handleGenerate = async () => {
     if (!params.artistId) {
@@ -179,6 +181,16 @@ export const CreativeIdeaGenerator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* AI Provider Selection */}
+          <div className="space-y-2">
+            <Label>Modelo de IA</Label>
+            <AIProviderSelector 
+              value={selectedProvider} 
+              onChange={setSelectedProvider}
+              showDescription
+            />
+          </div>
+
           {/* Artist */}
           <div className="space-y-2">
             <Label>Artista *</Label>
