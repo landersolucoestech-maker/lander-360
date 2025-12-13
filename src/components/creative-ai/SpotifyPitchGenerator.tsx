@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, Copy, Check, Music, TrendingUp, Target, Zap, Info } from 'lucide-react';
+import { Sparkles, Loader2, Copy, Check, Music, TrendingUp, Target, Zap, Info, Globe } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
 import { useReleases } from '@/hooks/useReleases';
 import { useToast } from '@/hooks/use-toast';
@@ -32,15 +32,20 @@ const MOODS = [
   { value: 'viral', label: 'Viral / Trends' },
 ];
 
-const REFERENCES = [
-  'DJ Arana', 'Love Funk', 'DJ GBR', 'MC Ryan SP', 'Anitta', 'MC Cabelinho',
-  'Veigh', 'Matuê', 'WIU', 'Poze do Rodo', 'L7nnon', 'MC Hariel',
-  'Outro'
+const PLATFORMS = [
+  { value: 'universal', label: 'Universal (Todas as Plataformas)', icon: Globe, description: 'Pitch adaptável para qualquer plataforma de streaming' },
+  { value: 'spotify', label: 'Spotify', icon: Music, description: 'Foco em mood, momento de consumo, dados de tração' },
+  { value: 'deezer', label: 'Deezer', icon: Music, description: 'Gênero preciso, mercado brasileiro, Flow compatibility' },
+  { value: 'apple_music', label: 'Apple Music', icon: Music, description: 'Qualidade sonora, curadoria premium, storytelling' },
+  { value: 'amazon_music', label: 'Amazon Music', icon: Music, description: 'Contexto de uso (Alexa, workout), clareza de gênero' },
+  { value: 'youtube_music', label: 'YouTube Music', icon: Music, description: 'Potencial visual, clipes, conteúdo curto' },
+  { value: 'tidal', label: 'Tidal', icon: Music, description: 'Qualidade de áudio Hi-Fi, credenciais artísticas' },
 ];
 
 interface PitchFormData {
   artistId: string;
   releaseId: string;
+  platform: string;
   genre: string;
   subgenre: string;
   mood: string;
@@ -66,6 +71,7 @@ export const SpotifyPitchGenerator = () => {
   const [formData, setFormData] = useState<PitchFormData>({
     artistId: '',
     releaseId: '',
+    platform: 'universal',
     genre: '',
     subgenre: '',
     mood: '',
@@ -81,6 +87,7 @@ export const SpotifyPitchGenerator = () => {
   const selectedArtist = artists?.find(a => a.id === formData.artistId);
   const selectedRelease = releases?.find(r => r.id === formData.releaseId);
   const artistReleases = releases?.filter(r => r.artist_id === formData.artistId) || [];
+  const selectedPlatform = PLATFORMS.find(p => p.value === formData.platform);
 
   const handleGenerate = async () => {
     if (!formData.artistId || !formData.genre || !formData.mood) {
@@ -127,8 +134,22 @@ export const SpotifyPitchGenerator = () => {
   const buildPitchPrompt = () => {
     const artistName = selectedArtist?.stage_name || selectedArtist?.name || '';
     const releaseName = selectedRelease?.title || '';
+    const platformName = selectedPlatform?.label || 'streaming';
     
-    let prompt = `Você é um especialista em pitching editorial para Spotify for Artists. Gere um texto de pitching profissional e objetivo seguindo as melhores práticas.
+    const platformInstructions: Record<string, string> = {
+      universal: `O pitch deve ser adaptável para qualquer plataforma de streaming (Spotify, Deezer, Apple Music, Amazon Music, YouTube Music, Tidal). Use linguagem universal que funcione para todos os editores.`,
+      spotify: `Foco em: mood/momento de consumo, dados de tração, classificação por playlists (treino, festa, chill, etc.). Editores do Spotify buscam contexto comportamental.`,
+      deezer: `Foco em: gênero preciso para o mercado brasileiro, compatibilidade com Flow (algoritmo da Deezer), classificação clara. Valorizar artistas nacionais e gêneros locais.`,
+      apple_music: `Foco em: qualidade sonora, storytelling artístico, curadoria premium. Apple Music valoriza narrativa e credenciais artísticas mais do que dados de tração.`,
+      amazon_music: `Foco em: contexto de uso (Alexa, workout, relaxamento), clareza de gênero, descoberta por voz. Pensar em comandos como "Alexa, toque música para treinar".`,
+      youtube_music: `Foco em: potencial visual, clipes associados, conteúdo curto (Shorts), tendências virais. Mencionar se há videoclipe ou conteúdo visual planejado.`,
+      tidal: `Foco em: qualidade de áudio Hi-Fi/Master, credenciais artísticas, produção de alta qualidade. Tidal valoriza aspectos técnicos e audiófilo.`,
+    };
+    
+    let prompt = `Você é um especialista em pitching editorial para plataformas de streaming musical. Gere um texto de pitching profissional e objetivo para ${platformName}.
+
+PLATAFORMA ALVO: ${platformName}
+${platformInstructions[formData.platform] || platformInstructions.universal}
 
 DADOS DO LANÇAMENTO:
 - Artista: ${artistName}
@@ -150,23 +171,23 @@ ${formData.differentiator || 'Não especificado'}
 CONTEXTO ADICIONAL:
 ${formData.additionalContext || 'Nenhum'}
 
-INSTRUÇÕES PARA O PITCHING:
+ESTRUTURA DO PITCHING:
 1. Abertura direta (1-2 frases): Explique o que é a música sem floreios
-2. Contexto estratégico: Mostre que faz parte de algo maior
-3. Gênero + subgênero + referências claras
-4. Mood, energia e uso ideal da música (treino, festa, TikTok, etc.)
-5. Dados de tração APENAS se fornecidos (não invente)
-6. Diferencial claro: Por que essa música é diferente?
+2. Contexto estratégico: Mostre que faz parte de algo maior (EP, série de singles, novo posicionamento)
+3. Gênero + subgênero + referências claras (editores pensam por classificação)
+4. Mood, energia e uso ideal da música (treino, festa, TikTok, relax, etc.)
+5. Dados de tração APENAS se fornecidos (NUNCA invente números)
+6. Diferencial claro: Por que essa música é diferente das outras?
 
-REGRAS:
+REGRAS CRÍTICAS:
 - Seja direto e objetivo
-- NÃO use linguagem emocional vaga como "feita com o coração"
-- NÃO invente números ou dados
-- Foque em classificação (editores pensam por categorias)
+- NÃO use linguagem emocional vaga como "feita com o coração" ou "música especial"
+- NÃO invente números, dados ou métricas
+- Foque em classificação (editores pensam por categorias, não por gosto pessoal)
 - Máximo 150 palavras
 - Use português brasileiro
 
-Gere APENAS o texto do pitching, sem explicações adicionais.`;
+Gere APENAS o texto do pitching, sem explicações adicionais, cabeçalhos ou formatação extra.`;
 
     return prompt;
   };
@@ -185,12 +206,12 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
     <div className="space-y-6">
       {/* Guide Section */}
       <Collapsible open={showGuide} onOpenChange={setShowGuide}>
-        <Card className="bg-gradient-to-r from-green-500/10 to-primary/10 border-green-500/20">
+        <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20">
           <CollapsibleTrigger asChild>
             <CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Info className="h-5 w-5 text-green-500" />
-                Guia de Pitching Editorial Spotify
+                <Info className="h-5 w-5 text-primary" />
+                Guia de Pitching Editorial Universal
                 <Badge variant="outline" className="ml-auto">
                   {showGuide ? 'Clique para ocultar' : 'Clique para expandir'}
                 </Badge>
@@ -208,10 +229,10 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
                   </p>
                 </div>
                 <div className="p-4 bg-card rounded-lg border">
-                  <Music className="h-6 w-6 text-green-500 mb-2" />
-                  <h4 className="font-semibold mb-1">Pré-requisitos</h4>
+                  <Globe className="h-6 w-6 text-blue-500 mb-2" />
+                  <h4 className="font-semibold mb-1">Multiplataforma</h4>
                   <p className="text-sm text-muted-foreground">
-                    Música finalizada, upload via distribuidora, pitch 7-21 dias antes do lançamento, perfil atualizado.
+                    Spotify, Deezer, Apple Music, Amazon Music, YouTube Music, Tidal - cada plataforma tem foco diferente.
                   </p>
                 </div>
                 <div className="p-4 bg-card rounded-lg border">
@@ -229,6 +250,40 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
                   </p>
                 </div>
               </div>
+              
+              {/* Platform-specific tips */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Foco por Plataforma
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Spotify</Badge>
+                    <span className="text-muted-foreground">Mood, tração, playlists</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Deezer</Badge>
+                    <span className="text-muted-foreground">Gênero BR, Flow</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Apple Music</Badge>
+                    <span className="text-muted-foreground">Storytelling, qualidade</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Amazon</Badge>
+                    <span className="text-muted-foreground">Alexa, contexto de uso</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">YouTube</Badge>
+                    <span className="text-muted-foreground">Visual, Shorts, viral</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Tidal</Badge>
+                    <span className="text-muted-foreground">Hi-Fi, credenciais</span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </CollapsibleContent>
         </Card>
@@ -239,14 +294,42 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Music className="h-5 w-5 text-green-500" />
+              <Music className="h-5 w-5 text-primary" />
               Dados do Lançamento
             </CardTitle>
             <CardDescription>
-              Preencha as informações para gerar um pitching personalizado
+              Preencha as informações para gerar um pitching personalizado para distribuidoras
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Platform Selection */}
+            <div className="space-y-2">
+              <Label>Plataforma de Destino *</Label>
+              <Select
+                value={formData.platform}
+                onValueChange={(value) => setFormData({ ...formData, platform: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a plataforma" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLATFORMS.map((platform) => (
+                    <SelectItem key={platform.value} value={platform.value}>
+                      <div className="flex items-center gap-2">
+                        <platform.icon className="h-4 w-4" />
+                        {platform.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedPlatform && (
+                <p className="text-xs text-muted-foreground">
+                  {selectedPlatform.description}
+                </p>
+              )}
+            </div>
+
             {/* Artist & Release */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -429,7 +512,7 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
             <Button 
               onClick={handleGenerate} 
               disabled={isGenerating}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full"
             >
               {isGenerating ? (
                 <>
@@ -439,7 +522,7 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Gerar Pitching Editorial
+                  Gerar Pitching para {selectedPlatform?.label || 'Distribuidora'}
                 </>
               )}
             </Button>
@@ -476,7 +559,7 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
               )}
             </CardTitle>
             <CardDescription>
-              Texto pronto para colar no Spotify for Artists
+              Texto pronto para enviar via distribuidora ou plataforma
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -504,30 +587,33 @@ Gere APENAS o texto do pitching, sem explicações adicionais.`;
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <h4 className="font-semibold mb-2 text-green-500">✓ Boas Práticas</h4>
+              <h4 className="font-semibold mb-2 text-primary">✓ Boas Práticas</h4>
               <ul className="space-y-1 text-muted-foreground">
                 <li>• Enviar 7-21 dias antes do lançamento</li>
                 <li>• Ser específico sobre gênero e mood</li>
                 <li>• Incluir apenas dados reais</li>
-                <li>• Manter texto objetivo e curto</li>
+                <li>• Adaptar para cada plataforma</li>
+                <li>• Metadados corretos (ISRC, gênero)</li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-2 text-red-500">✗ Evitar</h4>
               <ul className="space-y-1 text-muted-foreground">
                 <li>• Texto emocional demais</li>
-                <li>• Inventar números</li>
+                <li>• Inventar números ou métricas</li>
                 <li>• Histórias pessoais longas</li>
-                <li>• Pitch genérico sem contexto</li>
+                <li>• Pitch genérico para todas plataformas</li>
+                <li>• Enviar depois do lançamento</li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-2 text-blue-500">ℹ Lembre-se</h4>
               <ul className="space-y-1 text-muted-foreground">
                 <li>• Pitching não garante playlist</li>
-                <li>• Editores buscam contexto e potencial</li>
+                <li>• Cada plataforma tem foco diferente</li>
                 <li>• Playlists amplificam o que já funciona</li>
-                <li>• Mantenha perfil do artista atualizado</li>
+                <li>• Perfil do artista deve estar atualizado</li>
+                <li>• Pitch não substitui marketing</li>
               </ul>
             </div>
           </div>

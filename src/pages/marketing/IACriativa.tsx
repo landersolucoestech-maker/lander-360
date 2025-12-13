@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, BarChart3, FileText, History, Lightbulb, Zap, Music } from 'lucide-react';
+import { Sparkles, MessageSquare, BarChart3, FileText, History, Lightbulb, Zap, Globe } from 'lucide-react';
 import { CreativeIdeaGenerator } from '@/components/creative-ai/CreativeIdeaGenerator';
 import { CreativeAIChatbot } from '@/components/creative-ai/CreativeAIChatbot';
 import { CreativeAIAnalytics } from '@/components/creative-ai/CreativeAIAnalytics';
@@ -78,8 +78,8 @@ const IACriativa = () => {
                   Automações
                 </TabsTrigger>
                 <TabsTrigger value="pitch" className="flex items-center gap-2">
-                  <Music className="h-4 w-4" />
-                  Pitching Spotify
+                  <Globe className="h-4 w-4" />
+                  Pitching Editorial
                 </TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <History className="h-4 w-4" />
