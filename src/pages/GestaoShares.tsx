@@ -401,7 +401,7 @@ const GestaoShares = () => {
 
           <main className="flex-1 p-4 lg:p-6 space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -439,10 +439,21 @@ const GestaoShares = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
+                      <p className="text-sm text-muted-foreground">Share a Enviar</p>
+                      <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+                    </div>
+                    <Share2 className="h-8 w-8 text-orange-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
                       <p className="text-sm text-muted-foreground">Share Aplicado</p>
                       <p className="text-2xl font-bold text-green-600">{stats.shareApplied}</p>
                     </div>
-                    <Share2 className="h-8 w-8 text-green-600" />
+                    <CheckCircle className="h-8 w-8 text-green-600" />
                   </div>
                 </CardContent>
               </Card>
