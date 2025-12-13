@@ -13,13 +13,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle, Loader2, ExternalLink, LogIn } from 'lucide-react';
+import { PlusIcon, Trash2Icon, UploadIcon, ImageIcon, MusicIcon, X, FolderOpen, AlertCircle, Loader2, ExternalLink, LogIn, BarChart3 } from 'lucide-react';
+import { FaSpotify, FaApple } from 'react-icons/fa';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
 import { useArtists } from '@/hooks/useArtists';
 import { useMusicRegistry } from '@/hooks/useMusicRegistry';
 import { usePhonograms } from '@/hooks/usePhonograms';
 import { useCreateRelease, useUpdateRelease } from '@/hooks/useReleases';
+import { useReleaseMetrics, useUpdateManualMetrics } from '@/hooks/useReleaseMetrics';
 import { DateInput } from '@/components/ui/date-input';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -59,6 +61,10 @@ const releaseSchema = z.object({
   
   // Faixas
   tracks: z.array(trackSchema).min(1, 'Pelo menos uma faixa é obrigatória'),
+  
+  // Métricas manuais
+  spotify_streams: z.number().optional(),
+  apple_music_streams: z.number().optional(),
 });
 
 type ReleaseFormData = z.infer<typeof releaseSchema>;
@@ -147,6 +153,10 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const { data: phonograms = [] } = usePhonograms();
   const createRelease = useCreateRelease();
   const updateRelease = useUpdateRelease();
+  
+  // Fetch existing metrics for edit mode
+  const { data: existingMetrics } = useReleaseMetrics(release?.id);
+  const updateManualMetrics = useUpdateManualMetrics();
 
   // Filtrar apenas projetos que possuem fonograma registrado com mesmo nome
   const availableProjects = useMemo(() => {
@@ -241,8 +251,23 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         audio_file: '', 
         lyrics: '' 
       }],
+      // Métricas manuais
+      spotify_streams: 0,
+      apple_music_streams: 0,
     },
   });
+
+  // Update metrics fields when existing metrics are loaded
+  useEffect(() => {
+    if (existingMetrics) {
+      if (existingMetrics.byPlatform.spotify?.streams) {
+        form.setValue('spotify_streams', existingMetrics.byPlatform.spotify.streams);
+      }
+      if (existingMetrics.byPlatform.apple_music?.streams) {
+        form.setValue('apple_music_streams', existingMetrics.byPlatform.apple_music.streams);
+      }
+    }
+  }, [existingMetrics, form]);
 
   const selectedProjectId = form.watch('project_id');
   const selectedProject = projects.find(p => p.id === selectedProjectId);
@@ -493,13 +518,34 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         project_id: data.project_id || null,
       };
       
-      if (release?.id) {
+      let releaseId = release?.id;
+      
+      if (releaseId) {
         await updateRelease.mutateAsync({
-          id: release.id,
+          id: releaseId,
           data: releaseData
         });
       } else {
-        await createRelease.mutateAsync(releaseData);
+        const newRelease = await createRelease.mutateAsync(releaseData);
+        releaseId = newRelease?.id;
+      }
+      
+      // Save manual metrics if provided and we have a release ID
+      if (releaseId) {
+        if (data.spotify_streams && data.spotify_streams > 0) {
+          await updateManualMetrics.mutateAsync({
+            releaseId,
+            platform: 'spotify',
+            streams: data.spotify_streams,
+          });
+        }
+        if (data.apple_music_streams && data.apple_music_streams > 0) {
+          await updateManualMetrics.mutateAsync({
+            releaseId,
+            platform: 'apple_music',
+            streams: data.apple_music_streams,
+          });
+        }
       }
       
       onSuccess?.();
@@ -1198,6 +1244,74 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
             />
           </CardContent>
         </Card>
+
+        {/* Métricas de Streaming (apenas para edição) */}
+        {release?.id && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Métricas de Streaming
+              </CardTitle>
+              <CardDescription>
+                Insira manualmente os streams do Spotify for Artists e Apple Music Connect
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="spotify_streams"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <FaSpotify className="h-4 w-4 text-green-500" />
+                        Streams Spotify
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="Ex: 150000"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="apple_music_streams"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <FaApple className="h-4 w-4 text-muted-foreground" />
+                        Streams Apple Music
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="Ex: 75000"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <p className="text-xs text-muted-foreground">
+                Acesse o Spotify for Artists e Apple Music Connect para obter os dados reais de streaming.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onCancel}>
