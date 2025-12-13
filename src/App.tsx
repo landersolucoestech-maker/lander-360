@@ -38,6 +38,7 @@ import MarketingBriefing from "./pages/marketing/Briefing";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Servicos from "./pages/Servicos";
 import LanderZap from "./pages/LanderZap";
+import SpotifyForArtistsCallback from "./pages/SpotifyForArtistsCallback";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ const App = () => (
               <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
               <Route path="/servicos" element={<ProtectedRoute><Servicos /></ProtectedRoute>} />
               <Route path="/lander" element={<ProtectedRoute><LanderZap /></ProtectedRoute>} />
+              <Route path="/callback/spotify-for-artists" element={<SpotifyForArtistsCallback />} />
               {/* Marketing routes */}
               <Route path="/marketing/visao-geral" element={<ProtectedRoute><MarketingVisaoGeral /></ProtectedRoute>} />
               <Route path="/marketing/campanhas" element={<ProtectedRoute><MarketingCampanhas /></ProtectedRoute>} />
