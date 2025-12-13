@@ -389,7 +389,9 @@ export function PhonogramForm({
       description: `Obra "${work.title}" foi vinculada ao fonograma.${interpreters.length > 0 ? ` ${interpreters.length} intérprete(s) carregado(s).` : ''}${musicianProducers.length > 0 ? ` ${musicianProducers.length} músico(s) acompanhante(s) carregado(s).` : ''}${audioMessage}`
     });
   };
-  const filteredWorks = works.filter(w => w.title?.toLowerCase().includes(workSearchTerm.toLowerCase()) || w.abramus_code?.toLowerCase().includes(workSearchTerm.toLowerCase()));
+  // Filter works to only show those with status 'aceita' (completed/approved)
+  const completedWorks = works.filter((w: any) => w.status === 'aceita');
+  const filteredWorks = completedWorks.filter(w => w.title?.toLowerCase().includes(workSearchTerm.toLowerCase()) || w.abramus_code?.toLowerCase().includes(workSearchTerm.toLowerCase()));
   const onSubmit = async (data: PhonogramFormData) => {
     try {
       setIsUploadingAudio(true);

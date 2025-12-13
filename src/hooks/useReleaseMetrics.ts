@@ -47,9 +47,24 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
         .eq('release_id', releaseId)
         .order('fetched_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching release metrics:', error);
+        throw error;
+      }
 
-      const metrics = data as ReleaseMetric[];
+      console.log('Fetched metrics for release', releaseId, ':', data);
+
+      if (!data || data.length === 0) {
+        return {
+          totalStreams: 0,
+          totalViews: 0,
+          totalSaves: 0,
+          byPlatform: { spotify: null, youtube: null, deezer: null },
+          lastUpdated: null,
+        };
+      }
+
+      const metrics = data as unknown as ReleaseMetric[];
       
       // Get latest metric per platform
       const platformMetrics: { [key: string]: ReleaseMetric } = {};
@@ -67,7 +82,7 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
       const totalViews = youtube?.views || 0;
       const totalSaves = (spotify?.saves || 0) + (youtube?.saves || 0) + (deezer?.saves || 0);
 
-      const dates = [spotify?.fetched_at, youtube?.fetched_at, deezer?.fetched_at].filter(Boolean);
+      const dates = [spotify?.fetched_at, youtube?.fetched_at, deezer?.fetched_at].filter(Boolean) as string[];
       const lastUpdated = dates.length > 0 ? dates.sort().reverse()[0] : null;
 
       return {
@@ -79,6 +94,8 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
       };
     },
     enabled: !!releaseId,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 };
 

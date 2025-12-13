@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ function formatNumber(num: number): string {
 }
 
 export function ReleaseMetricsModal({ open, onOpenChange, release }: ReleaseMetricsModalProps) {
-  const { data: metrics, isLoading } = useReleaseMetrics(release.id);
+  const { data: metrics, isLoading, refetch } = useReleaseMetrics(release.id);
   const fetchMetrics = useFetchReleaseMetrics();
   const updateManual = useUpdateManualMetrics();
   
@@ -34,6 +34,13 @@ export function ReleaseMetricsModal({ open, onOpenChange, release }: ReleaseMetr
     youtube: { views: 0 },
     deezer: { streams: 0 },
   });
+
+  // Refetch metrics when modal opens
+  useEffect(() => {
+    if (open && release.id) {
+      refetch();
+    }
+  }, [open, release.id, refetch]);
 
   const handleFetchMetrics = () => {
     fetchMetrics.mutate({
