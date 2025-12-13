@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MarketingCampaignForm } from "@/components/forms/MarketingCampaignForm";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MarketingCampaignModalProps {
   isOpen: boolean;
@@ -11,13 +12,27 @@ interface MarketingCampaignModalProps {
 
 export const MarketingCampaignModal = ({ isOpen, onClose, initialData }: MarketingCampaignModalProps) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const createCampaign = useMutation({
+    mutationFn: async (data: any) => {
+      const { data: campaign, error } = await supabase
+        .from('marketing_campaigns')
+        .insert(data)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return campaign;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] });
+    },
+  });
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
     try {
-      // TODO: Implement actual campaign service
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      await createCampaign.mutateAsync(data);
       
       toast({
         title: "Campanha Salva",
@@ -30,8 +45,6 @@ export const MarketingCampaignModal = ({ isOpen, onClose, initialData }: Marketi
         description: "Erro ao salvar campanha.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

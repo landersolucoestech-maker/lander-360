@@ -49,11 +49,10 @@ export const useReleaseMetrics = (releaseId: string | undefined) => {
         .order('fetched_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching release metrics:', error);
         throw error;
       }
 
-      console.log('Fetched metrics for release', releaseId, ':', data);
+
 
       if (!data || data.length === 0) {
         return {

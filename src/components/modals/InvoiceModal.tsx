@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InvoiceForm } from "@/components/forms/InvoiceForm";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InvoiceModalProps {
   isOpen: boolean;
@@ -10,13 +11,27 @@ interface InvoiceModalProps {
 
 export function InvoiceModal({ isOpen, onClose }: InvoiceModalProps) {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const createInvoice = useMutation({
+    mutationFn: async (data: any) => {
+      const { data: invoice, error } = await supabase
+        .from('invoices')
+        .insert(data)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return invoice;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    },
+  });
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
     try {
-      // TODO: Implement actual invoice service
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      await createInvoice.mutateAsync(data);
       
       toast({
         title: "Nota Fiscal Criada",
@@ -29,8 +44,6 @@ export function InvoiceModal({ isOpen, onClose }: InvoiceModalProps) {
         description: "Erro ao criar nota fiscal.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -40,7 +53,10 @@ export function InvoiceModal({ isOpen, onClose }: InvoiceModalProps) {
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl">Nova Nota Fiscal</DialogTitle>
         </DialogHeader>
-        <InvoiceForm onSubmit={handleSubmit} onCancel={onClose} />
+        <InvoiceForm 
+          onSubmit={handleSubmit} 
+          onCancel={onClose}
+        />
       </DialogContent>
     </Dialog>
   );

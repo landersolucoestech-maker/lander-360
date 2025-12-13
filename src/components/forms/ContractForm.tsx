@@ -99,7 +99,6 @@ export const ContractForm: React.FC<ContractFormProps> = ({
   }, [watchedServiceType, templates]);
 
   const handleSubmit = (data: ContractFormData) => {
-    console.log('ContractForm handleSubmit called with data:', data);
     const submitData = {
       ...data,
       template_id: selectedTemplate?.id,

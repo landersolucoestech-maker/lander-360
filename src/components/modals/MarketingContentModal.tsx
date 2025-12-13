@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MarketingContentForm } from "@/components/forms/MarketingContentForm";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MarketingContentModalProps {
   isOpen: boolean;
@@ -12,13 +13,27 @@ interface MarketingContentModalProps {
 
 export const MarketingContentModal = ({ isOpen, onClose, initialData, contentType }: MarketingContentModalProps) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const createContent = useMutation({
+    mutationFn: async (data: any) => {
+      const { data: content, error } = await supabase
+        .from('marketing_content')
+        .insert(data)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return content;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketing-content'] });
+    },
+  });
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
     try {
-      // TODO: Implement actual content service
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      await createContent.mutateAsync(data);
       
       toast({
         title: "Conteúdo Salvo",
@@ -31,8 +46,6 @@ export const MarketingContentModal = ({ isOpen, onClose, initialData, contentTyp
         description: "Erro ao salvar conteúdo.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
