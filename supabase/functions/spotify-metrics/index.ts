@@ -203,9 +203,14 @@ serve(async (req) => {
     const topTracks = await getTopTracks(token, spotifyId);
     console.log('Got top tracks:', topTracks.length);
 
-    // Fetch monthly listeners via scraping
-    const monthlyListeners = await getMonthlyListeners(spotifyId);
-    console.log('Got monthly listeners:', monthlyListeners);
+    // Fetch monthly listeners via scraping (with fallback to followers if scraping fails)
+    let monthlyListeners = await getMonthlyListeners(spotifyId);
+    console.log('Got monthly listeners from scraping:', monthlyListeners);
+
+    if ((!monthlyListeners || monthlyListeners <= 0) && artist.followers?.total) {
+      console.log('Falling back to followers count as monthly listeners based on followers total');
+      monthlyListeners = artist.followers.total;
+    }
 
     // Calculate estimated total streams from top tracks popularity
     const estimatedStreams = topTracks.reduce((sum, track) => {
