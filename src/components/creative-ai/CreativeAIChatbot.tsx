@@ -154,13 +154,16 @@ export const CreativeAIChatbot = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Artista</label>
-            <Select value={selectedArtist} onValueChange={setSelectedArtist}>
+            <Select
+              value={selectedArtist || 'all'}
+              onValueChange={(value) => setSelectedArtist(value === 'all' ? '' : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um artista" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum (geral)</SelectItem>
-                {artists?.map(artist => (
+                <SelectItem value="all">Nenhum (geral)</SelectItem>
+                {artists?.filter((artist) => artist.id).map((artist) => (
                   <SelectItem key={artist.id} value={artist.id}>
                     {artist.stage_name || artist.name}
                   </SelectItem>

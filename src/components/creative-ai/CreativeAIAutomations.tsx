@@ -328,15 +328,20 @@ export const CreativeAIAutomations = () => {
             <div className="space-y-2">
               <Label>Artista (opcional)</Label>
               <Select
-                value={newAutomation.artistId || ''}
-                onValueChange={(value) => setNewAutomation(prev => ({ ...prev, artistId: value || undefined }))}
+                value={newAutomation.artistId || 'all'}
+                onValueChange={(value) =>
+                  setNewAutomation((prev) => ({
+                    ...prev,
+                    artistId: value === 'all' ? undefined : value,
+                  }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos os artistas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os artistas</SelectItem>
-                  {artists?.map(artist => (
+                  <SelectItem value="all">Todos os artistas</SelectItem>
+                  {artists?.filter((artist) => artist.id).map((artist) => (
                     <SelectItem key={artist.id} value={artist.id}>
                       {artist.stage_name || artist.name}
                     </SelectItem>
