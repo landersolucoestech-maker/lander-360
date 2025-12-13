@@ -73,7 +73,7 @@ const navigationItems = [{
   url: "/relatorios",
   icon: BarChart3
 }, {
-  title: "Lander",
+  title: "LanderZap",
   url: "/lander",
   icon: MessageCircle
 }];
