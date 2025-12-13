@@ -360,7 +360,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
                   <div className="space-y-2">
                     {analysis.recommendations.map((r, i) => (
                       <div key={i} className="p-3 bg-muted/50 rounded-lg text-sm">
-                        <span className="font-medium text-primary">{i + 1}.</span> {r}
+                        <span className="font-medium text-primary">{i + 1}.</span>{' '}
+                        {typeof r === 'string' ? r : (r as any).action || JSON.stringify(r)}
                       </div>
                     ))}
                   </div>
