@@ -117,19 +117,44 @@ const RelatoriosAutorais = () => {
     // Check artist fields for each artist
     artists.forEach(artist => {
       const missingFields: string[] = [];
+      // Dados pessoais
       if (!artist.full_name) missingFields.push("Nome Completo");
+      if (!artist.stage_name) missingFields.push("Nome Artístico");
       if (!artist.cpf_cnpj) missingFields.push("CPF/CNPJ");
+      if (!artist.rg) missingFields.push("RG");
+      if (!artist.birth_date) missingFields.push("Data de Nascimento");
       if (!artist.email) missingFields.push("E-mail");
       if (!artist.phone) missingFields.push("Telefone");
-      if (!artist.full_address) missingFields.push("Endereço");
+      if (!artist.full_address) missingFields.push("Endereço Completo");
+      
+      // Dados bancários
       if (!artist.bank) missingFields.push("Banco");
       if (!artist.agency) missingFields.push("Agência");
       if (!artist.account) missingFields.push("Conta");
       if (!artist.pix_key) missingFields.push("Chave PIX");
+      if (!artist.account_holder) missingFields.push("Titular da Conta");
+      
+      // Redes sociais
       if (!artist.spotify_url) missingFields.push("Spotify");
       if (!artist.instagram_url) missingFields.push("Instagram");
+      if (!artist.youtube_url) missingFields.push("YouTube");
+      if (!artist.tiktok) missingFields.push("TikTok");
+      if (!artist.soundcloud) missingFields.push("SoundCloud");
+      
+      // Dados profissionais
       if (!artist.genre) missingFields.push("Gênero Musical");
       if (!artist.profile_type) missingFields.push("Tipo de Perfil");
+      if (!artist.bio) missingFields.push("Biografia");
+      
+      // Distribuidores
+      if (!artist.distributors || artist.distributors.length === 0) missingFields.push("Distribuidores");
+      
+      // Empresário/Responsável (se aplicável)
+      if (artist.profile_type === 'com_empresario' || artist.profile_type === 'gravadora' || artist.profile_type === 'editora') {
+        if (!artist.manager_name) missingFields.push("Nome do Empresário/Responsável");
+        if (!artist.manager_phone) missingFields.push("Telefone do Empresário/Responsável");
+        if (!artist.manager_email) missingFields.push("E-mail do Empresário/Responsável");
+      }
 
       stats[artist.id] = { works: 0, phonograms: 0, verified: 0, pending: 0, missingFields };
     });
