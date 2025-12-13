@@ -194,8 +194,8 @@ Retorne APENAS o JSON, sem texto adicional.`;
       ctx?.drawImage(logoImg, 0, 0);
       const logoDataUrl = canvas.toDataURL('image/png');
       
-      doc.addImage(logoDataUrl, 'PNG', margin, y, 30, 30);
-      y += 35;
+      doc.addImage(logoDataUrl, 'PNG', margin, y, 45, 45);
+      y += 50;
     } catch (error) {
       console.error('Failed to load logo:', error);
       // Continue without logo
