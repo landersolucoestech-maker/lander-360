@@ -98,7 +98,7 @@ export default function Servicos() {
   };
 
   const formatPercent = (value: number) => {
-    return `${value || 0}%`;
+    return `${Math.min(value || 0, 100)}%`;
   };
 
   const handleSearch = (value: string) => {

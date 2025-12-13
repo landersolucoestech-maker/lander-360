@@ -253,7 +253,7 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
                     <span className="text-sm">Royalties</span>
                   </div>
                   <div className="font-medium text-lg">
-                    {contract.royalty_rate || contractData.royalties_percentage}%
+                    {Math.min(contract.royalty_rate || contractData.royalties_percentage || 0, 100)}%
                   </div>
                 </div>
               )}
