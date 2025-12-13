@@ -100,16 +100,21 @@ export function PhonogramForm({
   const {
     data: works = []
   } = useMusicRegistry();
-  const { data: projects = [] } = useProjects();
-  const { data: artists = [] } = useArtists();
-  const { data: crmContacts = [] } = useCrmContacts();
+  const {
+    data: projects = []
+  } = useProjects();
+  const {
+    data: artists = []
+  } = useArtists();
+  const {
+    data: crmContacts = []
+  } = useCrmContacts();
   const createPhonogram = useCreatePhonogram();
   const updatePhonogram = useUpdatePhonogram();
-  
+
   // Go directly to step 2 (form) - skip step 1 since flow is: projects -> obras -> fonogramas
   const [currentStep, setCurrentStep] = useState<1 | 2>(2);
   const [selectedWork, setSelectedWorkState] = useState<any>(phonogram?.work_id ? works.find(w => w.id === phonogram.work_id) : null);
-  
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
   const [workSearchTerm, setWorkSearchTerm] = useState('');
   // Abrir seções se houver participantes ao editar
@@ -123,7 +128,11 @@ export function PhonogramForm({
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [existingAudioUrl, setExistingAudioUrl] = useState<string | null>(phonogram?.audio_url || null);
-  const [projectAudioInfo, setProjectAudioInfo] = useState<{ name: string; url: string; size: number } | null>(null);
+  const [projectAudioInfo, setProjectAudioInfo] = useState<{
+    name: string;
+    url: string;
+    size: number;
+  } | null>(null);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [participantSearchTerms, setParticipantSearchTerms] = useState<Record<string, string>>({});
@@ -156,7 +165,6 @@ export function PhonogramForm({
   const parsedIsrc = parseIsrc(phonogram?.isrc);
   // Buscar obra vinculada para preencher work_title e work_abramus_code
   const linkedWork = works.find((w: any) => w.id === phonogram?.work_id);
-
   const form = useForm<PhonogramFormData>({
     resolver: zodResolver(phonogramSchema),
     defaultValues: {
@@ -185,9 +193,11 @@ export function PhonogramForm({
       origin_country: phonogram?.origin_country || phonogram?.recording_location || 'brazil',
       publication_country: phonogram?.publication_country || 'brazil',
       status: phonogram?.status || 'pendente',
-      phonographic_producers: phonogram?.participants?.filter((p: any) => p.role === 'produtor_fonografico')?.length > 0 
-        ? phonogram.participants.filter((p: any) => p.role === 'produtor_fonografico') 
-        : [{ name: 'Lander Records', role: 'produtor_fonografico', percentage: 41.70 }],
+      phonographic_producers: phonogram?.participants?.filter((p: any) => p.role === 'produtor_fonografico')?.length > 0 ? phonogram.participants.filter((p: any) => p.role === 'produtor_fonografico') : [{
+        name: 'Lander Records',
+        role: 'produtor_fonografico',
+        percentage: 41.70
+      }],
       performers: phonogram?.participants?.filter((p: any) => p.role === 'interprete') || [],
       musicians: phonogram?.participants?.filter((p: any) => p.role === 'musico') || [],
       // Se está editando, já aceitou os termos antes
@@ -261,11 +271,14 @@ export function PhonogramForm({
       form.setValue('duration_minutes', Math.floor(work.duration / 60));
       form.setValue('duration_seconds', work.duration % 60);
     }
-    
     let interpreters: any[] = [];
     let musicianProducers: any[] = [];
-    let loadedAudioFile: { name: string; url: string; size: number } | null = null;
-    
+    let loadedAudioFile: {
+      name: string;
+      url: string;
+      size: number;
+    } | null = null;
+
     // Helper para parsear audio_files (pode ser string JSON ou objeto)
     const parseAudioFiles = (audioFiles: any) => {
       if (!audioFiles) return null;
@@ -278,51 +291,41 @@ export function PhonogramForm({
       }
       return audioFiles;
     };
-    
+
     // Buscar intérpretes, produtores e áudio do projeto relacionado
     const relatedProject = projects.find((p: any) => {
       const parsedAudioFiles = parseAudioFiles(p.audio_files);
       if (!parsedAudioFiles || !parsedAudioFiles.songs) return false;
-      return parsedAudioFiles.songs.some((song: any) => 
-        song.song_name?.toLowerCase() === work.title?.toLowerCase()
-      );
+      return parsedAudioFiles.songs.some((song: any) => song.song_name?.toLowerCase() === work.title?.toLowerCase());
     });
-    
     if (relatedProject) {
       const parsedAudioFiles = parseAudioFiles(relatedProject.audio_files);
       if (parsedAudioFiles?.songs) {
         // Encontrar a música específica dentro do projeto
-        const matchingSong = parsedAudioFiles.songs.find((song: any) => 
-          song.song_name?.toLowerCase() === work.title?.toLowerCase()
-        );
-      
+        const matchingSong = parsedAudioFiles.songs.find((song: any) => song.song_name?.toLowerCase() === work.title?.toLowerCase());
         if (matchingSong) {
           // Preencher Intérpretes (performers do projeto)
           if (matchingSong.performers && matchingSong.performers.length > 0) {
             const performerCount = matchingSong.performers.filter((p: any) => p.name && p.name.trim() !== '').length;
             const defaultPercentagePerPerformer = performerCount > 0 ? 41.70 / performerCount : 0;
-            interpreters = matchingSong.performers
-              .filter((p: any) => p.name && p.name.trim() !== '')
-              .map((p: any) => ({
-                name: p.name || '',
-                role: 'interprete',
-                percentage: p.percentage || defaultPercentagePerPerformer
-              }));
+            interpreters = matchingSong.performers.filter((p: any) => p.name && p.name.trim() !== '').map((p: any) => ({
+              name: p.name || '',
+              role: 'interprete',
+              percentage: p.percentage || defaultPercentagePerPerformer
+            }));
           }
-          
+
           // Preencher Músicos Acompanhantes (producers do projeto - sempre são produtores)
           if (matchingSong.producers && matchingSong.producers.length > 0) {
             const musicianCount = matchingSong.producers.filter((p: any) => p.name && p.name.trim() !== '').length;
             const defaultPercentagePerMusician = musicianCount > 0 ? 16.60 / musicianCount : 0;
-            musicianProducers = matchingSong.producers
-              .filter((p: any) => p.name && p.name.trim() !== '')
-              .map((p: any) => ({
-                name: p.name || '',
-                role: 'musico',
-                percentage: p.percentage || defaultPercentagePerMusician
-              }));
+            musicianProducers = matchingSong.producers.filter((p: any) => p.name && p.name.trim() !== '').map((p: any) => ({
+              name: p.name || '',
+              role: 'musico',
+              percentage: p.percentage || defaultPercentagePerMusician
+            }));
           }
-          
+
           // Carregar arquivo de áudio do projeto
           if (matchingSong.audio_files && matchingSong.audio_files.length > 0) {
             const projectAudio = matchingSong.audio_files[0];
@@ -337,13 +340,11 @@ export function PhonogramForm({
         }
       }
     }
-    
+
     // Se não encontrou no projeto, tentar nos participantes da obra
     if (interpreters.length === 0) {
       const workParticipants = work.participants || [];
-      const filteredInterpreters = workParticipants
-        .filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete'))
-        .filter((p: any) => p.name && p.name.trim() !== '');
+      const filteredInterpreters = workParticipants.filter((p: any) => p.role === 'interprete' || p.role === 'Intérprete' || p.role?.toLowerCase().includes('interprete')).filter((p: any) => p.name && p.name.trim() !== '');
       const defaultPercentagePerPerformer = filteredInterpreters.length > 0 ? 41.70 / filteredInterpreters.length : 0;
       interpreters = filteredInterpreters.map((p: any) => ({
         name: p.name || '',
@@ -351,12 +352,9 @@ export function PhonogramForm({
         percentage: p.percentage || defaultPercentagePerPerformer
       }));
     }
-    
     if (musicianProducers.length === 0) {
       const workParticipants = work.participants || [];
-      const filteredMusicians = workParticipants
-        .filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor'))
-        .filter((p: any) => p.name && p.name.trim() !== '');
+      const filteredMusicians = workParticipants.filter((p: any) => p.role === 'produtor' || p.role === 'Produtor' || p.role?.toLowerCase().includes('produtor')).filter((p: any) => p.name && p.name.trim() !== '');
       const defaultPercentagePerMusician = filteredMusicians.length > 0 ? 16.60 / filteredMusicians.length : 0;
       musicianProducers = filteredMusicians.map((p: any) => ({
         name: p.name || '',
@@ -364,25 +362,21 @@ export function PhonogramForm({
         percentage: p.percentage || defaultPercentagePerMusician
       }));
     }
-    
     if (interpreters.length > 0) {
       form.setValue('performers', interpreters);
       setPerformersOpen(true);
     }
-    
     if (musicianProducers.length > 0) {
       form.setValue('musicians', musicianProducers);
       setMusiciansOpen(true);
     }
-    
+
     // Definir áudio carregado do projeto
     if (loadedAudioFile) {
       setProjectAudioInfo(loadedAudioFile);
       setAudioUploadOpen(true);
     }
-    
     setWorkSearchOpen(false);
-    
     const audioMessage = loadedAudioFile ? ' Áudio do projeto carregado.' : '';
     toast({
       title: "Obra vinculada",
@@ -399,33 +393,27 @@ export function PhonogramForm({
       const isrc = `${data.isrc_country || 'BR'}-${data.isrc_registrant || ''}-${data.isrc_year || ''}-${data.isrc_designation || ''}`;
 
       // Combine all participants and filter out empty ones
-      const allParticipants = [
-        ...(data.phonographic_producers || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
-          ...p,
-          role: 'produtor_fonografico'
-        })), 
-        ...(data.performers || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
-          ...p,
-          role: 'interprete'
-        })), 
-        ...(data.musicians || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
-          ...p,
-          role: 'musico'
-        }))
-      ];
+      const allParticipants = [...(data.phonographic_producers || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
+        ...p,
+        role: 'produtor_fonografico'
+      })), ...(data.performers || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
+        ...p,
+        role: 'interprete'
+      })), ...(data.musicians || []).filter(p => p.name && p.name.trim() !== '').map(p => ({
+        ...p,
+        role: 'musico'
+      }))];
 
       // Handle audio upload
       let audioUrl = existingAudioUrl || projectAudioInfo?.url || null;
-      
       if (audioFile) {
         const fileExt = audioFile.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `phonograms/${fileName}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('project-audio')
-          .upload(filePath, audioFile);
-        
+        const {
+          data: uploadData,
+          error: uploadError
+        } = await supabase.storage.from('project-audio').upload(filePath, audioFile);
         if (uploadError) {
           console.error('Error uploading audio:', uploadError);
           toast({
@@ -434,13 +422,12 @@ export function PhonogramForm({
             variant: "destructive"
           });
         } else {
-          const { data: urlData } = supabase.storage
-            .from('project-audio')
-            .getPublicUrl(filePath);
+          const {
+            data: urlData
+          } = supabase.storage.from('project-audio').getPublicUrl(filePath);
           audioUrl = urlData.publicUrl;
         }
       }
-
       const phonogramData = {
         title: data.work_title || 'Sem título',
         work_id: data.work_id || null,
@@ -487,8 +474,14 @@ export function PhonogramForm({
   };
 
   // Extrair performers únicos dos projetos para autocomplete de intérpretes
-  const getProjectPerformers = (): Array<{ name: string; projectName: string }> => {
-    const performersSet = new Map<string, { name: string; projectName: string }>();
+  const getProjectPerformers = (): Array<{
+    name: string;
+    projectName: string;
+  }> => {
+    const performersSet = new Map<string, {
+      name: string;
+      projectName: string;
+    }>();
     projects.forEach((project: any) => {
       const parsedAudioFiles = parseAudioFiles(project.audio_files);
       if (parsedAudioFiles?.songs) {
@@ -496,9 +489,9 @@ export function PhonogramForm({
           if (song.performers && Array.isArray(song.performers)) {
             song.performers.forEach((p: any) => {
               if (p.name && p.name.trim() !== '' && !performersSet.has(p.name.toLowerCase())) {
-                performersSet.set(p.name.toLowerCase(), { 
-                  name: p.name, 
-                  projectName: project.name 
+                performersSet.set(p.name.toLowerCase(), {
+                  name: p.name,
+                  projectName: project.name
                 });
               }
             });
@@ -510,8 +503,14 @@ export function PhonogramForm({
   };
 
   // Extrair producers únicos dos projetos para autocomplete de músicos acompanhantes
-  const getProjectProducers = (): Array<{ name: string; projectName: string }> => {
-    const producersSet = new Map<string, { name: string; projectName: string }>();
+  const getProjectProducers = (): Array<{
+    name: string;
+    projectName: string;
+  }> => {
+    const producersSet = new Map<string, {
+      name: string;
+      projectName: string;
+    }>();
     projects.forEach((project: any) => {
       const parsedAudioFiles = parseAudioFiles(project.audio_files);
       if (parsedAudioFiles?.songs) {
@@ -519,9 +518,9 @@ export function PhonogramForm({
           if (song.producers && Array.isArray(song.producers)) {
             song.producers.forEach((p: any) => {
               if (p.name && p.name.trim() !== '' && !producersSet.has(p.name.toLowerCase())) {
-                producersSet.set(p.name.toLowerCase(), { 
-                  name: p.name, 
-                  projectName: project.name 
+                producersSet.set(p.name.toLowerCase(), {
+                  name: p.name,
+                  projectName: project.name
                 });
               }
             });
@@ -531,15 +530,10 @@ export function PhonogramForm({
     });
     return Array.from(producersSet.values());
   };
-
   const getFilteredArtists = (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 1) return artists.slice(0, 15);
     const term = searchTerm.toLowerCase();
-    return artists.filter((artist: any) => 
-      artist.name?.toLowerCase().includes(term) ||
-      artist.stage_name?.toLowerCase().includes(term) ||
-      artist.full_name?.toLowerCase().includes(term)
-    ).slice(0, 15);
+    return artists.filter((artist: any) => artist.name?.toLowerCase().includes(term) || artist.stage_name?.toLowerCase().includes(term) || artist.full_name?.toLowerCase().includes(term)).slice(0, 15);
   };
 
   // Filtrar performers dos projetos para intérpretes
@@ -547,9 +541,7 @@ export function PhonogramForm({
     const allPerformers = getProjectPerformers();
     if (!searchTerm || searchTerm.length < 1) return allPerformers.slice(0, 15);
     const term = searchTerm.toLowerCase();
-    return allPerformers.filter(p => 
-      p.name.toLowerCase().includes(term)
-    ).slice(0, 15);
+    return allPerformers.filter(p => p.name.toLowerCase().includes(term)).slice(0, 15);
   };
 
   // Filtrar producers dos projetos para músicos acompanhantes
@@ -557,33 +549,40 @@ export function PhonogramForm({
     const allProducers = getProjectProducers();
     if (!searchTerm || searchTerm.length < 1) return allProducers.slice(0, 15);
     const term = searchTerm.toLowerCase();
-    return getProjectProducers().filter(p => 
-      p.name.toLowerCase().includes(term)
-    ).slice(0, 15);
+    return getProjectProducers().filter(p => p.name.toLowerCase().includes(term)).slice(0, 15);
   };
-
   const handleSelectArtist = (artist: any, fieldName: string, index: number) => {
     const displayName = artist.stage_name || artist.name || artist.full_name;
     form.setValue(`${fieldName}.${index}.name` as any, displayName);
-    setOpenParticipantPopovers(prev => ({ ...prev, [`${fieldName}_${index}`]: false }));
-    setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
+    setOpenParticipantPopovers(prev => ({
+      ...prev,
+      [`${fieldName}_${index}`]: false
+    }));
+    setParticipantSearchTerms(prev => ({
+      ...prev,
+      [`${fieldName}_${index}`]: ''
+    }));
   };
-
-  const handleSelectProjectParticipant = (participant: { name: string; projectName: string }, fieldName: string, index: number) => {
+  const handleSelectProjectParticipant = (participant: {
+    name: string;
+    projectName: string;
+  }, fieldName: string, index: number) => {
     form.setValue(`${fieldName}.${index}.name` as any, participant.name);
-    setOpenParticipantPopovers(prev => ({ ...prev, [`${fieldName}_${index}`]: false }));
-    setParticipantSearchTerms(prev => ({ ...prev, [`${fieldName}_${index}`]: '' }));
+    setOpenParticipantPopovers(prev => ({
+      ...prev,
+      [`${fieldName}_${index}`]: false
+    }));
+    setParticipantSearchTerms(prev => ({
+      ...prev,
+      [`${fieldName}_${index}`]: ''
+    }));
   };
-
   const renderParticipantSection = (title: string, fields: any[], append: (value: any) => void, remove: (index: number) => void, isOpen: boolean, setIsOpen: (open: boolean) => void, fieldName: 'phonographic_producers' | 'performers' | 'musicians', percentage: number, maxPercentage: number = 100) => {
     // Filtrar contatos do CRM
     const getFilteredCrmContacts = (searchTerm: string) => {
       if (!searchTerm || searchTerm.length < 1) return crmContacts.slice(0, 15);
       const term = searchTerm.toLowerCase();
-      return crmContacts.filter((contact: any) => 
-        contact.name?.toLowerCase().includes(term) ||
-        contact.company?.toLowerCase().includes(term)
-      ).slice(0, 15);
+      return crmContacts.filter((contact: any) => contact.name?.toLowerCase().includes(term) || contact.company?.toLowerCase().includes(term)).slice(0, 15);
     };
 
     // Determinar fonte de autocomplete baseado no tipo de participante
@@ -598,7 +597,12 @@ export function PhonogramForm({
           isCrmContact: false,
           artistData: a
         }));
-        return [...projectPerformers.map(p => ({ ...p, isArtist: false, isCrmContact: false, artistData: null })), ...artistSuggestions];
+        return [...projectPerformers.map(p => ({
+          ...p,
+          isArtist: false,
+          isCrmContact: false,
+          artistData: null
+        })), ...artistSuggestions];
       } else if (fieldName === 'musicians') {
         // Para músicos acompanhantes, buscar dos producers dos projetos + artistas
         const projectProducers = getFilteredProducers(searchTerm);
@@ -609,7 +613,12 @@ export function PhonogramForm({
           isCrmContact: false,
           artistData: a
         }));
-        return [...projectProducers.map(p => ({ ...p, isArtist: false, isCrmContact: false, artistData: null })), ...artistSuggestions];
+        return [...projectProducers.map(p => ({
+          ...p,
+          isArtist: false,
+          isCrmContact: false,
+          artistData: null
+        })), ...artistSuggestions];
       } else {
         // Para produtores fonográficos, buscar de artistas (pessoa física) e contatos CRM (pessoa jurídica/física)
         const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
@@ -630,21 +639,17 @@ export function PhonogramForm({
         return [...artistSuggestions, ...crmSuggestions];
       }
     };
-
     const getPlaceholder = () => {
       if (fieldName === 'performers') return 'Digite para buscar intérprete...';
       if (fieldName === 'musicians') return 'Digite para buscar músico...';
       return 'Digite para buscar artista ou empresa...';
     };
-
     const getHeading = () => {
       if (fieldName === 'performers') return 'Intérpretes';
       if (fieldName === 'musicians') return 'Músicos';
       return 'Artistas e Contatos';
     };
-
-    return (
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    return <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70">
             <span className="font-medium">{title} - Percentual total: {percentage.toFixed(2)}% de {maxPercentage.toFixed(2)}%</span>
@@ -653,83 +658,75 @@ export function PhonogramForm({
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4 space-y-3">
           {fields.map((field, index) => {
-            const popoverKey = `${fieldName}_${index}`;
-            const searchTerm = participantSearchTerms[popoverKey] || '';
-            const filteredSuggestions = getFilteredSuggestions(searchTerm);
-            const isPopoverOpen = openParticipantPopovers[popoverKey] || false;
-            
-            return (
-              <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
+          const popoverKey = `${fieldName}_${index}`;
+          const searchTerm = participantSearchTerms[popoverKey] || '';
+          const filteredSuggestions = getFilteredSuggestions(searchTerm);
+          const isPopoverOpen = openParticipantPopovers[popoverKey] || false;
+          return <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-7">
                   <FormField control={form.control} name={`${fieldName}.${index}.name`} render={({
-                    field: formField
-                  }) => (
-                    <FormItem className="flex flex-col">
+                field: formField
+              }) => <FormItem className="flex flex-col">
                       {index === 0 && <FormLabel>Nome</FormLabel>}
                       <div className="relative">
                         <FormControl>
-                          <Input 
-                            className="pl-3 pr-10 text-left"
-                            placeholder={getPlaceholder()}
-                            value={formField.value}
-                            onChange={(e) => {
-                              formField.onChange(e.target.value);
-                              setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: e.target.value }));
-                              setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: true }));
-                            }}
-                          />
+                          <Input className="pl-3 pr-10 text-left" placeholder={getPlaceholder()} value={formField.value} onChange={e => {
+                      formField.onChange(e.target.value);
+                      setParticipantSearchTerms(prev => ({
+                        ...prev,
+                        [popoverKey]: e.target.value
+                      }));
+                      setOpenParticipantPopovers(prev => ({
+                        ...prev,
+                        [popoverKey]: true
+                      }));
+                    }} />
                         </FormControl>
-                        <Popover 
-                          open={isPopoverOpen} 
-                          onOpenChange={(open) => {
-                            setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: open }));
-                            if (open) {
-                              setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: '' }));
-                            }
-                          }}
-                        >
+                        <Popover open={isPopoverOpen} onOpenChange={open => {
+                    setOpenParticipantPopovers(prev => ({
+                      ...prev,
+                      [popoverKey]: open
+                    }));
+                    if (open) {
+                      setParticipantSearchTerms(prev => ({
+                        ...prev,
+                        [popoverKey]: ''
+                      }));
+                    }
+                  }}>
                           <PopoverTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full px-2"
-                            >
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-2">
                               <ChevronDown className="h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent 
-                            className="w-[350px] p-0 z-50 bg-popover" 
-                            align="end"
-                            sideOffset={4}
-                          >
+                          <PopoverContent className="w-[350px] p-0 z-50 bg-popover" align="end" sideOffset={4}>
                             <Command>
-                              <CommandInput 
-                                placeholder="Buscar..."
-                                value={searchTerm}
-                                onValueChange={(value) => {
-                                  setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: value }));
-                                }}
-                              />
+                              <CommandInput placeholder="Buscar..." value={searchTerm} onValueChange={value => {
+                          setParticipantSearchTerms(prev => ({
+                            ...prev,
+                            [popoverKey]: value
+                          }));
+                        }} />
                               <CommandList>
                                 <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
                                 <CommandGroup heading={getHeading()}>
-                                  {filteredSuggestions.map((suggestion: any, suggestionIndex) => (
-                                    <CommandItem
-                                      key={`${suggestion.name}-${suggestionIndex}`}
-                                      onSelect={() => {
-                                        if (suggestion.isArtist && suggestion.artistData) {
-                                          handleSelectArtist(suggestion.artistData, fieldName, index);
-                                        } else if (suggestion.isCrmContact) {
-                                          form.setValue(`${fieldName}.${index}.name` as any, suggestion.name);
-                                          setOpenParticipantPopovers(prev => ({ ...prev, [popoverKey]: false }));
-                                          setParticipantSearchTerms(prev => ({ ...prev, [popoverKey]: '' }));
-                                        } else {
-                                          handleSelectProjectParticipant(suggestion, fieldName, index);
-                                        }
-                                      }}
-                                      className="cursor-pointer"
-                                    >
+                                  {filteredSuggestions.map((suggestion: any, suggestionIndex) => <CommandItem key={`${suggestion.name}-${suggestionIndex}`} onSelect={() => {
+                              if (suggestion.isArtist && suggestion.artistData) {
+                                handleSelectArtist(suggestion.artistData, fieldName, index);
+                              } else if (suggestion.isCrmContact) {
+                                form.setValue(`${fieldName}.${index}.name` as any, suggestion.name);
+                                setOpenParticipantPopovers(prev => ({
+                                  ...prev,
+                                  [popoverKey]: false
+                                }));
+                                setParticipantSearchTerms(prev => ({
+                                  ...prev,
+                                  [popoverKey]: ''
+                                }));
+                              } else {
+                                handleSelectProjectParticipant(suggestion, fieldName, index);
+                              }
+                            }} className="cursor-pointer">
                                       <Check className={cn("mr-2 h-4 w-4", formField.value === suggestion.name ? "opacity-100" : "opacity-0")} />
                                       <div className="flex flex-col">
                                         <span>{suggestion.name}</span>
@@ -737,21 +734,19 @@ export function PhonogramForm({
                                           {suggestion.projectName}
                                         </span>
                                       </div>
-                                    </CommandItem>
-                                  ))}
+                                    </CommandItem>)}
                                 </CommandGroup>
                               </CommandList>
                             </Command>
                           </PopoverContent>
                         </Popover>
                       </div>
-                    </FormItem>
-                  )} />
+                    </FormItem>} />
                 </div>
                 <div className="col-span-3">
                   <FormField control={form.control} name={`${fieldName}.${index}.percentage`} render={({
-                    field
-                  }) => <FormItem>
+                field
+              }) => <FormItem>
                         {index === 0 && <FormLabel>Percentual (%)</FormLabel>}
                         <FormControl>
                           <Input type="number" min={0} max={100} step={0.01} placeholder="0.00" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
@@ -763,27 +758,22 @@ export function PhonogramForm({
                     <Trash2Icon className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-              </div>
-            );
-          })}
+              </div>;
+        })}
         <Button type="button" variant="outline" size="sm" onClick={() => append({
-        name: '',
-        role: '',
-        percentage: 0
-      })}>
+          name: '',
+          role: '',
+          percentage: 0
+        })}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Adicionar
         </Button>
       </CollapsibleContent>
-    </Collapsible>
-    );
+    </Collapsible>;
   };
   const onError = (errors: any) => {
     console.log('Validation errors:', errors);
-    const errorMessages = Object.entries(errors)
-      .map(([field, error]: [string, any]) => `${field}: ${error?.message || 'Campo inválido'}`)
-      .join(', ');
-    
+    const errorMessages = Object.entries(errors).map(([field, error]: [string, any]) => `${field}: ${error?.message || 'Campo inválido'}`).join(', ');
     toast({
       title: "Erro de validação",
       description: errorMessages || "Por favor, preencha todos os campos obrigatórios.",
@@ -794,8 +784,7 @@ export function PhonogramForm({
   // Filtrar obras para etapa 1
   const filteredWorksStep1 = works.filter((work: any) => {
     const searchLower = workSearchTerm.toLowerCase();
-    return work.title?.toLowerCase().includes(searchLower) ||
-           work.abramus_code?.toLowerCase().includes(searchLower);
+    return work.title?.toLowerCase().includes(searchLower) || work.abramus_code?.toLowerCase().includes(searchLower);
   });
 
   // Handle work selection in step 1
@@ -803,12 +792,10 @@ export function PhonogramForm({
     setSelectedWorkState(work);
     handleSelectWork(work);
   };
-
   return <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
         {/* Step 1: Work Selection */}
-        {currentStep === 1 && (
-          <Card className="bg-card">
+        {currentStep === 1 && <Card className="bg-card">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Etapa 1: Vincular Obra</CardTitle>
             </CardHeader>
@@ -819,35 +806,16 @@ export function PhonogramForm({
               
               {/* Search input */}
               <div className="space-y-4">
-                <Input 
-                  placeholder="Buscar por título ou código ABRAMUS..." 
-                  value={workSearchTerm} 
-                  onChange={e => setWorkSearchTerm(e.target.value)} 
-                />
+                <Input placeholder="Buscar por título ou código ABRAMUS..." value={workSearchTerm} onChange={e => setWorkSearchTerm(e.target.value)} />
                 
                 {/* Works list */}
                 <ScrollArea className="h-[300px] border rounded-lg">
                   <div className="p-2 space-y-2">
-                    {filteredWorksStep1.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">
+                    {filteredWorksStep1.length === 0 ? <p className="text-center text-muted-foreground py-8">
                         Nenhuma obra encontrada. Registre uma obra antes de criar um fonograma.
-                      </p>
-                    ) : (
-                      filteredWorksStep1.map((work: any) => (
-                        <div 
-                          key={work.id} 
-                          className={cn(
-                            "p-4 border rounded-lg cursor-pointer transition-colors",
-                            selectedWork?.id === work.id 
-                              ? "border-primary bg-primary/10" 
-                              : "hover:bg-accent/50"
-                          )}
-                          onClick={() => handleStep1WorkSelect(work)}
-                        >
+                      </p> : filteredWorksStep1.map((work: any) => <div key={work.id} className={cn("p-4 border rounded-lg cursor-pointer transition-colors", selectedWork?.id === work.id ? "border-primary bg-primary/10" : "hover:bg-accent/50")} onClick={() => handleStep1WorkSelect(work)}>
                           <div className="flex items-center gap-2">
-                            {selectedWork?.id === work.id && (
-                              <Check className="h-4 w-4 text-primary" />
-                            )}
+                            {selectedWork?.id === work.id && <Check className="h-4 w-4 text-primary" />}
                             <div>
                               <div className="font-medium">{work.title}</div>
                               <div className="text-sm text-muted-foreground">
@@ -856,9 +824,7 @@ export function PhonogramForm({
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))
-                    )}
+                        </div>)}
                   </div>
                 </ScrollArea>
               </div>
@@ -868,21 +834,15 @@ export function PhonogramForm({
                 <Button type="button" variant="outline" onClick={onCancel}>
                   Cancelar
                 </Button>
-                <Button 
-                  type="button" 
-                  onClick={() => setCurrentStep(2)}
-                  disabled={!selectedWork}
-                >
+                <Button type="button" onClick={() => setCurrentStep(2)} disabled={!selectedWork}>
                   Próxima Etapa
                 </Button>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Step 2: Form Data */}
-        {currentStep === 2 && (
-          <>
+        {currentStep === 2 && <>
 
             {/* Vincular Obra - now read-only summary */}
             <Card className="bg-card border-border">
@@ -890,8 +850,8 @@ export function PhonogramForm({
                 <div className="grid grid-cols-12 gap-4 items-end">
                   <div className="col-span-10">
                     <FormField control={form.control} name="work_title" render={({
-                    field
-                  }) => <FormItem>
+                  field
+                }) => <FormItem>
                           <FormLabel>Título da Obra Vinculada</FormLabel>
                           <FormControl>
                             <Input placeholder="O título da obra será exibido aqui." {...field} readOnly className="bg-muted/50" />
@@ -901,7 +861,7 @@ export function PhonogramForm({
                   <div className="col-span-2">
                     <Button type="button" onClick={() => setWorkSearchOpen(true)} variant="outline" className="w-full gap-2">
                       <Search className="h-4 w-4" />
-                      Alterar
+                      ​Buscar
                     </Button>
                   </div>
                 </div>
@@ -918,8 +878,8 @@ export function PhonogramForm({
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField control={form.control} name="abramus_code" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Cód Abramus</FormLabel>
                       <FormControl>
                         <Input placeholder="Código Abramus" {...field} />
@@ -928,8 +888,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="ecad_code" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Cód ECAD</FormLabel>
                       <FormControl>
                         <Input placeholder="Código ECAD" {...field} />
@@ -938,8 +898,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="aggregator" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Agregadora</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -963,31 +923,31 @@ export function PhonogramForm({
                 <FormLabel>ISRC</FormLabel>
                 <div className="grid grid-cols-4 gap-1 mt-2">
                   <FormField control={form.control} name="isrc_country" render={({
-                  field
-                }) => <FormControl>
+                    field
+                  }) => <FormControl>
                         <Input placeholder="BR" maxLength={2} {...field} />
                       </FormControl>} />
                   <FormField control={form.control} name="isrc_registrant" render={({
-                  field
-                }) => <FormControl>
+                    field
+                  }) => <FormControl>
                         <Input placeholder="XXX" maxLength={3} {...field} />
                       </FormControl>} />
                   <FormField control={form.control} name="isrc_year" render={({
-                  field
-                }) => <FormControl>
+                    field
+                  }) => <FormControl>
                         <Input placeholder="00" maxLength={2} {...field} />
                       </FormControl>} />
                   <FormField control={form.control} name="isrc_designation" render={({
-                  field
-                }) => <FormControl>
+                    field
+                  }) => <FormControl>
                         <Input placeholder="00000" maxLength={5} {...field} />
                       </FormControl>} />
                 </div>
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="is_ai_created" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Criada por IA</FormLabel>
                       <FormControl>
                         <ToggleButton value={field.value} onChange={field.onChange} options={["Não", "Sim"]} />
@@ -1000,8 +960,8 @@ export function PhonogramForm({
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField control={form.control} name="emission_date" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Emissão</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
@@ -1010,8 +970,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="recording_date" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Gravação Original</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
@@ -1020,8 +980,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="release_date" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Lançamento</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
@@ -1032,16 +992,16 @@ export function PhonogramForm({
                 <FormLabel>Duração</FormLabel>
                 <div className="grid grid-cols-2 gap-1 mt-2">
                   <FormField control={form.control} name="duration_minutes" render={({
-                  field
-                }) => <FormControl>
+                    field
+                  }) => <FormControl>
                         <div className="relative">
                           <Input type="number" min={0} placeholder="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">min</span>
                         </div>
                       </FormControl>} />
                   <FormField control={form.control} name="duration_seconds" render={({
-                  field
-                }) => <FormControl>
+                    field
+                  }) => <FormControl>
                         <div className="relative">
                           <Input type="number" min={0} max={59} placeholder="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">seg</span>
@@ -1051,8 +1011,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="is_instrumental" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Instrumental</FormLabel>
                       <FormControl>
                         <ToggleButton value={field.value} onChange={field.onChange} options={["Não", "Sim"]} />
@@ -1061,8 +1021,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="genre" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Gênero Musical</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -1092,8 +1052,8 @@ export function PhonogramForm({
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField control={form.control} name="classification" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Classificação</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -1112,8 +1072,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="media" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Mídia</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -1131,8 +1091,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="is_national" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Nacional</FormLabel>
                       <FormControl>
                         <ToggleButton value={field.value} onChange={field.onChange} options={["Não", "Sim"]} />
@@ -1141,8 +1101,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="simultaneous_publication" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Pub. Simultânea</FormLabel>
                       <FormControl>
                         <ToggleButton value={field.value} onChange={field.onChange} options={["Não", "Sim"]} />
@@ -1151,8 +1111,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="status" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>Status</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -1170,8 +1130,8 @@ export function PhonogramForm({
               </div>
               <div className="col-span-2">
                 <FormField control={form.control} name="origin_country" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>País Origem</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -1195,8 +1155,8 @@ export function PhonogramForm({
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2">
                 <FormField control={form.control} name="publication_country" render={({
-                field
-              }) => <FormItem>
+                  field
+                }) => <FormItem>
                       <FormLabel>País Publicação</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -1250,8 +1210,7 @@ export function PhonogramForm({
                   <input type="file" ref={audioInputRef} accept="audio/*" onChange={handleAudioUpload} className="hidden" />
                   
                   {/* Exibir áudio existente do banco (ao editar) */}
-                  {existingAudioUrl && !audioFile && !projectAudioInfo && (
-                    <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  {existingAudioUrl && !audioFile && !projectAudioInfo && <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileAudio className="h-8 w-8 text-green-600" />
                         <div>
@@ -1273,12 +1232,10 @@ export function PhonogramForm({
                           <X className="h-5 w-5 text-destructive" />
                         </Button>
                       </div>
-                    </div>
-                  )}
+                    </div>}
                   
                   {/* Exibir áudio do projeto se carregado */}
-                  {projectAudioInfo && !audioFile && (
-                    <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                  {projectAudioInfo && !audioFile && <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileAudio className="h-8 w-8 text-primary" />
                         <div>
@@ -1296,21 +1253,17 @@ export function PhonogramForm({
                           <X className="h-5 w-5 text-destructive" />
                         </Button>
                       </div>
-                    </div>
-                  )}
+                    </div>}
                   
                   {/* Upload manual quando não há áudio */}
-                  {!audioFile && !projectAudioInfo && !existingAudioUrl && (
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => audioInputRef.current?.click()}>
+                  {!audioFile && !projectAudioInfo && !existingAudioUrl && <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors" onClick={() => audioInputRef.current?.click()}>
                       <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">Clique para fazer upload do arquivo de áudio</p>
                       <p className="text-sm text-muted-foreground mt-1">MP3, WAV, FLAC, etc.</p>
-                    </div>
-                  )}
+                    </div>}
                   
                   {/* Arquivo de áudio enviado manualmente */}
-                  {audioFile && (
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  {audioFile && <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileAudio className="h-8 w-8 text-primary" />
                         <div>
@@ -1323,8 +1276,7 @@ export function PhonogramForm({
                       <Button type="button" variant="ghost" size="icon" onClick={removeAudioFile}>
                         <X className="h-5 w-5 text-destructive" />
                       </Button>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </CollapsibleContent>
             </Collapsible>
@@ -1336,8 +1288,8 @@ export function PhonogramForm({
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <FormField control={form.control} name="accept_terms" render={({
-              field
-            }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                field
+              }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
@@ -1409,13 +1361,13 @@ export function PhonogramForm({
             </ScrollArea>
             <DialogFooter>
               <Button type="button" onClick={() => {
-              form.setValue('accept_terms', true);
-              setTermsDialogOpen(false);
-              toast({
-                title: "Termos aceitos",
-                description: "Você aceitou os termos de uso."
-              });
-            }}>
+                form.setValue('accept_terms', true);
+                setTermsDialogOpen(false);
+                toast({
+                  title: "Termos aceitos",
+                  description: "Você aceitou os termos de uso."
+                });
+              }}>
                 Li e Aceito os Termos
               </Button>
             </DialogFooter>
@@ -1444,8 +1396,7 @@ export function PhonogramForm({
             </div>
           </DialogContent>
         </Dialog>
-          </>
-        )}
+          </>}
       </form>
     </Form>;
 }
