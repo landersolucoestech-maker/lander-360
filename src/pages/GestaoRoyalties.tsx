@@ -25,6 +25,7 @@ interface ParticipantRoyalty {
   name: string;
   role: string;
   percentage: number;
+  shareStatus: 'pending' | 'applied' | 'not_applied';
 }
 
 const GestaoRoyalties = () => {
@@ -117,7 +118,7 @@ const GestaoRoyalties = () => {
       // Add main artist
       const artistName = getArtistName(release.artist_id);
       if (artistName !== "N/A") {
-        participantsList.push({ name: artistName, role: "Artista Principal", percentage: 0 });
+        participantsList.push({ name: artistName, role: "Artista Principal", percentage: 0, shareStatus: 'pending' });
       }
       
       // Extract from tracks
@@ -127,7 +128,7 @@ const GestaoRoyalties = () => {
           composers.forEach((c: string) => {
             const name = c.trim();
             if (name && !participantsList.find(p => p.name === name)) {
-              participantsList.push({ name, role: "Compositor", percentage: 0 });
+              participantsList.push({ name, role: "Compositor", percentage: 0, shareStatus: 'pending' });
             }
           });
         }
@@ -136,7 +137,7 @@ const GestaoRoyalties = () => {
           performers.forEach((p: string) => {
             const name = p.trim();
             if (name && !participantsList.find(pr => pr.name === name)) {
-              participantsList.push({ name, role: "Intérprete", percentage: 0 });
+              participantsList.push({ name, role: "Intérprete", percentage: 0, shareStatus: 'pending' });
             }
           });
         }
@@ -145,7 +146,7 @@ const GestaoRoyalties = () => {
           producers.forEach((p: string) => {
             const name = p.trim();
             if (name && !participantsList.find(pr => pr.name === name)) {
-              participantsList.push({ name, role: "Produtor", percentage: 0 });
+              participantsList.push({ name, role: "Produtor", percentage: 0, shareStatus: 'pending' });
             }
           });
         }
@@ -158,7 +159,7 @@ const GestaoRoyalties = () => {
   };
 
   const handleAddParticipant = () => {
-    setParticipantsRoyalties([...participantsRoyalties, { name: "", role: "Compositor", percentage: 0 }]);
+    setParticipantsRoyalties([...participantsRoyalties, { name: "", role: "Compositor", percentage: 0, shareStatus: 'pending' }]);
   };
 
   const handleRemoveParticipant = (index: number) => {
@@ -549,52 +550,73 @@ const GestaoRoyalties = () => {
                   Nenhum participante adicionado. Clique em "Adicionar" para incluir.
                 </p>
               ) : (
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                <div className="space-y-2 max-h-[250px] overflow-y-auto">
                   {participantsRoyalties.map((participant, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
-                      <Input 
-                        placeholder="Nome"
-                        value={participant.name}
-                        onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
-                        className="flex-1"
-                      />
-                      <Select 
-                        value={participant.role} 
-                        onValueChange={(v) => handleParticipantChange(index, 'role', v)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Artista Principal">Artista</SelectItem>
-                          <SelectItem value="Compositor">Compositor</SelectItem>
-                          <SelectItem value="Intérprete">Intérprete</SelectItem>
-                          <SelectItem value="Produtor">Produtor</SelectItem>
-                          <SelectItem value="Músico">Músico</SelectItem>
-                          <SelectItem value="Editor">Editor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <div className="flex items-center gap-1 w-24">
+                    <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg">
+                      <div className="flex items-center gap-2">
                         <Input 
-                          type="number"
-                          step="0.01"
-                          max="100"
-                          placeholder="%"
-                          value={participant.percentage || ""}
-                          onChange={(e) => handleParticipantChange(index, 'percentage', parseFloat(e.target.value) || 0)}
-                          className="w-16"
+                          placeholder="Nome"
+                          value={participant.name}
+                          onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                          className="flex-1"
                         />
-                        <span className="text-sm text-muted-foreground">%</span>
+                        <Select 
+                          value={participant.role} 
+                          onValueChange={(v) => handleParticipantChange(index, 'role', v)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Artista Principal">Artista</SelectItem>
+                            <SelectItem value="Compositor">Compositor</SelectItem>
+                            <SelectItem value="Intérprete">Intérprete</SelectItem>
+                            <SelectItem value="Produtor">Produtor</SelectItem>
+                            <SelectItem value="Músico">Músico</SelectItem>
+                            <SelectItem value="Editor">Editor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleRemoveParticipant(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => handleRemoveParticipant(index)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Input 
+                            type="number"
+                            step="0.01"
+                            max="100"
+                            placeholder="%"
+                            value={participant.percentage || ""}
+                            onChange={(e) => handleParticipantChange(index, 'percentage', parseFloat(e.target.value) || 0)}
+                            className="w-20"
+                          />
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <Select 
+                          value={participant.shareStatus || 'pending'} 
+                          onValueChange={(v) => handleParticipantChange(index, 'shareStatus', v)}
+                        >
+                          <SelectTrigger className={cn(
+                            "w-36",
+                            participant.shareStatus === 'applied' && "border-green-500 text-green-600",
+                            participant.shareStatus === 'not_applied' && "border-red-500 text-red-600"
+                          )}>
+                            <SelectValue placeholder="Situação Share" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pendente</SelectItem>
+                            <SelectItem value="applied">Share Aplicado</SelectItem>
+                            <SelectItem value="not_applied">Não Aplicado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   ))}
                 </div>
