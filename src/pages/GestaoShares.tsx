@@ -701,23 +701,6 @@ const GestaoShares = () => {
                                 >
                                   Excluir
                                 </Button>
-                                {share.status !== 'received' && (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    className="text-green-600 hover:text-green-700"
-                                    onClick={() => {
-                                      updatePendingShare.mutate({
-                                        id: share.id,
-                                        data: { status: 'received' }
-                                      });
-                                    }}
-                                    disabled={updatePendingShare.isPending}
-                                  >
-                                    <Check className="h-4 w-4 mr-1" />
-                                    Recebido
-                                  </Button>
-                                )}
                               </div>
                             </td>
                           </tr>
