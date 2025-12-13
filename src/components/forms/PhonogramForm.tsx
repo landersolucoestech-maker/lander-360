@@ -106,8 +106,8 @@ export function PhonogramForm({
   const createPhonogram = useCreatePhonogram();
   const updatePhonogram = useUpdatePhonogram();
   
-  // Two-step form state - skip step 1 if editing
-  const [currentStep, setCurrentStep] = useState<1 | 2>(phonogram?.id ? 2 : 1);
+  // Go directly to step 2 (form) - skip step 1 since flow is: projects -> obras -> fonogramas
+  const [currentStep, setCurrentStep] = useState<1 | 2>(2);
   const [selectedWork, setSelectedWorkState] = useState<any>(phonogram?.work_id ? works.find(w => w.id === phonogram.work_id) : null);
   
   const [workSearchOpen, setWorkSearchOpen] = useState(false);
@@ -883,14 +883,6 @@ export function PhonogramForm({
         {/* Step 2: Form Data */}
         {currentStep === 2 && (
           <>
-            {/* Step indicator */}
-            <div className="flex items-center justify-between mb-4">
-              <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)} className="gap-2">
-                <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
-                Voltar para Etapa 1
-              </Button>
-              <span className="text-sm text-muted-foreground">Etapa 2: Dados do Fonograma</span>
-            </div>
 
             {/* Vincular Obra - now read-only summary */}
             <Card className="bg-card border-border">
