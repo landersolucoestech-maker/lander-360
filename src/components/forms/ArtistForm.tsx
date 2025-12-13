@@ -61,6 +61,8 @@ const artistSchema = z.object({
   youtube: z.string().optional(),
   tiktok: z.string().optional(),
   soundcloud: z.string().optional(),
+  deezer: z.string().optional(),
+  apple_music: z.string().optional(),
   // Tipo de Perfil e Dados do Responsável
   profile_type: z.string().min(1, 'Tipo de perfil é obrigatório'),
   record_label_name: z.string().optional(),
@@ -129,6 +131,8 @@ export function ArtistForm({
       youtube: artist?.youtube_url || '',
       tiktok: artist?.tiktok || '',
       soundcloud: artist?.soundcloud || '',
+      deezer: (artist as any)?.deezer_url || '',
+      apple_music: (artist as any)?.apple_music_url || '',
       profile_type: artist?.profile_type || '',
       record_label_name: (artist as any)?.record_label_name || '',
       manager_name: artist?.manager_name || '',
@@ -323,6 +327,8 @@ export function ArtistForm({
         youtube_url: data.youtube || null,
         tiktok: data.tiktok || null,
         soundcloud: data.soundcloud || null,
+        deezer_url: data.deezer || null,
+        apple_music_url: data.apple_music || null,
         profile_type: data.profile_type,
         record_label_name: data.record_label_name || null,
         manager_name: data.manager_name || null,
@@ -822,10 +828,30 @@ export function ArtistForm({
 
               <FormField control={form.control} name="soundcloud" render={({
               field
-            }) => <FormItem className="md:col-span-2">
+            }) => <FormItem>
                     <FormLabel>SoundCloud</FormLabel>
                     <FormControl>
                       <Input placeholder="https://soundcloud.com/perfil" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>} />
+
+              <FormField control={form.control} name="deezer" render={({
+              field
+            }) => <FormItem>
+                    <FormLabel>Deezer</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://deezer.com/artist/..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>} />
+
+              <FormField control={form.control} name="apple_music" render={({
+              field
+            }) => <FormItem className="md:col-span-2">
+                    <FormLabel>Apple Music</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://music.apple.com/artist/..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>} />

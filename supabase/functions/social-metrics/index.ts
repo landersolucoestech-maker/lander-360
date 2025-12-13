@@ -119,7 +119,7 @@ async function getYouTubeMetrics(youtubeUrl: string): Promise<YouTubeChannelData
   }
 }
 
-// Scrape Instagram followers (basic scraping - may be blocked)
+// Scrape Instagram followers using multiple methods
 async function getInstagramFollowers(instagramUrl: string): Promise<number | null> {
   if (!instagramUrl) return null;
   
@@ -130,38 +130,85 @@ async function getInstagramFollowers(instagramUrl: string): Promise<number | nul
       const match = instagramUrl.match(/instagram\.com\/([a-zA-Z0-9_.]+)/);
       if (match) username = match[1];
     }
-    username = username.replace('@', '').replace('/', '');
+    username = username.replace('@', '').replace('/', '').split('?')[0];
     
+    console.log('Fetching Instagram for username:', username);
+    
+    // Method 1: Try i.instagram.com API (mobile API)
+    try {
+      const apiResponse = await fetch(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`, {
+        headers: {
+          'User-Agent': 'Instagram 219.0.0.12.117 Android',
+          'X-IG-App-ID': '936619743392459',
+        },
+      });
+      
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        const followers = apiData?.data?.user?.edge_followed_by?.count;
+        if (followers) {
+          console.log('Instagram followers from API:', followers);
+          return followers;
+        }
+      }
+    } catch (e) {
+      console.log('Instagram API method failed, trying scraping');
+    }
+    
+    // Method 2: Scrape the profile page
     const response = await fetch(`https://www.instagram.com/${username}/`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120"',
+        'sec-fetch-mode': 'navigate',
       },
     });
 
     if (!response.ok) {
-      console.log('Instagram fetch failed');
+      console.log('Instagram fetch failed with status:', response.status);
       return null;
     }
 
     const html = await response.text();
     
-    // Try to find follower count in meta tags or scripts
-    const followerMatch = html.match(/"edge_followed_by":\s*{\s*"count":\s*(\d+)/);
-    if (followerMatch) {
-      return parseInt(followerMatch[1], 10);
+    // Pattern 1: JSON in script tag
+    const jsonMatch = html.match(/"edge_followed_by":\s*{\s*"count":\s*(\d+)/);
+    if (jsonMatch) {
+      const count = parseInt(jsonMatch[1], 10);
+      console.log('Instagram followers from JSON:', count);
+      return count;
     }
     
-    // Alternative pattern
-    const altMatch = html.match(/(\d+(?:[.,]\d+)?[MK]?)\s*(?:Followers|seguidores)/i);
-    if (altMatch) {
-      let value = altMatch[1].replace(',', '.');
-      if (value.endsWith('M')) {
-        return Math.round(parseFloat(value) * 1000000);
-      } else if (value.endsWith('K')) {
-        return Math.round(parseFloat(value) * 1000);
+    // Pattern 2: Meta content
+    const metaMatch = html.match(/content="([\d,]+)\s*Followers/i);
+    if (metaMatch) {
+      const count = parseInt(metaMatch[1].replace(/,/g, ''), 10);
+      console.log('Instagram followers from meta:', count);
+      return count;
+    }
+    
+    // Pattern 3: Various text patterns
+    const patterns = [
+      /(\d+(?:[.,]\d+)?[MK]?)\s*(?:followers|seguidores)/i,
+      /"follower_count":\s*(\d+)/i,
+      /followers['"]\s*:\s*(\d+)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match) {
+        let value = match[1].replace(',', '.');
+        if (value.endsWith('M')) {
+          return Math.round(parseFloat(value) * 1000000);
+        } else if (value.endsWith('K')) {
+          return Math.round(parseFloat(value) * 1000);
+        }
+        const count = parseInt(value.replace(/\./g, ''), 10);
+        console.log('Instagram followers from pattern:', count);
+        return count;
       }
-      return parseInt(value.replace('.', ''), 10);
     }
     
     console.log('Could not extract Instagram followers');
@@ -172,7 +219,7 @@ async function getInstagramFollowers(instagramUrl: string): Promise<number | nul
   }
 }
 
-// Scrape TikTok followers
+// Scrape TikTok followers using multiple methods
 async function getTikTokFollowers(tiktokUrl: string): Promise<number | null> {
   if (!tiktokUrl) return null;
   
@@ -183,44 +230,181 @@ async function getTikTokFollowers(tiktokUrl: string): Promise<number | null> {
       const match = tiktokUrl.match(/tiktok\.com\/@?([a-zA-Z0-9_.]+)/);
       if (match) username = match[1];
     }
-    username = username.replace('@', '');
+    username = username.replace('@', '').split('?')[0];
     
+    console.log('Fetching TikTok for username:', username);
+    
+    // Method 1: Try the API
+    try {
+      const apiResponse = await fetch(`https://www.tiktok.com/api/user/detail/?uniqueId=${username}&msToken=`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      });
+      
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        const followers = apiData?.userInfo?.stats?.followerCount;
+        if (followers) {
+          console.log('TikTok followers from API:', followers);
+          return followers;
+        }
+      }
+    } catch (e) {
+      console.log('TikTok API method failed, trying scraping');
+    }
+    
+    // Method 2: Scrape the profile page
     const response = await fetch(`https://www.tiktok.com/@${username}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
     });
 
     if (!response.ok) {
-      console.log('TikTok fetch failed');
+      console.log('TikTok fetch failed with status:', response.status);
       return null;
     }
 
     const html = await response.text();
     
-    // Try to find follower count in script data
-    const followerMatch = html.match(/"followerCount":\s*(\d+)/);
-    if (followerMatch) {
-      return parseInt(followerMatch[1], 10);
+    // Pattern 1: JSON in SIGI_STATE
+    const sigiMatch = html.match(/"followerCount":\s*(\d+)/);
+    if (sigiMatch) {
+      const count = parseInt(sigiMatch[1], 10);
+      console.log('TikTok followers from SIGI:', count);
+      return count;
     }
     
-    // Alternative pattern
-    const altMatch = html.match(/(\d+(?:[.,]\d+)?[MK]?)\s*Followers/i);
-    if (altMatch) {
-      let value = altMatch[1].replace(',', '.');
-      if (value.endsWith('M')) {
-        return Math.round(parseFloat(value) * 1000000);
-      } else if (value.endsWith('K')) {
-        return Math.round(parseFloat(value) * 1000);
+    // Pattern 2: Stats data
+    const statsMatch = html.match(/"stats":\s*{[^}]*"followerCount":\s*(\d+)/);
+    if (statsMatch) {
+      const count = parseInt(statsMatch[1], 10);
+      console.log('TikTok followers from stats:', count);
+      return count;
+    }
+    
+    // Pattern 3: Text pattern
+    const patterns = [
+      /(\d+(?:[.,]\d+)?[MK]?)\s*Followers/i,
+      /(\d+(?:[.,]\d+)?[MK]?)\s*Seguidores/i,
+      /"fans":\s*(\d+)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match) {
+        let value = match[1].replace(',', '.');
+        if (value.endsWith('M')) {
+          return Math.round(parseFloat(value) * 1000000);
+        } else if (value.endsWith('K')) {
+          return Math.round(parseFloat(value) * 1000);
+        }
+        const count = parseInt(value.replace(/\./g, ''), 10);
+        console.log('TikTok followers from pattern:', count);
+        return count;
       }
-      return parseInt(value.replace('.', ''), 10);
     }
     
     console.log('Could not extract TikTok followers');
     return null;
   } catch (error) {
     console.error('Error fetching TikTok metrics:', error);
+    return null;
+  }
+}
+
+// Scrape Deezer followers
+async function getDeezerFollowers(deezerUrl: string): Promise<number | null> {
+  if (!deezerUrl) return null;
+  
+  try {
+    // Extract artist ID from URL
+    const match = deezerUrl.match(/deezer\.com\/(?:br\/|us\/|en\/)?artist\/(\d+)/);
+    if (!match) {
+      console.log('Could not extract Deezer artist ID from:', deezerUrl);
+      return null;
+    }
+    
+    const artistId = match[1];
+    console.log('Fetching Deezer for artist ID:', artistId);
+    
+    // Use Deezer public API
+    const response = await fetch(`https://api.deezer.com/artist/${artistId}`);
+    
+    if (!response.ok) {
+      console.log('Deezer API failed with status:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.log('Deezer API error:', data.error);
+      return null;
+    }
+    
+    const fans = data.nb_fan;
+    if (fans !== undefined) {
+      console.log('Deezer fans:', fans);
+      return fans;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching Deezer metrics:', error);
+    return null;
+  }
+}
+
+// Scrape Apple Music followers (limited - Apple doesn't expose follower counts easily)
+async function getAppleMusicFollowers(appleMusicUrl: string): Promise<number | null> {
+  if (!appleMusicUrl) return null;
+  
+  try {
+    console.log('Fetching Apple Music for:', appleMusicUrl);
+    
+    // Apple Music doesn't have a public API for follower counts
+    // We can try to scrape but it's very limited
+    const response = await fetch(appleMusicUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+    });
+    
+    if (!response.ok) {
+      console.log('Apple Music fetch failed');
+      return null;
+    }
+    
+    const html = await response.text();
+    
+    // Try to find any listener/follower data in the page
+    const patterns = [
+      /(\d+(?:[.,]\d+)?[MK]?)\s*(?:listeners|monthly listeners)/i,
+      /"listenerCount":\s*(\d+)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match) {
+        let value = match[1].replace(',', '.');
+        if (value.endsWith('M')) {
+          return Math.round(parseFloat(value) * 1000000);
+        } else if (value.endsWith('K')) {
+          return Math.round(parseFloat(value) * 1000);
+        }
+        return parseInt(value.replace(/\./g, ''), 10);
+      }
+    }
+    
+    console.log('Could not extract Apple Music data');
+    return null;
+  } catch (error) {
+    console.error('Error fetching Apple Music metrics:', error);
     return null;
   }
 }
@@ -235,9 +419,9 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { artistId, youtubeUrl, instagramUrl, tiktokUrl } = await req.json();
+    const { artistId, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl } = await req.json();
 
-    console.log('Social metrics request:', { artistId, youtubeUrl, instagramUrl, tiktokUrl });
+    console.log('Social metrics request:', { artistId, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl });
 
     if (!artistId) {
       return new Response(
@@ -256,7 +440,6 @@ serve(async (req) => {
       if (ytData) {
         results.youtube = ytData;
         
-        // Save to database
         await supabase.from('social_media_metrics').upsert({
           artist_id: artistId,
           platform: 'youtube',
@@ -315,6 +498,50 @@ serve(async (req) => {
         });
         
         console.log('TikTok metrics saved:', ttFollowers);
+      }
+    }
+
+    // Fetch Deezer metrics
+    if (deezerUrl && deezerUrl !== 'Não temos' && deezerUrl !== 'Não tem') {
+      console.log('Fetching Deezer metrics for:', deezerUrl);
+      const dzFollowers = await getDeezerFollowers(deezerUrl);
+      if (dzFollowers !== null) {
+        results.deezer = { followers: dzFollowers };
+        
+        await supabase.from('social_media_metrics').upsert({
+          artist_id: artistId,
+          platform: 'deezer',
+          metric_type: 'followers',
+          date: today,
+          followers: dzFollowers,
+        }, {
+          onConflict: 'artist_id,platform,date',
+          ignoreDuplicates: false,
+        });
+        
+        console.log('Deezer metrics saved:', dzFollowers);
+      }
+    }
+
+    // Fetch Apple Music metrics
+    if (appleMusicUrl && appleMusicUrl !== 'Não temos' && appleMusicUrl !== 'Não tem') {
+      console.log('Fetching Apple Music metrics for:', appleMusicUrl);
+      const amFollowers = await getAppleMusicFollowers(appleMusicUrl);
+      if (amFollowers !== null) {
+        results.apple = { followers: amFollowers };
+        
+        await supabase.from('social_media_metrics').upsert({
+          artist_id: artistId,
+          platform: 'apple',
+          metric_type: 'followers',
+          date: today,
+          followers: amFollowers,
+        }, {
+          onConflict: 'artist_id,platform,date',
+          ignoreDuplicates: false,
+        });
+        
+        console.log('Apple Music metrics saved:', amFollowers);
       }
     }
 

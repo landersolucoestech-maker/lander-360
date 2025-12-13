@@ -27,6 +27,8 @@ interface ArtistCardProps {
       youtube?: string;
       tiktok?: string;
       soundcloud?: string;
+      deezer?: string;
+      apple?: string;
     };
     stats: {
       projetos?: number;
@@ -107,13 +109,17 @@ export function ArtistCard({
       const youtubeUrl = artist.socialMedia?.youtube || '';
       const instagramUrl = artist.socialMedia?.instagram || '';
       const tiktokUrl = artist.socialMedia?.tiktok || '';
+      const deezerUrl = artist.socialMedia?.deezer || '';
+      const appleMusicUrl = artist.socialMedia?.apple || '';
       
-      if (youtubeUrl || instagramUrl || tiktokUrl) {
+      if (youtubeUrl || instagramUrl || tiktokUrl || deezerUrl || appleMusicUrl) {
         await fetchSocialMetrics.mutateAsync({
           artistId: artist.id.toString(),
           youtubeUrl: youtubeUrl,
           instagramUrl: instagramUrl,
           tiktokUrl: tiktokUrl,
+          deezerUrl: deezerUrl,
+          appleMusicUrl: appleMusicUrl,
         });
       }
     } catch (error) {

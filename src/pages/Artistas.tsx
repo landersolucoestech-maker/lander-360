@@ -306,7 +306,9 @@ const Artistas = () => {
         spotify: dbArtist.spotify_url,
         youtube: dbArtist.youtube_url,
         tiktok: dbArtist.tiktok,
-        soundcloud: dbArtist.soundcloud
+        soundcloud: dbArtist.soundcloud,
+        deezer: dbArtist.deezer_url,
+        apple: dbArtist.apple_music_url
       },
       stats: {
         projetos: artistStats[dbArtist.id]?.projetos || 0,
