@@ -95,6 +95,9 @@ const marketingItems = [{
 }, {
   title: "Central de Briefing",
   url: "/marketing/briefing"
+}, {
+  title: "IA Criativa",
+  url: "/marketing/ia-criativa"
 }];
 interface AppSidebarProps {
   className?: string;

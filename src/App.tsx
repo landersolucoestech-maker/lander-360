@@ -35,6 +35,7 @@ import MarketingTarefas from "./pages/marketing/Tarefas";
 import MarketingCalendario from "./pages/marketing/Calendario";
 import MarketingMetricas from "./pages/marketing/Metricas";
 import MarketingBriefing from "./pages/marketing/Briefing";
+import IACriativa from "./pages/marketing/IACriativa";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Servicos from "./pages/Servicos";
 import LanderZap from "./pages/LanderZap";
@@ -88,6 +89,7 @@ const App = () => (
               <Route path="/marketing/calendario" element={<ProtectedRoute><MarketingCalendario /></ProtectedRoute>} />
               <Route path="/marketing/metricas" element={<ProtectedRoute><MarketingMetricas /></ProtectedRoute>} />
               <Route path="/marketing/briefing" element={<ProtectedRoute><MarketingBriefing /></ProtectedRoute>} />
+              <Route path="/marketing/ia-criativa" element={<ProtectedRoute><IACriativa /></ProtectedRoute>} />
               <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
