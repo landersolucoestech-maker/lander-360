@@ -9,18 +9,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Download, Users, Music, Disc, Filter, 
-  CheckCircle, XCircle, AlertTriangle, Edit
+  CheckCircle, XCircle, AlertTriangle, Edit, FolderKanban, Rocket
 } from "lucide-react";
 import { MusicEditModal } from "@/components/modals/MusicEditModal";
 import { PhonogramEditModal } from "@/components/modals/PhonogramEditModal";
+import { ProjectModal } from "@/components/modals/ProjectModal";
 import { format } from "date-fns";
-import { translateStatus } from "@/lib/utils";
+import { translateStatus, formatDateBR } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
 import { useToast } from "@/hooks/use-toast";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { usePhonograms } from "@/hooks/usePhonograms";
 import { useArtists } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
+import { useReleases } from "@/hooks/useReleases";
 import { DateInput } from "@/components/ui/date-input";
 
 const RelatoriosAutorais = () => {
@@ -28,11 +30,12 @@ const RelatoriosAutorais = () => {
   const { data: musicRegistry = [], isLoading: isLoadingMusic } = useMusicRegistry();
   const { data: phonograms = [], isLoading: isLoadingPhonograms } = usePhonograms();
   const { data: artists = [] } = useArtists();
+  const { data: releases = [], isLoading: isLoadingReleases } = useReleases();
   const { data: projects = [] } = useProjects();
 
   // Filter states
   const [selectedArtist, setSelectedArtist] = useState<string>("all");
-  const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -41,8 +44,10 @@ const RelatoriosAutorais = () => {
   // Edit modals state
   const [editMusicModalOpen, setEditMusicModalOpen] = useState(false);
   const [editPhonogramModalOpen, setEditPhonogramModalOpen] = useState(false);
+  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false);
   const [selectedMusic, setSelectedMusic] = useState<any>(null);
   const [selectedPhonogram, setSelectedPhonogram] = useState<any>(null);
+  const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<any>(null);
 
   const handleEditMusic = (music: any) => {
     setSelectedMusic(music);
@@ -52,6 +57,11 @@ const RelatoriosAutorais = () => {
   const handleEditPhonogram = (phono: any) => {
     setSelectedPhonogram(phono);
     setEditPhonogramModalOpen(true);
+  };
+
+  const handleEditProject = (project: any) => {
+    setSelectedProjectForEdit(project);
+    setEditProjectModalOpen(true);
   };
 
   // Get artist name helper
@@ -65,13 +75,13 @@ const RelatoriosAutorais = () => {
   const filteredMusic = useMemo(() => {
     return musicRegistry.filter(music => {
       if (selectedArtist !== "all" && music.artist_id !== selectedArtist) return false;
-      if (selectedProject !== "all" && music.project_id !== selectedProject) return false;
+      if (selectedProjectFilter !== "all" && music.project_id !== selectedProjectFilter) return false;
       if (selectedStatus !== "all" && music.status !== selectedStatus) return false;
       if (startDate && music.release_date && new Date(music.release_date) < startDate) return false;
       if (endDate && music.release_date && new Date(music.release_date) > endDate) return false;
       return true;
     });
-  }, [musicRegistry, selectedArtist, selectedProject, selectedStatus, startDate, endDate]);
+  }, [musicRegistry, selectedArtist, selectedProjectFilter, selectedStatus, startDate, endDate]);
 
   const filteredPhonograms = useMemo(() => {
     return phonograms.filter(phono => {
@@ -186,13 +196,65 @@ const RelatoriosAutorais = () => {
 
   const clearFilters = () => {
     setSelectedArtist("all");
-    setSelectedProject("all");
+    setSelectedProjectFilter("all");
     setSelectedStatus("all");
     setStartDate(undefined);
     setEndDate(undefined);
   };
 
-  const isLoading = isLoadingMusic || isLoadingPhonograms;
+  // Filtered projects
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      if (selectedArtist !== "all" && project.artist_id !== selectedArtist) return false;
+      if (selectedStatus !== "all" && project.status !== selectedStatus) return false;
+      if (startDate && project.start_date && new Date(project.start_date) < startDate) return false;
+      if (endDate && project.end_date && new Date(project.end_date) > endDate) return false;
+      return true;
+    });
+  }, [projects, selectedArtist, selectedStatus, startDate, endDate]);
+
+  // Filtered releases
+  const filteredReleases = useMemo(() => {
+    return releases.filter(release => {
+      if (selectedArtist !== "all" && release.artist_id !== selectedArtist) return false;
+      if (selectedStatus !== "all" && release.status !== selectedStatus) return false;
+      if (startDate && release.release_date && new Date(release.release_date) < startDate) return false;
+      if (endDate && release.release_date && new Date(release.release_date) > endDate) return false;
+      return true;
+    });
+  }, [releases, selectedArtist, selectedStatus, startDate, endDate]);
+
+  // Export functions for projects and releases
+  const handleExportProjectsReport = () => {
+    const data = filteredProjects.map(project => ({
+      "Nome": project.name,
+      "Artista": getArtistName(project.artist_id),
+      "Status": translateStatus(project.status),
+      "Data Início": project.start_date ? formatDateBR(new Date(project.start_date)) : "-",
+      "Data Fim": project.end_date ? formatDateBR(new Date(project.end_date)) : "-",
+      "Orçamento": project.budget || "-",
+      "Descrição": project.description || "-"
+    }));
+
+    exportToExcel(data, "relatorio_projetos");
+  };
+
+  const handleExportReleasesReport = () => {
+    const data = filteredReleases.map(release => ({
+      "Título": release.title,
+      "Artista": getArtistName(release.artist_id),
+      "Tipo": release.release_type || release.type || "-",
+      "Status": translateStatus(release.status),
+      "Data Lançamento": release.release_date ? formatDateBR(new Date(release.release_date)) : "-",
+      "Gênero": release.genre || "-",
+      "Gravadora": release.label || "-",
+      "Copyright": release.copyright || "-"
+    }));
+
+    exportToExcel(data, "relatorio_lancamentos");
+  };
+
+  const isLoading = isLoadingMusic || isLoadingPhonograms || isLoadingReleases;
 
   return (
     <SidebarProvider>
@@ -237,7 +299,7 @@ const RelatoriosAutorais = () => {
 
                   <div className="space-y-2">
                     <Label>Projeto</Label>
-                    <Select value={selectedProject} onValueChange={setSelectedProject}>
+                    <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
                       <SelectTrigger>
                         <SelectValue placeholder="Todos os projetos" />
                       </SelectTrigger>
@@ -296,18 +358,26 @@ const RelatoriosAutorais = () => {
 
             {/* Report Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid grid-cols-3 w-full lg:w-auto">
+              <TabsList className="grid grid-cols-5 w-full lg:w-auto">
                 <TabsTrigger value="artista" className="gap-2">
                   <Users className="h-4 w-4" />
-                  Por Artista
+                  <span className="hidden sm:inline">Por Artista</span>
+                </TabsTrigger>
+                <TabsTrigger value="projetos" className="gap-2">
+                  <FolderKanban className="h-4 w-4" />
+                  <span className="hidden sm:inline">Projetos</span>
                 </TabsTrigger>
                 <TabsTrigger value="obras" className="gap-2">
                   <Music className="h-4 w-4" />
-                  Obras
+                  <span className="hidden sm:inline">Obras</span>
                 </TabsTrigger>
                 <TabsTrigger value="fonogramas" className="gap-2">
                   <Disc className="h-4 w-4" />
-                  Fonogramas
+                  <span className="hidden sm:inline">Fonogramas</span>
+                </TabsTrigger>
+                <TabsTrigger value="lancamentos" className="gap-2">
+                  <Rocket className="h-4 w-4" />
+                  <span className="hidden sm:inline">Lançamentos</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -605,6 +675,204 @@ const RelatoriosAutorais = () => {
                   </Card>
                 )}
               </TabsContent>
+
+              {/* Projetos Tab */}
+              <TabsContent value="projetos" className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold">Relatório de Projetos</h2>
+                  <Button onClick={handleExportProjectsReport} className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Exportar Excel
+                  </Button>
+                </div>
+
+                {/* KPIs de Projetos */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Projetos</p>
+                          <p className="text-2xl font-bold">{filteredProjects.length}</p>
+                        </div>
+                        <FolderKanban className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Concluídos</p>
+                          <p className="text-2xl font-bold text-green-600">{filteredProjects.filter(p => p.status === 'completed').length}</p>
+                        </div>
+                        <CheckCircle className="h-8 w-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Em Progresso</p>
+                          <p className="text-2xl font-bold text-yellow-600">{filteredProjects.filter(p => p.status === 'in_progress').length}</p>
+                        </div>
+                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Rascunho</p>
+                          <p className="text-2xl font-bold text-gray-600">{filteredProjects.filter(p => p.status === 'draft' || p.status === 'planning').length}</p>
+                        </div>
+                        <XCircle className="h-8 w-8 text-gray-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {isLoading ? (
+                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+                ) : filteredProjects.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">Nenhum projeto encontrado</div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="text-left p-3">Nome</th>
+                              <th className="text-left p-3">Artista</th>
+                              <th className="text-left p-3">Status</th>
+                              <th className="text-left p-3">Data Início</th>
+                              <th className="text-left p-3">Data Fim</th>
+                              <th className="text-center p-3">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredProjects.map(project => (
+                              <tr key={project.id} className="border-t border-border hover:bg-muted/30">
+                                <td className="p-3 font-medium">{project.name}</td>
+                                <td className="p-3">{getArtistName(project.artist_id)}</td>
+                                <td className="p-3">
+                                  <Badge variant="outline">{translateStatus(project.status)}</Badge>
+                                </td>
+                                <td className="p-3">{project.start_date ? formatDateBR(new Date(project.start_date)) : "-"}</td>
+                                <td className="p-3">{project.end_date ? formatDateBR(new Date(project.end_date)) : "-"}</td>
+                                <td className="p-3 text-center">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditProject(project)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* Lançamentos Tab */}
+              <TabsContent value="lancamentos" className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold">Relatório de Lançamentos</h2>
+                  <Button onClick={handleExportReleasesReport} className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Exportar Excel
+                  </Button>
+                </div>
+
+                {/* KPIs de Lançamentos */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Lançamentos</p>
+                          <p className="text-2xl font-bold">{filteredReleases.length}</p>
+                        </div>
+                        <Rocket className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Aceitos</p>
+                          <p className="text-2xl font-bold text-green-600">{filteredReleases.filter(r => r.status === 'aceita').length}</p>
+                        </div>
+                        <CheckCircle className="h-8 w-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Em Análise</p>
+                          <p className="text-2xl font-bold text-yellow-600">{filteredReleases.filter(r => r.status === 'em_analise' || r.status === 'planning').length}</p>
+                        </div>
+                        <AlertTriangle className="h-8 w-8 text-yellow-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Recusados</p>
+                          <p className="text-2xl font-bold text-red-600">{filteredReleases.filter(r => r.status === 'recusada').length}</p>
+                        </div>
+                        <XCircle className="h-8 w-8 text-red-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {isLoading ? (
+                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+                ) : filteredReleases.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">Nenhum lançamento encontrado</div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="text-left p-3">Título</th>
+                              <th className="text-left p-3">Artista</th>
+                              <th className="text-left p-3">Tipo</th>
+                              <th className="text-left p-3">Data Lançamento</th>
+                              <th className="text-left p-3">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredReleases.map(release => (
+                              <tr key={release.id} className="border-t border-border hover:bg-muted/30">
+                                <td className="p-3 font-medium">{release.title}</td>
+                                <td className="p-3">{getArtistName(release.artist_id)}</td>
+                                <td className="p-3">{release.release_type || release.type || "-"}</td>
+                                <td className="p-3">{release.release_date ? formatDateBR(new Date(release.release_date)) : "-"}</td>
+                                <td className="p-3">
+                                  <Badge variant="outline">{translateStatus(release.status)}</Badge>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
             </Tabs>
           </main>
         </SidebarInset>
@@ -620,6 +888,12 @@ const RelatoriosAutorais = () => {
         open={editPhonogramModalOpen}
         onOpenChange={setEditPhonogramModalOpen}
         phonogram={selectedPhonogram}
+      />
+      <ProjectModal
+        open={editProjectModalOpen}
+        onOpenChange={setEditProjectModalOpen}
+        project={selectedProjectForEdit}
+        mode="edit"
       />
     </SidebarProvider>
   );
