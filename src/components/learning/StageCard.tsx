@@ -3,13 +3,14 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { LearningStage } from '@/hooks/useLearningHub';
 import {
-  BookOpen,
   Rocket,
+  Music,
+  Disc,
+  Package,
+  FolderKanban,
   Users,
-  FileText,
-  Calendar,
+  ShieldCheck,
   BarChart3,
-  Zap,
   Lock,
   CheckCircle,
 } from 'lucide-react';
@@ -24,23 +25,25 @@ interface StageCardProps {
 }
 
 const iconMap: Record<string, React.ElementType> = {
-  BookOpen,
-  Rocket,
-  Users,
-  FileText,
-  Calendar,
-  BarChart3,
-  Zap,
+  'rocket': Rocket,
+  'music': Music,
+  'disc': Disc,
+  'package': Package,
+  'folder-kanban': FolderKanban,
+  'users': Users,
+  'shield-check': ShieldCheck,
+  'bar-chart-3': BarChart3,
 };
 
 const colorMap: Record<string, string> = {
-  blue: 'bg-blue-500/20 text-blue-500 border-blue-500/30',
-  purple: 'bg-purple-500/20 text-purple-500 border-purple-500/30',
-  green: 'bg-green-500/20 text-green-500 border-green-500/30',
-  orange: 'bg-orange-500/20 text-orange-500 border-orange-500/30',
-  pink: 'bg-pink-500/20 text-pink-500 border-pink-500/30',
-  cyan: 'bg-cyan-500/20 text-cyan-500 border-cyan-500/30',
-  amber: 'bg-amber-500/20 text-amber-500 border-amber-500/30',
+  '#3B82F6': 'bg-blue-500/20 text-blue-500 border-blue-500/30',
+  '#8B5CF6': 'bg-purple-500/20 text-purple-500 border-purple-500/30',
+  '#EC4899': 'bg-pink-500/20 text-pink-500 border-pink-500/30',
+  '#F59E0B': 'bg-amber-500/20 text-amber-500 border-amber-500/30',
+  '#10B981': 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30',
+  '#06B6D4': 'bg-cyan-500/20 text-cyan-500 border-cyan-500/30',
+  '#EF4444': 'bg-red-500/20 text-red-500 border-red-500/30',
+  '#6366F1': 'bg-indigo-500/20 text-indigo-500 border-indigo-500/30',
 };
 
 export const StageCard = ({
@@ -50,8 +53,8 @@ export const StageCard = ({
   isCompleted,
   onClick,
 }: StageCardProps) => {
-  const Icon = iconMap[stage.icon || 'BookOpen'] || BookOpen;
-  const colorClass = colorMap[stage.color || 'blue'];
+  const Icon = iconMap[stage.icon || 'rocket'] || Rocket;
+  const colorClass = colorMap[stage.color || '#3B82F6'] || 'bg-blue-500/20 text-blue-500 border-blue-500/30';
 
   return (
     <Card
