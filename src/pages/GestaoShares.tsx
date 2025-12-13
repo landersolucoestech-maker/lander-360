@@ -149,7 +149,8 @@ const GestaoShares = () => {
     participantName: "",
     participantRole: "Compositor",
     sharePercentage: "",
-    notes: ""
+    notes: "",
+    status: "pending"
   });
 
   // Edit modal
@@ -684,7 +685,8 @@ const GestaoShares = () => {
                                       participantName: share.participant_name || "",
                                       participantRole: share.participant_role || "Compositor",
                                       sharePercentage: share.share_percentage ? String(share.share_percentage) : "",
-                                      notes: share.notes || ""
+                                      notes: share.notes || "",
+                                      status: share.status || "pending"
                                     });
                                     setEditPendingShareModal(true);
                                   }}
@@ -1139,6 +1141,17 @@ const GestaoShares = () => {
                 rows={3}
               />
             </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <Label>Marcar como Recebido</Label>
+              <Switch 
+                checked={editingPendingShareData.status === 'received'} 
+                onCheckedChange={(checked) => setEditingPendingShareData({ 
+                  ...editingPendingShareData, 
+                  status: checked ? 'received' : 'pending' 
+                })} 
+              />
+            </div>
           </div>
 
           <DialogFooter>
@@ -1165,7 +1178,8 @@ const GestaoShares = () => {
                     participant_name: editingPendingShareData.participantName,
                     participant_role: editingPendingShareData.participantRole,
                     share_percentage: editingPendingShareData.sharePercentage ? parseFloat(editingPendingShareData.sharePercentage) : null,
-                    notes: editingPendingShareData.notes || null
+                    notes: editingPendingShareData.notes || null,
+                    status: editingPendingShareData.status
                   }
                 });
                 
