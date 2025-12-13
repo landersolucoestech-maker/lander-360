@@ -184,7 +184,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
       await new Promise<void>((resolve, reject) => {
         logoImg.onload = () => resolve();
         logoImg.onerror = reject;
-        logoImg.src = '/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png';
+        logoImg.src = '/lovable-uploads/lander-logo-transparent.png';
       });
       
       const canvas = document.createElement('canvas');
