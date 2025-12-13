@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,8 @@ import { ArtistHistoryModal } from "@/components/modals/ArtistHistoryModal";
 import { ArtistContractModal } from "@/components/modals/ArtistContractModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useDeleteArtist } from "@/hooks/useArtists";
-import { Mail, Phone } from "lucide-react";
+import { useArtistSpotifyMetrics, useFetchSpotifyMetrics } from "@/hooks/useSpotifyMetrics";
+import { Mail, Phone, Users, Headphones, BarChart3, RefreshCw, Loader2 } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud } from "react-icons/fa";
 interface ArtistCardProps {
   artist: {
@@ -54,6 +55,35 @@ export function ArtistCard({
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [contractModalOpen, setContractModalOpen] = useState(false);
   const deleteArtist = useDeleteArtist();
+  
+  // Spotify metrics
+  const spotifyUrl = artist.socialMedia?.spotify || '';
+  const { data: spotifyMetrics, isLoading: isLoadingMetrics } = useArtistSpotifyMetrics(artist.id.toString());
+  const fetchSpotifyMetrics = useFetchSpotifyMetrics();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Auto-fetch Spotify metrics if not yet fetched and has spotify URL
+  useEffect(() => {
+    if (spotifyUrl && !spotifyMetrics && !isLoadingMetrics && !isRefreshing) {
+      handleRefreshSpotify();
+    }
+  }, [spotifyUrl, spotifyMetrics, isLoadingMetrics]);
+
+  const handleRefreshSpotify = async () => {
+    if (!spotifyUrl || isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await fetchSpotifyMetrics.mutateAsync({
+        artistId: artist.id.toString(),
+        spotifyUrl: spotifyUrl
+      });
+    } catch (error) {
+      console.error('Error fetching Spotify metrics:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleDelete = async () => {
     try {
       await deleteArtist.mutateAsync(artist.id.toString());
@@ -62,6 +92,19 @@ export function ArtistCard({
       console.error('Error deleting artist:', error);
     }
   };
+
+  // Format large numbers
+  const formatNumber = (num: number | null | undefined) => {
+    if (!num) return '0';
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+  };
+
+  // Calculate total streams from top tracks
+  const topTracks = (spotifyMetrics?.top_tracks as any[]) || [];
+  const totalStreams = topTracks.slice(0, 5).reduce((sum, track) => sum + (track?.streams || 0), 0);
   return <>
       <Card className="py-4 px-5 md:py-5 md:px-6">
         <CardContent className="p-0">
@@ -195,6 +238,66 @@ export function ArtistCard({
                     <div className="text-xs md:text-sm text-muted-foreground">Lançamentos</div>
                   </div>
                 </div>
+
+                {/* Spotify Metrics */}
+                {spotifyUrl && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                        <FaSpotify className="h-4 w-4 text-green-500" />
+                        Métricas Spotify
+                      </h4>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRefreshSpotify();
+                        }}
+                        disabled={isRefreshing || isLoadingMetrics}
+                      >
+                        {isRefreshing || isLoadingMetrics ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                    {isLoadingMetrics || isRefreshing ? (
+                      <div className="flex items-center justify-center py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground ml-2">Carregando...</span>
+                      </div>
+                    ) : spotifyMetrics ? (
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-muted/50 rounded-md p-2">
+                          <div className="flex items-center justify-center gap-1 text-green-500 mb-1">
+                            <Users className="h-3 w-3" />
+                          </div>
+                          <div className="text-sm font-bold text-foreground">{formatNumber(spotifyMetrics.followers)}</div>
+                          <div className="text-[10px] text-muted-foreground">Seguidores</div>
+                        </div>
+                        <div className="bg-muted/50 rounded-md p-2">
+                          <div className="flex items-center justify-center gap-1 text-green-500 mb-1">
+                            <Headphones className="h-3 w-3" />
+                          </div>
+                          <div className="text-sm font-bold text-foreground">{formatNumber(spotifyMetrics.monthly_listeners)}</div>
+                          <div className="text-[10px] text-muted-foreground">Ouvintes/Mês</div>
+                        </div>
+                        <div className="bg-muted/50 rounded-md p-2">
+                          <div className="flex items-center justify-center gap-1 text-green-500 mb-1">
+                            <BarChart3 className="h-3 w-3" />
+                          </div>
+                          <div className="text-sm font-bold text-foreground">{formatNumber(totalStreams)}</div>
+                          <div className="text-[10px] text-muted-foreground">Streams Top 5</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center">Clique em atualizar para buscar métricas</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
