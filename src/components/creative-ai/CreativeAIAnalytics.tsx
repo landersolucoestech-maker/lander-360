@@ -9,6 +9,8 @@ import { useSocialMediaMetrics } from '@/hooks/useMarketing';
 import { useMarketingCampaigns } from '@/hooks/useMarketing';
 import { useAnalyzeData, useCreativeAIStats } from '@/hooks/useCreativeAI';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { AIProviderSelector } from './AIProviderSelector';
+import { AIProvider } from '@/hooks/useAI';
 
 const COLORS = ['hsl(var(--primary))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
@@ -22,6 +24,7 @@ export const CreativeAIAnalytics = () => {
   const [selectedArtist, setSelectedArtist] = useState<string>('');
   const [period, setPeriod] = useState<string>('30');
   const [aiInsights, setAiInsights] = useState<any>(null);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider | 'auto'>('auto');
 
   const handleAnalyze = async () => {
     // Prepare data for analysis
@@ -98,6 +101,9 @@ export const CreativeAIAnalytics = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap items-center gap-4">
+            <div className="flex-1 min-w-[150px]">
+              <AIProviderSelector value={selectedProvider} onChange={setSelectedProvider} />
+            </div>
             <div className="flex-1 min-w-[200px]">
               <Select value={selectedArtist || 'all'} onValueChange={(value) => setSelectedArtist(value === 'all' ? '' : value)}>
                 <SelectTrigger>

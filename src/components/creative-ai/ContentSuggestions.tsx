@@ -7,6 +7,8 @@ import { FileText, Loader2, Copy, Check, Instagram, Youtube, Music, Share2, Cloc
 import { useArtists } from '@/hooks/useArtists';
 import { useContentSuggestions, useSaveIdea } from '@/hooks/useCreativeAI';
 import { useToast } from '@/hooks/use-toast';
+import { AIProviderSelector } from './AIProviderSelector';
+import { AIProvider } from '@/hooks/useAI';
 
 interface ContentSuggestion {
   type: string;
@@ -36,6 +38,7 @@ export const ContentSuggestions = () => {
   const [channel, setChannel] = useState<string>('');
   const [suggestions, setSuggestions] = useState<ContentSuggestion[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider | 'auto'>('auto');
 
   const handleGenerate = async () => {
     if (!selectedArtist || !objective) {
@@ -119,6 +122,11 @@ export const ContentSuggestions = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-4">
+            <div className="flex-1 min-w-[150px] space-y-2">
+              <label className="text-sm font-medium">Modelo IA</label>
+              <AIProviderSelector value={selectedProvider} onChange={setSelectedProvider} />
+            </div>
+
             <div className="flex-1 min-w-[200px] space-y-2">
               <label className="text-sm font-medium">Artista *</label>
               <Select value={selectedArtist} onValueChange={setSelectedArtist}>

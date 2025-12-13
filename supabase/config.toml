@@ -35,3 +35,36 @@ verify_jwt = true
 
 [functions.landerzap-send]
 verify_jwt = true
+
+[functions.generate-creative-ideas]
+verify_jwt = true
+
+[functions.ai-gateway]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = true
+
+[functions.categorize-transaction]
+verify_jwt = true
+
+[functions.create-admin-user]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.fix-exclusive-artist-editor]
+verify_jwt = true
+
+[functions.search-abramus]
+verify_jwt = true
+
+[functions.search-participants]
+verify_jwt = true
+
+[functions.send-contract-email]
+verify_jwt = true
