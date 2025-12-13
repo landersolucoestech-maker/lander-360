@@ -342,7 +342,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
     }
   }, [watchedParticipants, artists, appendParticipant]);
 
-  // Auto-distribute percentages and assign sequential links - Deyvisson always gets 10%, others split 90%
+  // Auto-distribute percentages and assign sequential links
+  // If Deyvisson is editor: 10% for him, 90% split among others
+  // If Deyvisson is NOT editor: 100% split equally among all participants
   useEffect(() => {
     if (!watchedParticipants || watchedParticipants.length === 0) return;
 
@@ -353,57 +355,90 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
       p.role === 'editor'
     );
     
-    if (landerEditorIndex === -1) return; // Wait until Deyvisson is added
+    const hasLanderEditor = landerEditorIndex !== -1;
+    
+    let updatedParticipants;
+    let needsUpdate = false;
 
-    // Check if redistribution is needed
-    const landerParticipant = watchedParticipants[landerEditorIndex];
-    const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
-    const otherCount = otherParticipants.length;
-    
-    // Calculate expected percentages
-    const expectedLanderPercentage = 10;
-    const remainingPercentage = 90;
-    const evenPercentage = otherCount > 0 ? Math.floor(remainingPercentage / otherCount) : 0;
-    const remainder = otherCount > 0 ? remainingPercentage - (evenPercentage * otherCount) : 0;
-    
-    // Check if any values are incorrect
-    const landerNeedsUpdate = landerParticipant?.percentage !== expectedLanderPercentage || 
-                              landerParticipant?.link !== 'Link 1';
-    
-    const othersNeedUpdate = otherParticipants.some((p, idx) => {
-      const expectedPercentage = idx === otherCount - 1 ? evenPercentage + remainder : evenPercentage;
-      const expectedLink = `Link ${idx + 2}`;
-      return p.percentage !== expectedPercentage || p.link !== expectedLink;
-    });
-    
-    if (!landerNeedsUpdate && !othersNeedUpdate) return;
-
-    // Build updated participants array
-    let linkCounter = 2;
-    let otherIndex = 0;
-    
-    const updatedParticipants = watchedParticipants.map((p, idx) => {
-      if (idx === landerEditorIndex) {
-        return {
-          ...p,
-          link: 'Link 1',
-          percentage: 10,
-        };
-      } else {
-        const isLast = otherIndex === otherCount - 1;
-        const percentage = isLast ? evenPercentage + remainder : evenPercentage;
-        const link = `Link ${linkCounter++}`;
-        otherIndex++;
+    if (hasLanderEditor) {
+      // Deyvisson IS editor: 10% for him with Link 1, others split 90%
+      const landerParticipant = watchedParticipants[landerEditorIndex];
+      const otherParticipants = watchedParticipants.filter((_, idx) => idx !== landerEditorIndex);
+      const otherCount = otherParticipants.length;
+      
+      const expectedLanderPercentage = 10;
+      const remainingPercentage = 90;
+      const evenPercentage = otherCount > 0 ? Math.floor(remainingPercentage / otherCount) : 0;
+      const remainder = otherCount > 0 ? remainingPercentage - (evenPercentage * otherCount) : 0;
+      
+      // Check if any values are incorrect
+      const landerNeedsUpdate = landerParticipant?.percentage !== expectedLanderPercentage || 
+                                landerParticipant?.link !== 'Link 1';
+      
+      const othersNeedUpdate = otherParticipants.some((p, idx) => {
+        const expectedPercentage = idx === otherCount - 1 ? evenPercentage + remainder : evenPercentage;
+        const expectedLink = `Link ${idx + 2}`;
+        return p.percentage !== expectedPercentage || p.link !== expectedLink;
+      });
+      
+      needsUpdate = landerNeedsUpdate || othersNeedUpdate;
+      
+      if (needsUpdate) {
+        let linkCounter = 2;
+        let otherIndex = 0;
         
-        return {
-          ...p,
-          link: link,
-          percentage: percentage,
-        };
+        updatedParticipants = watchedParticipants.map((p, idx) => {
+          if (idx === landerEditorIndex) {
+            return {
+              ...p,
+              link: 'Link 1',
+              percentage: 10,
+            };
+          } else {
+            const isLast = otherIndex === otherCount - 1;
+            const percentage = isLast ? evenPercentage + remainder : evenPercentage;
+            const link = `Link ${linkCounter++}`;
+            otherIndex++;
+            
+            return {
+              ...p,
+              link: link,
+              percentage: percentage,
+            };
+          }
+        });
       }
-    });
+    } else {
+      // Deyvisson is NOT editor: distribute 100% equally among all participants
+      const totalParticipants = watchedParticipants.length;
+      const evenPercentage = Math.floor(100 / totalParticipants);
+      const remainder = 100 - (evenPercentage * totalParticipants);
+      
+      // Check if any values are incorrect
+      needsUpdate = watchedParticipants.some((p, idx) => {
+        const expectedPercentage = idx === totalParticipants - 1 ? evenPercentage + remainder : evenPercentage;
+        const expectedLink = `Link ${idx + 1}`;
+        return p.percentage !== expectedPercentage || p.link !== expectedLink;
+      });
+      
+      if (needsUpdate) {
+        updatedParticipants = watchedParticipants.map((p, idx) => {
+          const isLast = idx === totalParticipants - 1;
+          const percentage = isLast ? evenPercentage + remainder : evenPercentage;
+          const link = `Link ${idx + 1}`;
+          
+          return {
+            ...p,
+            link: link,
+            percentage: percentage,
+          };
+        });
+      }
+    }
 
-    form.setValue('participants', updatedParticipants, { shouldValidate: false });
+    if (needsUpdate && updatedParticipants) {
+      form.setValue('participants', updatedParticipants, { shouldValidate: false });
+    }
   }, [watchedParticipants, form]);
 
   // Reset AI fields when is_ai_created becomes false
