@@ -498,6 +498,176 @@ export type Database = {
           },
         ]
       }
+      creative_ai_chats: {
+        Row: {
+          artist_id: string | null
+          context: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          messages: Json | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_id?: string | null
+          context?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          messages?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string | null
+          context?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          messages?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_ai_chats_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creative_ideas: {
+        Row: {
+          additional_notes: string | null
+          artist_id: string | null
+          campaign_id: string | null
+          channel: string | null
+          content_format: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          engagement_strategies: string[] | null
+          execution_notes: string | null
+          feedback_notes: string | null
+          id: string
+          is_useful: boolean | null
+          keywords: string[] | null
+          music_registry_id: string | null
+          objective: string
+          parent_id: string | null
+          post_frequency: string | null
+          priority: string | null
+          recommended_dates: string[] | null
+          release_id: string | null
+          status: string | null
+          suggested_channel: string | null
+          target_audience: Json | null
+          title: string
+          tone: string | null
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          artist_id?: string | null
+          campaign_id?: string | null
+          channel?: string | null
+          content_format?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          engagement_strategies?: string[] | null
+          execution_notes?: string | null
+          feedback_notes?: string | null
+          id?: string
+          is_useful?: boolean | null
+          keywords?: string[] | null
+          music_registry_id?: string | null
+          objective: string
+          parent_id?: string | null
+          post_frequency?: string | null
+          priority?: string | null
+          recommended_dates?: string[] | null
+          release_id?: string | null
+          status?: string | null
+          suggested_channel?: string | null
+          target_audience?: Json | null
+          title: string
+          tone?: string | null
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          additional_notes?: string | null
+          artist_id?: string | null
+          campaign_id?: string | null
+          channel?: string | null
+          content_format?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          engagement_strategies?: string[] | null
+          execution_notes?: string | null
+          feedback_notes?: string | null
+          id?: string
+          is_useful?: boolean | null
+          keywords?: string[] | null
+          music_registry_id?: string | null
+          objective?: string
+          parent_id?: string | null
+          post_frequency?: string | null
+          priority?: string | null
+          recommended_dates?: string[] | null
+          release_id?: string | null
+          status?: string | null
+          suggested_channel?: string | null
+          target_audience?: Json | null
+          title?: string
+          tone?: string | null
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_ideas_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creative_ideas_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creative_ideas_music_registry_id_fkey"
+            columns: ["music_registry_id"]
+            isOneToOne: false
+            referencedRelation: "music_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creative_ideas_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "creative_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creative_ideas_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_contacts: {
         Row: {
           address: string | null
