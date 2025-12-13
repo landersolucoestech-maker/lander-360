@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.spotify-for-artists-metrics]
 verify_jwt = true
+
+[functions.landerzap-send]
+verify_jwt = true

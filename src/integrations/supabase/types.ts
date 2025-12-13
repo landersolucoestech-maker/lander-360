@@ -867,6 +867,98 @@ export type Database = {
           },
         ]
       }
+      landerzap_conversations: {
+        Row: {
+          archived: boolean
+          channel: string
+          contact_id: string
+          contact_image: string | null
+          contact_initials: string
+          contact_name: string
+          contact_type: string
+          created_at: string
+          id: string
+          last_message: string | null
+          last_message_at: string
+          starred: boolean
+          unread: boolean
+          updated_at: string
+        }
+        Insert: {
+          archived?: boolean
+          channel: string
+          contact_id: string
+          contact_image?: string | null
+          contact_initials: string
+          contact_name: string
+          contact_type: string
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          starred?: boolean
+          unread?: boolean
+          updated_at?: string
+        }
+        Update: {
+          archived?: boolean
+          channel?: string
+          contact_id?: string
+          contact_image?: string | null
+          contact_initials?: string
+          contact_name?: string
+          contact_type?: string
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          starred?: boolean
+          unread?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      landerzap_messages: {
+        Row: {
+          channel: string
+          content: string
+          conversation_id: string
+          created_at: string
+          from_me: boolean
+          id: string
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          channel: string
+          content: string
+          conversation_id: string
+          created_at?: string
+          from_me?: boolean
+          id?: string
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          channel?: string
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          from_me?: boolean
+          id?: string
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landerzap_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "landerzap_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_attempts: {
         Row: {
           attempt_count: number
