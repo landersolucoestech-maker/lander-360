@@ -14,6 +14,47 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY: Verify JWT and check user role
+    const authorizationHeader = req.headers.get("Authorization");
+    if (!authorizationHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const token = authorizationHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      console.error("Auth error:", userError);
+      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if user has admin or manager role
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["admin", "manager"]);
+
+    if (roleError || !roleData || roleData.length === 0) {
+      console.error("Role check failed:", roleError);
+      return new Response(JSON.stringify({ error: "Insufficient permissions. Admin or manager role required." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`Belvo integration accessed by user: ${user.id} with role: ${roleData[0].role}`);
+
     const BELVO_SECRET_ID = Deno.env.get("BELVO_SECRET_ID");
     const BELVO_SECRET_PASSWORD = Deno.env.get("BELVO_SECRET_PASSWORD");
 
@@ -21,7 +62,7 @@ serve(async (req) => {
       throw new Error("Belvo credentials not configured");
     }
 
-    const authHeader = btoa(`${BELVO_SECRET_ID}:${BELVO_SECRET_PASSWORD}`);
+    const belvoAuthHeader = btoa(`${BELVO_SECRET_ID}:${BELVO_SECRET_PASSWORD}`);
     const { action, payload } = await req.json();
 
     console.log(`Belvo integration action: ${action}`);
@@ -34,7 +75,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/token/`, {
           method: "POST",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -55,7 +96,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/institutions/?country_code=BR&type__in=bank,fiscal`, {
           method: "GET",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
             "Content-Type": "application/json",
           },
         });
@@ -66,7 +107,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/links/`, {
           method: "POST",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -83,7 +124,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/links/`, {
           method: "GET",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
             "Content-Type": "application/json",
           },
         });
@@ -94,7 +135,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/accounts/`, {
           method: "POST",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -108,7 +149,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/transactions/`, {
           method: "POST",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -124,7 +165,7 @@ serve(async (req) => {
         response = await fetch(`${BELVO_API_URL}/api/links/${payload.link_id}/`, {
           method: "DELETE",
           headers: {
-            "Authorization": `Basic ${authHeader}`,
+            "Authorization": `Basic ${belvoAuthHeader}`,
           },
         });
         
