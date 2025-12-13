@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { 
   CheckCircle, XCircle, Upload, Edit, Download, Filter,
-  Share2, Image
+  Share2, Image, Plus, Trash2, Users
 } from "lucide-react";
 import { cn, formatDateBR, translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
@@ -20,6 +20,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useReleases, useUpdateRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
 import { format } from "date-fns";
+
+interface ParticipantRoyalty {
+  name: string;
+  role: string;
+  percentage: number;
+}
 
 const GestaoRoyalties = () => {
   const { toast } = useToast();
@@ -42,6 +48,7 @@ const GestaoRoyalties = () => {
   const [percentualEnviado, setPercentualEnviado] = useState("");
   const [shareApplied, setShareApplied] = useState<boolean | null>(null);
   const [royaltiesNotes, setRoyaltiesNotes] = useState("");
+  const [participantsRoyalties, setParticipantsRoyalties] = useState<ParticipantRoyalty[]>([]);
 
   const getArtistName = (artistId: string | null) => {
     if (!artistId) return "N/A";
@@ -97,18 +104,94 @@ const GestaoRoyalties = () => {
     setPercentualEnviado(String((release as any).royalties_expected || ""));
     setShareApplied((release as any).royalties_share_applied);
     setRoyaltiesNotes((release as any).royalties_notes || "");
+    
+    // Parse existing participants royalties from tracks JSON or create empty
+    const existingParticipants = (release as any).royalties_participants || [];
+    if (existingParticipants.length > 0) {
+      setParticipantsRoyalties(existingParticipants);
+    } else {
+      // Try to extract participants from tracks data
+      const tracks = release.tracks || [];
+      const participantsList: ParticipantRoyalty[] = [];
+      
+      // Add main artist
+      const artistName = getArtistName(release.artist_id);
+      if (artistName !== "N/A") {
+        participantsList.push({ name: artistName, role: "Artista Principal", percentage: 0 });
+      }
+      
+      // Extract from tracks
+      tracks.forEach((track: any) => {
+        if (track.composers) {
+          const composers = typeof track.composers === 'string' ? track.composers.split(',') : track.composers;
+          composers.forEach((c: string) => {
+            const name = c.trim();
+            if (name && !participantsList.find(p => p.name === name)) {
+              participantsList.push({ name, role: "Compositor", percentage: 0 });
+            }
+          });
+        }
+        if (track.performers) {
+          const performers = typeof track.performers === 'string' ? track.performers.split(',') : track.performers;
+          performers.forEach((p: string) => {
+            const name = p.trim();
+            if (name && !participantsList.find(pr => pr.name === name)) {
+              participantsList.push({ name, role: "Intérprete", percentage: 0 });
+            }
+          });
+        }
+        if (track.producers) {
+          const producers = typeof track.producers === 'string' ? track.producers.split(',') : track.producers;
+          producers.forEach((p: string) => {
+            const name = p.trim();
+            if (name && !participantsList.find(pr => pr.name === name)) {
+              participantsList.push({ name, role: "Produtor", percentage: 0 });
+            }
+          });
+        }
+      });
+      
+      setParticipantsRoyalties(participantsList);
+    }
+    
     setEditModalOpen(true);
   };
 
+  const handleAddParticipant = () => {
+    setParticipantsRoyalties([...participantsRoyalties, { name: "", role: "Compositor", percentage: 0 }]);
+  };
+
+  const handleRemoveParticipant = (index: number) => {
+    setParticipantsRoyalties(participantsRoyalties.filter((_, i) => i !== index));
+  };
+
+  const handleParticipantChange = (index: number, field: keyof ParticipantRoyalty, value: string | number) => {
+    const updated = [...participantsRoyalties];
+    updated[index] = { ...updated[index], [field]: value };
+    setParticipantsRoyalties(updated);
+  };
+
+  const totalParticipantPercentage = useMemo(() => {
+    return participantsRoyalties.reduce((sum, p) => sum + (p.percentage || 0), 0);
+  }, [participantsRoyalties]);
+
   const handleSave = async () => {
     if (!selectedRelease) return;
+
+    // Prepare tracks with participant royalties embedded
+    const existingTracks = selectedRelease.tracks || [];
+    const tracksWithRoyalties = existingTracks.map((track: any) => ({
+      ...track,
+      royalties_participants: participantsRoyalties
+    }));
 
     const updateData = {
       royalties_verified: royaltiesVerified,
       royalties_expected: parseFloat(percentualEnviado) || 0,
       royalties_share_applied: shareApplied,
       royalties_notes: royaltiesNotes,
-      royalties_verified_at: royaltiesVerified ? new Date().toISOString() : null
+      royalties_verified_at: royaltiesVerified ? new Date().toISOString() : null,
+      tracks: tracksWithRoyalties.length > 0 ? tracksWithRoyalties : [{ royalties_participants: participantsRoyalties }]
     };
 
     try {
@@ -403,7 +486,7 @@ const GestaoRoyalties = () => {
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Royalties</DialogTitle>
             <DialogDescription>
@@ -411,31 +494,33 @@ const GestaoRoyalties = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Royalties Conferidos</Label>
-              <Switch checked={royaltiesVerified} onCheckedChange={setRoyaltiesVerified} />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <Label>Royalties Conferidos</Label>
+                <Switch checked={royaltiesVerified} onCheckedChange={setRoyaltiesVerified} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Share Aplicado na Distribuidora</Label>
+                <Select 
+                  value={shareApplied === true ? "yes" : shareApplied === false ? "no" : "pending"} 
+                  onValueChange={(v) => setShareApplied(v === "yes" ? true : v === "no" ? false : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="yes">Sim - Recebeu</SelectItem>
+                    <SelectItem value="no">Não - Não Recebeu</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Share Aplicado na Distribuidora</Label>
-              <Select 
-                value={shareApplied === true ? "yes" : shareApplied === false ? "no" : "pending"} 
-                onValueChange={(v) => setShareApplied(v === "yes" ? true : v === "no" ? false : null)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="yes">Sim - Recebeu</SelectItem>
-                  <SelectItem value="no">Não - Não Recebeu</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Percentual Enviado (%)</Label>
+              <Label>Percentual Total Enviado (%)</Label>
               <Input 
                 type="number" 
                 step="0.01"
@@ -444,6 +529,88 @@ const GestaoRoyalties = () => {
                 onChange={(e) => setPercentualEnviado(e.target.value)}
                 placeholder="0"
               />
+            </div>
+
+            {/* Participants Royalties Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <Label className="text-base font-medium">Percentual por Envolvido</Label>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddParticipant}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Adicionar
+                </Button>
+              </div>
+
+              {participantsRoyalties.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4 border rounded-lg">
+                  Nenhum participante adicionado. Clique em "Adicionar" para incluir.
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {participantsRoyalties.map((participant, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 border rounded-lg">
+                      <Input 
+                        placeholder="Nome"
+                        value={participant.name}
+                        onChange={(e) => handleParticipantChange(index, 'name', e.target.value)}
+                        className="flex-1"
+                      />
+                      <Select 
+                        value={participant.role} 
+                        onValueChange={(v) => handleParticipantChange(index, 'role', v)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Artista Principal">Artista</SelectItem>
+                          <SelectItem value="Compositor">Compositor</SelectItem>
+                          <SelectItem value="Intérprete">Intérprete</SelectItem>
+                          <SelectItem value="Produtor">Produtor</SelectItem>
+                          <SelectItem value="Músico">Músico</SelectItem>
+                          <SelectItem value="Editor">Editor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center gap-1 w-24">
+                        <Input 
+                          type="number"
+                          step="0.01"
+                          max="100"
+                          placeholder="%"
+                          value={participant.percentage || ""}
+                          onChange={(e) => handleParticipantChange(index, 'percentage', parseFloat(e.target.value) || 0)}
+                          className="w-16"
+                        />
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleRemoveParticipant(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {participantsRoyalties.length > 0 && (
+                <div className={cn(
+                  "text-sm font-medium p-2 rounded-lg text-center",
+                  totalParticipantPercentage === 100 
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
+                    : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                )}>
+                  Total: {totalParticipantPercentage.toFixed(2)}%
+                  {totalParticipantPercentage !== 100 && " (deve somar 100%)"}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
