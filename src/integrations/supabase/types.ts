@@ -1508,6 +1508,12 @@ export type Database = {
           project_id: string | null
           release_date: string | null
           release_type: string | null
+          royalties_expected: number | null
+          royalties_notes: string | null
+          royalties_received: number | null
+          royalties_share_applied: boolean | null
+          royalties_verified: boolean | null
+          royalties_verified_at: string | null
           status: string | null
           title: string
           tracks: Json | null
@@ -1528,6 +1534,12 @@ export type Database = {
           project_id?: string | null
           release_date?: string | null
           release_type?: string | null
+          royalties_expected?: number | null
+          royalties_notes?: string | null
+          royalties_received?: number | null
+          royalties_share_applied?: boolean | null
+          royalties_verified?: boolean | null
+          royalties_verified_at?: string | null
           status?: string | null
           title: string
           tracks?: Json | null
@@ -1548,6 +1560,12 @@ export type Database = {
           project_id?: string | null
           release_date?: string | null
           release_type?: string | null
+          royalties_expected?: number | null
+          royalties_notes?: string | null
+          royalties_received?: number | null
+          royalties_share_applied?: boolean | null
+          royalties_verified?: boolean | null
+          royalties_verified_at?: string | null
           status?: string | null
           title?: string
           tracks?: Json | null

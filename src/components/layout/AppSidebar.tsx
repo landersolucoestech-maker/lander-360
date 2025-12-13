@@ -64,6 +64,14 @@ const navigationItems = [{
   title: "Relatórios",
   url: "/relatorios",
   icon: BarChart3
+}, {
+  title: "Relatórios Autorais",
+  url: "/relatorios-autorais",
+  icon: FileBarChart
+}, {
+  title: "Gestão de Royalties",
+  url: "/gestao-royalties",
+  icon: Scale
 }];
 const marketingItems = [{
   title: "Visão Geral",

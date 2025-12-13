@@ -7,41 +7,36 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { 
-  DollarSign, CheckCircle, XCircle, AlertTriangle, Music, Disc,
-  TrendingUp, TrendingDown, Minus, Edit, Eye, Download, Filter,
-  Share2
+  DollarSign, CheckCircle, XCircle, AlertTriangle, Upload,
+  TrendingUp, TrendingDown, Minus, Edit, Download, Filter,
+  Share2, Disc, Image
 } from "lucide-react";
 import { cn, formatDateBR, translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
 import { useToast } from "@/hooks/use-toast";
-import { useMusicRegistry, useUpdateMusicRegistryEntry } from "@/hooks/useMusicRegistry";
-import { usePhonograms, useUpdatePhonogram } from "@/hooks/usePhonograms";
+import { useReleases, useUpdateRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
 import { format } from "date-fns";
 
 const GestaoRoyalties = () => {
   const { toast } = useToast();
-  const { data: musicRegistry = [], isLoading: isLoadingMusic } = useMusicRegistry();
-  const { data: phonograms = [], isLoading: isLoadingPhonograms } = usePhonograms();
+  const { data: releases = [], isLoading } = useReleases();
   const { data: artists = [] } = useArtists();
-  const updateMusic = useUpdateMusicRegistryEntry();
-  const updatePhonogram = useUpdatePhonogram();
+  const updateRelease = useUpdateRelease();
 
   // Filter states
   const [selectedArtist, setSelectedArtist] = useState<string>("all");
   const [verificationFilter, setVerificationFilter] = useState<string>("all");
   const [shareFilter, setShareFilter] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState("obras");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Edit modal
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [itemType, setItemType] = useState<"obra" | "fonograma">("obra");
+  const [selectedRelease, setSelectedRelease] = useState<any>(null);
 
   // Form states
   const [royaltiesVerified, setRoyaltiesVerified] = useState(false);
@@ -56,78 +51,70 @@ const GestaoRoyalties = () => {
     return artist?.stage_name || artist?.name || "N/A";
   };
 
-  // Filter works
-  const filteredWorks = useMemo(() => {
-    return musicRegistry.filter(music => {
-      if (selectedArtist !== "all" && music.artist_id !== selectedArtist) return false;
-      if (verificationFilter === "verified" && !(music as any).royalties_verified) return false;
-      if (verificationFilter === "pending" && (music as any).royalties_verified) return false;
-      if (shareFilter === "applied" && (music as any).royalties_share_applied !== true) return false;
-      if (shareFilter === "not_applied" && (music as any).royalties_share_applied !== false) return false;
-      if (shareFilter === "pending" && (music as any).royalties_share_applied !== null) return false;
-      return true;
-    });
-  }, [musicRegistry, selectedArtist, verificationFilter, shareFilter]);
+  const translateReleaseType = (type: string | null) => {
+    const types: Record<string, string> = {
+      'single': 'Single',
+      'ep': 'EP',
+      'album': 'Álbum',
+      'compilation': 'Compilação'
+    };
+    return types[type || ''] || type || '-';
+  };
 
-  // Filter phonograms
-  const filteredPhonograms = useMemo(() => {
-    return phonograms.filter(phono => {
-      if (selectedArtist !== "all" && phono.artist_id !== selectedArtist) return false;
-      if (verificationFilter === "verified" && !(phono as any).royalties_verified) return false;
-      if (verificationFilter === "pending" && (phono as any).royalties_verified) return false;
-      if (shareFilter === "applied" && (phono as any).royalties_share_applied !== true) return false;
-      if (shareFilter === "not_applied" && (phono as any).royalties_share_applied !== false) return false;
-      if (shareFilter === "pending" && (phono as any).royalties_share_applied !== null) return false;
+  // Filter releases
+  const filteredReleases = useMemo(() => {
+    return releases.filter(release => {
+      if (selectedArtist !== "all" && release.artist_id !== selectedArtist) return false;
+      if (statusFilter !== "all" && release.status !== statusFilter) return false;
+      if (verificationFilter === "verified" && !(release as any).royalties_verified) return false;
+      if (verificationFilter === "pending" && (release as any).royalties_verified) return false;
+      if (shareFilter === "applied" && (release as any).royalties_share_applied !== true) return false;
+      if (shareFilter === "not_applied" && (release as any).royalties_share_applied !== false) return false;
+      if (shareFilter === "pending" && (release as any).royalties_share_applied !== null) return false;
       return true;
     });
-  }, [phonograms, selectedArtist, verificationFilter, shareFilter]);
+  }, [releases, selectedArtist, statusFilter, verificationFilter, shareFilter]);
 
   // Summary stats
   const stats = useMemo(() => {
-    const totalWorks = musicRegistry.length;
-    const verifiedWorks = musicRegistry.filter(m => (m as any).royalties_verified).length;
-    const totalPhonograms = phonograms.length;
-    const verifiedPhonograms = phonograms.filter(p => (p as any).royalties_verified).length;
+    const total = releases.length;
+    const verified = releases.filter(r => (r as any).royalties_verified).length;
+    const shareAppliedCount = releases.filter(r => (r as any).royalties_share_applied === true).length;
+    const shareNotApplied = releases.filter(r => (r as any).royalties_share_applied === false).length;
+    const sharePending = releases.filter(r => (r as any).royalties_share_applied === null).length;
 
-    const totalExpected = [...musicRegistry, ...phonograms].reduce(
+    const totalExpected = releases.reduce(
       (sum, item) => sum + ((item as any).royalties_expected || 0), 0
     );
-    const totalReceived = [...musicRegistry, ...phonograms].reduce(
+    const totalReceived = releases.reduce(
       (sum, item) => sum + ((item as any).royalties_received || 0), 0
     );
 
-    const shareNotApplied = [
-      ...musicRegistry.filter(m => (m as any).royalties_share_applied === false),
-      ...phonograms.filter(p => (p as any).royalties_share_applied === false)
-    ].length;
-
     return {
-      totalWorks,
-      verifiedWorks,
-      pendingWorks: totalWorks - verifiedWorks,
-      totalPhonograms,
-      verifiedPhonograms,
-      pendingPhonograms: totalPhonograms - verifiedPhonograms,
+      total,
+      verified,
+      pending: total - verified,
+      shareApplied: shareAppliedCount,
+      shareNotApplied,
+      sharePending,
       totalExpected,
       totalReceived,
-      divergence: totalExpected - totalReceived,
-      shareNotApplied
+      divergence: totalExpected - totalReceived
     };
-  }, [musicRegistry, phonograms]);
+  }, [releases]);
 
-  const handleEdit = (item: any, type: "obra" | "fonograma") => {
-    setSelectedItem(item);
-    setItemType(type);
-    setRoyaltiesVerified((item as any).royalties_verified || false);
-    setRoyaltiesExpected(String((item as any).royalties_expected || ""));
-    setRoyaltiesReceived(String((item as any).royalties_received || ""));
-    setShareApplied((item as any).royalties_share_applied);
-    setRoyaltiesNotes((item as any).royalties_notes || "");
+  const handleEdit = (release: any) => {
+    setSelectedRelease(release);
+    setRoyaltiesVerified((release as any).royalties_verified || false);
+    setRoyaltiesExpected(String((release as any).royalties_expected || ""));
+    setRoyaltiesReceived(String((release as any).royalties_received || ""));
+    setShareApplied((release as any).royalties_share_applied);
+    setRoyaltiesNotes((release as any).royalties_notes || "");
     setEditModalOpen(true);
   };
 
   const handleSave = async () => {
-    if (!selectedItem) return;
+    if (!selectedRelease) return;
 
     const updateData = {
       royalties_verified: royaltiesVerified,
@@ -139,11 +126,7 @@ const GestaoRoyalties = () => {
     };
 
     try {
-      if (itemType === "obra") {
-        await updateMusic.mutateAsync({ id: selectedItem.id, data: updateData as any });
-      } else {
-        await updatePhonogram.mutateAsync({ id: selectedItem.id, data: updateData as any });
-      }
+      await updateRelease.mutateAsync({ id: selectedRelease.id, data: updateData as any });
 
       toast({
         title: "Dados atualizados",
@@ -160,33 +143,22 @@ const GestaoRoyalties = () => {
   };
 
   const handleExport = () => {
-    const worksData = filteredWorks.map(music => ({
-      "Tipo": "Obra",
-      "Título": music.title,
-      "Artista": getArtistName(music.artist_id),
-      "Conferido": (music as any).royalties_verified ? "Sim" : "Não",
-      "Share Aplicado": (music as any).royalties_share_applied === true ? "Sim" : 
-                        (music as any).royalties_share_applied === false ? "Não" : "Pendente",
-      "Valor Esperado": (music as any).royalties_expected || 0,
-      "Valor Recebido": (music as any).royalties_received || 0,
-      "Divergência": ((music as any).royalties_expected || 0) - ((music as any).royalties_received || 0),
-      "Observações": (music as any).royalties_notes || ""
+    const data = filteredReleases.map(release => ({
+      "Título": release.title,
+      "Artista": getArtistName(release.artist_id),
+      "Tipo": translateReleaseType(release.type),
+      "Data Lançamento": release.release_date ? formatDateBR(release.release_date) : "-",
+      "Distribuidoras": release.distributors?.join(", ") || "-",
+      "Status": translateStatus(release.status),
+      "Conferido": (release as any).royalties_verified ? "Sim" : "Não",
+      "Share Aplicado": (release as any).royalties_share_applied === true ? "Sim" : 
+                        (release as any).royalties_share_applied === false ? "Não" : "Pendente",
+      "Valor Esperado": (release as any).royalties_expected || 0,
+      "Valor Recebido": (release as any).royalties_received || 0,
+      "Divergência": ((release as any).royalties_expected || 0) - ((release as any).royalties_received || 0),
+      "Observações": (release as any).royalties_notes || ""
     }));
 
-    const phonogramData = filteredPhonograms.map(phono => ({
-      "Tipo": "Fonograma",
-      "Título": phono.title,
-      "Artista": getArtistName(phono.artist_id),
-      "Conferido": (phono as any).royalties_verified ? "Sim" : "Não",
-      "Share Aplicado": (phono as any).royalties_share_applied === true ? "Sim" : 
-                        (phono as any).royalties_share_applied === false ? "Não" : "Pendente",
-      "Valor Esperado": (phono as any).royalties_expected || 0,
-      "Valor Recebido": (phono as any).royalties_received || 0,
-      "Divergência": ((phono as any).royalties_expected || 0) - ((phono as any).royalties_received || 0),
-      "Observações": (phono as any).royalties_notes || ""
-    }));
-
-    const data = [...worksData, ...phonogramData];
     if (data.length === 0) {
       toast({
         title: "Sem dados",
@@ -211,9 +183,8 @@ const GestaoRoyalties = () => {
     setSelectedArtist("all");
     setVerificationFilter("all");
     setShareFilter("all");
+    setStatusFilter("all");
   };
-
-  const isLoading = isLoadingMusic || isLoadingPhonograms;
 
   return (
     <SidebarProvider>
@@ -224,7 +195,7 @@ const GestaoRoyalties = () => {
             <SidebarTrigger className="-ml-1" />
             <div className="flex-1">
               <h1 className="text-lg lg:text-xl font-semibold text-foreground">Gestão de Royalties</h1>
-              <p className="text-xs lg:text-sm text-muted-foreground">Conferência de royalties e divergências</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">Conferência de share aplicado nos lançamentos</p>
             </div>
             <Button onClick={handleExport} className="gap-2">
               <Download className="h-4 w-4" />
@@ -234,15 +205,24 @@ const GestaoRoyalties = () => {
 
           <main className="flex-1 p-4 lg:p-6 space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total</p>
+                      <p className="text-2xl font-bold">{stats.total}</p>
+                    </div>
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">Conferidos</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {stats.verifiedWorks + stats.verifiedPhonograms}
-                      </p>
+                      <p className="text-2xl font-bold text-green-600">{stats.verified}</p>
                     </div>
                     <CheckCircle className="h-8 w-8 text-green-600" />
                   </div>
@@ -252,12 +232,10 @@ const GestaoRoyalties = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Pendentes</p>
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {stats.pendingWorks + stats.pendingPhonograms}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Share Aplicado</p>
+                      <p className="text-2xl font-bold text-blue-600">{stats.shareApplied}</p>
                     </div>
-                    <AlertTriangle className="h-8 w-8 text-yellow-600" />
+                    <Share2 className="h-8 w-8 text-blue-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -268,7 +246,7 @@ const GestaoRoyalties = () => {
                       <p className="text-sm text-muted-foreground">Sem Share</p>
                       <p className="text-2xl font-bold text-red-600">{stats.shareNotApplied}</p>
                     </div>
-                    <Share2 className="h-8 w-8 text-red-600" />
+                    <XCircle className="h-8 w-8 text-red-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -277,7 +255,7 @@ const GestaoRoyalties = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">Esperado</p>
-                      <p className="text-xl font-bold">R$ {stats.totalExpected.toFixed(2)}</p>
+                      <p className="text-lg font-bold">R$ {stats.totalExpected.toFixed(2)}</p>
                     </div>
                     <DollarSign className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -289,7 +267,7 @@ const GestaoRoyalties = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Divergência</p>
                       <p className={cn(
-                        "text-xl font-bold",
+                        "text-lg font-bold",
                         stats.divergence > 0 ? "text-red-600" : stats.divergence < 0 ? "text-green-600" : ""
                       )}>
                         R$ {Math.abs(stats.divergence).toFixed(2)}
@@ -316,7 +294,7 @@ const GestaoRoyalties = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="space-y-2">
                     <Label>Artista</Label>
                     <Select value={selectedArtist} onValueChange={setSelectedArtist}>
@@ -330,6 +308,21 @@ const GestaoRoyalties = () => {
                             {artist.stage_name || artist.name}
                           </SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Status Lançamento</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="planning">Planejamento</SelectItem>
+                        <SelectItem value="production">Produção</SelectItem>
+                        <SelectItem value="released">Lançado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -372,159 +365,97 @@ const GestaoRoyalties = () => {
               </CardContent>
             </Card>
 
-            {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="obras" className="gap-2">
-                  <Music className="h-4 w-4" />
-                  Obras ({filteredWorks.length})
-                </TabsTrigger>
-                <TabsTrigger value="fonogramas" className="gap-2">
-                  <Disc className="h-4 w-4" />
-                  Fonogramas ({filteredPhonograms.length})
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Obras Tab */}
-              <TabsContent value="obras">
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : filteredWorks.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhuma obra encontrada</div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-3">Título</th>
-                              <th className="text-left p-3">Artista</th>
-                              <th className="text-center p-3">Conferido</th>
-                              <th className="text-center p-3">Share</th>
-                              <th className="text-right p-3">Esperado</th>
-                              <th className="text-right p-3">Recebido</th>
-                              <th className="text-right p-3">Divergência</th>
-                              <th className="text-center p-3">Ações</th>
+            {/* Releases List */}
+            {isLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+            ) : filteredReleases.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">Nenhum lançamento encontrado</div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lançamentos ({filteredReleases.length})</CardTitle>
+                  <CardDescription>Gerencie o share aplicado e conferência de royalties</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50">
+                        <tr>
+                          <th className="text-left p-3">Capa</th>
+                          <th className="text-left p-3">Título</th>
+                          <th className="text-left p-3">Artista</th>
+                          <th className="text-left p-3">Tipo</th>
+                          <th className="text-left p-3">Data</th>
+                          <th className="text-center p-3">Conferido</th>
+                          <th className="text-center p-3">Share</th>
+                          <th className="text-right p-3">Esperado</th>
+                          <th className="text-right p-3">Recebido</th>
+                          <th className="text-right p-3">Divergência</th>
+                          <th className="text-center p-3">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredReleases.map(release => {
+                          const divergence = ((release as any).royalties_expected || 0) - ((release as any).royalties_received || 0);
+                          return (
+                            <tr key={release.id} className="border-t border-border hover:bg-muted/30">
+                              <td className="p-3">
+                                {release.cover_url ? (
+                                  <img 
+                                    src={release.cover_url} 
+                                    alt={release.title}
+                                    className="w-10 h-10 rounded object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+                                    <Image className="h-5 w-5 text-muted-foreground" />
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-3 font-medium">{release.title}</td>
+                              <td className="p-3">{getArtistName(release.artist_id)}</td>
+                              <td className="p-3">
+                                <Badge variant="outline">{translateReleaseType(release.type)}</Badge>
+                              </td>
+                              <td className="p-3">{release.release_date ? formatDateBR(release.release_date) : "-"}</td>
+                              <td className="p-3 text-center">
+                                {(release as any).royalties_verified ? (
+                                  <Badge className="bg-green-600">Sim</Badge>
+                                ) : (
+                                  <Badge variant="outline">Não</Badge>
+                                )}
+                              </td>
+                              <td className="p-3 text-center">
+                                {(release as any).royalties_share_applied === true ? (
+                                  <Badge className="bg-green-600">Sim</Badge>
+                                ) : (release as any).royalties_share_applied === false ? (
+                                  <Badge className="bg-red-600">Não</Badge>
+                                ) : (
+                                  <Badge variant="outline">Pendente</Badge>
+                                )}
+                              </td>
+                              <td className="p-3 text-right">R$ {((release as any).royalties_expected || 0).toFixed(2)}</td>
+                              <td className="p-3 text-right">R$ {((release as any).royalties_received || 0).toFixed(2)}</td>
+                              <td className={cn(
+                                "p-3 text-right font-medium",
+                                divergence > 0 ? "text-red-600" : divergence < 0 ? "text-green-600" : ""
+                              )}>
+                                R$ {Math.abs(divergence).toFixed(2)}
+                              </td>
+                              <td className="p-3 text-center">
+                                <Button variant="ghost" size="sm" onClick={() => handleEdit(release)}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {filteredWorks.map(music => {
-                              const divergence = ((music as any).royalties_expected || 0) - ((music as any).royalties_received || 0);
-                              return (
-                                <tr key={music.id} className="border-t border-border hover:bg-muted/30">
-                                  <td className="p-3 font-medium">{music.title}</td>
-                                  <td className="p-3">{getArtistName(music.artist_id)}</td>
-                                  <td className="p-3 text-center">
-                                    {(music as any).royalties_verified ? (
-                                      <Badge className="bg-green-600">Sim</Badge>
-                                    ) : (
-                                      <Badge variant="outline">Não</Badge>
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    {(music as any).royalties_share_applied === true ? (
-                                      <Badge className="bg-green-600">Sim</Badge>
-                                    ) : (music as any).royalties_share_applied === false ? (
-                                      <Badge className="bg-red-600">Não</Badge>
-                                    ) : (
-                                      <Badge variant="outline">Pendente</Badge>
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-right">R$ {((music as any).royalties_expected || 0).toFixed(2)}</td>
-                                  <td className="p-3 text-right">R$ {((music as any).royalties_received || 0).toFixed(2)}</td>
-                                  <td className={cn(
-                                    "p-3 text-right font-medium",
-                                    divergence > 0 ? "text-red-600" : divergence < 0 ? "text-green-600" : ""
-                                  )}>
-                                    R$ {Math.abs(divergence).toFixed(2)}
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    <Button variant="ghost" size="sm" onClick={() => handleEdit(music, "obra")}>
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* Fonogramas Tab */}
-              <TabsContent value="fonogramas">
-                {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-                ) : filteredPhonograms.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">Nenhum fonograma encontrado</div>
-                ) : (
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-muted/50">
-                            <tr>
-                              <th className="text-left p-3">Título</th>
-                              <th className="text-left p-3">Artista</th>
-                              <th className="text-center p-3">Conferido</th>
-                              <th className="text-center p-3">Share</th>
-                              <th className="text-right p-3">Esperado</th>
-                              <th className="text-right p-3">Recebido</th>
-                              <th className="text-right p-3">Divergência</th>
-                              <th className="text-center p-3">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredPhonograms.map(phono => {
-                              const divergence = ((phono as any).royalties_expected || 0) - ((phono as any).royalties_received || 0);
-                              return (
-                                <tr key={phono.id} className="border-t border-border hover:bg-muted/30">
-                                  <td className="p-3 font-medium">{phono.title}</td>
-                                  <td className="p-3">{getArtistName(phono.artist_id)}</td>
-                                  <td className="p-3 text-center">
-                                    {(phono as any).royalties_verified ? (
-                                      <Badge className="bg-green-600">Sim</Badge>
-                                    ) : (
-                                      <Badge variant="outline">Não</Badge>
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    {(phono as any).royalties_share_applied === true ? (
-                                      <Badge className="bg-green-600">Sim</Badge>
-                                    ) : (phono as any).royalties_share_applied === false ? (
-                                      <Badge className="bg-red-600">Não</Badge>
-                                    ) : (
-                                      <Badge variant="outline">Pendente</Badge>
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-right">R$ {((phono as any).royalties_expected || 0).toFixed(2)}</td>
-                                  <td className="p-3 text-right">R$ {((phono as any).royalties_received || 0).toFixed(2)}</td>
-                                  <td className={cn(
-                                    "p-3 text-right font-medium",
-                                    divergence > 0 ? "text-red-600" : divergence < 0 ? "text-green-600" : ""
-                                  )}>
-                                    R$ {Math.abs(divergence).toFixed(2)}
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    <Button variant="ghost" size="sm" onClick={() => handleEdit(phono, "fonograma")}>
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-            </Tabs>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </main>
         </SidebarInset>
       </div>
@@ -535,7 +466,7 @@ const GestaoRoyalties = () => {
           <DialogHeader>
             <DialogTitle>Editar Royalties</DialogTitle>
             <DialogDescription>
-              {selectedItem?.title} - {itemType === "obra" ? "Obra" : "Fonograma"}
+              {selectedRelease?.title}
             </DialogDescription>
           </DialogHeader>
 
@@ -546,7 +477,7 @@ const GestaoRoyalties = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Share Aplicado</Label>
+              <Label>Share Aplicado na Distribuidora</Label>
               <Select 
                 value={shareApplied === true ? "yes" : shareApplied === false ? "no" : "pending"} 
                 onValueChange={(v) => setShareApplied(v === "yes" ? true : v === "no" ? false : null)}
@@ -556,8 +487,8 @@ const GestaoRoyalties = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="yes">Sim</SelectItem>
-                  <SelectItem value="no">Não</SelectItem>
+                  <SelectItem value="yes">Sim - Recebeu</SelectItem>
+                  <SelectItem value="no">Não - Não Recebeu</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -615,7 +546,7 @@ const GestaoRoyalties = () => {
             <Button variant="outline" onClick={() => setEditModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleSave} disabled={updateMusic.isPending || updatePhonogram.isPending}>
+            <Button onClick={handleSave} disabled={updateRelease.isPending}>
               Salvar
             </Button>
           </DialogFooter>
