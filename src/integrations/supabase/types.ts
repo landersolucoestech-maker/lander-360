@@ -99,6 +99,7 @@ export type Database = {
           account: string | null
           account_holder: string | null
           agency: string | null
+          apple_music_url: string | null
           artist_types: string[] | null
           bank: string | null
           bio: string | null
@@ -107,6 +108,7 @@ export type Database = {
           cpf_cnpj: string | null
           created_at: string
           created_by: string | null
+          deezer_url: string | null
           distributor_emails: Json | null
           distributors: string[] | null
           documents_url: string | null
@@ -142,6 +144,7 @@ export type Database = {
           account?: string | null
           account_holder?: string | null
           agency?: string | null
+          apple_music_url?: string | null
           artist_types?: string[] | null
           bank?: string | null
           bio?: string | null
@@ -150,6 +153,7 @@ export type Database = {
           cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
+          deezer_url?: string | null
           distributor_emails?: Json | null
           distributors?: string[] | null
           documents_url?: string | null
@@ -185,6 +189,7 @@ export type Database = {
           account?: string | null
           account_holder?: string | null
           agency?: string | null
+          apple_music_url?: string | null
           artist_types?: string[] | null
           bank?: string | null
           bio?: string | null
@@ -193,6 +198,7 @@ export type Database = {
           cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
+          deezer_url?: string | null
           distributor_emails?: Json | null
           distributors?: string[] | null
           documents_url?: string | null

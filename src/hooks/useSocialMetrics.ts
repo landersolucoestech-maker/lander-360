@@ -59,6 +59,7 @@ export const useArtistSocialMetrics = (artistId: string | undefined) => {
         seenPlatforms.add(item.platform);
         
         if (item.platform === 'youtube') {
+          // followers = subscribers, value = views, reach = videoCount
           metrics.youtube = {
             subscribers: item.followers || 0,
             views: item.value || 0,
@@ -99,15 +100,19 @@ export const useFetchSocialMetrics = () => {
       artistId, 
       youtubeUrl, 
       instagramUrl, 
-      tiktokUrl 
+      tiktokUrl,
+      deezerUrl,
+      appleMusicUrl,
     }: { 
       artistId: string; 
       youtubeUrl?: string; 
       instagramUrl?: string; 
       tiktokUrl?: string;
+      deezerUrl?: string;
+      appleMusicUrl?: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('social-metrics', {
-        body: { artistId, youtubeUrl, instagramUrl, tiktokUrl },
+        body: { artistId, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl },
       });
 
       if (error) throw error;
