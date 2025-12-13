@@ -219,17 +219,6 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMe
               </Button>
               <Button
                 size="sm"
-                className="bg-primary/80 hover:bg-primary text-white text-xs h-8 px-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewMetrics?.(release);
-                }}
-                title="Ver Métricas"
-              >
-                <BarChart3 className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
                 className="flex-1 bg-white/20 hover:bg-white/30 text-white text-xs h-8"
                 onClick={(e) => {
                   e.stopPropagation();
