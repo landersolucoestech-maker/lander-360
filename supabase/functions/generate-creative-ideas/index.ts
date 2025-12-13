@@ -16,6 +16,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    const requestBody = await req.json();
     const { 
       type, 
       artistData, 
@@ -30,8 +31,9 @@ serve(async (req) => {
       additionalNotes,
       metricsData,
       historyContext,
-      chatMessages 
-    } = await req.json();
+      chatMessages,
+      prompt: pitchPrompt  // For pitch type
+    } = requestBody;
 
     let systemPrompt = `Você é um especialista em marketing musical e estratégia de conteúdo para a indústria da música brasileira. 
 Você trabalha para a Lander Records e tem acesso completo aos dados dos artistas, obras, lançamentos e campanhas.
@@ -172,6 +174,47 @@ IMPORTANTE: Retorne APENAS o JSON array.`;
 Artista: ${artistData?.name || 'N/A'}
 Objetivo: ${objective}
 Canal: ${channel || 'Todos'}`;
+
+    } else if (type === "pitch") {
+      // For Spotify pitching, the prompt is already built on the frontend
+      const pitchResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "user", content: pitchPrompt },
+          ],
+        }),
+      });
+
+      if (!pitchResponse.ok) {
+        if (pitchResponse.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limits exceeded" }), {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (pitchResponse.status === 402) {
+          return new Response(JSON.stringify({ error: "Payment required" }), {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const errorText = await pitchResponse.text();
+        console.error("AI gateway error:", pitchResponse.status, errorText);
+        throw new Error("AI gateway error");
+      }
+
+      const pitchData = await pitchResponse.json();
+      const pitchContent = pitchData.choices?.[0]?.message?.content || "";
+
+      return new Response(JSON.stringify({ content: pitchContent }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // For non-streaming requests

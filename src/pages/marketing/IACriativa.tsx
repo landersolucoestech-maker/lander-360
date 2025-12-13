@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, BarChart3, FileText, History, Lightbulb, Zap } from 'lucide-react';
+import { Sparkles, MessageSquare, BarChart3, FileText, History, Lightbulb, Zap, Music } from 'lucide-react';
 import { CreativeIdeaGenerator } from '@/components/creative-ai/CreativeIdeaGenerator';
 import { CreativeAIChatbot } from '@/components/creative-ai/CreativeAIChatbot';
 import { CreativeAIAnalytics } from '@/components/creative-ai/CreativeAIAnalytics';
 import { CreativeAIHistory } from '@/components/creative-ai/CreativeAIHistory';
 import { ContentSuggestions } from '@/components/creative-ai/ContentSuggestions';
 import { CreativeAIAutomations } from '@/components/creative-ai/CreativeAIAutomations';
+import { SpotifyPitchGenerator } from '@/components/creative-ai/SpotifyPitchGenerator';
 import { useCreativeAIStats } from '@/hooks/useCreativeAI';
 
 const IACriativa = () => {
@@ -76,6 +77,10 @@ const IACriativa = () => {
                   <Zap className="h-4 w-4" />
                   Automações
                 </TabsTrigger>
+                <TabsTrigger value="pitch" className="flex items-center gap-2">
+                  <Music className="h-4 w-4" />
+                  Pitching Spotify
+                </TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <History className="h-4 w-4" />
                   Histórico
@@ -100,6 +105,10 @@ const IACriativa = () => {
 
               <TabsContent value="automations" className="mt-6">
                 <CreativeAIAutomations />
+              </TabsContent>
+
+              <TabsContent value="pitch" className="mt-6">
+                <SpotifyPitchGenerator />
               </TabsContent>
 
               <TabsContent value="history" className="mt-6">
