@@ -559,7 +559,7 @@ const GestaoShares = () => {
                           <th className="text-left p-3">Artista</th>
                           <th className="text-left p-3">Tipo</th>
                           <th className="text-left p-3">Data</th>
-                          <th className="text-center p-3">Conferido</th>
+                          <th className="text-center p-3">Enviado</th>
                           <th className="text-center p-3">Share</th>
                           <th className="text-right p-3">Percentual (%)</th>
                           <th className="text-center p-3">Ações</th>
