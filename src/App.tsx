@@ -37,6 +37,7 @@ import MarketingMetricas from "./pages/marketing/Metricas";
 import MarketingBriefing from "./pages/marketing/Briefing";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import Servicos from "./pages/Servicos";
+import Lander from "./pages/Lander";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/gestao-shares" element={<ProtectedRoute><GestaoShares /></ProtectedRoute>} />
               <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
               <Route path="/servicos" element={<ProtectedRoute><Servicos /></ProtectedRoute>} />
+              <Route path="/lander" element={<ProtectedRoute><Lander /></ProtectedRoute>} />
               {/* Marketing routes */}
               <Route path="/marketing/visao-geral" element={<ProtectedRoute><MarketingVisaoGeral /></ProtectedRoute>} />
               <Route path="/marketing/campanhas" element={<ProtectedRoute><MarketingCampanhas /></ProtectedRoute>} />
