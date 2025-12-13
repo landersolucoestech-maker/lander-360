@@ -133,15 +133,15 @@ Retorne APENAS o JSON, sem texto adicional.`;
 
       const { data, error } = await supabase.functions.invoke('ai-gateway', {
         body: {
-          provider: 'google',
-          model: 'gemini-2.5-flash',
-          prompt,
+          provider: 'gemini',
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: prompt }],
         },
       });
 
       if (error) throw error;
 
-      const responseText = data.text || data.response || '';
+      const responseText = data?.content || '';
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       
       if (jsonMatch) {

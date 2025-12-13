@@ -118,6 +118,10 @@ async function callAI(
 ): Promise<Response> {
   const config = PROVIDERS[provider];
   
+  if (!config) {
+    throw new Error(`Unknown provider: ${provider}. Valid providers: openai, anthropic, gemini`);
+  }
+  
   let apiKey: string | undefined;
   if (provider === 'openai') {
     apiKey = Deno.env.get('OPENAI_API_KEY');
