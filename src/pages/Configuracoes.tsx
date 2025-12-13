@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor, Plus, Pencil, Trash2, Eye } from "lucide-react";
+import { Settings, Bell, Database, Link2, Music, DollarSign, Calendar, FileText, CheckCircle2, XCircle, Landmark, Sun, Moon, Monitor, Plus, Pencil, Trash2, Eye, FileSearch, Scale } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { BankIntegrationModal } from "@/components/modals/BankIntegrationModal";
 import { IntegrationModal } from "@/components/modals/IntegrationModal";
 import { ContractTemplateModal } from "@/components/modals/ContractTemplateModal";
@@ -73,6 +74,7 @@ const integrationConfigs = {
 const Configuracoes = () => {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
   const { settings: systemSettings, toggleAutoBackup, updateTimezone } = useSystemSettings();
   const { settings: notificationSettings, toggleNewContracts, toggleContractsExpiring, toggleNewReleases } = useNotificationSettings();
   const { exportData, createBackup, isExporting, isBackingUp } = useBackupData();
@@ -314,6 +316,45 @@ const Configuracoes = () => {
                         Salvar
                       </Button>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Auditoria e Royalties */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileSearch className="h-5 w-5" />
+                    Auditoria e Gestão de Royalties
+                  </CardTitle>
+                  <CardDescription>
+                    Acesse as ferramentas de auditoria e gestão de royalties
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2 h-auto py-4"
+                      onClick={() => navigate('/relatorios-autorais')}
+                    >
+                      <FileSearch className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-medium">Auditoria</div>
+                        <p className="text-xs text-muted-foreground">Auditoria de obras, fonogramas, projetos e lançamentos</p>
+                      </div>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2 h-auto py-4"
+                      onClick={() => navigate('/gestao-royalties')}
+                    >
+                      <Scale className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-medium">Gestão de Royalties</div>
+                        <p className="text-xs text-muted-foreground">Gerenciamento e conferência de royalties</p>
+                      </div>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

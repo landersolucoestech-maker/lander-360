@@ -264,8 +264,8 @@ const RelatoriosAutorais = () => {
           <header className="flex h-14 lg:h-16 shrink-0 items-center gap-2 border-b border-border px-4 lg:px-6">
             <SidebarTrigger className="-ml-1" />
             <div className="flex-1">
-              <h1 className="text-lg lg:text-xl font-semibold text-foreground">Relatórios Autorais</h1>
-              <p className="text-xs lg:text-sm text-muted-foreground">Relatórios para ECAD, associações e gestão de royalties</p>
+              <h1 className="text-lg lg:text-xl font-semibold text-foreground">Auditoria</h1>
+              <p className="text-xs lg:text-sm text-muted-foreground">Auditoria de obras, fonogramas, projetos e lançamentos</p>
             </div>
           </header>
 

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, LogOut, Briefcase, Scale, FileBarChart } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, LogOut, Briefcase } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -64,14 +64,6 @@ const navigationItems = [{
   title: "Relatórios",
   url: "/relatorios",
   icon: BarChart3
-}, {
-  title: "Relatórios Autorais",
-  url: "/relatorios-autorais",
-  icon: FileBarChart
-}, {
-  title: "Gestão de Royalties",
-  url: "/gestao-royalties",
-  icon: Scale
 }];
 const marketingItems = [{
   title: "Visão Geral",
