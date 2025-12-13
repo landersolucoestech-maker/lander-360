@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export interface SocialMetrics {
   id: string;
@@ -93,7 +92,6 @@ export const useArtistSocialMetrics = (artistId: string | undefined) => {
 // Fetch fresh metrics from social platforms
 export const useFetchSocialMetrics = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ 
@@ -122,28 +120,9 @@ export const useFetchSocialMetrics = () => {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['social-metrics', variables.artistId] });
-      
-      const platforms = Object.keys(data.data || {});
-      if (platforms.length > 0) {
-        toast({
-          title: 'Sucesso',
-          description: `Métricas atualizadas: ${platforms.join(', ')}`,
-        });
-      } else {
-        toast({
-          title: 'Aviso',
-          description: 'Nenhuma métrica encontrada para as plataformas.',
-          variant: 'default',
-        });
-      }
     },
     onError: (error: Error) => {
       console.error('Error fetching social metrics:', error);
-      toast({
-        title: 'Erro',
-        description: error.message || 'Falha ao buscar métricas sociais.',
-        variant: 'destructive',
-      });
     },
   });
 };

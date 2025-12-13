@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,25 +73,6 @@ export function ArtistCard({
   const { data: socialMetrics, isLoading: isLoadingSocial } = useArtistSocialMetrics(artist.id.toString());
   const fetchSocialMetrics = useFetchSocialMetrics();
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Auto-fetch Spotify metrics on mount and every 60 seconds
-  useEffect(() => {
-    if (!isValidSpotifyArtistUrl) return;
-
-    // Initial fetch if no metrics
-    if (!spotifyMetrics && !isLoadingMetrics && !isRefreshing) {
-      handleRefreshSpotify();
-    }
-
-    // Set up auto-refresh every 60 seconds
-    const intervalId = setInterval(() => {
-      if (!isRefreshing) {
-        handleRefreshSpotify();
-      }
-    }, 60000); // 60 seconds
-
-    return () => clearInterval(intervalId);
-  }, [spotifyUrl, spotifyMetrics, isLoadingMetrics, isRefreshing, isValidSpotifyArtistUrl]);
 
   const handleRefreshSpotify = async () => {
     if (isRefreshing) return;
