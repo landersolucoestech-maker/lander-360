@@ -1357,7 +1357,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                 <div className="flex items-center gap-4">
                   <CardTitle className="text-lg">Participação</CardTitle>
                   <span className="text-sm text-muted-foreground">
-                    Percentual total: {totalPercentage.toFixed(2)}% de 100%
+                    Percentual total: {Math.min(totalPercentage, 100).toFixed(2)}% de 100%
                   </span>
                 </div>
                 {participationOpen ? (
