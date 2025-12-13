@@ -10,7 +10,8 @@ import { ArtistContractModal } from "@/components/modals/ArtistContractModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useDeleteArtist } from "@/hooks/useArtists";
 import { useArtistSpotifyMetrics, useFetchSpotifyMetrics } from "@/hooks/useSpotifyMetrics";
-import { Mail, Phone, Users, Headphones, BarChart3, RefreshCw, Loader2 } from "lucide-react";
+import { useArtistSocialMetrics, useFetchSocialMetrics } from "@/hooks/useSocialMetrics";
+import { Mail, Phone, Users, Headphones, BarChart3, RefreshCw, Loader2, Eye } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud, FaApple, FaDeezer } from "react-icons/fa";
 interface ArtistCardProps {
   artist: {
@@ -67,6 +68,8 @@ export function ArtistCard({
     !spotifyUrl.includes('/user/');
   const { data: spotifyMetrics, isLoading: isLoadingMetrics } = useArtistSpotifyMetrics(artist.id.toString());
   const fetchSpotifyMetrics = useFetchSpotifyMetrics();
+  const { data: socialMetrics, isLoading: isLoadingSocial } = useArtistSocialMetrics(artist.id.toString());
+  const fetchSocialMetrics = useFetchSocialMetrics();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Auto-fetch Spotify metrics on mount and every 60 seconds
@@ -89,15 +92,32 @@ export function ArtistCard({
   }, [spotifyUrl, spotifyMetrics, isLoadingMetrics, isRefreshing, isValidSpotifyArtistUrl]);
 
   const handleRefreshSpotify = async () => {
-    if (!isValidSpotifyArtistUrl || isRefreshing) return;
+    if (isRefreshing) return;
     setIsRefreshing(true);
     try {
-      await fetchSpotifyMetrics.mutateAsync({
-        artistId: artist.id.toString(),
-        spotifyUrl: spotifyUrl
-      });
+      // Refresh Spotify metrics
+      if (isValidSpotifyArtistUrl) {
+        await fetchSpotifyMetrics.mutateAsync({
+          artistId: artist.id.toString(),
+          spotifyUrl: spotifyUrl
+        });
+      }
+      
+      // Refresh other social metrics
+      const youtubeUrl = artist.socialMedia?.youtube || '';
+      const instagramUrl = artist.socialMedia?.instagram || '';
+      const tiktokUrl = artist.socialMedia?.tiktok || '';
+      
+      if (youtubeUrl || instagramUrl || tiktokUrl) {
+        await fetchSocialMetrics.mutateAsync({
+          artistId: artist.id.toString(),
+          youtubeUrl: youtubeUrl,
+          instagramUrl: instagramUrl,
+          tiktokUrl: tiktokUrl,
+        });
+      }
     } catch (error) {
-      console.error('Error fetching Spotify metrics:', error);
+      console.error('Error fetching metrics:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -341,7 +361,9 @@ export function ArtistCard({
                         <FaInstagram className="h-3.5 w-3.5 text-pink-500" />
                         <span className="text-[10px] font-medium text-foreground">Instagram</span>
                       </div>
-                      <div className="text-base font-bold text-foreground">N/D</div>
+                      <div className="text-base font-bold text-foreground">
+                        {socialMetrics?.instagram?.followers ? formatNumber(socialMetrics.instagram.followers) : 'N/D'}
+                      </div>
                       <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
 
@@ -351,7 +373,9 @@ export function ArtistCard({
                         <FaTiktok className="h-3.5 w-3.5 text-foreground" />
                         <span className="text-[10px] font-medium text-foreground">TikTok</span>
                       </div>
-                      <div className="text-base font-bold text-foreground">N/D</div>
+                      <div className="text-base font-bold text-foreground">
+                        {socialMetrics?.tiktok?.followers ? formatNumber(socialMetrics.tiktok.followers) : 'N/D'}
+                      </div>
                       <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
 
@@ -400,8 +424,18 @@ export function ArtistCard({
                         <FaYoutube className="h-3.5 w-3.5 text-red-500" />
                         <span className="text-[10px] font-medium text-foreground">YouTube</span>
                       </div>
-                      <div className="text-base font-bold text-foreground">N/D</div>
+                      <div className="text-base font-bold text-foreground">
+                        {socialMetrics?.youtube?.subscribers ? formatNumber(socialMetrics.youtube.subscribers) : 'N/D'}
+                      </div>
                       <div className="text-[9px] text-muted-foreground">Inscritos</div>
+                      {socialMetrics?.youtube?.views ? (
+                        <div className="mt-1">
+                          <div className="flex items-center gap-1 text-red-500">
+                            <Eye className="h-2 w-2" />
+                            <span className="text-[8px]">{formatNumber(socialMetrics.youtube.views)} views</span>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
 
                     {/* Apple & Deezer */}
@@ -411,14 +445,18 @@ export function ArtistCard({
                           <FaApple className="h-3 w-3 text-foreground" />
                           <span className="text-[9px] font-medium text-foreground">Apple</span>
                         </div>
-                        <div className="text-sm font-bold text-foreground">N/D</div>
+                        <div className="text-sm font-bold text-foreground">
+                          {socialMetrics?.apple?.followers ? formatNumber(socialMetrics.apple.followers) : 'N/D'}
+                        </div>
                       </div>
                       <div className="bg-muted/50 rounded-lg p-1.5 border border-border">
                         <div className="flex items-center gap-1 mb-0.5">
                           <FaDeezer className="h-3 w-3 text-foreground" />
                           <span className="text-[9px] font-medium text-foreground">Deezer</span>
                         </div>
-                        <div className="text-sm font-bold text-foreground">N/D</div>
+                        <div className="text-sm font-bold text-foreground">
+                          {socialMetrics?.deezer?.followers ? formatNumber(socialMetrics.deezer.followers) : 'N/D'}
+                        </div>
                       </div>
                     </div>
                   </div>
