@@ -1296,6 +1296,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_shares: {
+        Row: {
+          artist_name: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          music_title: string
+          notes: string | null
+          participant_name: string
+          participant_role: string | null
+          share_percentage: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          music_title: string
+          notes?: string | null
+          participant_name: string
+          participant_role?: string | null
+          share_percentage?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          music_title?: string
+          notes?: string | null
+          participant_name?: string
+          participant_role?: string | null
+          share_percentage?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       phonograms: {
         Row: {
           abramus_code: string | null

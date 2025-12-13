@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useReleases, useUpdateRelease } from "@/hooks/useReleases";
 import { useArtists } from "@/hooks/useArtists";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ParticipantRoyalty {
   name: string;
@@ -30,9 +32,76 @@ interface ParticipantRoyalty {
 
 const GestaoShares = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: releases = [], isLoading } = useReleases();
   const { data: artists = [] } = useArtists();
   const updateRelease = useUpdateRelease();
+
+  // Fetch pending shares from database
+  const { data: pendingShares = [], isLoading: isLoadingPendingShares } = useQuery({
+    queryKey: ['pending-shares'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pending_shares')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Mutation to create pending share
+  const createPendingShare = useMutation({
+    mutationFn: async (shareData: {
+      music_title: string;
+      artist_name: string;
+      participant_name: string;
+      participant_role: string;
+      share_percentage: number | null;
+      notes: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('pending_shares')
+        .insert([shareData])
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-shares'] });
+      toast({
+        title: "Share pendente registrado",
+        description: "O share foi salvo com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error creating pending share:', error);
+      toast({
+        title: "Erro ao registrar",
+        description: error.message || "Ocorreu um erro ao salvar o share pendente.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Mutation to delete pending share
+  const deletePendingShare = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('pending_shares')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-shares'] });
+      toast({
+        title: "Share removido",
+        description: "O share pendente foi removido.",
+      });
+    }
+  });
 
   // Filter states
   const [selectedArtist, setSelectedArtist] = useState<string>("all");
@@ -518,6 +587,60 @@ const GestaoShares = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Pending Shares List */}
+            {pendingShares.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Shares Pendentes ({pendingShares.length})
+                  </CardTitle>
+                  <CardDescription>Músicas que precisam receber share de participantes</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50">
+                        <tr>
+                          <th className="text-left p-3">Música</th>
+                          <th className="text-left p-3">Artista</th>
+                          <th className="text-left p-3">Participante</th>
+                          <th className="text-left p-3">Função</th>
+                          <th className="text-right p-3">%</th>
+                          <th className="text-left p-3">Observações</th>
+                          <th className="text-center p-3">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingShares.map((share: any) => (
+                          <tr key={share.id} className="border-t border-border hover:bg-muted/30">
+                            <td className="p-3 font-medium">{share.music_title}</td>
+                            <td className="p-3">{share.artist_name || "-"}</td>
+                            <td className="p-3">{share.participant_name}</td>
+                            <td className="p-3">
+                              <Badge variant="outline">{share.participant_role}</Badge>
+                            </td>
+                            <td className="p-3 text-right">{share.share_percentage ? `${share.share_percentage}%` : "-"}</td>
+                            <td className="p-3 text-muted-foreground max-w-xs truncate">{share.notes || "-"}</td>
+                            <td className="p-3 text-center">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => deletePendingShare.mutate(share.id)}
+                                disabled={deletePendingShare.isPending}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </main>
         </SidebarInset>
       </div>
@@ -762,6 +885,7 @@ const GestaoShares = () => {
               Cancelar
             </Button>
             <Button 
+              disabled={createPendingShare.isPending}
               onClick={() => {
                 if (!pendingShareData.musicTitle || !pendingShareData.participantName) {
                   toast({
@@ -772,9 +896,13 @@ const GestaoShares = () => {
                   return;
                 }
                 
-                toast({
-                  title: "Share pendente registrado",
-                  description: `Share para ${pendingShareData.participantName} na música "${pendingShareData.musicTitle}" registrado.`,
+                createPendingShare.mutate({
+                  music_title: pendingShareData.musicTitle,
+                  artist_name: pendingShareData.artistName || null,
+                  participant_name: pendingShareData.participantName,
+                  participant_role: pendingShareData.participantRole,
+                  share_percentage: pendingShareData.sharePercentage ? parseFloat(pendingShareData.sharePercentage) : null,
+                  notes: pendingShareData.notes || null
                 });
                 
                 setPendingSharesModalOpen(false);
@@ -788,7 +916,7 @@ const GestaoShares = () => {
                 });
               }}
             >
-              Registrar
+              {createPendingShare.isPending ? "Salvando..." : "Registrar"}
             </Button>
           </DialogFooter>
         </DialogContent>
