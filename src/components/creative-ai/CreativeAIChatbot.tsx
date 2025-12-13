@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Loader2, Bot, User, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, Loader2, Bot, User, Sparkles, Download } from 'lucide-react';
+import { toast } from 'sonner';
 import { useArtists } from '@/hooks/useArtists';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -133,6 +134,34 @@ export const CreativeAIChatbot = () => {
     }
   };
 
+  const handleExportChat = () => {
+    if (messages.length === 0) {
+      toast.error('Nenhuma conversa para exportar');
+      return;
+    }
+
+    const artistName = selectedArtist 
+      ? artists?.find(a => a.id === selectedArtist)?.stage_name || artists?.find(a => a.id === selectedArtist)?.name || 'Geral'
+      : 'Geral';
+    
+    const content = messages.map(m => {
+      const time = m.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const role = m.role === 'user' ? 'USUÁRIO' : 'ASSISTENTE';
+      return `[${time}] ${role}:\n${m.content}\n`;
+    }).join('\n---\n\n');
+
+    const header = `CONVERSA - ASSISTENTE DE MARKETING\nArtista: ${artistName}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\n${'='.repeat(50)}\n\n`;
+    
+    const blob = new Blob([header + content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-marketing-${artistName.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Conversa exportada');
+  };
+
   const suggestedPrompts = [
     'Crie uma estratégia de lançamento para o próximo single',
     'Quais são as melhores hashtags para usar no TikTok?',
@@ -195,10 +224,21 @@ export const CreativeAIChatbot = () => {
       {/* Chat Area */}
       <Card className="lg:col-span-3 flex flex-col h-[600px]">
         <CardHeader className="border-b border-border">
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            Assistente de Marketing
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Assistente de Marketing
+            </CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportChat}
+              disabled={messages.length === 0}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </div>
         </CardHeader>
         
         <ScrollArea className="flex-1 p-4" ref={scrollRef}>
