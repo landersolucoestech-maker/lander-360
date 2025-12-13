@@ -343,13 +343,13 @@ export function ArtistCard({
                 ) : (
                   <div className="grid grid-cols-6 gap-1.5">
                     {/* Instagram */}
-                    <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-md px-2 py-1.5 border border-pink-500/20">
-                      <div className="flex items-center gap-1">
-                        <FaInstagram className="h-3 w-3 text-pink-500" />
-                        <span className="text-[9px] font-medium text-foreground">Instagram</span>
-                      </div>
-                      <div className="text-sm font-bold text-foreground leading-tight">
-                        {socialMetrics?.instagram?.followers ? formatNumber(socialMetrics.instagram.followers) : 'N/D'}
+                    <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-md px-2 py-1 border border-pink-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <FaInstagram className="h-3 w-3 text-pink-500" />
+                          <span className="text-[9px] font-medium text-foreground">Instagram</span>
+                        </div>
+                        <div className="text-sm font-bold text-foreground">{socialMetrics?.instagram?.followers ? formatNumber(socialMetrics.instagram.followers) : 'N/D'}</div>
                       </div>
                     </div>
 
