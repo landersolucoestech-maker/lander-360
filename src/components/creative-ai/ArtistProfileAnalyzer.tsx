@@ -175,16 +175,16 @@ Retorne APENAS o JSON, sem texto adicional.`;
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
     const maxWidth = pageWidth - margin * 2;
-    let y = 20;
+    let y = 0;
 
-    // Load and add logo
+    // Load and add header banner
     try {
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       await new Promise<void>((resolve, reject) => {
         logoImg.onload = () => resolve();
         logoImg.onerror = reject;
-        logoImg.src = '/lovable-uploads/lander-logo-black.png';
+        logoImg.src = '/lovable-uploads/pdf-header-banner.png';
       });
       
       const canvas = document.createElement('canvas');
@@ -194,8 +194,10 @@ Retorne APENAS o JSON, sem texto adicional.`;
       ctx?.drawImage(logoImg, 0, 0);
       const logoDataUrl = canvas.toDataURL('image/png');
       
-      doc.addImage(logoDataUrl, 'PNG', 5, y, 80, 80);
-      y += 85;
+      // Full width header at top of page
+      const imgHeight = (logoImg.height / logoImg.width) * pageWidth;
+      doc.addImage(logoDataUrl, 'PNG', 0, 0, pageWidth, imgHeight);
+      y = imgHeight + 10;
     } catch (error) {
       console.error('Failed to load logo:', error);
       // Continue without logo
