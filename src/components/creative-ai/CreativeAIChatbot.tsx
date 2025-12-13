@@ -8,6 +8,7 @@ import { MessageSquare, Send, Loader2, Bot, User, Sparkles, Download } from 'luc
 import { toast } from 'sonner';
 import { useArtists } from '@/hooks/useArtists';
 import { supabase } from '@/integrations/supabase/client';
+import jsPDF from 'jspdf';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -134,7 +135,7 @@ export const CreativeAIChatbot = () => {
     }
   };
 
-  const handleExportChat = () => {
+  const handleExportChat = async () => {
     if (messages.length === 0) {
       toast.error('Nenhuma conversa para exportar');
       return;
@@ -144,22 +145,96 @@ export const CreativeAIChatbot = () => {
       ? artists?.find(a => a.id === selectedArtist)?.stage_name || artists?.find(a => a.id === selectedArtist)?.name || 'Geral'
       : 'Geral';
     
-    const content = messages.map(m => {
-      const time = m.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      const role = m.role === 'user' ? 'USUÁRIO' : 'ASSISTENTE';
-      return `[${time}] ${role}:\n${m.content}\n`;
-    }).join('\n---\n\n');
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - (margin * 2);
+      
+      // Load header image
+      const headerImg = new Image();
+      headerImg.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        headerImg.onload = () => resolve();
+        headerImg.onerror = () => reject(new Error('Failed to load header image'));
+        headerImg.src = '/lovable-uploads/chat-pdf-header.png';
+      });
 
-    const header = `CONVERSA - ASSISTENTE DE MARKETING\nArtista: ${artistName}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\n${'='.repeat(50)}\n\n`;
-    
-    const blob = new Blob([header + content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chat-marketing-${artistName.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Conversa exportada');
+      // Calculate header height maintaining aspect ratio
+      const imgAspectRatio = headerImg.width / headerImg.height;
+      const headerHeight = pageWidth / imgAspectRatio;
+      
+      // Add header image at position 0,0 filling full width
+      pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerHeight);
+
+      let y = headerHeight + 10;
+      
+      // Title
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Conversa - Assistente de Marketing', margin, y);
+      y += 8;
+      
+      // Subtitle info
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Artista: ${artistName}  |  Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, y);
+      y += 10;
+      
+      // Separator line
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 8;
+      
+      // Messages
+      pdf.setTextColor(0, 0, 0);
+      
+      for (const message of messages) {
+        const time = message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const role = message.role === 'user' ? 'USUÁRIO' : 'ASSISTENTE';
+        
+        // Check if we need a new page
+        if (y > pageHeight - 30) {
+          pdf.addPage();
+          pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerHeight);
+          y = headerHeight + 10;
+        }
+        
+        // Role and time
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(message.role === 'user' ? 180 : 0, message.role === 'user' ? 0 : 100, message.role === 'user' ? 0 : 0);
+        pdf.text(`[${time}] ${role}:`, margin, y);
+        y += 5;
+        
+        // Message content
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(50, 50, 50);
+        
+        const lines = pdf.splitTextToSize(message.content, contentWidth);
+        for (const line of lines) {
+          if (y > pageHeight - 15) {
+            pdf.addPage();
+            pdf.addImage(headerImg, 'PNG', 0, 0, pageWidth, headerHeight);
+            y = headerHeight + 10;
+          }
+          pdf.text(line, margin, y);
+          y += 5;
+        }
+        
+        y += 5;
+      }
+      
+      pdf.save(`chat-marketing-${artistName.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('PDF exportado');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Erro ao exportar PDF');
+    }
   };
 
   const suggestedPrompts = [
