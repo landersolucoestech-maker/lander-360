@@ -40,6 +40,7 @@ import PerfilUsuario from "./pages/PerfilUsuario";
 import Servicos from "./pages/Servicos";
 import LanderZap from "./pages/LanderZap";
 import SpotifyForArtistsCallback from "./pages/SpotifyForArtistsCallback";
+import LearningHub from "./pages/LearningHub";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
               <Route path="/servicos" element={<ProtectedRoute><Servicos /></ProtectedRoute>} />
               <Route path="/lander" element={<ProtectedRoute><LanderZap /></ProtectedRoute>} />
+              <Route path="/learning-hub" element={<ProtectedRoute><LearningHub /></ProtectedRoute>} />
               <Route path="/callback/spotify-for-artists" element={<SpotifyForArtistsCallback />} />
               {/* Marketing routes */}
               <Route path="/marketing/visao-geral" element={<ProtectedRoute><MarketingVisaoGeral /></ProtectedRoute>} />

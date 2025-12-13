@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, Briefcase, FileSearch, Scale, MessageCircle, Palette, LucideIcon } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, Briefcase, FileSearch, Scale, MessageCircle, Palette, GraduationCap, LucideIcon } from "lucide-react";
 
 // User role types
 export type UserRole = 'admin' | 'empresario' | 'financeiro' | 'marketing' | 'juridico' | 'artista' | 'produtor_artistico';
@@ -79,6 +79,9 @@ export const navigationConfig: NavigationItem[] = [
   
   // LanderZap - Communication
   { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'empresario', 'marketing', 'produtor_artistico'], scope: 'empresa' },
+  
+  // Learning Hub - All roles
+  { title: "Learning Hub", url: "/learning-hub", icon: GraduationCap, roles: ['admin', 'empresario', 'financeiro', 'marketing', 'juridico', 'artista', 'produtor_artistico'], scope: 'personal' },
   
   // Usuários - Admin only
   { title: "Usuários", url: "/usuarios", icon: UserCog, roles: ['admin'], scope: 'empresa' },
