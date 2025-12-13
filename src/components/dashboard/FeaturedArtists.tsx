@@ -102,9 +102,9 @@ export function FeaturedArtists() {
           <CardDescription>Artistas com maior relevância no período</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-[350px] w-full rounded-xl" />
+              <Skeleton key={i} className="h-[420px] w-full rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -145,11 +145,11 @@ export function FeaturedArtists() {
           <CardDescription>Artistas com maior relevância no período</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {artists.map((artist, index) => (
               <div
                 key={artist.id}
-                className="relative overflow-hidden rounded-xl bg-card border border-border group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 w-full h-[350px]"
+                className="relative overflow-hidden rounded-xl bg-card border border-border group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 w-full h-[420px]"
                 onClick={() => handleViewProfile(artist)}
               >
                 {/* Background Image */}
