@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Music } from "lucide-react";
+import { Music, BarChart3 } from "lucide-react";
+import { ReleaseMetricsBadge } from "./ReleaseMetricsBadge";
 
 interface Track {
   title?: string;
@@ -29,6 +30,7 @@ interface ReleaseCardProps {
   onViewDetails: (release: any) => void;
   onEdit?: (release: any) => void;
   onDelete?: (release: any) => void;
+  onViewMetrics?: (release: any) => void;
 }
 
 const calculateTimeRemaining = (releaseDate: string) => {
@@ -49,7 +51,7 @@ const calculateTimeRemaining = (releaseDate: string) => {
   };
 };
 
-export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: ReleaseCardProps) => {
+export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete, onViewMetrics }: ReleaseCardProps) => {
   const [timeRemaining, setTimeRemaining] = useState(() => calculateTimeRemaining(release.releaseDate));
 
   useEffect(() => {
@@ -123,7 +125,10 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
           {/* Title and Credits */}
           <div>
-            <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate">{release.title}</h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate flex-1">{release.title}</h3>
+              <ReleaseMetricsBadge releaseId={release.id} />
+            </div>
             <p className="text-sm text-white/70 truncate">{displayCredits()}</p>
             {/* Release Type and Genre Badges - Red color */}
             <div className="flex gap-2 mt-2">
@@ -212,6 +217,17 @@ export const ReleaseCard = ({ release, onViewDetails, onEdit, onDelete }: Releas
                 }}
               >
                 Editar
+              </Button>
+              <Button
+                size="sm"
+                className="bg-primary/80 hover:bg-primary text-white text-xs h-8 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewMetrics?.(release);
+                }}
+                title="Ver Métricas"
+              >
+                <BarChart3 className="h-4 w-4" />
               </Button>
               <Button
                 size="sm"
