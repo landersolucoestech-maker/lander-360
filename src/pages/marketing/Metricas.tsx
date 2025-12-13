@@ -129,18 +129,18 @@ const MarketingMetricas = () => {
                                 metric.followers_growth > 0 ? 'text-green-600' : 'text-red-600'
                               }`}>
                                 <TrendingUp className="h-3 w-3" />
-                                {metric.followers_growth > 0 ? '+' : ''}{metric.followers_growth}%
+                                {metric.followers_growth > 0 ? '+' : ''}{Math.min(Math.abs(metric.followers_growth), 100)}%
                               </div>
                             </div>
                             
                             <div className="text-center">
                               <div className="text-sm text-muted-foreground">Engajamento</div>
-                              <div className="font-semibold text-lg">{metric.engagement_rate}%</div>
+                              <div className="font-semibold text-lg">{Math.min(metric.engagement_rate, 100)}%</div>
                               <div className={`text-xs flex items-center justify-center gap-1 ${
                                 metric.engagement_growth > 0 ? 'text-green-600' : 'text-red-600'
                               }`}>
                                 <TrendingUp className="h-3 w-3" />
-                                {metric.engagement_growth > 0 ? '+' : ''}{metric.engagement_growth}%
+                                {metric.engagement_growth > 0 ? '+' : ''}{Math.min(Math.abs(metric.engagement_growth), 100)}%
                               </div>
                             </div>
                             
@@ -151,7 +151,7 @@ const MarketingMetricas = () => {
                                 metric.reach_growth > 0 ? 'text-green-600' : 'text-red-600'
                               }`}>
                                 <TrendingUp className="h-3 w-3" />
-                                {metric.reach_growth > 0 ? '+' : ''}{metric.reach_growth}%
+                                {metric.reach_growth > 0 ? '+' : ''}{Math.min(Math.abs(metric.reach_growth), 100)}%
                               </div>
                             </div>
                           </div>
@@ -196,7 +196,7 @@ const MarketingMetricas = () => {
                                   variant="default" 
                                   className="text-xs"
                                 >
-                                  ROAS: {(campaign.roas * 100 || 0).toFixed(0)}%
+                                  ROAS: {Math.min((campaign.roas * 100 || 0), 100).toFixed(0)}%
                                 </Badge>
                               </div>
                             </div>
@@ -224,7 +224,7 @@ const MarketingMetricas = () => {
                             </div>
                             <div className="text-center">
                               <div className="text-sm text-muted-foreground">CTR</div>
-                              <div className="font-semibold">{(campaign.ctr || 0).toFixed(2)}%</div>
+                              <div className="font-semibold">{Math.min((campaign.ctr || 0), 100).toFixed(2)}%</div>
                             </div>
                             <div className="text-center">
                               <div className="text-sm text-muted-foreground">CPC</div>
