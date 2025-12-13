@@ -341,52 +341,44 @@ export function ArtistCard({
                     <span className="text-xs text-muted-foreground ml-2">Carregando métricas...</span>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-6 gap-2">
+                  <div className="grid grid-cols-6 gap-1.5">
                     {/* Instagram */}
-                    <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-lg p-2 border border-pink-500/20">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FaInstagram className="h-3.5 w-3.5 text-pink-500" />
-                        <span className="text-[10px] font-medium text-foreground">Instagram</span>
+                    <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-md px-2 py-1.5 border border-pink-500/20">
+                      <div className="flex items-center gap-1">
+                        <FaInstagram className="h-3 w-3 text-pink-500" />
+                        <span className="text-[9px] font-medium text-foreground">Instagram</span>
                       </div>
-                      <div className="text-base font-bold text-foreground">
+                      <div className="text-sm font-bold text-foreground leading-tight">
                         {socialMetrics?.instagram?.followers ? formatNumber(socialMetrics.instagram.followers) : 'N/D'}
                       </div>
-                      <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
 
                     {/* TikTok */}
-                    <div className="bg-muted/50 rounded-lg p-2 border border-border">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FaTiktok className="h-3.5 w-3.5 text-foreground" />
-                        <span className="text-[10px] font-medium text-foreground">TikTok</span>
+                    <div className="bg-muted/50 rounded-md px-2 py-1.5 border border-border">
+                      <div className="flex items-center gap-1">
+                        <FaTiktok className="h-3 w-3 text-foreground" />
+                        <span className="text-[9px] font-medium text-foreground">TikTok</span>
                       </div>
-                      <div className="text-base font-bold text-foreground">
+                      <div className="text-sm font-bold text-foreground leading-tight">
                         {socialMetrics?.tiktok?.followers ? formatNumber(socialMetrics.tiktok.followers) : 'N/D'}
                       </div>
-                      <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
 
                     {/* Spotify */}
-                    <div className="col-span-2 bg-gradient-to-b from-green-500/10 to-green-500/5 rounded-lg p-2 border border-green-500/20">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <FaSpotify className="h-4 w-4 text-green-500" />
-                        <span className="text-xs font-medium text-foreground">Spotify</span>
+                    <div className="col-span-2 bg-gradient-to-b from-green-500/10 to-green-500/5 rounded-md px-2 py-1.5 border border-green-500/20">
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <FaSpotify className="h-3 w-3 text-green-500" />
+                        <span className="text-[9px] font-medium text-foreground">Spotify</span>
                       </div>
                       {spotifyMetrics ? (
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-1">
                           <div>
-                            <div className="flex items-center gap-1 text-green-500 mb-0.5">
-                              <Users className="h-2.5 w-2.5" />
-                              <span className="text-[9px]">Seguidores</span>
-                            </div>
-                            <div className="text-base font-bold text-foreground">{formatNumber(spotifyMetrics.followers)}</div>
+                            <div className="text-[8px] text-green-500">Seguidores</div>
+                            <div className="text-sm font-bold text-foreground leading-tight">{formatNumber(spotifyMetrics.followers)}</div>
                           </div>
                           <div>
-                            <div className="flex items-center gap-1 text-green-500 mb-0.5">
-                              <Headphones className="h-2.5 w-2.5" />
-                              <span className="text-[9px]">Ouvintes/Mês</span>
-                            </div>
-                            <div className="text-base font-bold text-foreground">
+                            <div className="text-[8px] text-green-500">Ouvintes/Mês</div>
+                            <div className="text-sm font-bold text-foreground leading-tight">
                               {spotifyMetrics.monthly_listeners !== null &&
                                spotifyMetrics.monthly_listeners !== undefined &&
                                spotifyMetrics.monthly_listeners > 0 &&
@@ -396,36 +388,27 @@ export function ArtistCard({
                             </div>
                           </div>
                           <div>
-                            <div className="flex items-center gap-1 text-green-500 mb-0.5">
-                              <BarChart3 className="h-2.5 w-2.5" />
-                              <span className="text-[9px]">Streams Top 5</span>
-                            </div>
-                            <div className="text-base font-bold text-foreground">{formatNumber(totalStreams)}</div>
+                            <div className="text-[8px] text-green-500">Streams Top 5</div>
+                            <div className="text-sm font-bold text-foreground leading-tight">{formatNumber(totalStreams)}</div>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground">Sem dados</p>
+                        <p className="text-[9px] text-muted-foreground">Sem dados</p>
                       )}
                     </div>
 
                     {/* YouTube */}
-                    <div className="bg-red-500/10 rounded-lg p-2 border border-red-500/20">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FaYoutube className="h-3.5 w-3.5 text-red-500" />
-                        <span className="text-[10px] font-medium text-foreground">YouTube</span>
+                    <div className="bg-red-500/10 rounded-md px-2 py-1.5 border border-red-500/20">
+                      <div className="flex items-center gap-1">
+                        <FaYoutube className="h-3 w-3 text-red-500" />
+                        <span className="text-[9px] font-medium text-foreground">YouTube</span>
                       </div>
-                      <div className="text-base font-bold text-foreground">
+                      <div className="text-sm font-bold text-foreground leading-tight">
                         {socialMetrics?.youtube?.subscribers ? formatNumber(socialMetrics.youtube.subscribers) : 'N/D'}
                       </div>
-                      <div className="text-[9px] text-muted-foreground">Inscritos</div>
-                      {socialMetrics?.youtube?.views ? (
-                        <div className="mt-1">
-                          <div className="flex items-center gap-1 text-red-500">
-                            <Eye className="h-2 w-2" />
-                            <span className="text-[8px]">{formatNumber(socialMetrics.youtube.views)} views</span>
-                          </div>
-                        </div>
-                      ) : null}
+                      {socialMetrics?.youtube?.views && (
+                        <div className="text-[8px] text-red-500">{formatNumber(socialMetrics.youtube.views)} views</div>
+                      )}
                     </div>
 
                     {/* Apple & Deezer */}
