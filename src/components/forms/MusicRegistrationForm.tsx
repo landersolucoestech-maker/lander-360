@@ -105,9 +105,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
   const createMusicEntry = useCreateMusicRegistryEntry();
   const updateMusicEntry = useUpdateMusicRegistryEntry();
 
-  // Two-step form state - skip step 1 if editing
-  const [currentStep, setCurrentStep] = useState<1 | 2>(registration?.id ? 2 : 1);
-  const [registrationMode, setRegistrationMode] = useState<'existing' | 'new' | null>(registration?.id ? 'existing' : null);
+  // Go directly to step 2 (form) - skip step 1 since flow is: projects -> obras
+  const [currentStep, setCurrentStep] = useState<1 | 2>(2);
+  const [registrationMode, setRegistrationMode] = useState<'existing' | 'new' | null>('new');
 
   const [workDropdownOpen, setWorkDropdownOpen] = useState(false);
   const [selectedWork, setSelectedWork] = useState<any>(null);
@@ -912,19 +912,9 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           </Card>
         )}
 
-        {/* Step 2: Form Data */}
+        {/* Form Data */}
         {currentStep === 2 && (
           <>
-            {/* Step indicator */}
-            <div className="flex items-center justify-between mb-4">
-              <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)} className="gap-2">
-                <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
-                Voltar para Etapa 1
-              </Button>
-              <span className="text-sm text-muted-foreground">Etapa 2: Dados da Obra</span>
-            </div>
-
-
         {/* Dados Principais da Obra */}
         <Card className="bg-card">
           <CardHeader className="pb-4">
