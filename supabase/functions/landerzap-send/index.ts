@@ -89,8 +89,8 @@ serve(async (req) => {
     // Enviar via canal apropriado
     let sendResult = { success: false, error: '' };
 
-    if (channel === 'whatsapp') {
-      sendResult = await sendWhatsApp(contactPhone, content);
+    if (channel === 'whatsapp' || channel === 'sms') {
+      sendResult = await sendSMS(contactPhone, content);
     } else if (channel === 'email') {
       sendResult = await sendEmail(contactEmail, contactName, content);
     }
@@ -124,7 +124,7 @@ serve(async (req) => {
   }
 });
 
-async function sendWhatsApp(phone: string, message: string): Promise<{ success: boolean; error: string }> {
+async function sendSMS(phone: string, message: string): Promise<{ success: boolean; error: string }> {
   const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
   const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
@@ -134,7 +134,7 @@ async function sendWhatsApp(phone: string, message: string): Promise<{ success: 
   }
 
   try {
-    // Formatar número para WhatsApp
+    // Formatar número para SMS
     let formattedPhone = phone.replace(/\D/g, '');
     if (!formattedPhone.startsWith('55')) {
       formattedPhone = '55' + formattedPhone;
@@ -149,8 +149,8 @@ async function sendWhatsApp(phone: string, message: string): Promise<{ success: 
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          To: `whatsapp:+${formattedPhone}`,
-          From: `whatsapp:${twilioPhone}`,
+          To: `+${formattedPhone}`,
+          From: twilioPhone,
           Body: message,
         }),
       }
@@ -159,14 +159,14 @@ async function sendWhatsApp(phone: string, message: string): Promise<{ success: 
     const result = await response.json();
     
     if (response.ok) {
-      console.log('WhatsApp enviado:', result.sid);
+      console.log('SMS enviado:', result.sid);
       return { success: true, error: '' };
     } else {
-      console.error('Erro Twilio:', result);
-      return { success: false, error: result.message || 'Erro ao enviar WhatsApp' };
+      console.error('Erro Twilio SMS:', result);
+      return { success: false, error: result.message || 'Erro ao enviar SMS' };
     }
   } catch (error) {
-    console.error('Erro ao enviar WhatsApp:', error);
+    console.error('Erro ao enviar SMS:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
   }
 }
