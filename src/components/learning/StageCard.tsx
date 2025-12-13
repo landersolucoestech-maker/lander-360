@@ -4,11 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { LearningStage } from '@/hooks/useLearningHub';
 import {
   BookOpen,
-  Palette,
   Rocket,
   Users,
-  DollarSign,
-  TrendingUp,
+  FileText,
+  Calendar,
+  BarChart3,
+  Zap,
   Lock,
   CheckCircle,
 } from 'lucide-react';
@@ -24,11 +25,12 @@ interface StageCardProps {
 
 const iconMap: Record<string, React.ElementType> = {
   BookOpen,
-  Palette,
   Rocket,
   Users,
-  DollarSign,
-  TrendingUp,
+  FileText,
+  Calendar,
+  BarChart3,
+  Zap,
 };
 
 const colorMap: Record<string, string> = {
@@ -36,8 +38,9 @@ const colorMap: Record<string, string> = {
   purple: 'bg-purple-500/20 text-purple-500 border-purple-500/30',
   green: 'bg-green-500/20 text-green-500 border-green-500/30',
   orange: 'bg-orange-500/20 text-orange-500 border-orange-500/30',
-  yellow: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
-  red: 'bg-red-500/20 text-red-500 border-red-500/30',
+  pink: 'bg-pink-500/20 text-pink-500 border-pink-500/30',
+  cyan: 'bg-cyan-500/20 text-cyan-500 border-cyan-500/30',
+  amber: 'bg-amber-500/20 text-amber-500 border-amber-500/30',
 };
 
 export const StageCard = ({
