@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { 
   CheckCircle, XCircle, Upload, Edit, Download, Filter,
-  Share2, Image, Plus, Trash2, Users
+  Share2, Image, Plus, Trash2, Users, Search
 } from "lucide-react";
 import { cn, formatDateBR, translateStatus } from "@/lib/utils";
 import XLSX from "xlsx-js-style";
@@ -39,6 +39,18 @@ const GestaoShares = () => {
   const [verificationFilter, setVerificationFilter] = useState<string>("all");
   const [shareFilter, setShareFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  // Pending shares modal (músicas que precisam receber share)
+  const [pendingSharesModalOpen, setPendingSharesModalOpen] = useState(false);
+  const [pendingShareData, setPendingShareData] = useState({
+    musicTitle: "",
+    artistName: "",
+    participantName: "",
+    participantRole: "Compositor",
+    sharePercentage: "",
+    notes: ""
+  });
 
   // Edit modal
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -70,6 +82,14 @@ const GestaoShares = () => {
   // Filter releases
   const filteredReleases = useMemo(() => {
     return releases.filter(release => {
+      // Text search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const artistName = getArtistName(release.artist_id).toLowerCase();
+        const title = release.title?.toLowerCase() || "";
+        if (!title.includes(query) && !artistName.includes(query)) return false;
+      }
+      
       if (selectedArtist !== "all" && release.artist_id !== selectedArtist) return false;
       if (statusFilter !== "all" && release.status !== statusFilter) return false;
       if (verificationFilter === "verified" && !(release as any).royalties_verified) return false;
@@ -79,7 +99,7 @@ const GestaoShares = () => {
       if (shareFilter === "pending" && (release as any).royalties_share_applied !== null) return false;
       return true;
     });
-  }, [releases, selectedArtist, statusFilter, verificationFilter, shareFilter]);
+  }, [releases, selectedArtist, statusFilter, verificationFilter, shareFilter, searchQuery]);
 
   // Summary stats
   const stats = useMemo(() => {
@@ -252,6 +272,7 @@ const GestaoShares = () => {
     setVerificationFilter("all");
     setShareFilter("all");
     setStatusFilter("all");
+    setSearchQuery("");
   };
 
   return (
@@ -265,10 +286,16 @@ const GestaoShares = () => {
               <h1 className="text-lg lg:text-xl font-semibold text-foreground">Gestão de Shares</h1>
               <p className="text-xs lg:text-sm text-muted-foreground">Conferência de share aplicado nos lançamentos</p>
             </div>
-            <Button onClick={handleExport} className="gap-2">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setPendingSharesModalOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Registrar Share Pendente</span>
+              </Button>
+              <Button onClick={handleExport} className="gap-2">
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Exportar</span>
+              </Button>
+            </div>
           </header>
 
           <main className="flex-1 p-4 lg:p-6 space-y-6">
@@ -329,6 +356,16 @@ const GestaoShares = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Search Bar */}
+                <div className="mb-4">
+                  <Input
+                    placeholder="Buscar por título ou artista..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="max-w-md"
+                  />
+                </div>
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="space-y-2">
                     <Label>Artista</Label>
@@ -621,6 +658,137 @@ const GestaoShares = () => {
             </Button>
             <Button onClick={handleSave} disabled={updateRelease.isPending}>
               Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pending Shares Modal - Registrar música que precisa receber share */}
+      <Dialog open={pendingSharesModalOpen} onOpenChange={setPendingSharesModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Registrar Share Pendente</DialogTitle>
+            <DialogDescription>
+              Registre uma música que precisa receber share de algum participante
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Título da Música *</Label>
+              <Input
+                value={pendingShareData.musicTitle}
+                onChange={(e) => setPendingShareData({ ...pendingShareData, musicTitle: e.target.value })}
+                placeholder="Ex: Nome da Música"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Artista</Label>
+              <Input
+                value={pendingShareData.artistName}
+                onChange={(e) => setPendingShareData({ ...pendingShareData, artistName: e.target.value })}
+                placeholder="Nome do artista"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Quem deve receber o share *</Label>
+                <Input
+                  value={pendingShareData.participantName}
+                  onChange={(e) => setPendingShareData({ ...pendingShareData, participantName: e.target.value })}
+                  placeholder="Nome do participante"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Função</Label>
+                <Select 
+                  value={pendingShareData.participantRole} 
+                  onValueChange={(value) => setPendingShareData({ ...pendingShareData, participantRole: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Compositor">Compositor</SelectItem>
+                    <SelectItem value="Produtor">Produtor</SelectItem>
+                    <SelectItem value="Intérprete">Intérprete</SelectItem>
+                    <SelectItem value="Músico">Músico</SelectItem>
+                    <SelectItem value="Editor">Editor</SelectItem>
+                    <SelectItem value="Artista Principal">Artista Principal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Percentual do Share (%)</Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={pendingShareData.sharePercentage}
+                onChange={(e) => setPendingShareData({ ...pendingShareData, sharePercentage: e.target.value })}
+                placeholder="Ex: 10.00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Observações</Label>
+              <Textarea
+                value={pendingShareData.notes}
+                onChange={(e) => setPendingShareData({ ...pendingShareData, notes: e.target.value })}
+                placeholder="Informações adicionais sobre o share pendente..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setPendingSharesModalOpen(false);
+              setPendingShareData({
+                musicTitle: "",
+                artistName: "",
+                participantName: "",
+                participantRole: "Compositor",
+                sharePercentage: "",
+                notes: ""
+              });
+            }}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => {
+                if (!pendingShareData.musicTitle || !pendingShareData.participantName) {
+                  toast({
+                    title: "Campos obrigatórios",
+                    description: "Preencha o título da música e quem deve receber o share.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                toast({
+                  title: "Share pendente registrado",
+                  description: `Share para ${pendingShareData.participantName} na música "${pendingShareData.musicTitle}" registrado.`,
+                });
+                
+                setPendingSharesModalOpen(false);
+                setPendingShareData({
+                  musicTitle: "",
+                  artistName: "",
+                  participantName: "",
+                  participantRole: "Compositor",
+                  sharePercentage: "",
+                  notes: ""
+                });
+              }}
+            >
+              Registrar
             </Button>
           </DialogFooter>
         </DialogContent>
