@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Disc3, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, LogOut, Briefcase, FileSearch, Scale } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, ChevronDown, LogOut, Briefcase, FileSearch, Scale } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarFooter } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -21,13 +21,9 @@ const navigationItems = [{
   url: "/projetos",
   icon: FolderOpen
 }, {
-  title: "Registro de Obras",
+  title: "Registro de Músicas",
   url: "/registro-musicas",
   icon: Music
-}, {
-  title: "Registro de Fonogramas",
-  url: "/fonogramas",
-  icon: Disc3
 }, {
   title: "Lançamentos",
   url: "/lancamentos",
