@@ -64,9 +64,15 @@ export function ArtistCard({
 
   // Auto-fetch Spotify metrics on mount and every 60 seconds
   useEffect(() => {
-    const isValidSpotifyUrl = spotifyUrl && spotifyUrl !== 'Não temos' && spotifyUrl !== 'Não tem' && spotifyUrl.includes('spotify');
+    // Only valid artist URLs - skip user URLs and invalid entries
+    const isValidSpotifyArtistUrl = spotifyUrl && 
+      spotifyUrl !== 'Não temos' && 
+      spotifyUrl !== 'Não tem' && 
+      spotifyUrl.includes('spotify') &&
+      spotifyUrl.includes('/artist/') &&
+      !spotifyUrl.includes('/user/');
     
-    if (!isValidSpotifyUrl) return;
+    if (!isValidSpotifyArtistUrl) return;
 
     // Initial fetch if no metrics
     if (!spotifyMetrics && !isLoadingMetrics && !isRefreshing) {
