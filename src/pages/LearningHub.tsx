@@ -291,10 +291,10 @@ const LearningHub = () => {
                   totalLessons={totalLessons}
                 />
               </TabsContent>
-          </Tabs>
+            </Tabs>
           </main>
         </div>
-      </SidebarProvider>
+    </SidebarProvider>
   );
 };
 
