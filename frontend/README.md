@@ -1,73 +1,44 @@
-# Welcome to your Lovable project
+# Lander 360
 
-## Project info
+Sistema de gestão completo para gravadoras e artistas.
 
-**URL**: https://lovable.dev/projects/b2a4fc5b-54b0-4f69-a822-66fdfbb8cbf4
+## Tecnologias
 
-## How can I edit this code?
+- **Frontend**: React + Vite + TypeScript
+- **UI**: Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Edge Functions)
+- **Autenticação**: Supabase Auth
 
-There are several ways of editing your application.
+## Funcionalidades
 
-**Use Lovable**
+- 🎵 Gestão de Artistas
+- 📁 Projetos e Lançamentos
+- 📝 Contratos e Templates
+- 💰 Financeiro e Contabilidade
+- 📅 Agenda de Eventos
+- 📊 Relatórios e Métricas
+- 🎯 Marketing e Campanhas
+- 📱 CRM de Contatos
+- 🔔 Notificações
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b2a4fc5b-54b0-4f69-a822-66fdfbb8cbf4) and start prompting.
+## Como rodar
 
-Changes made via Lovable will be committed automatically to this repo.
+```bash
+# Instalar dependências
+yarn install
 
-**Use your preferred IDE**
+# Rodar em desenvolvimento
+yarn dev
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Build para produção
+yarn build
 ```
 
-**Edit a file directly in GitHub**
+## Variáveis de Ambiente
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Crie um arquivo `.env` com:
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b2a4fc5b-54b0-4f69-a822-66fdfbb8cbf4) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```env
+VITE_SUPABASE_URL=sua_url_supabase
+VITE_SUPABASE_PUBLISHABLE_KEY=sua_chave_anon
+```
