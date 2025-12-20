@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Elegant Design System - Black/Graphite + Red #E10600 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Light Mode - Clean white/gray palette with red accent */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    /* Primary - Elegant Red accent */
+    --primary: 2 100% 44%; /* #E10600 converted to HSL */
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 2 100% 38%;
+
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 2 100% 44%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 2 100% 44%;
+
+    --radius: 0.75rem;
+
+    /* Status colors */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 98%;
+
+    /* Light mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(2 100% 44%), hsl(2 100% 55%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    
+    /* Light mode shadows */
+    --shadow-elegant: 0 8px 32px -8px hsl(0 0% 0% / 0.1);
+    --shadow-card: 0 2px 16px -4px hsl(0 0% 0% / 0.08);
+
+    /* Sidebar - Light theme */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 2 100% 44%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 2 100% 44%;
+  }
+
+  .dark {
+    /* Dark Elegant Color Palette - True dark theme */
+    --background: 0 0% 6%; /* Deep black */
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 8%; /* Charcoal black */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Primary - Elegant Red accent */
+    --primary: 2 100% 44%; /* #E10600 */
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 2 100% 50%;
+
+    --secondary: 0 0% 12%; /* Dark graphite */
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 0% 15%; /* Graphite accent */
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 2 100% 44%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 18%; /* Graphite border */
+    --input: 0 0% 18%;
+    --ring: 2 100% 44%;
+
+    /* Status colors */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 98%;
+
+    /* Elegant dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(2 100% 44%), hsl(2 80% 25%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 8%), hsl(0 0% 12%));
+    
+    /* Sophisticated dark shadows */
+    --shadow-elegant: 0 8px 32px -8px hsl(2 100% 44% / 0.4);
+    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+
+    /* Sidebar - Dark elegant theme */
+    --sidebar-background: 0 0% 4%; /* Deeper black for sidebar */
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 2 100% 44%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 10%; /* Dark graphite for hover */
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 2 100% 44%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom animations for elegant feel */
+@layer utilities {
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px hsl(2 100% 44% / 0.2);
+    }
+    to {
+      box-shadow: 0 0 30px hsl(2 100% 44% / 0.4), 0 0 40px hsl(2 100% 44% / 0.2);
+    }
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(12px);
+    background: hsl(var(--card) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .elegant-gradient {
+    background: var(--gradient-primary);
+  }
+
+  .card-gradient {
+    background: var(--gradient-card);
+  }
+}

@@ -1,0 +1,97 @@
+project_id = "dkrrfnpvqrpakngigxsb"
+
+[functions.belvo-integration]
+verify_jwt = true
+
+[functions.request-email-change]
+verify_jwt = true
+
+[functions.confirm-email-change]
+verify_jwt = false
+
+[functions.autentique-signature]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.google-calendar-sync]
+verify_jwt = true
+
+[functions.spotify-metrics]
+verify_jwt = true
+
+[functions.social-metrics]
+verify_jwt = true
+
+[functions.fetch-release-metrics]
+verify_jwt = true
+
+[functions.spotify-for-artists-oauth]
+verify_jwt = true
+
+[functions.spotify-for-artists-metrics]
+verify_jwt = true
+
+[functions.landerzap-send]
+verify_jwt = true
+
+[functions.generate-creative-ideas]
+verify_jwt = true
+
+[functions.ai-gateway]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = true
+
+[functions.categorize-transaction]
+verify_jwt = true
+
+[functions.create-admin-user]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.fix-exclusive-artist-editor]
+verify_jwt = true
+
+[functions.search-abramus]
+verify_jwt = true
+
+[functions.search-participants]
+verify_jwt = true
+
+[functions.send-contract-email]
+verify_jwt = true
+
+[functions.analyze-audio-vibe]
+verify_jwt = true
+
+[functions.process-automations]
+verify_jwt = false
+
+[functions.tutorial-tts]
+verify_jwt = true
+
+[functions.analyze-system]
+verify_jwt = true
+
+[functions.fingerprint-webhook]
+verify_jwt = false
+
+[functions.fingerprint-sync]
+verify_jwt = true
+
+[functions.claims-webhook]
+verify_jwt = false
+
+[functions.ecad-reconciliation]
+verify_jwt = true
+
+[functions.platform-takedown]
+verify_jwt = true
