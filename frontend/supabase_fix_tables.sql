@@ -292,19 +292,24 @@ ALTER TABLE pending_email_changes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_artists ENABLE ROW LEVEL SECURITY;
 
 -- Políticas permissivas para tabelas novas
-CREATE POLICY IF NOT EXISTS "Authenticated can manage transaction_installments" ON transaction_installments
+DROP POLICY IF EXISTS "Authenticated can manage transaction_installments" ON transaction_installments;
+CREATE POLICY "Authenticated can manage transaction_installments" ON transaction_installments
   FOR ALL USING (auth.role() = 'authenticated');
 
-CREATE POLICY IF NOT EXISTS "Authenticated can manage financial_categorization_rules" ON financial_categorization_rules
+DROP POLICY IF EXISTS "Authenticated can manage financial_categorization_rules" ON financial_categorization_rules;
+CREATE POLICY "Authenticated can manage financial_categorization_rules" ON financial_categorization_rules
   FOR ALL USING (auth.role() = 'authenticated');
 
-CREATE POLICY IF NOT EXISTS "Authenticated can manage automation_execution_logs" ON automation_execution_logs
+DROP POLICY IF EXISTS "Authenticated can manage automation_execution_logs" ON automation_execution_logs;
+CREATE POLICY "Authenticated can manage automation_execution_logs" ON automation_execution_logs
   FOR ALL USING (auth.role() = 'authenticated');
 
-CREATE POLICY IF NOT EXISTS "Users can view own pending_email_changes" ON pending_email_changes
+DROP POLICY IF EXISTS "Users can view own pending_email_changes" ON pending_email_changes;
+CREATE POLICY "Users can view own pending_email_changes" ON pending_email_changes
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Authenticated can manage project_artists" ON project_artists
+DROP POLICY IF EXISTS "Authenticated can manage project_artists" ON project_artists;
+CREATE POLICY "Authenticated can manage project_artists" ON project_artists
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- =====================================================
