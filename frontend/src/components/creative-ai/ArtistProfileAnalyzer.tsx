@@ -184,7 +184,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
       await new Promise<void>((resolve, reject) => {
         logoImg.onload = () => resolve();
         logoImg.onerror = reject;
-        logoImg.src = '/lovable-uploads/pdf-header-banner.png';
+        logoImg.src = '/assets/pdf-header-banner.png';
       });
       
       const canvas = document.createElement('canvas');

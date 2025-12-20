@@ -469,7 +469,7 @@ export default function Auth() {
 
           {/* Logo */}
           <div className="py-0 flex-col flex items-center justify-center pointer-events-none">
-            <img src="/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander Records" className="h-[280px] w-[280px]" />
+            <img src="/assets/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander Records" className="h-[280px] w-[280px]" />
           </div>
 
           {/* Form */}

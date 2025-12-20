@@ -179,7 +179,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center">
-            <img src="/lovable-uploads/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander 360º Logo" className="h-10 w-auto object-contain" />
+            <img src="/assets/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander 360º Logo" className="h-10 w-auto object-contain" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">LANDER 360º</h1>

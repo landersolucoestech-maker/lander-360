@@ -159,7 +159,7 @@ export const CreativeAIChatbot = () => {
       await new Promise<void>((resolve, reject) => {
         headerImg.onload = () => resolve();
         headerImg.onerror = () => reject(new Error('Failed to load header image'));
-        headerImg.src = '/lovable-uploads/chat-pdf-header.png';
+        headerImg.src = '/assets/chat-pdf-header.png';
       });
 
       // Calculate header height maintaining aspect ratio
