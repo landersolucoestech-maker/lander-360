@@ -46,10 +46,10 @@ export function useUsers() {
     try {
       setLoading(true);
       
-      // Get real user data from profiles table
+      // Get real user data from profiles table - buscar apenas colunas que existem
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, full_name, phone, department, roles, role_display, permissions, is_active, created_at, avatar_url')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -71,7 +71,7 @@ export function useUsers() {
         email: profile.email || 'Email não disponível',
         full_name: profile.full_name || 'Usuário',
         phone: profile.phone,
-        sector: profile.sector || 'N/A',
+        sector: (profile as any).department || 'N/A',
         roles: profile.roles || [profile.role_display || 'Membro'],
         role_display: profile.role_display,
         permissions: profile.permissions || calculatePermissions(profile.roles || [profile.role_display || 'viewer']),
