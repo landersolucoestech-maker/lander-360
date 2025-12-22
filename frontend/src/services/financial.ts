@@ -25,7 +25,7 @@ export class FinancialService {
         projects:project_id (id, name),
         agenda_events:event_id (id, title)
       `)
-      .order('transaction_date', { ascending: false })
+      .order('date', { ascending: false })
       .limit(100); // Limite de segurança
 
     if (error) throw error;
