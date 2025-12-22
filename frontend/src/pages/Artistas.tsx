@@ -772,9 +772,9 @@ const Artistas = () => {
             {/* KPI Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} trend={kpiTrends.artists} />
-              <DashboardCard title="Contratos Vigentes" value={isLoading ? '...' : artistsWithActiveContracts} description="artistas com contratos ativos" icon={Star} trend={kpiTrends.contracts} />
-              <DashboardCard title="Obras e Fonogramas Totais" value={isLoading ? '...' : displayArtists.reduce((acc: number, artist: any) => acc + (artist.stats?.obras || 0), 0)} description="músicas registradas" icon={Music} trend={kpiTrends.music} />
-              <DashboardCard title="Receita dos Artistas" value="R$ 0" description="este mês" icon={DollarSign} />
+              <DashboardCard title="Receita Média por Artista" value="R$ 0" description="média mensal" icon={DollarSign} />
+              <DashboardCard title="Receita Total dos Artistas" value="R$ 0" description="este mês" icon={DollarSign} />
+              <DashboardCard title="Artistas Lucrativos" value="0%" description="lucrativos vs deficitários" icon={Star} />
             </div>
 
             {/* Search and Filters */}
