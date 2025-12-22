@@ -11,7 +11,7 @@ export const SECURITY_CONFIG = {
     'script-src': ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
     'style-src': ["'self'", "'unsafe-inline'"],
     'img-src': ["'self'", 'data:', 'https:'],
-    'connect-src': ["'self'", 'https://dkrrfnpvqrpakngigxsb.supabase.co'],
+    'connect-src': ["'self'", 'https://rlinswqockcnijhojnth.supabase.co', 'https://*.supabase.co'],
     'font-src': ["'self'"],
     'object-src': ["'none'"],
     'media-src': ["'self'"],
