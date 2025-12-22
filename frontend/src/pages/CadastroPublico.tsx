@@ -2114,15 +2114,6 @@ function PhonogramStep({
                   placeholder="BR-XXX-00-00000"
                 />
               </div>
-
-              <div>
-                <Label htmlFor="featured_artists">Participações Especiais (Feats)</Label>
-                <Input
-                  id="featured_artists"
-                  {...form.register('featured_artists')}
-                  placeholder="Nomes separados por vírgula"
-                />
-              </div>
             </div>
 
             {/* Produtores Fonográficos */}
