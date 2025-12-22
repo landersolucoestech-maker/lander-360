@@ -1638,10 +1638,10 @@ function WorkStep({
               </div>
             </div>
 
-            {/* Autores */}
+            {/* Autor / Compositor / Editor */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Autores/Compositores *</Label>
+                <Label className="text-base font-semibold">Autor / Compositor / Editor *</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addAuthor}>
                   <Plus className="h-4 w-4 mr-1" /> Adicionar
                 </Button>
@@ -1654,7 +1654,7 @@ function WorkStep({
                     <Input
                       value={author.name}
                       onChange={(e) => updateAuthor(index, 'name', e.target.value)}
-                      placeholder="Nome do autor"
+                      placeholder="Nome completo"
                     />
                   </div>
                   <div className="col-span-4">
@@ -1664,6 +1664,8 @@ function WorkStep({
                         <SelectValue placeholder="Função" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="Autor">Autor</SelectItem>
+                        <SelectItem value="Compositor">Compositor</SelectItem>
                         <SelectItem value="Autor/Compositor">Autor/Compositor</SelectItem>
                         <SelectItem value="Editor">Editor</SelectItem>
                       </SelectContent>
@@ -1695,41 +1697,6 @@ function WorkStep({
               )}>
                 Total: {totalPercentage}% {totalPercentage !== 100 && "(deve ser 100%)"}
               </div>
-            </div>
-
-            {/* Editora */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="has_publisher_work"
-                  checked={hasPublisher}
-                  onCheckedChange={(checked) => form.setValue('has_publisher', !!checked)}
-                />
-                <Label htmlFor="has_publisher_work">Possui editora?</Label>
-              </div>
-
-              {hasPublisher && (
-                <div className="grid md:grid-cols-2 gap-4 pl-6 border-l-2 border-primary/30">
-                  <div>
-                    <Label>Nome da Editora</Label>
-                    <Input {...form.register('publisher_name')} placeholder="Nome da editora" />
-                  </div>
-                  <div>
-                    <Label>Tipo de Contrato</Label>
-                    <Select onValueChange={(value) => form.setValue('contract_type', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Cessão">Cessão</SelectItem>
-                        <SelectItem value="Administração">Administração</SelectItem>
-                        <SelectItem value="Coedição">Coedição</SelectItem>
-                        <SelectItem value="Subedição">Subedição</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Declarações */}
