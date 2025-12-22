@@ -66,19 +66,26 @@ export function useUsers() {
       const users: User[] = profiles?.filter(profile => 
         // Only show users that were created through the interface (not the backend admin)
         profile.full_name !== 'Deyvisson Gestão 360 Andrade' || profile.role_display !== 'Administrador (Master)'
-      ).map(profile => ({
-        id: profile.id,
-        email: profile.email || 'Email não disponível',
-        full_name: profile.full_name || 'Usuário',
-        phone: profile.phone,
-        sector: (profile as any).department || 'N/A',
-        roles: profile.roles || [profile.role_display || 'Membro'],
-        role_display: profile.role_display,
-        permissions: profile.permissions || calculatePermissions(profile.roles || [profile.role_display || 'viewer']),
-        isActive: profile.is_active ?? true,
-        created_at: profile.created_at,
-        avatar_url: profile.avatar_url
-      })) || [];
+      ).map(profile => {
+        const userRoles = profile.roles || [profile.role_display || 'Membro'];
+        const userPermissions = profile.permissions && Array.isArray(profile.permissions) && profile.permissions.length > 0
+          ? profile.permissions 
+          : calculatePermissions(userRoles);
+        
+        return {
+          id: profile.id,
+          email: profile.email || 'Email não disponível',
+          full_name: profile.full_name || 'Usuário',
+          phone: profile.phone,
+          sector: (profile as any).department || 'N/A',
+          roles: userRoles,
+          role_display: profile.role_display,
+          permissions: userPermissions,
+          isActive: profile.is_active ?? true,
+          created_at: profile.created_at,
+          avatar_url: profile.avatar_url
+        };
+      }) || [];
 
       setUsers(users);
     } catch (error) {
