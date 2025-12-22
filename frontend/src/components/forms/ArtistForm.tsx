@@ -441,6 +441,7 @@ export function ArtistForm({
         documents_url: documentsUrl,
         presskit_url: presskitUrl,
         artist_types: data.artist_types || [],
+        musician_roles: data.musician_roles || [],
       };
 
       // Sensitive data stored separately (admin only access)
