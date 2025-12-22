@@ -2126,28 +2126,6 @@ function PhonogramStep({
                   <p className="text-sm text-destructive mt-1">{form.formState.errors.work_id.message}</p>
                 )}
               </div>
-
-              <div className="space-y-2">
-                <Label>Artista(s) Intérprete(s) *</Label>
-                <p className="text-sm text-muted-foreground">
-                  Digite o nome do artista para buscar.
-                </p>
-                
-                <ArtistSearch
-                  selectedArtists={selectedArtistsList}
-                  onSelect={handleSelectArtist}
-                  onRemove={handleRemoveArtist}
-                  registeredArtists={registeredArtists}
-                  placeholder="Buscar artista intérprete..."
-                />
-
-                {selectedArtistsList.length === 0 && (
-                  <p className="text-sm text-amber-600 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    Selecione pelo menos um artista
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* Dados do Fonograma */}
