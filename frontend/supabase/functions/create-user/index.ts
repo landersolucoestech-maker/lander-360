@@ -28,6 +28,8 @@ serve(async (req) => {
 
     if (authError) throw authError;
 
+    const errors: string[] = [];
+
     // Criar profile
     const { error: profileError } = await supabase
       .from('profiles')
@@ -37,7 +39,10 @@ serve(async (req) => {
         email,
       });
 
-    if (profileError) console.error('Profile error:', profileError);
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      errors.push(`Profile creation failed: ${profileError.message}`);
+    }
 
     // Atribuir role
     if (role) {
@@ -48,11 +53,19 @@ serve(async (req) => {
           role,
         });
 
-      if (roleError) console.error('Role error:', roleError);
+      if (roleError) {
+        console.error('Role error:', roleError);
+        errors.push(`Role assignment failed: ${roleError.message}`);
+      }
     }
 
+    // Retorna sucesso mas inclui warnings se houver erros parciais
     return new Response(
-      JSON.stringify({ success: true, user: authData.user }),
+      JSON.stringify({ 
+        success: true, 
+        user: authData.user,
+        warnings: errors.length > 0 ? errors : undefined
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
