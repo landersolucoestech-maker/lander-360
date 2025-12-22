@@ -1613,29 +1613,6 @@ function WorkStep({
           </h4>
           
           <form onSubmit={form.handleSubmit(addToPendingList)} className="space-y-6">
-            {/* Seleção de Artistas com Busca */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">Artista(s) Vinculado(s) *</Label>
-              <p className="text-sm text-muted-foreground">
-                Digite o nome do artista para buscar.
-              </p>
-              
-              <ArtistSearch
-                selectedArtists={selectedArtistsList}
-                onSelect={handleSelectArtist}
-                onRemove={handleRemoveArtist}
-                registeredArtists={registeredArtists}
-                placeholder="Buscar por nome artístico ou nome civil..."
-              />
-
-              {selectedArtistsList.length === 0 && (
-                <p className="text-sm text-amber-600 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  Selecione pelo menos um artista
-                </p>
-              )}
-            </div>
-
             {/* Dados da Obra */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
