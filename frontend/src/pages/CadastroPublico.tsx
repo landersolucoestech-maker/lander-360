@@ -1130,89 +1130,146 @@ function ArtistStep({
           {/* E. Representação */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold border-b pb-2">E. Representação</h3>
+            <p className="text-sm text-muted-foreground">Selecione o tipo de representação do artista (apenas uma opção)</p>
             
-            {/* Empresário */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="has_manager"
-                  checked={hasManager}
-                  onCheckedChange={(checked) => form.setValue('has_manager', !!checked)}
+              {/* Opção: Nenhuma */}
+              <label className={cn(
+                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                !hasManager && !hasRecordLabel && !hasPublisher
+                  ? "border-primary bg-primary/5"
+                  : "border-muted hover:border-muted-foreground/50"
+              )}>
+                <input
+                  type="radio"
+                  name="representation"
+                  checked={!hasManager && !hasRecordLabel && !hasPublisher}
+                  onChange={() => {
+                    form.setValue('has_manager', false);
+                    form.setValue('has_record_label', false);
+                    form.setValue('has_publisher', false);
+                  }}
+                  className="w-4 h-4 text-primary"
                 />
-                <Label htmlFor="has_manager">Possui empresário?</Label>
-              </div>
-              
+                <div>
+                  <p className="font-medium">Independente</p>
+                  <p className="text-sm text-muted-foreground">Sem empresário, gravadora ou editora</p>
+                </div>
+              </label>
+
+              {/* Opção: Empresário */}
+              <label className={cn(
+                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                hasManager ? "border-primary bg-primary/5" : "border-muted hover:border-muted-foreground/50"
+              )}>
+                <input
+                  type="radio"
+                  name="representation"
+                  checked={hasManager}
+                  onChange={() => {
+                    form.setValue('has_manager', true);
+                    form.setValue('has_record_label', false);
+                    form.setValue('has_publisher', false);
+                  }}
+                  className="w-4 h-4 text-primary"
+                />
+                <div>
+                  <p className="font-medium">Empresário</p>
+                  <p className="text-sm text-muted-foreground">Possui representação por empresário</p>
+                </div>
+              </label>
+
               {hasManager && (
-                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30">
+                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30 ml-4">
                   <div>
                     <Label>Nome do empresário</Label>
-                    <Input {...form.register('manager_name')} />
+                    <Input {...form.register('manager_name')} placeholder="Nome completo" />
                   </div>
                   <div>
                     <Label>Telefone</Label>
-                    <Input {...form.register('manager_phone')} />
+                    <Input {...form.register('manager_phone')} placeholder="(00) 00000-0000" />
                   </div>
                   <div>
                     <Label>Email</Label>
-                    <Input {...form.register('manager_email')} type="email" />
+                    <Input {...form.register('manager_email')} type="email" placeholder="email@exemplo.com" />
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Gravadora */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="has_record_label"
+              {/* Opção: Gravadora */}
+              <label className={cn(
+                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                hasRecordLabel ? "border-primary bg-primary/5" : "border-muted hover:border-muted-foreground/50"
+              )}>
+                <input
+                  type="radio"
+                  name="representation"
                   checked={hasRecordLabel}
-                  onCheckedChange={(checked) => form.setValue('has_record_label', !!checked)}
+                  onChange={() => {
+                    form.setValue('has_manager', false);
+                    form.setValue('has_record_label', true);
+                    form.setValue('has_publisher', false);
+                  }}
+                  className="w-4 h-4 text-primary"
                 />
-                <Label htmlFor="has_record_label">Possui gravadora?</Label>
-              </div>
-              
+                <div>
+                  <p className="font-medium">Gravadora</p>
+                  <p className="text-sm text-muted-foreground">Vinculado a uma gravadora</p>
+                </div>
+              </label>
+
               {hasRecordLabel && (
-                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30">
+                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30 ml-4">
                   <div>
                     <Label>Nome do responsável</Label>
-                    <Input {...form.register('label_contact_name')} />
+                    <Input {...form.register('label_contact_name')} placeholder="Nome completo" />
                   </div>
                   <div>
                     <Label>Telefone</Label>
-                    <Input {...form.register('label_contact_phone')} />
+                    <Input {...form.register('label_contact_phone')} placeholder="(00) 00000-0000" />
                   </div>
                   <div>
                     <Label>Email</Label>
-                    <Input {...form.register('label_contact_email')} type="email" />
+                    <Input {...form.register('label_contact_email')} type="email" placeholder="email@exemplo.com" />
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Editora */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="has_publisher"
+              {/* Opção: Editora */}
+              <label className={cn(
+                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                hasPublisher ? "border-primary bg-primary/5" : "border-muted hover:border-muted-foreground/50"
+              )}>
+                <input
+                  type="radio"
+                  name="representation"
                   checked={hasPublisher}
-                  onCheckedChange={(checked) => form.setValue('has_publisher', !!checked)}
+                  onChange={() => {
+                    form.setValue('has_manager', false);
+                    form.setValue('has_record_label', false);
+                    form.setValue('has_publisher', true);
+                  }}
+                  className="w-4 h-4 text-primary"
                 />
-                <Label htmlFor="has_publisher">Possui editora?</Label>
-              </div>
-              
+                <div>
+                  <p className="font-medium">Editora</p>
+                  <p className="text-sm text-muted-foreground">Vinculado a uma editora musical</p>
+                </div>
+              </label>
+
               {hasPublisher && (
-                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30">
+                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30 ml-4">
                   <div>
                     <Label>Nome do responsável</Label>
-                    <Input {...form.register('publisher_contact_name')} />
+                    <Input {...form.register('publisher_contact_name')} placeholder="Nome completo" />
                   </div>
                   <div>
                     <Label>Telefone</Label>
-                    <Input {...form.register('publisher_contact_phone')} />
+                    <Input {...form.register('publisher_contact_phone')} placeholder="(00) 00000-0000" />
                   </div>
                   <div>
                     <Label>Email</Label>
-                    <Input {...form.register('publisher_contact_email')} type="email" />
+                    <Input {...form.register('publisher_contact_email')} type="email" placeholder="email@exemplo.com" />
                   </div>
                 </div>
               )}
