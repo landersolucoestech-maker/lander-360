@@ -61,24 +61,24 @@ export const AgendaEventForm: React.FC<AgendaEventFormProps> = ({
   });
 
   const eventTypeLabels = {
-    sessoes_estudio: 'Sessões de estúdio',
     ensaios: 'Ensaios',
-    sessoes_fotos: 'Sessões de fotos',
-    shows: 'Shows',
     entrevistas: 'Entrevistas',
     podcasts: 'Podcasts',
+    producao_conteudo: 'Produção de conteúdo',
     programas_tv: 'Programas de TV',
     radio: 'Rádio',
-    producao_conteudo: 'Produção de conteúdo',
-    reunioes: 'Reuniões'
+    reunioes: 'Reuniões',
+    sessoes_estudio: 'Sessões de estúdio',
+    sessoes_fotos: 'Sessões de fotos',
+    shows: 'Shows'
   };
 
   const statusLabels = {
     agendado: 'Agendado',
     cancelado: 'Cancelado',
-    pendente: 'Pendente',
     concluido: 'Concluído',
-    confirmado: 'Confirmado'
+    confirmado: 'Confirmado',
+    pendente: 'Pendente'
   };
 
   const eventType = form.watch('event_type');
