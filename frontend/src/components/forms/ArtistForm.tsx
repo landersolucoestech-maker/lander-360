@@ -40,6 +40,7 @@ const artistSchema = z.object({
   music_language: z.string().optional(),
   artist_image: z.any().optional(),
   documents: z.any().optional(),
+  presskit: z.any().optional(),
   biography: z.string().optional(),
   artist_types: z.array(z.string()).min(1, 'Selecione pelo menos um tipo de artista'),
   // Dados Pessoais
