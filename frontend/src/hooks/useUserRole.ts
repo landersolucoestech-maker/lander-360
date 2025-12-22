@@ -11,31 +11,17 @@ interface UseUserRoleResult {
   isAdmin: boolean;
 }
 
+/**
+ * Hook unificado para buscar roles do usuário.
+ * Fonte de verdade: tabela user_roles
+ * Fallback: profiles.roles (para compatibilidade com dados legados)
+ */
 export function useUserRole(): UseUserRoleResult {
   const { user } = useAuth();
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfileRoles = async () => {
-      if (!user?.id) return;
-      
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('roles')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileData?.roles && profileData.roles.length > 0) {
-        // Map legacy roles to new role system
-        const mappedRoles = profileData.roles.map((r: string) => mapLegacyRole(r));
-        setRoles(mappedRoles);
-      } else {
-        // Default for new users without roles
-        setRoles(['leitor']);
-      }
-    };
-
     const fetchUserRoles = async () => {
       if (!user?.id) {
         setRoles([]);
@@ -44,30 +30,58 @@ export function useUserRole(): UseUserRoleResult {
       }
 
       try {
-        const { data, error } = await supabase
+        // FONTE PRINCIPAL: user_roles table
+        const { data: userRolesData, error: userRolesError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id);
 
-        if (error) {
-          console.error('Error fetching user roles:', error);
-          // Fallback to profile roles
-          await fetchProfileRoles();
-        } else if (data && data.length > 0) {
-          // Map DB roles to frontend roles
-          const mappedRoles = data.map(r => {
+        if (!userRolesError && userRolesData && userRolesData.length > 0) {
+          // Roles encontradas na tabela user_roles - usar estas
+          const mappedRoles = userRolesData.map(r => {
             const role = r.role as string;
             return mapLegacyRole(role);
           });
-          setRoles(mappedRoles);
-        } else {
-          // No roles in user_roles table - check profile
-          await fetchProfileRoles();
+          // Remove duplicatas
+          const uniqueRoles = [...new Set(mappedRoles)];
+          setRoles(uniqueRoles);
+          setIsLoading(false);
+          return;
         }
-      
+
+        // FALLBACK: profiles.roles (dados legados)
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('roles')
+          .eq('id', user.id)
+          .single();
+
+        if (!profileError && profileData?.roles && profileData.roles.length > 0) {
+          const mappedRoles = profileData.roles.map((r: string) => mapLegacyRole(r));
+          const uniqueRoles = [...new Set(mappedRoles)];
+          setRoles(uniqueRoles);
+          
+          // MIGRAÇÃO AUTOMÁTICA: Copia roles do profile para user_roles
+          // Isso unifica os dados gradualmente
+          try {
+            for (const role of uniqueRoles) {
+              await supabase
+                .from('user_roles')
+                .upsert({ user_id: user.id, role }, { onConflict: 'user_id,role' })
+                .select();
+            }
+            console.log('Roles migradas de profiles para user_roles');
+          } catch (migrationError) {
+            // Falha silenciosa na migração - não afeta funcionamento
+            console.warn('Falha ao migrar roles:', migrationError);
+          }
+        } else {
+          // Nenhuma role encontrada - default para 'leitor'
+          setRoles(['leitor']);
+        }
       } catch (err) {
         console.error('Error in fetchUserRoles:', err);
-        setRoles([]);
+        setRoles(['leitor']); // Default seguro
       } finally {
         setIsLoading(false);
       }
