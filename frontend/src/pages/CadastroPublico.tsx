@@ -1877,18 +1877,17 @@ function PhonogramStep({
 }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedArtistsList, setSelectedArtistsList] = useState<ArtistSearchResult[]>([]);
   const [pendingPhonograms, setPendingPhonograms] = useState<PendingPhonogram[]>([]);
   
-  // Estados para múltiplos participantes
-  const [interpreters, setInterpreters] = useState<{ name: string; role: string }[]>([
-    { name: '', role: 'Principal' }
+  // Estados para múltiplos participantes (com CPF/CNPJ e porcentagem)
+  const [phonographicProducers, setPhonographicProducers] = useState<{ name: string; cpf_cnpj: string; percentage: number }[]>([
+    { name: '', cpf_cnpj: '', percentage: 100 }
   ]);
-  const [phonographicProducers, setPhonographicProducers] = useState<{ name: string; percentage: number }[]>([
-    { name: '', percentage: 100 }
+  const [interpreters, setInterpreters] = useState<{ name: string; cpf_cnpj: string; percentage: number }[]>([
+    { name: '', cpf_cnpj: '', percentage: 100 }
   ]);
-  const [producers, setProducers] = useState<{ name: string; role: string }[]>([
-    { name: '', role: 'Produtor Musical' }
+  const [producers, setProducers] = useState<{ name: string; cpf_cnpj: string; percentage: number }[]>([
+    { name: '', cpf_cnpj: '', percentage: 100 }
   ]);
 
   const form = useForm<PhonogramFormData>({
@@ -1900,32 +1899,8 @@ function PhonogramStep({
     },
   });
 
-  // Atualizar form quando artistas são selecionados
-  useEffect(() => {
-    form.setValue('artist_ids', selectedArtistsList.map(a => a.id));
-  }, [selectedArtistsList, form]);
-
-  const handleSelectArtist = (artist: ArtistSearchResult) => {
-    setSelectedArtistsList(prev => [...prev, artist]);
-  };
-
-  const handleRemoveArtist = (artistId: string) => {
-    setSelectedArtistsList(prev => prev.filter(a => a.id !== artistId));
-  };
-
-  // Funções para Intérpretes
-  const addInterpreter = () => setInterpreters([...interpreters, { name: '', role: 'Participação' }]);
-  const removeInterpreter = (index: number) => {
-    if (interpreters.length > 1) setInterpreters(interpreters.filter((_, i) => i !== index));
-  };
-  const updateInterpreter = (index: number, field: string, value: string) => {
-    const updated = [...interpreters];
-    updated[index] = { ...updated[index], [field]: value };
-    setInterpreters(updated);
-  };
-
   // Funções para Produtores Fonográficos
-  const addPhonographicProducer = () => setPhonographicProducers([...phonographicProducers, { name: '', percentage: 0 }]);
+  const addPhonographicProducer = () => setPhonographicProducers([...phonographicProducers, { name: '', cpf_cnpj: '', percentage: 0 }]);
   const removePhonographicProducer = (index: number) => {
     if (phonographicProducers.length > 1) setPhonographicProducers(phonographicProducers.filter((_, i) => i !== index));
   };
@@ -1934,25 +1909,38 @@ function PhonogramStep({
     updated[index] = { ...updated[index], [field]: value };
     setPhonographicProducers(updated);
   };
-  const totalProducerPercentage = phonographicProducers.reduce((sum, p) => sum + (p.percentage || 0), 0);
+  const totalPhonographicProducerPercentage = phonographicProducers.reduce((sum, p) => sum + (p.percentage || 0), 0);
+
+  // Funções para Intérpretes
+  const addInterpreter = () => setInterpreters([...interpreters, { name: '', cpf_cnpj: '', percentage: 0 }]);
+  const removeInterpreter = (index: number) => {
+    if (interpreters.length > 1) setInterpreters(interpreters.filter((_, i) => i !== index));
+  };
+  const updateInterpreter = (index: number, field: string, value: any) => {
+    const updated = [...interpreters];
+    updated[index] = { ...updated[index], [field]: value };
+    setInterpreters(updated);
+  };
+  const totalInterpreterPercentage = interpreters.reduce((sum, p) => sum + (p.percentage || 0), 0);
 
   // Funções para Produtores
-  const addProducer = () => setProducers([...producers, { name: '', role: 'Produtor Musical' }]);
+  const addProducer = () => setProducers([...producers, { name: '', cpf_cnpj: '', percentage: 0 }]);
   const removeProducer = (index: number) => {
     if (producers.length > 1) setProducers(producers.filter((_, i) => i !== index));
   };
-  const updateProducer = (index: number, field: string, value: string) => {
+  const updateProducer = (index: number, field: string, value: any) => {
     const updated = [...producers];
     updated[index] = { ...updated[index], [field]: value };
     setProducers(updated);
   };
+  const totalProducerPercentage = producers.reduce((sum, p) => sum + (p.percentage || 0), 0);
 
   // Adicionar fonograma à lista pendente
   const addToPendingList = (data: PhonogramFormData) => {
-    if (selectedArtistsList.length === 0) {
+    if (phonographicProducers.filter(p => p.name.trim()).length === 0) {
       toast({
-        title: 'Artista obrigatório',
-        description: 'Selecione pelo menos um artista intérprete.',
+        title: 'Produtor fonográfico obrigatório',
+        description: 'Adicione pelo menos um produtor fonográfico.',
         variant: 'destructive',
       });
       return;
