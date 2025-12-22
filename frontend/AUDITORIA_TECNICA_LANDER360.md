@@ -315,10 +315,10 @@ Proteção contra crashes não tratados no React.
 ## 📋 CHECKLIST DE CORREÇÕES
 
 ```
-[ ] 1. ProtectedRoute reativada com verificação de auth
-[ ] 2. CORS restrito a domínios autorizados
-[ ] 3. CSP atualizada com novo domínio Supabase
-[ ] 4. Erros tratados corretamente em create-user
+[x] 1. ProtectedRoute reativada com verificação de auth ✅ CORRIGIDO
+[x] 2. CORS melhorado com lista de origens permitidas ✅ CORRIGIDO
+[x] 3. CSP atualizada com novo domínio Supabase ✅ CORRIGIDO
+[x] 4. Erros tratados corretamente em create-user ✅ CORRIGIDO
 [ ] 5. Paginação implementada em services
 [ ] 6. Índices criados nas tabelas principais
 [ ] 7. Sistema de roles unificado
@@ -326,6 +326,31 @@ Proteção contra crashes não tratados no React.
 [ ] 9. Backend Python removido
 [ ] 10. Types.ts modularizado
 ```
+
+---
+
+## ✅ CORREÇÕES APLICADAS (Junho 2025)
+
+### 1. ProtectedRoute Reativada
+- Verifica autenticação antes de renderizar rotas protegidas
+- Mostra spinner de loading durante verificação
+- Redireciona para `/auth` se não autenticado
+- Preserva a rota original para redirecionamento pós-login
+
+### 2. CORS Melhorado
+- Lista de origens permitidas configurável
+- Suporte a variável de ambiente `ALLOWED_ORIGIN` para produção
+- Permite subdomínios do emergentagent.com automaticamente
+- Helper `createCorsResponse` para responses tipadas
+
+### 3. CSP Atualizada
+- Domínio atualizado de `dkrrfnpvqrpakngigxsb` para `rlinswqockcnijhojnth`
+- Adicionado wildcard `*.supabase.co` para flexibilidade
+
+### 4. Tratamento de Erros em create-user
+- Erros de profile/role agora são coletados e retornados como `warnings`
+- Operação não falha silenciosamente
+- Cliente pode verificar se houve problemas parciais
 
 ---
 
