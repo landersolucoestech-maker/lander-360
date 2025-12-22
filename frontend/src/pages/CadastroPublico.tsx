@@ -1893,7 +1893,7 @@ function PhonogramStep({
           {/* Fonogramas já cadastrados */}
           {registeredPhonograms.length > 0 && (
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-green-600 mb-2">Fonogramas cadastrados nesta sessão:</h4>
+              <h4 className="font-medium text-green-600 mb-2">Fonogramas cadastrados nesta sessão ({registeredPhonograms.length}):</h4>
               <ul className="space-y-1">
                 {registeredPhonograms.map((title, index) => (
                   <li key={index} className="flex items-center gap-2 text-sm">
@@ -1902,6 +1902,9 @@ function PhonogramStep({
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-muted-foreground mt-2">
+                Preencha o formulário abaixo para adicionar mais fonogramas
+              </p>
             </div>
           )}
 
@@ -1926,35 +1929,26 @@ function PhonogramStep({
               )}
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label>Artista(s) Intérprete(s) *</Label>
-              <div className="grid gap-2 mt-2">
-                {registeredArtists.map((artist) => (
-                  <label key={artist.id} className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
-                    selectedArtists.includes(artist.id) 
-                      ? "border-primary bg-primary/5" 
-                      : "border-muted hover:border-muted-foreground/50"
-                  )}>
-                    <Checkbox
-                      checked={selectedArtists.includes(artist.id)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedArtists([...selectedArtists, artist.id]);
-                          form.setValue('artist_ids', [...selectedArtists, artist.id]);
-                        } else {
-                          const newList = selectedArtists.filter(id => id !== artist.id);
-                          setSelectedArtists(newList);
-                          form.setValue('artist_ids', newList);
-                        }
-                      }}
-                    />
-                    <div>
-                      <p className="font-medium">{artist.artistic_name}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Digite o nome do artista para buscar. Você pode adicionar mais de um artista.
+              </p>
+              
+              <ArtistSearch
+                selectedArtists={selectedArtistsList}
+                onSelect={handleSelectArtist}
+                onRemove={handleRemoveArtist}
+                registeredArtists={registeredArtists}
+                placeholder="Buscar artista intérprete..."
+              />
+
+              {selectedArtistsList.length === 0 && (
+                <p className="text-sm text-amber-600 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Selecione pelo menos um artista
+                </p>
+              )}
             </div>
           </div>
 
