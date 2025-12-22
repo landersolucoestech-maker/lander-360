@@ -1443,6 +1443,7 @@ function WorkStep({
   const [authors, setAuthors] = useState<{ name: string; role: string; percentage: number }[]>([
     { name: '', role: '', percentage: 100 }
   ]);
+  const [pendingWorks, setPendingWorks] = useState<PendingWork[]>([]);
 
   const form = useForm<WorkFormData>({
     resolver: zodResolver(workSchema),
@@ -1489,7 +1490,8 @@ function WorkStep({
 
   const totalPercentage = authors.reduce((sum, a) => sum + (a.percentage || 0), 0);
 
-  const onSubmit = async (data: WorkFormData) => {
+  // Adicionar obra à lista pendente (não salva no banco ainda)
+  const addToPendingList = (data: WorkFormData) => {
     if (selectedArtistsList.length === 0) {
       toast({
         title: 'Artista obrigatório',
@@ -1508,41 +1510,94 @@ function WorkStep({
       return;
     }
 
+    const newWork: PendingWork = {
+      tempId: uuidv4(),
+      title: data.title,
+      language: data.language,
+      genre: data.genre,
+      iswc: data.iswc,
+      authors: [...authors],
+      artists: [...selectedArtistsList],
+      has_publisher: data.has_publisher,
+      publisher_name: data.publisher_name,
+      contract_type: data.contract_type,
+      is_original: data.is_original,
+    };
+
+    setPendingWorks(prev => [...prev, newWork]);
+
+    // Limpar formulário para adicionar outra
+    form.reset({
+      artist_ids: [],
+      authors: [{ name: '', role: '', percentage: 100 }],
+      has_publisher: false,
+      is_original: true,
+      editorial_representation: false,
+    });
+    setSelectedArtistsList([]);
+    setAuthors([{ name: '', role: '', percentage: 100 }]);
+
+    toast({
+      title: 'Obra adicionada à lista',
+      description: `"${data.title}" foi adicionada. Você pode adicionar mais obras ou salvar todas.`,
+    });
+  };
+
+  // Remover obra da lista pendente
+  const removePendingWork = (tempId: string) => {
+    setPendingWorks(prev => prev.filter(w => w.tempId !== tempId));
+  };
+
+  // Salvar todas as obras pendentes no banco
+  const saveAllWorks = async () => {
+    if (pendingWorks.length === 0) {
+      toast({
+        title: 'Nenhuma obra para salvar',
+        description: 'Adicione pelo menos uma obra à lista antes de salvar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const { data: workData, error } = await supabase
-        .from('music_registry')
-        .insert({
-          title: data.title,
-          genre: data.genre,
-          iswc: data.iswc,
-          language: data.language,
-          status: 'Pendente Validação',
-          participants: authors,
-          artist_id: selectedArtistsList[0]?.id,
-          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${data.has_publisher ? data.publisher_name : 'Sem editora'}\nTipo Contrato: ${data.contract_type || 'N/A'}\nObra Original: ${data.is_original ? 'Sim' : 'Não'}\nArtistas: ${selectedArtistsList.map(a => a.stage_name || a.name).join(', ')}`,
-        })
-        .select()
-        .single();
+      for (const work of pendingWorks) {
+        const { data: workData, error } = await supabase
+          .from('music_registry')
+          .insert({
+            title: work.title,
+            genre: work.genre,
+            iswc: work.iswc,
+            language: work.language,
+            status: 'Pendente Validação',
+            participants: work.authors,
+            artist_id: work.artists[0]?.id,
+            observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${work.has_publisher ? work.publisher_name : 'Sem editora'}\nTipo Contrato: ${work.contract_type || 'N/A'}\nObra Original: ${work.is_original ? 'Sim' : 'Não'}\nArtistas: ${work.artists.map(a => a.stage_name || a.name).join(', ')}`,
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      onWorkRegistered({
-        id: workData.id,
-        title: data.title,
-        artist_ids: selectedArtistsList.map(a => a.id),
+        onWorkRegistered({
+          id: workData.id,
+          title: work.title,
+          artist_ids: work.artists.map(a => a.id),
+        });
+      }
+
+      setPendingWorks([]);
+      toast({
+        title: 'Obras salvas com sucesso!',
+        description: `${pendingWorks.length} obra(s) foram cadastradas.`,
       });
-
-      // Reset form
-      form.reset();
-      setSelectedArtistsList([]);
-      setAuthors([{ name: '', role: '', percentage: 100 }]);
-
+      
+      onContinue();
     } catch (error: any) {
-      console.error('Error saving work:', error);
+      console.error('Error saving works:', error);
       toast({
         title: 'Erro ao salvar',
-        description: error.message || 'Não foi possível salvar a obra.',
+        description: error.message || 'Não foi possível salvar as obras.',
         variant: 'destructive',
       });
     } finally {
@@ -1555,59 +1610,90 @@ function WorkStep({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Music className="h-5 w-5" />
-          Cadastro de Obra
+          Cadastro de Obras
         </CardTitle>
         <CardDescription>
-          Cadastre as informações da composição musical. Você pode adicionar várias obras.
+          Adicione todas as obras que deseja cadastrar. Você pode adicionar várias obras antes de salvar.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Obras já cadastradas */}
-          {registeredWorks.length > 0 && (
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-green-600 mb-2">Obras cadastradas nesta sessão ({registeredWorks.length}):</h4>
-              <ul className="space-y-1">
-                {registeredWorks.map((work) => (
-                  <li key={work.id} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-500" />
-                    {work.title}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-muted-foreground mt-2">
-                Preencha o formulário abaixo para adicionar mais obras
-              </p>
+      <CardContent className="space-y-6">
+        {/* Lista de Obras Pendentes */}
+        {pendingWorks.length > 0 && (
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+            <h4 className="font-medium text-blue-600 mb-3 flex items-center gap-2">
+              <Music className="h-4 w-4" />
+              Obras a serem salvas ({pendingWorks.length})
+            </h4>
+            <div className="space-y-2">
+              {pendingWorks.map((work) => (
+                <div key={work.tempId} className="flex items-center justify-between bg-background p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium">{work.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {work.genre} • {work.language} • {work.artists.map(a => a.stage_name || a.name).join(', ')}
+                    </p>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => removePendingWork(work.tempId)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
             </div>
-          )}
-
-          {/* Seleção de Artistas com Busca */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Artista(s) Vinculado(s) *</h3>
-            <p className="text-sm text-muted-foreground">
-              Digite o nome do artista para buscar. Você pode adicionar mais de um artista.
-            </p>
-            
-            <ArtistSearch
-              selectedArtists={selectedArtistsList}
-              onSelect={handleSelectArtist}
-              onRemove={handleRemoveArtist}
-              registeredArtists={registeredArtists}
-              placeholder="Buscar por nome artístico ou nome civil..."
-            />
-
-            {selectedArtistsList.length === 0 && (
-              <p className="text-sm text-amber-600 flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                Selecione pelo menos um artista
-              </p>
-            )}
           </div>
+        )}
 
-          {/* Dados da Obra */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Dados da Obra</h3>
-            
+        {/* Obras já salvas no banco */}
+        {registeredWorks.length > 0 && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+            <h4 className="font-medium text-green-600 mb-2">Obras já cadastradas ({registeredWorks.length}):</h4>
+            <ul className="space-y-1">
+              {registeredWorks.map((work) => (
+                <li key={work.id} className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-green-500" />
+                  {work.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Formulário para adicionar nova obra */}
+        <div className="border rounded-lg p-4 bg-muted/30">
+          <h4 className="font-medium mb-4 flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Adicionar Nova Obra
+          </h4>
+          
+          <form onSubmit={form.handleSubmit(addToPendingList)} className="space-y-6">
+            {/* Seleção de Artistas com Busca */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Artista(s) Vinculado(s) *</Label>
+              <p className="text-sm text-muted-foreground">
+                Digite o nome do artista para buscar.
+              </p>
+              
+              <ArtistSearch
+                selectedArtists={selectedArtistsList}
+                onSelect={handleSelectArtist}
+                onRemove={handleRemoveArtist}
+                registeredArtists={registeredArtists}
+                placeholder="Buscar por nome artístico ou nome civil..."
+              />
+
+              {selectedArtistsList.length === 0 && (
+                <p className="text-sm text-amber-600 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Selecione pelo menos um artista
+                </p>
+              )}
+            </div>
+
+            {/* Dados da Obra */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Label htmlFor="title">Título da Obra *</Label>
@@ -1619,6 +1705,213 @@ function WorkStep({
                 {form.formState.errors.title && (
                   <p className="text-sm text-destructive mt-1">{form.formState.errors.title.message}</p>
                 )}
+              </div>
+
+              <div>
+                <Label htmlFor="language">Idioma *</Label>
+                <Select onValueChange={(value) => form.setValue('language', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map((lang) => (
+                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="genre">Gênero *</Label>
+                <Select onValueChange={(value) => form.setValue('genre', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {genreOptions.map((genre) => (
+                      <SelectItem key={genre} value={genre}>{genre}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="iswc">ISWC (opcional)</Label>
+                <Input
+                  id="iswc"
+                  {...form.register('iswc')}
+                  placeholder="T-000.000.000-0"
+                />
+              </div>
+            </div>
+
+            {/* Autores */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Autores/Compositores *</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addAuthor}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+
+              {authors.map((author, index) => (
+                <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                  <div className="col-span-5">
+                    <Label className="text-xs">Nome</Label>
+                    <Input
+                      value={author.name}
+                      onChange={(e) => updateAuthor(index, 'name', e.target.value)}
+                      placeholder="Nome do autor"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Label className="text-xs">Função</Label>
+                    <Select onValueChange={(value) => updateAuthor(index, 'role', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Autor">Autor</SelectItem>
+                        <SelectItem value="Compositor">Compositor</SelectItem>
+                        <SelectItem value="Autor/Compositor">Autor/Compositor</SelectItem>
+                        <SelectItem value="Versionista">Versionista</SelectItem>
+                        <SelectItem value="Adaptador">Adaptador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-xs">%</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={author.percentage}
+                      onChange={(e) => updateAuthor(index, 'percentage', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    {authors.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeAuthor(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              <div className={cn(
+                "text-sm font-medium",
+                totalPercentage === 100 ? "text-green-600" : "text-amber-600"
+              )}>
+                Total: {totalPercentage}% {totalPercentage !== 100 && "(deve ser 100%)"}
+              </div>
+            </div>
+
+            {/* Editora */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="has_publisher_work"
+                  checked={hasPublisher}
+                  onCheckedChange={(checked) => form.setValue('has_publisher', !!checked)}
+                />
+                <Label htmlFor="has_publisher_work">Possui editora?</Label>
+              </div>
+
+              {hasPublisher && (
+                <div className="grid md:grid-cols-2 gap-4 pl-6 border-l-2 border-primary/30">
+                  <div>
+                    <Label>Nome da Editora</Label>
+                    <Input {...form.register('publisher_name')} placeholder="Nome da editora" />
+                  </div>
+                  <div>
+                    <Label>Tipo de Contrato</Label>
+                    <Select onValueChange={(value) => form.setValue('contract_type', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Cessão">Cessão</SelectItem>
+                        <SelectItem value="Administração">Administração</SelectItem>
+                        <SelectItem value="Coedição">Coedição</SelectItem>
+                        <SelectItem value="Subedição">Subedição</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Declarações */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="is_original_work"
+                  checked={form.watch('is_original')}
+                  onCheckedChange={(checked) => form.setValue('is_original', !!checked)}
+                />
+                <Label htmlFor="is_original_work">Esta é uma obra inédita</Label>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="editorial_representation_work"
+                  checked={form.watch('editorial_representation')}
+                  onCheckedChange={(checked) => form.setValue('editorial_representation', !!checked)}
+                  className="mt-1"
+                />
+                <div>
+                  <Label htmlFor="editorial_representation_work">Aceite de Representação Editorial *</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Autorizo a representação editorial conforme os termos estabelecidos.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botão Adicionar */}
+            <Button 
+              type="submit" 
+              variant="secondary" 
+              className="w-full"
+              disabled={totalPercentage !== 100}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Obra à Lista
+            </Button>
+          </form>
+        </div>
+
+        {/* Botões de Navegação */}
+        <div className="flex justify-between pt-6 border-t">
+          <Button type="button" variant="outline" onClick={onBack}>
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
+
+          <div className="flex gap-3">
+            {pendingWorks.length > 0 && (
+              <Button 
+                type="button" 
+                onClick={saveAllWorks}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Salvando...' : `Salvar ${pendingWorks.length} Obra(s) e Continuar`}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+
+            {registeredWorks.length > 0 && pendingWorks.length === 0 && (
+              <Button type="button" onClick={onContinue}>
+                Continuar
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
               </div>
 
               <div>
