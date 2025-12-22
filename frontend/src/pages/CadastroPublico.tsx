@@ -1235,9 +1235,11 @@ function WorkStep({
           title: data.title,
           genre: data.genre,
           iswc: data.iswc,
+          language: data.language,
           status: 'Pendente Validação',
           participants: authors,
           artist_id: selectedArtists[0],
+          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${data.has_publisher ? data.publisher_name : 'Sem editora'}\nTipo Contrato: ${data.contract_type || 'N/A'}\nObra Original: ${data.is_original ? 'Sim' : 'Não'}`,
         })
         .select()
         .single();
