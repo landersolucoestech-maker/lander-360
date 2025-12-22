@@ -1444,12 +1444,12 @@ function WorkStep({
       onWorkRegistered({
         id: workData.id,
         title: data.title,
-        artist_ids: selectedArtists,
+        artist_ids: selectedArtistsList.map(a => a.id),
       });
 
       // Reset form
       form.reset();
-      setSelectedArtists([]);
+      setSelectedArtistsList([]);
       setAuthors([{ name: '', role: '', percentage: 100 }]);
 
     } catch (error: any) {
@@ -1472,7 +1472,7 @@ function WorkStep({
           Cadastro de Obra
         </CardTitle>
         <CardDescription>
-          Cadastre as informações da composição musical.
+          Cadastre as informações da composição musical. Você pode adicionar várias obras.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -1480,7 +1480,7 @@ function WorkStep({
           {/* Obras já cadastradas */}
           {registeredWorks.length > 0 && (
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-green-600 mb-2">Obras cadastradas nesta sessão:</h4>
+              <h4 className="font-medium text-green-600 mb-2">Obras cadastradas nesta sessão ({registeredWorks.length}):</h4>
               <ul className="space-y-1">
                 {registeredWorks.map((work) => (
                   <li key={work.id} className="flex items-center gap-2 text-sm">
@@ -1489,35 +1489,26 @@ function WorkStep({
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-muted-foreground mt-2">
+                Preencha o formulário abaixo para adicionar mais obras
+              </p>
             </div>
           )}
 
-          {/* Seleção de Artistas */}
+          {/* Seleção de Artistas com Busca */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Artista(s) Vinculado(s)</h3>
+            <h3 className="text-lg font-semibold border-b pb-2">Artista(s) Vinculado(s) *</h3>
+            <p className="text-sm text-muted-foreground">
+              Digite o nome do artista para buscar. Você pode adicionar mais de um artista.
+            </p>
             
-            <div className="grid gap-2">
-              {registeredArtists.map((artist) => (
-                <label key={artist.id} className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
-                  selectedArtists.includes(artist.id) 
-                    ? "border-primary bg-primary/5" 
-                    : "border-muted hover:border-muted-foreground/50"
-                )}>
-                  <Checkbox
-                    checked={selectedArtists.includes(artist.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedArtists([...selectedArtists, artist.id]);
-                        form.setValue('artist_ids', [...selectedArtists, artist.id]);
-                      } else {
-                        const newList = selectedArtists.filter(id => id !== artist.id);
-                        setSelectedArtists(newList);
-                        form.setValue('artist_ids', newList);
-                      }
-                    }}
-                  />
-                  <div>
+            <ArtistSearch
+              selectedArtists={selectedArtistsList}
+              onSelect={handleSelectArtist}
+              onRemove={handleRemoveArtist}
+              registeredArtists={registeredArtists}
+              placeholder="Buscar por nome artístico ou nome civil..."
+            />
                     <p className="font-medium">{artist.artistic_name}</p>
                     <p className="text-sm text-muted-foreground">{artist.full_name}</p>
                   </div>
