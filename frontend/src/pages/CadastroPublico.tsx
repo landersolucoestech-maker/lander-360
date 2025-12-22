@@ -1546,7 +1546,7 @@ function WorkStep({
                   <div>
                     <p className="font-medium">{work.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {work.genre} • {work.language} • {work.artists.map(a => a.stage_name || a.name).join(', ')}
+                      {work.genre} • {work.language}
                     </p>
                   </div>
                   <Button 
