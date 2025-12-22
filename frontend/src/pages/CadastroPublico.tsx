@@ -2034,7 +2034,8 @@ function PhonogramStep({
             status: 'Aguardando Aprovação',
             work_id: phonogram.work_id,
             artist_id: phonogram.artists[0]?.id,
-            master_owner: phonogram.phonographic_producer || null,
+            master_owner: phonogram.phonographic_producers.map(p => `${p.name} (${p.percentage}%)`).join(', ') || null,
+            observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nIntérpretes:\n${phonogram.interpreters.map(i => `- ${i.name} (${i.role})`).join('\n')}\n\nProdutores Fonográficos:\n${phonogram.phonographic_producers.map(p => `- ${p.name} (${p.percentage}%)`).join('\n')}\n\nProdutores:\n${phonogram.producers.map(p => `- ${p.name} (${p.role})`).join('\n')}`,
           });
 
         if (error) throw error;
