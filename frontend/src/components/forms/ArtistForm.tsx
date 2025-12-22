@@ -645,6 +645,56 @@ export function ArtistForm({
                 )}
               />
 
+              {/* Funções do Músico - exibido quando "Músico" está selecionado */}
+              {form.watch('artist_types')?.includes('Músico') && (
+                <FormField
+                  control={form.control}
+                  name="musician_roles"
+                  render={() => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Funções do Músico *</FormLabel>
+                      <FormDescription>Selecione as funções que o músico desempenha</FormDescription>
+                      <div className="flex flex-wrap gap-3 mt-2">
+                        {musicianRoleOptions.map((role) => (
+                          <FormField
+                            key={role}
+                            control={form.control}
+                            name="musician_roles"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={role}
+                                  className="flex flex-row items-center space-x-2 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(role)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...(field.value || []), role])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value: string) => value !== role
+                                              )
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer mb-0 text-sm">
+                                    {role}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <div className="md:col-span-2">
                 <FormField control={form.control} name="documents" render={({
                 field
