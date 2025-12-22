@@ -225,6 +225,33 @@ export function ArtistForm({
     onChange(undefined);
   };
 
+  const handlePresskitChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: 'Arquivo muito grande',
+          description: 'O Presskit deve ter no máximo 10MB.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      setPresskitFile(file);
+      setPresskitName(file.name);
+      onChange(file);
+      toast({
+        title: 'Presskit selecionado',
+        description: `Arquivo "${file.name}" pronto para upload.`
+      });
+    }
+  };
+
+  const removePresskit = (onChange: (value: any) => void) => {
+    setPresskitFile(null);
+    setPresskitName(null);
+    onChange(undefined);
+  };
+
   const removeImage = (onChange: (value: any) => void) => {
     onChange(undefined);
     setImagePreview(null);
