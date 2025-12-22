@@ -17,16 +17,9 @@ export class FinancialService {
   static async getAll(): Promise<any[]> {
     const { data, error } = await supabase
       .from('financial_transactions')
-      .select(`
-        *,
-        artists:artist_id (id, name, stage_name),
-        crm_contacts:crm_contact_id (id, name, company),
-        contracts:contract_id (id, title),
-        projects:project_id (id, name),
-        agenda_events:event_id (id, title)
-      `)
+      .select('*')
       .order('date', { ascending: false })
-      .limit(100); // Limite de segurança
+      .limit(100);
 
     if (error) throw error;
     return data || [];
@@ -37,19 +30,11 @@ export class FinancialService {
     const normalizedParams = normalizePaginationParams(params);
     const { from, to } = calculateRange(normalizedParams);
 
-    // Usa 'date' como campo de ordenação principal (sempre presente)
     const sortField = normalizedParams.sortBy === 'created_at' ? 'date' : (normalizedParams.sortBy || 'date');
 
     const { data, error, count } = await supabase
       .from('financial_transactions')
-      .select(`
-        *,
-        artists:artist_id (id, name, stage_name),
-        crm_contacts:crm_contact_id (id, name, company),
-        contracts:contract_id (id, title),
-        projects:project_id (id, name),
-        agenda_events:event_id (id, title)
-      `, { count: 'exact' })
+      .select('*', { count: 'exact' })
       .order(sortField, { 
         ascending: normalizedParams.sortOrder === 'asc' 
       })
