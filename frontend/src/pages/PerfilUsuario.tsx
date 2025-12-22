@@ -217,20 +217,41 @@ const PerfilUsuario = () => {
 
     setIsSaving(true);
     try {
-      // Use upsert to create profile if it doesn't exist
-      const { error } = await supabase
+      // Usar update ao invés de upsert para evitar problemas de schema cache
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          full_name: editData.name.trim(),
-          phone: editData.phone.trim() || null,
-          sector: editData.sector || null,
-          avatar_url: editData.avatarUrl || null,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'id' });
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
 
-      if (error) {
-        throw error;
+      if (existingProfile) {
+        // Profile existe - fazer update
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: editData.name.trim(),
+            phone: editData.phone.trim() || null,
+            department: editData.sector || null,
+            avatar_url: editData.avatarUrl || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Profile não existe - criar
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: editData.name.trim(),
+            phone: editData.phone.trim() || null,
+            department: editData.sector || null,
+            avatar_url: editData.avatarUrl || null
+          });
+
+        if (error) throw error;
       }
 
       setProfileData(editData);
