@@ -1883,6 +1883,17 @@ function PhonogramStep({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedArtistsList, setSelectedArtistsList] = useState<ArtistSearchResult[]>([]);
   const [pendingPhonograms, setPendingPhonograms] = useState<PendingPhonogram[]>([]);
+  
+  // Estados para múltiplos participantes
+  const [interpreters, setInterpreters] = useState<{ name: string; role: string }[]>([
+    { name: '', role: 'Principal' }
+  ]);
+  const [phonographicProducers, setPhonographicProducers] = useState<{ name: string; percentage: number }[]>([
+    { name: '', percentage: 100 }
+  ]);
+  const [producers, setProducers] = useState<{ name: string; role: string }[]>([
+    { name: '', role: 'Produtor Musical' }
+  ]);
 
   const form = useForm<PhonogramFormData>({
     resolver: zodResolver(phonogramSchema),
@@ -1906,12 +1917,55 @@ function PhonogramStep({
     setSelectedArtistsList(prev => prev.filter(a => a.id !== artistId));
   };
 
+  // Funções para Intérpretes
+  const addInterpreter = () => setInterpreters([...interpreters, { name: '', role: 'Participação' }]);
+  const removeInterpreter = (index: number) => {
+    if (interpreters.length > 1) setInterpreters(interpreters.filter((_, i) => i !== index));
+  };
+  const updateInterpreter = (index: number, field: string, value: string) => {
+    const updated = [...interpreters];
+    updated[index] = { ...updated[index], [field]: value };
+    setInterpreters(updated);
+  };
+
+  // Funções para Produtores Fonográficos
+  const addPhonographicProducer = () => setPhonographicProducers([...phonographicProducers, { name: '', percentage: 0 }]);
+  const removePhonographicProducer = (index: number) => {
+    if (phonographicProducers.length > 1) setPhonographicProducers(phonographicProducers.filter((_, i) => i !== index));
+  };
+  const updatePhonographicProducer = (index: number, field: string, value: any) => {
+    const updated = [...phonographicProducers];
+    updated[index] = { ...updated[index], [field]: value };
+    setPhonographicProducers(updated);
+  };
+  const totalProducerPercentage = phonographicProducers.reduce((sum, p) => sum + (p.percentage || 0), 0);
+
+  // Funções para Produtores
+  const addProducer = () => setProducers([...producers, { name: '', role: 'Produtor Musical' }]);
+  const removeProducer = (index: number) => {
+    if (producers.length > 1) setProducers(producers.filter((_, i) => i !== index));
+  };
+  const updateProducer = (index: number, field: string, value: string) => {
+    const updated = [...producers];
+    updated[index] = { ...updated[index], [field]: value };
+    setProducers(updated);
+  };
+
   // Adicionar fonograma à lista pendente
   const addToPendingList = (data: PhonogramFormData) => {
     if (selectedArtistsList.length === 0) {
       toast({
         title: 'Artista obrigatório',
         description: 'Selecione pelo menos um artista intérprete.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (interpreters.filter(i => i.name.trim()).length === 0) {
+      toast({
+        title: 'Intérprete obrigatório',
+        description: 'Adicione pelo menos um intérprete.',
         variant: 'destructive',
       });
       return;
@@ -1927,8 +1981,9 @@ function PhonogramStep({
       work_id: data.work_id,
       work_title: selectedWork?.title || 'Obra não encontrada',
       artists: [...selectedArtistsList],
-      main_interpreter: data.main_interpreter,
-      phonographic_producer: data.phonographic_producer,
+      interpreters: interpreters.filter(i => i.name.trim()),
+      phonographic_producers: phonographicProducers.filter(p => p.name.trim()),
+      producers: producers.filter(p => p.name.trim()),
       featured_artists: data.featured_artists,
     };
 
@@ -1941,6 +1996,9 @@ function PhonogramStep({
       exploitation_authorization: false,
     });
     setSelectedArtistsList([]);
+    setInterpreters([{ name: '', role: 'Principal' }]);
+    setPhonographicProducers([{ name: '', percentage: 100 }]);
+    setProducers([{ name: '', role: 'Produtor Musical' }]);
 
     toast({
       title: 'Fonograma adicionado à lista',
