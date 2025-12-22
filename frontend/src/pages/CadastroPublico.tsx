@@ -1353,7 +1353,7 @@ function WorkStep({
 }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [selectedArtistsList, setSelectedArtistsList] = useState<ArtistSearchResult[]>([]);
   const [authors, setAuthors] = useState<{ name: string; role: string; percentage: number }[]>([
     { name: '', role: '', percentage: 100 }
   ]);
@@ -1370,6 +1370,19 @@ function WorkStep({
   });
 
   const hasPublisher = form.watch('has_publisher');
+
+  // Atualizar form quando artistas são selecionados
+  useEffect(() => {
+    form.setValue('artist_ids', selectedArtistsList.map(a => a.id));
+  }, [selectedArtistsList, form]);
+
+  const handleSelectArtist = (artist: ArtistSearchResult) => {
+    setSelectedArtistsList(prev => [...prev, artist]);
+  };
+
+  const handleRemoveArtist = (artistId: string) => {
+    setSelectedArtistsList(prev => prev.filter(a => a.id !== artistId));
+  };
 
   const addAuthor = () => {
     setAuthors([...authors, { name: '', role: '', percentage: 0 }]);
@@ -1391,6 +1404,15 @@ function WorkStep({
   const totalPercentage = authors.reduce((sum, a) => sum + (a.percentage || 0), 0);
 
   const onSubmit = async (data: WorkFormData) => {
+    if (selectedArtistsList.length === 0) {
+      toast({
+        title: 'Artista obrigatório',
+        description: 'Selecione pelo menos um artista vinculado.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (totalPercentage !== 100) {
       toast({
         title: 'Percentual inválido',
@@ -1411,8 +1433,8 @@ function WorkStep({
           language: data.language,
           status: 'Pendente Validação',
           participants: authors,
-          artist_id: selectedArtists[0],
-          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${data.has_publisher ? data.publisher_name : 'Sem editora'}\nTipo Contrato: ${data.contract_type || 'N/A'}\nObra Original: ${data.is_original ? 'Sim' : 'Não'}`,
+          artist_id: selectedArtistsList[0]?.id,
+          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${data.has_publisher ? data.publisher_name : 'Sem editora'}\nTipo Contrato: ${data.contract_type || 'N/A'}\nObra Original: ${data.is_original ? 'Sim' : 'Não'}\nArtistas: ${selectedArtistsList.map(a => a.stage_name || a.name).join(', ')}`,
         })
         .select()
         .single();
