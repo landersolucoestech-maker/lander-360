@@ -599,19 +599,19 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                       <SelectValue placeholder="Selecione a função" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Master">Master</SelectItem>
                       <SelectItem value="Administrador">Administrador</SelectItem>
-                      <SelectItem value="Gerente">Gerente</SelectItem>
-                      <SelectItem value="Produtor Musical">Produtor Musical</SelectItem>
-                      <SelectItem value="Editor">Editor</SelectItem>
                       <SelectItem value="Analista Financeiro">Analista Financeiro</SelectItem>
-                      <SelectItem value="Especialista em Marketing">Especialista em Marketing</SelectItem>
+                      <SelectItem value="Artista">Artista</SelectItem>
                       <SelectItem value="Assistente de Produção">Assistente de Produção</SelectItem>
                       <SelectItem value="Coordenador de Eventos">Coordenador de Eventos</SelectItem>
-                      <SelectItem value="Artista">Artista</SelectItem>
-                      <SelectItem value="Técnico de Som">Técnico de Som</SelectItem>
                       <SelectItem value="Designer Gráfico">Designer Gráfico</SelectItem>
+                      <SelectItem value="Editor">Editor</SelectItem>
+                      <SelectItem value="Especialista em Marketing">Especialista em Marketing</SelectItem>
+                      <SelectItem value="Gerente">Gerente</SelectItem>
+                      <SelectItem value="Master">Master</SelectItem>
+                      <SelectItem value="Produtor Musical">Produtor Musical</SelectItem>
                       <SelectItem value="Social Media">Social Media</SelectItem>
+                      <SelectItem value="Técnico de Som">Técnico de Som</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.role && (
