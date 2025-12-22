@@ -48,6 +48,7 @@ import AssetsSync from "./pages/AssetsSync";
 import Licenciamento from "./pages/Licenciamento";
 import Takedowns from "./pages/Takedowns";
 import ScreenshotCapture from "./pages/ScreenshotCapture";
+import CadastroPublico from "./pages/CadastroPublico";
 
 const queryClient = new QueryClient({
   defaultOptions: {
