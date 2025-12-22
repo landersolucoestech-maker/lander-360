@@ -86,7 +86,7 @@ interface ArtistFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
-const distributorOptions = ['CD Baby', 'DistroKid', 'TuneCore', 'Ditto Music', 'ONErpm', 'iMusics', 'Symphonic Distribution'];
+const distributorOptions = ['CD Baby', 'Ditto Music', 'DistroKid', 'iMusics', 'ONErpm', 'Symphonic Distribution', 'TuneCore'];
 const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Coreano', 'Mandarim', 'Instrumental', 'Multilíngue', 'Outro'];
 const genreOptions = ['Afrobeat', 'Afrobeats', 'Alternative Rock', 'Ambient', 'Arrocha', 'Axé', 'Bachata', 'Baião', 'BeBop', 'Blues', 'Bluegrass', 'Bolero', 'Bossa Nova', 'Brega Funk', 'Britpop', 'Carimbó', 'Chillwave', 'Choro', 'City Pop', 'Classic Rock', 'Clássico', 'Country', 'Country Pop', 'Cumbia', 'Dancehall', 'Deep House', 'Downtempo', 'Drill', 'Drum and Bass', 'Dubstep', 'EDM', 'Electropop', 'Eletrônica', 'Emo', 'Experimental', 'Flamenco', 'Folk', 'Forró', 'Forró Eletrônico', 'Funk', 'Funk Carioca', 'Funk Melody', 'Fusion', 'Future Bass', 'Gospel', 'Grunge', 'Hard Bop', 'Hard Rock', 'Hardstyle', 'Heavy Metal', 'House', 'IDM', 'Indie', 'Indie Rock', 'Instrumental', 'J-pop', 'Jazz', 'K-pop', 'Lambada', 'Latin Jazz', 'Latin Pop', 'Lo-fi', 'Merengue', 'Metal', 'Minimal Techno', 'MPB', 'Música Religiosa', 'New Age', 'Ópera', 'Pagode', 'Pisadinha', 'Piseiro', 'Pop', 'Post-Punk', 'Post-Rock', 'Progressive House', 'Psytrance', 'Punk', 'Punk Rock', 'R&B', 'Rap/Hip-Hop', 'Reggae', 'Reggaeton', 'Rock', 'Salsa', 'Samba', 'Sertanejo', 'Sertanejo Universitário', 'Shoegaze', 'Ska', 'Smooth Jazz', 'Soul', 'Swing', 'Synthpop', 'Tango', 'Tech House', 'Techno', 'Trance', 'Trap', 'Trip Hop', 'World Music', 'Xote', 'Zouk'];
 export function ArtistForm({
