@@ -78,10 +78,16 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 -- PARTE 3: POLÍTICAS PARA USER_ROLES (SEM RECURSÃO)
 -- ============================================
 
--- Remover políticas antigas
-DROP POLICY IF EXISTS user_roles_unified ON public.user_roles;
-DROP POLICY IF EXISTS user_roles_all ON public.user_roles;
-DROP POLICY IF EXISTS user_roles_select ON public.user_roles;
+-- Remover TODAS as políticas antigas de user_roles
+DO $$ 
+DECLARE 
+  pol RECORD;
+BEGIN
+  FOR pol IN SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'user_roles'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.user_roles', pol.policyname);
+  END LOOP;
+END $$;
 
 -- SELECT: Todos autenticados podem ler user_roles (necessário para verificar permissões)
 CREATE POLICY user_roles_select ON public.user_roles
