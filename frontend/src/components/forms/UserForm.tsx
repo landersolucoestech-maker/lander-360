@@ -399,7 +399,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   };
 
   const handlePermissionChange = (module: string, action: string, checked: boolean) => {
-    const currentModulePermissions = watchedPermissions[module as keyof typeof watchedPermissions] || [];
+    const safePermissions = watchedPermissions || {};
+    const currentModulePermissions = safePermissions[module as keyof typeof safePermissions] || [];
     let newModulePermissions: string[];
     
     if (checked) {
@@ -410,7 +411,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     
     // Update the entire permissions object with the new module permissions
     const updatedPermissions = {
-      ...watchedPermissions,
+      ...safePermissions,
       [module]: newModulePermissions,
     };
     
