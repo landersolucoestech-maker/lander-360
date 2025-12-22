@@ -1,17 +1,42 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Contract, ContractInsert, ContractUpdate, ContractWithDetails } from '@/types/database';
 import { getTodayDateString, formatDateForDB } from '@/lib/utils';
+import { 
+  PaginationParams, 
+  PaginatedResult, 
+  calculateRange, 
+  createPaginatedResult,
+  normalizePaginationParams
+} from '@/lib/pagination';
 
 export class ContractsService {
-  // Get all contracts with artist info
+  // Get all contracts with artist info (mantido para compatibilidade, mas limitado)
   static async getAll(): Promise<(Contract & { artists?: { name: string; stage_name?: string } })[]> {
     const { data, error } = await supabase
       .from('contracts')
       .select('*, artists(name, stage_name)')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100); // Limite de segurança
 
     if (error) throw error;
     return data || [];
+  }
+
+  // Get contracts with pagination
+  static async getPaginated(params?: Partial<PaginationParams>): Promise<PaginatedResult<Contract & { artists?: { name: string; stage_name?: string } }>> {
+    const normalizedParams = normalizePaginationParams(params);
+    const { from, to } = calculateRange(normalizedParams);
+
+    const { data, error, count } = await supabase
+      .from('contracts')
+      .select('*, artists(name, stage_name)', { count: 'exact' })
+      .order(normalizedParams.sortBy || 'created_at', { 
+        ascending: normalizedParams.sortOrder === 'asc' 
+      })
+      .range(from, to);
+
+    if (error) throw error;
+    return createPaginatedResult(data || [], count || 0, normalizedParams);
   }
 
   // Get contract by ID
