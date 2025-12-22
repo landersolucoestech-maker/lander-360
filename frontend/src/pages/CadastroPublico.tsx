@@ -339,6 +339,35 @@ interface RegisteredWork {
   artist_ids: string[];
 }
 
+// Interface para obra pendente (antes de salvar no banco)
+interface PendingWork {
+  tempId: string;
+  title: string;
+  language: string;
+  genre: string;
+  iswc?: string;
+  authors: { name: string; role: string; percentage: number }[];
+  artists: ArtistSearchResult[];
+  has_publisher: boolean;
+  publisher_name?: string;
+  contract_type?: string;
+  is_original: boolean;
+}
+
+// Interface para fonograma pendente (antes de salvar no banco)
+interface PendingPhonogram {
+  tempId: string;
+  title: string;
+  version: string;
+  isrc?: string;
+  work_id: string;
+  work_title: string;
+  artists: ArtistSearchResult[];
+  main_interpreter: string;
+  phonographic_producer?: string;
+  featured_artists?: string;
+}
+
 // ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
