@@ -2159,6 +2159,29 @@ function PhonogramStep({
                   placeholder="BR-XXX-00-00000"
                 />
               </div>
+
+              <div>
+                <Label htmlFor="phonogram_duration">Duração (m:s)</Label>
+                <Input
+                  id="phonogram_duration"
+                  {...form.register('duration')}
+                  placeholder="3:45"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phonogram_language">Idioma</Label>
+                <Select onValueChange={(value) => form.setValue('language', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map((lang) => (
+                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Produtores Fonográficos */}
