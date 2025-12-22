@@ -607,7 +607,7 @@ function ArtistStep({
           youtube_url: data.youtube_url,
           tiktok: data.tiktok_url,
           contract_status: 'Pré-cadastro',
-          observations: `Origem: Cadastro Público | ID: ${submissionId}`,
+          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nHas Manager: ${data.has_manager ? 'Sim' : 'Não'}\nHas Record Label: ${data.has_record_label ? 'Sim' : 'Não'}\nHas Publisher: ${data.has_publisher ? 'Sim' : 'Não'}\nAfiliação: ${data.affiliation || 'Não informada'}\nIPI: ${data.ipi || 'Não informado'}\nISNI: ${data.isni || 'Não informado'}`,
         })
         .select()
         .single();
