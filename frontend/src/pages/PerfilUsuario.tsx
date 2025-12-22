@@ -168,11 +168,11 @@ const PerfilUsuario = () => {
       // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
+        .update({
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'id' });
+        })
+        .eq('id', user.id);
 
       if (updateError) {
         throw updateError;
