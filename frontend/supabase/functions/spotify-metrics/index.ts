@@ -46,25 +46,26 @@ async function getTopTracks(token: string, artistId: string) {
   return data.tracks || [];
 }
 
-async function getMonthlyListeners(artistId: string): Promise<number> {
-  try {
-    const response = await fetch(`https://open.spotify.com/artist/${artistId}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+async function getArtistAlbums(token: string, artistId: string) {
+  const response = await fetch(
+    `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=BR&limit=10`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
 
-    if (!response.ok) return 0;
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.items || [];
+}
 
-    const html = await response.text();
-    const match = html.match(/(\d[\d,.]*)\s*(?:monthly listeners|ouvintes mensais)/i);
-    if (match) {
-      return parseInt(match[1].replace(/[,.]/g, ''), 10) || 0;
-    }
-    return 0;
-  } catch {
-    return 0;
-  }
+async function getRelatedArtists(token: string, artistId: string) {
+  const response = await fetch(
+    `https://api.spotify.com/v1/artists/${artistId}/related-artists`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
+
+  if (!response.ok) return [];
+  const data = await response.json();
+  return (data.artists || []).slice(0, 5);
 }
 
 function extractSpotifyId(url: string): string | null {
@@ -90,10 +91,13 @@ serve(async (req) => {
     }
 
     const token = await getSpotifyToken();
-    const [artist, topTracks, monthlyListeners] = await Promise.all([
+    
+    // Busca dados em paralelo usando apenas API oficial
+    const [artist, topTracks, albums, relatedArtists] = await Promise.all([
       getArtistData(token, spotifyId),
       getTopTracks(token, spotifyId),
-      getMonthlyListeners(spotifyId),
+      getArtistAlbums(token, spotifyId),
+      getRelatedArtists(token, spotifyId),
     ]);
 
     const result = {
@@ -102,8 +106,11 @@ serve(async (req) => {
       image_url: artist.images?.[0]?.url,
       followers: artist.followers?.total || 0,
       popularity: artist.popularity || 0,
-      monthly_listeners: monthlyListeners,
+      // Nota: monthly_listeners não está disponível na API pública do Spotify
+      // O valor de 'followers' é a métrica mais próxima disponível oficialmente
+      monthly_listeners: null, // Removido scraping - usar followers como alternativa
       genres: artist.genres || [],
+      external_urls: artist.external_urls,
       top_tracks: topTracks.slice(0, 10).map((track: any) => ({
         id: track.id,
         name: track.name,
@@ -111,6 +118,22 @@ serve(async (req) => {
         preview_url: track.preview_url,
         album_name: track.album?.name,
         album_image: track.album?.images?.[0]?.url,
+        duration_ms: track.duration_ms,
+        explicit: track.explicit,
+      })),
+      recent_albums: albums.map((album: any) => ({
+        id: album.id,
+        name: album.name,
+        release_date: album.release_date,
+        total_tracks: album.total_tracks,
+        album_type: album.album_type,
+        image_url: album.images?.[0]?.url,
+      })),
+      related_artists: relatedArtists.map((ra: any) => ({
+        id: ra.id,
+        name: ra.name,
+        popularity: ra.popularity,
+        image_url: ra.images?.[0]?.url,
       })),
       fetched_at: new Date().toISOString(),
     };
