@@ -106,6 +106,9 @@ export function ArtistForm({
   const [imagePreview, setImagePreview] = useState<string | null>(artist?.image_url || null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentName, setDocumentName] = useState<string | null>(artist?.documents_url ? 'Documento carregado' : null);
+  const [presskitFile, setPresskitFile] = useState<File | null>(null);
+  const [presskitName, setPresskitName] = useState<string | null>((artist as any)?.presskit_url ? 'Presskit carregado' : null);
+  const [isUploadingPresskit, setIsUploadingPresskit] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [openContactPopover, setOpenContactPopover] = useState(false);
