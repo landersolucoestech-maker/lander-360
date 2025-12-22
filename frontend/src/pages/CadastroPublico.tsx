@@ -1646,6 +1646,7 @@ function PhonogramStep({
           status: 'Aguardando Aprovação',
           work_id: data.work_id,
           artist_id: selectedArtists[0],
+          master_owner: data.phonographic_producer || null,
         })
         .select()
         .single();
