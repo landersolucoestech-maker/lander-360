@@ -829,6 +829,16 @@ function ArtistStep({
   };
 
   const onSubmit = async (data: ArtistFormData) => {
+    // Validar integrantes se for banda
+    if (isBand && bandMembers.length === 0) {
+      toast({
+        title: 'Integrantes obrigatórios',
+        description: 'Adicione pelo menos um integrante da banda.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Upload da foto se existir
@@ -846,12 +856,20 @@ function ArtistStep({
         }
       }
 
+      // Montar observações com integrantes da banda se aplicável
+      let bandInfo = '';
+      if (isBand && bandMembers.length > 0) {
+        bandInfo = `\n\n=== INTEGRANTES DA BANDA ===\n${bandMembers.map((m, i) => 
+          `${i + 1}. ${m.artistic_name}${m.civil_name ? ` (${m.civil_name})` : ''}\n   Função: ${m.role}\n   Documento: ${m.document || 'N/A'}\n   Participação: ${m.percentage || 0}%${m.observations ? `\n   Obs: ${m.observations}` : ''}`
+        ).join('\n\n')}`;
+      }
+
       // Salvar artista
       const { data: artistData, error } = await supabase
         .from('artists')
         .insert({
           stage_name: data.artistic_name,
-          name: data.full_name,
+          name: isBand ? data.artistic_name : data.full_name,
           genre: data.genre,
           email: data.email,
           phone: data.phone,
@@ -861,14 +879,14 @@ function ArtistStep({
           youtube_url: data.youtube_url,
           tiktok: data.tiktok_url,
           contract_status: 'Pré-cadastro',
-          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nHas Manager: ${data.has_manager ? 'Sim' : 'Não'}\nHas Record Label: ${data.has_record_label ? 'Sim' : 'Não'}\nHas Publisher: ${data.has_publisher ? 'Sim' : 'Não'}\nAfiliação: ${data.affiliation || 'Não informada'}\nIPI: ${data.ipi || 'Não informado'}\nISNI: ${data.isni || 'Não informado'}`,
+          observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\nTipo: ${data.artist_type}\n\nRepresentação: ${data.has_manager ? 'Empresário' : data.has_record_label ? 'Gravadora' : data.has_publisher ? 'Editora' : 'Independente'}\nAfiliação: ${data.affiliation || 'Não informada'}\nIPI: ${data.ipi || 'Não informado'}\nISNI: ${data.isni || 'Não informado'}${bandInfo}`,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Salvar dados sensíveis
+      // Salvar dados sensíveis (apenas se não for banda ou para dados gerais da banda)
       await supabase.from('artist_sensitive_data').insert({
         artist_id: artistData.id,
         cpf_cnpj: data.cpf_cnpj,
