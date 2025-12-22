@@ -1707,6 +1707,15 @@ function WorkStep({
                   placeholder="T-000.000.000-0"
                 />
               </div>
+
+              <div>
+                <Label htmlFor="duration">Duração (m:s)</Label>
+                <Input
+                  id="duration"
+                  {...form.register('duration')}
+                  placeholder="3:45"
+                />
+              </div>
             </div>
 
             {/* Autor / Compositor / Editor */}
