@@ -331,6 +331,7 @@ export function ArtistForm({
     try {
       let imageUrl = artist?.image_url || null;
       let documentsUrl = artist?.documents_url || null;
+      let presskitUrl = (artist as any)?.presskit_url || null;
 
       // Upload imagem do artista se houver novo arquivo
       if (data.artist_image instanceof File) {
@@ -366,6 +367,24 @@ export function ArtistForm({
           return;
         }
         setIsUploadingDocument(false);
+      }
+
+      // Upload presskit se houver novo arquivo
+      if (presskitFile) {
+        setIsUploadingPresskit(true);
+        try {
+          presskitUrl = await uploadFile(presskitFile, 'artist-documents', 'presskits');
+        } catch (error) {
+          console.error('Error uploading presskit:', error);
+          toast({
+            title: 'Erro no upload do presskit',
+            description: 'Não foi possível fazer o upload do presskit. Tente novamente.',
+            variant: 'destructive'
+          });
+          setIsUploadingPresskit(false);
+          return;
+        }
+        setIsUploadingPresskit(false);
       }
 
       // Artist data (non-sensitive fields only)
