@@ -241,12 +241,12 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initia
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="Danificado">Danificado</SelectItem>
+                      <SelectItem value="Descartado">Descartado</SelectItem>
                       <SelectItem value="Disponível">Disponível</SelectItem>
                       <SelectItem value="Em Uso">Em Uso</SelectItem>
-                      <SelectItem value="Manutenção">Em Manutenção</SelectItem>
-                      <SelectItem value="Danificado">Danificado</SelectItem>
                       <SelectItem value="Emprestado">Emprestado</SelectItem>
-                      <SelectItem value="Descartado">Descartado</SelectItem>
+                      <SelectItem value="Manutenção">Em Manutenção</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormControl>
