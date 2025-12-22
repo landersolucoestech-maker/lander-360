@@ -1509,14 +1509,12 @@ function WorkStep({
               registeredArtists={registeredArtists}
               placeholder="Buscar por nome artístico ou nome civil..."
             />
-                    <p className="font-medium">{artist.artistic_name}</p>
-                    <p className="text-sm text-muted-foreground">{artist.full_name}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-            {form.formState.errors.artist_ids && (
-              <p className="text-sm text-destructive">{form.formState.errors.artist_ids.message}</p>
+
+            {selectedArtistsList.length === 0 && (
+              <p className="text-sm text-amber-600 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                Selecione pelo menos um artista
+              </p>
             )}
           </div>
 
