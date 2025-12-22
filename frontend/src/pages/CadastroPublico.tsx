@@ -731,6 +731,31 @@ function SelectionStep({
 // COMPONENTE: FORMULÁRIO DE ARTISTA
 // ============================================
 
+// Interface para integrantes da banda
+interface BandMember {
+  id: string;
+  artistic_name: string;
+  civil_name?: string;
+  document?: string;
+  role: string;
+  percentage?: number;
+  observations?: string;
+}
+
+const bandRoleOptions = [
+  'Vocalista',
+  'Backing vocal',
+  'Guitarrista',
+  'Baixista',
+  'Baterista',
+  'Tecladista',
+  'DJ',
+  'Músico',
+  'Produtor musical',
+  'Diretor musical',
+  'Outro'
+];
+
 function ArtistStep({
   submissionId,
   onArtistRegistered,
@@ -747,6 +772,7 @@ function ArtistStep({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [bandMembers, setBandMembers] = useState<BandMember[]>([]);
 
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
@@ -762,6 +788,33 @@ function ArtistStep({
   const hasManager = form.watch('has_manager');
   const hasRecordLabel = form.watch('has_record_label');
   const hasPublisher = form.watch('has_publisher');
+  const artistType = form.watch('artist_type');
+  const isBand = artistType === 'Banda';
+
+  // Funções para gerenciar integrantes da banda
+  const addBandMember = () => {
+    setBandMembers([...bandMembers, {
+      id: uuidv4(),
+      artistic_name: '',
+      civil_name: '',
+      document: '',
+      role: '',
+      percentage: 0,
+      observations: '',
+    }]);
+  };
+
+  const removeBandMember = (id: string) => {
+    setBandMembers(bandMembers.filter(m => m.id !== id));
+  };
+
+  const updateBandMember = (id: string, field: string, value: any) => {
+    setBandMembers(bandMembers.map(m => 
+      m.id === id ? { ...m, [field]: value } : m
+    ));
+  };
+
+  const totalBandPercentage = bandMembers.reduce((sum, m) => sum + (m.percentage || 0), 0);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
