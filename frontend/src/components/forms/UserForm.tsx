@@ -663,16 +663,16 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                       <SelectValue placeholder="Selecione o setor" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Produção">Produção</SelectItem>
                       <SelectItem value="Administrativo">Administrativo</SelectItem>
-                      <SelectItem value="Financeiro">Financeiro</SelectItem>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Comercial">Comercial</SelectItem>
-                      <SelectItem value="Técnico">Técnico</SelectItem>
                       <SelectItem value="Artístico">Artístico</SelectItem>
+                      <SelectItem value="Comercial">Comercial</SelectItem>
                       <SelectItem value="Eventos">Eventos</SelectItem>
+                      <SelectItem value="Financeiro">Financeiro</SelectItem>
                       <SelectItem value="Jurídico">Jurídico</SelectItem>
+                      <SelectItem value="Marketing">Marketing</SelectItem>
+                      <SelectItem value="Produção">Produção</SelectItem>
                       <SelectItem value="Recursos Humanos">Recursos Humanos</SelectItem>
+                      <SelectItem value="Técnico">Técnico</SelectItem>
                       <SelectItem value="TI">TI</SelectItem>
                     </SelectContent>
                   </Select>
