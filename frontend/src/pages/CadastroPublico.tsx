@@ -1807,7 +1807,7 @@ function PhonogramStep({
 }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [selectedArtistsList, setSelectedArtistsList] = useState<ArtistSearchResult[]>([]);
 
   const form = useForm<PhonogramFormData>({
     resolver: zodResolver(phonogramSchema),
@@ -1818,7 +1818,29 @@ function PhonogramStep({
     },
   });
 
+  // Atualizar form quando artistas são selecionados
+  useEffect(() => {
+    form.setValue('artist_ids', selectedArtistsList.map(a => a.id));
+  }, [selectedArtistsList, form]);
+
+  const handleSelectArtist = (artist: ArtistSearchResult) => {
+    setSelectedArtistsList(prev => [...prev, artist]);
+  };
+
+  const handleRemoveArtist = (artistId: string) => {
+    setSelectedArtistsList(prev => prev.filter(a => a.id !== artistId));
+  };
+
   const onSubmit = async (data: PhonogramFormData) => {
+    if (selectedArtistsList.length === 0) {
+      toast({
+        title: 'Artista obrigatório',
+        description: 'Selecione pelo menos um artista intérprete.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { data: phonogramData, error } = await supabase
@@ -1829,7 +1851,7 @@ function PhonogramStep({
           version_type: data.version,
           status: 'Aguardando Aprovação',
           work_id: data.work_id,
-          artist_id: selectedArtists[0],
+          artist_id: selectedArtistsList[0]?.id,
           master_owner: data.phonographic_producer || null,
         })
         .select()
@@ -1841,7 +1863,7 @@ function PhonogramStep({
 
       // Reset form
       form.reset();
-      setSelectedArtists([]);
+      setSelectedArtistsList([]);
 
     } catch (error: any) {
       console.error('Error saving phonogram:', error);
@@ -1863,7 +1885,7 @@ function PhonogramStep({
           Cadastro de Fonograma
         </CardTitle>
         <CardDescription>
-          Cadastre as informações da gravação.
+          Cadastre as informações da gravação. Você pode adicionar vários fonogramas.
         </CardDescription>
       </CardHeader>
       <CardContent>
