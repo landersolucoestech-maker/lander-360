@@ -1938,6 +1938,7 @@ function PhonogramStep({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedArtistsList, setSelectedArtistsList] = useState<ArtistSearchResult[]>([]);
+  const [pendingPhonograms, setPendingPhonograms] = useState<PendingPhonogram[]>([]);
 
   const form = useForm<PhonogramFormData>({
     resolver: zodResolver(phonogramSchema),
@@ -1961,7 +1962,8 @@ function PhonogramStep({
     setSelectedArtistsList(prev => prev.filter(a => a.id !== artistId));
   };
 
-  const onSubmit = async (data: PhonogramFormData) => {
+  // Adicionar fonograma à lista pendente
+  const addToPendingList = (data: PhonogramFormData) => {
     if (selectedArtistsList.length === 0) {
       toast({
         title: 'Artista obrigatório',
@@ -1971,35 +1973,85 @@ function PhonogramStep({
       return;
     }
 
+    const selectedWork = registeredWorks.find(w => w.id === data.work_id);
+
+    const newPhonogram: PendingPhonogram = {
+      tempId: uuidv4(),
+      title: data.title,
+      version: data.version,
+      isrc: data.isrc,
+      work_id: data.work_id,
+      work_title: selectedWork?.title || 'Obra não encontrada',
+      artists: [...selectedArtistsList],
+      main_interpreter: data.main_interpreter,
+      phonographic_producer: data.phonographic_producer,
+      featured_artists: data.featured_artists,
+    };
+
+    setPendingPhonograms(prev => [...prev, newPhonogram]);
+
+    // Limpar formulário
+    form.reset({
+      artist_ids: [],
+      master_rights_declaration: false,
+      exploitation_authorization: false,
+    });
+    setSelectedArtistsList([]);
+
+    toast({
+      title: 'Fonograma adicionado à lista',
+      description: `"${data.title}" foi adicionado. Você pode adicionar mais fonogramas ou salvar todos.`,
+    });
+  };
+
+  // Remover fonograma da lista pendente
+  const removePendingPhonogram = (tempId: string) => {
+    setPendingPhonograms(prev => prev.filter(p => p.tempId !== tempId));
+  };
+
+  // Salvar todos os fonogramas
+  const saveAllPhonograms = async () => {
+    if (pendingPhonograms.length === 0) {
+      toast({
+        title: 'Nenhum fonograma para salvar',
+        description: 'Adicione pelo menos um fonograma à lista antes de salvar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const { data: phonogramData, error } = await supabase
-        .from('phonograms')
-        .insert({
-          title: data.title,
-          isrc: data.isrc,
-          version_type: data.version,
-          status: 'Aguardando Aprovação',
-          work_id: data.work_id,
-          artist_id: selectedArtistsList[0]?.id,
-          master_owner: data.phonographic_producer || null,
-        })
-        .select()
-        .single();
+      for (const phonogram of pendingPhonograms) {
+        const { error } = await supabase
+          .from('phonograms')
+          .insert({
+            title: phonogram.title,
+            isrc: phonogram.isrc,
+            version_type: phonogram.version,
+            status: 'Aguardando Aprovação',
+            work_id: phonogram.work_id,
+            artist_id: phonogram.artists[0]?.id,
+            master_owner: phonogram.phonographic_producer || null,
+          });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      onPhonogramRegistered(data.title);
+        onPhonogramRegistered(phonogram.title);
+      }
 
-      // Reset form
-      form.reset();
-      setSelectedArtistsList([]);
-
+      setPendingPhonograms([]);
+      toast({
+        title: 'Fonogramas salvos com sucesso!',
+        description: `${pendingPhonograms.length} fonograma(s) foram cadastrados.`,
+      });
+      
+      onContinue();
     } catch (error: any) {
-      console.error('Error saving phonogram:', error);
+      console.error('Error saving phonograms:', error);
       toast({
         title: 'Erro ao salvar',
-        description: error.message || 'Não foi possível salvar o fonograma.',
+        description: error.message || 'Não foi possível salvar os fonogramas.',
         variant: 'destructive',
       });
     } finally {
@@ -2012,80 +2064,109 @@ function PhonogramStep({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Disc className="h-5 w-5" />
-          Cadastro de Fonograma
+          Cadastro de Fonogramas
         </CardTitle>
         <CardDescription>
-          Cadastre as informações da gravação. Você pode adicionar vários fonogramas.
+          Adicione todos os fonogramas que deseja cadastrar. Você pode adicionar vários fonogramas antes de salvar.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Fonogramas já cadastrados */}
-          {registeredPhonograms.length > 0 && (
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-green-600 mb-2">Fonogramas cadastrados nesta sessão ({registeredPhonograms.length}):</h4>
-              <ul className="space-y-1">
-                {registeredPhonograms.map((title, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-500" />
-                    {title}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-muted-foreground mt-2">
-                Preencha o formulário abaixo para adicionar mais fonogramas
-              </p>
-            </div>
-          )}
-
-          {/* Seleção Inicial */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Seleção Inicial</h3>
-            
-            <div>
-              <Label>Obra *</Label>
-              <Select onValueChange={(value) => form.setValue('work_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a obra" />
-                </SelectTrigger>
-                <SelectContent>
-                  {registeredWorks.map((work) => (
-                    <SelectItem key={work.id} value={work.id}>{work.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.work_id && (
-                <p className="text-sm text-destructive mt-1">{form.formState.errors.work_id.message}</p>
-              )}
-            </div>
-
+      <CardContent className="space-y-6">
+        {/* Lista de Fonogramas Pendentes */}
+        {pendingPhonograms.length > 0 && (
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+            <h4 className="font-medium text-blue-600 mb-3 flex items-center gap-2">
+              <Disc className="h-4 w-4" />
+              Fonogramas a serem salvos ({pendingPhonograms.length})
+            </h4>
             <div className="space-y-2">
-              <Label>Artista(s) Intérprete(s) *</Label>
-              <p className="text-sm text-muted-foreground">
-                Digite o nome do artista para buscar. Você pode adicionar mais de um artista.
-              </p>
-              
-              <ArtistSearch
-                selectedArtists={selectedArtistsList}
-                onSelect={handleSelectArtist}
-                onRemove={handleRemoveArtist}
-                registeredArtists={registeredArtists}
-                placeholder="Buscar artista intérprete..."
-              />
-
-              {selectedArtistsList.length === 0 && (
-                <p className="text-sm text-amber-600 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  Selecione pelo menos um artista
-                </p>
-              )}
+              {pendingPhonograms.map((phonogram) => (
+                <div key={phonogram.tempId} className="flex items-center justify-between bg-background p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium">{phonogram.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {phonogram.version} • Obra: {phonogram.work_title} • {phonogram.artists.map(a => a.stage_name || a.name).join(', ')}
+                    </p>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => removePendingPhonogram(phonogram.tempId)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Dados do Fonograma */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Dados do Fonograma</h3>
-            
+        {/* Fonogramas já salvos */}
+        {registeredPhonograms.length > 0 && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+            <h4 className="font-medium text-green-600 mb-2">Fonogramas já cadastrados ({registeredPhonograms.length}):</h4>
+            <ul className="space-y-1">
+              {registeredPhonograms.map((title, index) => (
+                <li key={index} className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-green-500" />
+                  {title}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Formulário para adicionar novo fonograma */}
+        <div className="border rounded-lg p-4 bg-muted/30">
+          <h4 className="font-medium mb-4 flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Adicionar Novo Fonograma
+          </h4>
+
+          <form onSubmit={form.handleSubmit(addToPendingList)} className="space-y-6">
+            {/* Seleção Inicial */}
+            <div className="space-y-4">
+              <div>
+                <Label>Obra Vinculada *</Label>
+                <Select onValueChange={(value) => form.setValue('work_id', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a obra" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {registeredWorks.map((work) => (
+                      <SelectItem key={work.id} value={work.id}>{work.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.work_id && (
+                  <p className="text-sm text-destructive mt-1">{form.formState.errors.work_id.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Artista(s) Intérprete(s) *</Label>
+                <p className="text-sm text-muted-foreground">
+                  Digite o nome do artista para buscar.
+                </p>
+                
+                <ArtistSearch
+                  selectedArtists={selectedArtistsList}
+                  onSelect={handleSelectArtist}
+                  onRemove={handleRemoveArtist}
+                  registeredArtists={registeredArtists}
+                  placeholder="Buscar artista intérprete..."
+                />
+
+                {selectedArtistsList.length === 0 && (
+                  <p className="text-sm text-amber-600 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Selecione pelo menos um artista
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Dados do Fonograma */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="phonogram_title">Título do Fonograma *</Label>
@@ -2121,14 +2202,7 @@ function PhonogramStep({
                   placeholder="BR-XXX-00-00000"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Participantes */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Participantes</h3>
-            
-            <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="main_interpreter">Intérprete Principal *</Label>
                 <Input
@@ -2150,7 +2224,7 @@ function PhonogramStep({
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div>
                 <Label htmlFor="featured_artists">Participações Especiais (Feats)</Label>
                 <Input
                   id="featured_artists"
@@ -2159,61 +2233,8 @@ function PhonogramStep({
                 />
               </div>
             </div>
-          </div>
 
-          {/* Uploads */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Uploads</h3>
-            
-            <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <Label>Arquivo de Áudio (WAV) *</Label>
-                <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors">
-                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">WAV obrigatório</p>
-                  <input
-                    type="file"
-                    accept=".wav"
-                    className="hidden"
-                    onChange={(e) => form.setValue('audio_file', e.target.files?.[0])}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Capa (JPEG/PNG)</Label>
-                <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors">
-                  <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Imagem de capa</p>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png"
-                    className="hidden"
-                    onChange={(e) => form.setValue('cover_file', e.target.files?.[0])}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Letra Sincronizada (opcional)</Label>
-                <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors">
-                  <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">LRC ou SRT</p>
-                  <input
-                    type="file"
-                    accept=".lrc,.srt"
-                    className="hidden"
-                    onChange={(e) => form.setValue('synced_lyrics_file', e.target.files?.[0])}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Declarações */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Declarações (Obrigatórias)</h3>
-            
+            {/* Declarações */}
             <div className="space-y-3">
               <div className="flex items-start gap-2">
                 <Checkbox
@@ -2229,9 +2250,6 @@ function PhonogramStep({
                   </p>
                 </div>
               </div>
-              {form.formState.errors.master_rights_declaration && (
-                <p className="text-sm text-destructive">{form.formState.errors.master_rights_declaration.message}</p>
-              )}
 
               <div className="flex items-start gap-2">
                 <Checkbox
@@ -2247,34 +2265,43 @@ function PhonogramStep({
                   </p>
                 </div>
               </div>
-              {form.formState.errors.exploitation_authorization && (
-                <p className="text-sm text-destructive">{form.formState.errors.exploitation_authorization.message}</p>
-              )}
             </div>
-          </div>
 
-          {/* Botões */}
-          <div className="flex justify-between pt-6 border-t">
-            <Button type="button" variant="outline" onClick={onBack}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Voltar
+            {/* Botão Adicionar */}
+            <Button type="submit" variant="secondary" className="w-full">
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Fonograma à Lista
             </Button>
+          </form>
+        </div>
 
-            <div className="flex gap-3">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Salvando...' : 'Salvar Fonograma'}
-                <Plus className="ml-2 h-4 w-4" />
+        {/* Botões de Navegação */}
+        <div className="flex justify-between pt-6 border-t">
+          <Button type="button" variant="outline" onClick={onBack}>
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
+
+          <div className="flex gap-3">
+            {pendingPhonograms.length > 0 && (
+              <Button 
+                type="button" 
+                onClick={saveAllPhonograms}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Salvando...' : `Salvar ${pendingPhonograms.length} Fonograma(s) e Finalizar`}
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
+            )}
 
-              {registeredPhonograms.length > 0 && (
-                <Button type="button" onClick={onContinue}>
-                  Finalizar
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            {registeredPhonograms.length > 0 && pendingPhonograms.length === 0 && (
+              <Button type="button" onClick={onContinue}>
+                Finalizar
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
           </div>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );
