@@ -94,12 +94,12 @@ export const MarketingTaskForm = ({ onSubmit, onCancel, initialData }: Marketing
                   <SelectValue placeholder="Selecione o responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Design Team">Design Team</SelectItem>
-                  <SelectItem value="Marketing Team">Marketing Team</SelectItem>
-                  <SelectItem value="Video Team">Video Team</SelectItem>
-                  <SelectItem value="Social Media">Social Media</SelectItem>
                   <SelectItem value="Copywriting">Copywriting</SelectItem>
                   <SelectItem value="Creative Director">Creative Director</SelectItem>
+                  <SelectItem value="Design Team">Design Team</SelectItem>
+                  <SelectItem value="Marketing Team">Marketing Team</SelectItem>
+                  <SelectItem value="Social Media">Social Media</SelectItem>
+                  <SelectItem value="Video Team">Video Team</SelectItem>
                 </SelectContent>
               </Select>
             </div>
