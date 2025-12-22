@@ -2206,27 +2206,6 @@ function PhonogramStep({
               </div>
 
               <div>
-                <Label htmlFor="main_interpreter">Intérprete Principal *</Label>
-                <Input
-                  id="main_interpreter"
-                  {...form.register('main_interpreter')}
-                  placeholder="Nome do intérprete principal"
-                />
-                {form.formState.errors.main_interpreter && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.main_interpreter.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="phonographic_producer">Produtor Fonográfico</Label>
-                <Input
-                  id="phonographic_producer"
-                  {...form.register('phonographic_producer')}
-                  placeholder="Nome do produtor"
-                />
-              </div>
-
-              <div>
                 <Label htmlFor="featured_artists">Participações Especiais (Feats)</Label>
                 <Input
                   id="featured_artists"
@@ -2234,6 +2213,155 @@ function PhonogramStep({
                   placeholder="Nomes separados por vírgula"
                 />
               </div>
+            </div>
+
+            {/* Intérpretes */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Intérpretes *</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addInterpreter}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Adicione os intérpretes do fonograma</p>
+
+              {interpreters.map((interpreter, index) => (
+                <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                  <div className="col-span-6">
+                    <Label className="text-xs">Nome do Intérprete</Label>
+                    <Input
+                      value={interpreter.name}
+                      onChange={(e) => updateInterpreter(index, 'name', e.target.value)}
+                      placeholder="Nome do intérprete"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Label className="text-xs">Função</Label>
+                    <Select 
+                      value={interpreter.role}
+                      onValueChange={(value) => updateInterpreter(index, 'role', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Principal">Principal</SelectItem>
+                        <SelectItem value="Participação">Participação</SelectItem>
+                        <SelectItem value="Featuring">Featuring</SelectItem>
+                        <SelectItem value="Backing Vocal">Backing Vocal</SelectItem>
+                        <SelectItem value="Músico">Músico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-2">
+                    {interpreters.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeInterpreter(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Produtores Fonográficos */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Produtores Fonográficos</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addPhonographicProducer}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Titulares dos direitos do master (fonograma)</p>
+
+              {phonographicProducers.map((producer, index) => (
+                <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                  <div className="col-span-8">
+                    <Label className="text-xs">Nome/Empresa</Label>
+                    <Input
+                      value={producer.name}
+                      onChange={(e) => updatePhonographicProducer(index, 'name', e.target.value)}
+                      placeholder="Nome do produtor fonográfico ou empresa"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-xs">%</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={producer.percentage}
+                      onChange={(e) => updatePhonographicProducer(index, 'percentage', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    {phonographicProducers.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removePhonographicProducer(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {phonographicProducers.some(p => p.name.trim()) && (
+                <div className={cn(
+                  "text-sm font-medium",
+                  totalProducerPercentage === 100 ? "text-green-600" : "text-amber-600"
+                )}>
+                  Total: {totalProducerPercentage}% {totalProducerPercentage !== 100 && "(recomendado: 100%)"}
+                </div>
+              )}
+            </div>
+
+            {/* Produtores (Musicais) */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Produtores</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addProducer}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Produtores musicais, engenheiros de som, etc.</p>
+
+              {producers.map((producer, index) => (
+                <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                  <div className="col-span-6">
+                    <Label className="text-xs">Nome</Label>
+                    <Input
+                      value={producer.name}
+                      onChange={(e) => updateProducer(index, 'name', e.target.value)}
+                      placeholder="Nome do produtor"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Label className="text-xs">Função</Label>
+                    <Select 
+                      value={producer.role}
+                      onValueChange={(value) => updateProducer(index, 'role', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Produtor Musical">Produtor Musical</SelectItem>
+                        <SelectItem value="Engenheiro de Som">Engenheiro de Som</SelectItem>
+                        <SelectItem value="Mixagem">Mixagem</SelectItem>
+                        <SelectItem value="Masterização">Masterização</SelectItem>
+                        <SelectItem value="Arranjo">Arranjo</SelectItem>
+                        <SelectItem value="Diretor Musical">Diretor Musical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-2">
+                    {producers.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeProducer(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Declarações */}
