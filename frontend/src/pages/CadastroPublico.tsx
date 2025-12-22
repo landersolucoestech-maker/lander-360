@@ -363,8 +363,9 @@ interface PendingPhonogram {
   work_id: string;
   work_title: string;
   artists: ArtistSearchResult[];
-  main_interpreter: string;
-  phonographic_producer?: string;
+  interpreters: { name: string; role: string }[];
+  phonographic_producers: { name: string; percentage: number }[];
+  producers: { name: string; role: string }[];
   featured_artists?: string;
 }
 
