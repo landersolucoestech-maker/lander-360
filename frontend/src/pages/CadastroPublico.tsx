@@ -1381,7 +1381,6 @@ function WorkStep({
 }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedArtistsList, setSelectedArtistsList] = useState<ArtistSearchResult[]>([]);
   const [authors, setAuthors] = useState<{ name: string; role: string; percentage: number }[]>([
     { name: '', role: '', percentage: 100 }
   ]);
@@ -1399,19 +1398,6 @@ function WorkStep({
   });
 
   const hasPublisher = form.watch('has_publisher');
-
-  // Atualizar form quando artistas são selecionados
-  useEffect(() => {
-    form.setValue('artist_ids', selectedArtistsList.map(a => a.id));
-  }, [selectedArtistsList, form]);
-
-  const handleSelectArtist = (artist: ArtistSearchResult) => {
-    setSelectedArtistsList(prev => [...prev, artist]);
-  };
-
-  const handleRemoveArtist = (artistId: string) => {
-    setSelectedArtistsList(prev => prev.filter(a => a.id !== artistId));
-  };
 
   const addAuthor = () => {
     setAuthors([...authors, { name: '', role: '', percentage: 0 }]);
