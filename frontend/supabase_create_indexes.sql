@@ -1,165 +1,129 @@
 -- =====================================================
 -- ÍNDICES DE PERFORMANCE - LANDER 360
--- Execute este script no SQL Editor do Supabase
--- Versão SEGURA - verifica colunas antes de criar índices
+-- Versão ULTRA-SEGURA - cria índices apenas se coluna existir
 -- =====================================================
 
--- Índices para financial_transactions
--- Usa apenas colunas que certamente existem
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_date 
-  ON financial_transactions(date DESC);
-  
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_artist 
-  ON financial_transactions(artist_id);
-  
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_status 
-  ON financial_transactions(status);
-
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_category 
-  ON financial_transactions(category);
-
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_type 
-  ON financial_transactions(type);
-
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_created 
-  ON financial_transactions(created_at DESC);
-
--- Índices para releases (distribuição de música)
-CREATE INDEX IF NOT EXISTS idx_releases_artist 
-  ON releases(artist_id);
-  
-CREATE INDEX IF NOT EXISTS idx_releases_date 
-  ON releases(release_date DESC);
-  
-CREATE INDEX IF NOT EXISTS idx_releases_status 
-  ON releases(status);
-
--- Índices para contracts
-CREATE INDEX IF NOT EXISTS idx_contracts_artist 
-  ON contracts(artist_id);
-  
-CREATE INDEX IF NOT EXISTS idx_contracts_status 
-  ON contracts(status);
-
--- Índices para artists
-CREATE INDEX IF NOT EXISTS idx_artists_name 
-  ON artists(name);
-
-CREATE INDEX IF NOT EXISTS idx_artists_created 
-  ON artists(created_at DESC);
-
--- Índices para projects
-CREATE INDEX IF NOT EXISTS idx_projects_artist 
-  ON projects(artist_id);
-  
-CREATE INDEX IF NOT EXISTS idx_projects_status 
-  ON projects(status);
-
--- Índices para agenda_events
-CREATE INDEX IF NOT EXISTS idx_agenda_events_date 
-  ON agenda_events(start_date DESC);
-  
-CREATE INDEX IF NOT EXISTS idx_agenda_events_artist 
-  ON agenda_events(artist_id);
-  
-CREATE INDEX IF NOT EXISTS idx_agenda_events_status 
-  ON agenda_events(status);
-
--- Índices para audit_logs
-CREATE INDEX IF NOT EXISTS idx_audit_logs_user 
-  ON audit_logs(user_id);
-  
-CREATE INDEX IF NOT EXISTS idx_audit_logs_date 
-  ON audit_logs(created_at DESC);
-  
-CREATE INDEX IF NOT EXISTS idx_audit_logs_action 
-  ON audit_logs(action);
-
--- Índices para music_registry
-CREATE INDEX IF NOT EXISTS idx_music_registry_artist 
-  ON music_registry(artist_id);
-
-CREATE INDEX IF NOT EXISTS idx_music_registry_title 
-  ON music_registry(title);
-
--- Índices para user_roles
-CREATE INDEX IF NOT EXISTS idx_user_roles_user 
-  ON user_roles(user_id);
-
-CREATE INDEX IF NOT EXISTS idx_user_roles_role 
-  ON user_roles(role);
-
--- Índices para profiles
-CREATE INDEX IF NOT EXISTS idx_profiles_email 
-  ON profiles(email);
-
--- Índices para login_history
-CREATE INDEX IF NOT EXISTS idx_login_history_user 
-  ON login_history(user_id);
-
-CREATE INDEX IF NOT EXISTS idx_login_history_date 
-  ON login_history(login_at DESC);
-
--- Índices para crm_contacts
-CREATE INDEX IF NOT EXISTS idx_crm_contacts_status 
-  ON crm_contacts(status);
-
--- Índices para marketing_campaigns
-CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_artist 
-  ON marketing_campaigns(artist_id);
-
-CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_status 
-  ON marketing_campaigns(status);
-
--- Índices para creative_ideas
-CREATE INDEX IF NOT EXISTS idx_creative_ideas_artist 
-  ON creative_ideas(artist_id);
-
-CREATE INDEX IF NOT EXISTS idx_creative_ideas_status 
-  ON creative_ideas(status);
-
--- Índices para landerzap_conversations
-CREATE INDEX IF NOT EXISTS idx_landerzap_conversations_contact 
-  ON landerzap_conversations(contact_id);
-
-CREATE INDEX IF NOT EXISTS idx_landerzap_conversations_last_message 
-  ON landerzap_conversations(last_message_at DESC);
-
--- Índices para landerzap_messages
-CREATE INDEX IF NOT EXISTS idx_landerzap_messages_conversation 
-  ON landerzap_messages(conversation_id);
-
-CREATE INDEX IF NOT EXISTS idx_landerzap_messages_date 
-  ON landerzap_messages(sent_at DESC);
-
--- Índices para inventory
-CREATE INDEX IF NOT EXISTS idx_inventory_category 
-  ON inventory(category);
-
-CREATE INDEX IF NOT EXISTS idx_inventory_status 
-  ON inventory(status);
+-- Função helper para criar índice de forma segura
+CREATE OR REPLACE FUNCTION create_index_if_column_exists(
+    p_index_name TEXT,
+    p_table_name TEXT,
+    p_column_name TEXT,
+    p_desc BOOLEAN DEFAULT FALSE
+) RETURNS VOID AS $$
+DECLARE
+    v_sql TEXT;
+BEGIN
+    -- Verifica se a coluna existe
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = p_table_name 
+        AND column_name = p_column_name
+    ) THEN
+        -- Monta o SQL do índice
+        IF p_desc THEN
+            v_sql := format('CREATE INDEX IF NOT EXISTS %I ON %I(%I DESC)', 
+                           p_index_name, p_table_name, p_column_name);
+        ELSE
+            v_sql := format('CREATE INDEX IF NOT EXISTS %I ON %I(%I)', 
+                           p_index_name, p_table_name, p_column_name);
+        END IF;
+        
+        EXECUTE v_sql;
+        RAISE NOTICE 'Índice % criado com sucesso', p_index_name;
+    ELSE
+        RAISE NOTICE 'Coluna %.% não existe - índice % ignorado', 
+                     p_table_name, p_column_name, p_index_name;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
 
 -- =====================================================
--- ANÁLISE DE ESTATÍSTICAS
+-- CRIAR ÍNDICES DE FORMA SEGURA
 -- =====================================================
 
-ANALYZE financial_transactions;
-ANALYZE releases;
-ANALYZE contracts;
-ANALYZE artists;
-ANALYZE projects;
-ANALYZE agenda_events;
-ANALYZE audit_logs;
-ANALYZE music_registry;
-ANALYZE user_roles;
-ANALYZE profiles;
-ANALYZE login_history;
-ANALYZE crm_contacts;
-ANALYZE marketing_campaigns;
-ANALYZE creative_ideas;
-ANALYZE landerzap_conversations;
-ANALYZE landerzap_messages;
-ANALYZE inventory;
+-- financial_transactions
+SELECT create_index_if_column_exists('idx_fin_trans_date', 'financial_transactions', 'date', true);
+SELECT create_index_if_column_exists('idx_fin_trans_created', 'financial_transactions', 'created_at', true);
+SELECT create_index_if_column_exists('idx_fin_trans_artist', 'financial_transactions', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_fin_trans_status', 'financial_transactions', 'status', false);
+SELECT create_index_if_column_exists('idx_fin_trans_type', 'financial_transactions', 'type', false);
+SELECT create_index_if_column_exists('idx_fin_trans_category', 'financial_transactions', 'category', false);
+
+-- releases
+SELECT create_index_if_column_exists('idx_releases_artist', 'releases', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_releases_date', 'releases', 'release_date', true);
+SELECT create_index_if_column_exists('idx_releases_status', 'releases', 'status', false);
+SELECT create_index_if_column_exists('idx_releases_created', 'releases', 'created_at', true);
+
+-- contracts
+SELECT create_index_if_column_exists('idx_contracts_artist', 'contracts', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_contracts_status', 'contracts', 'status', false);
+SELECT create_index_if_column_exists('idx_contracts_created', 'contracts', 'created_at', true);
+
+-- artists
+SELECT create_index_if_column_exists('idx_artists_name', 'artists', 'name', false);
+SELECT create_index_if_column_exists('idx_artists_created', 'artists', 'created_at', true);
+
+-- projects
+SELECT create_index_if_column_exists('idx_projects_artist', 'projects', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_projects_status', 'projects', 'status', false);
+SELECT create_index_if_column_exists('idx_projects_created', 'projects', 'created_at', true);
+
+-- agenda_events
+SELECT create_index_if_column_exists('idx_events_date', 'agenda_events', 'start_date', true);
+SELECT create_index_if_column_exists('idx_events_artist', 'agenda_events', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_events_status', 'agenda_events', 'status', false);
+
+-- audit_logs
+SELECT create_index_if_column_exists('idx_audit_user', 'audit_logs', 'user_id', false);
+SELECT create_index_if_column_exists('idx_audit_created', 'audit_logs', 'created_at', true);
+SELECT create_index_if_column_exists('idx_audit_action', 'audit_logs', 'action', false);
+
+-- music_registry
+SELECT create_index_if_column_exists('idx_music_artist', 'music_registry', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_music_title', 'music_registry', 'title', false);
+SELECT create_index_if_column_exists('idx_music_created', 'music_registry', 'created_at', true);
+
+-- user_roles
+SELECT create_index_if_column_exists('idx_user_roles_user', 'user_roles', 'user_id', false);
+SELECT create_index_if_column_exists('idx_user_roles_role', 'user_roles', 'role', false);
+
+-- profiles
+SELECT create_index_if_column_exists('idx_profiles_email', 'profiles', 'email', false);
+
+-- login_history
+SELECT create_index_if_column_exists('idx_login_user', 'login_history', 'user_id', false);
+SELECT create_index_if_column_exists('idx_login_at', 'login_history', 'login_at', true);
+
+-- crm_contacts
+SELECT create_index_if_column_exists('idx_crm_status', 'crm_contacts', 'status', false);
+SELECT create_index_if_column_exists('idx_crm_created', 'crm_contacts', 'created_at', true);
+
+-- marketing_campaigns
+SELECT create_index_if_column_exists('idx_mkt_artist', 'marketing_campaigns', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_mkt_status', 'marketing_campaigns', 'status', false);
+
+-- creative_ideas
+SELECT create_index_if_column_exists('idx_ideas_artist', 'creative_ideas', 'artist_id', false);
+SELECT create_index_if_column_exists('idx_ideas_status', 'creative_ideas', 'status', false);
+
+-- landerzap_conversations
+SELECT create_index_if_column_exists('idx_conv_contact', 'landerzap_conversations', 'contact_id', false);
+SELECT create_index_if_column_exists('idx_conv_last_msg', 'landerzap_conversations', 'last_message_at', true);
+
+-- landerzap_messages
+SELECT create_index_if_column_exists('idx_msg_conv', 'landerzap_messages', 'conversation_id', false);
+SELECT create_index_if_column_exists('idx_msg_sent', 'landerzap_messages', 'sent_at', true);
+
+-- inventory
+SELECT create_index_if_column_exists('idx_inv_category', 'inventory', 'category', false);
+SELECT create_index_if_column_exists('idx_inv_status', 'inventory', 'status', false);
+
+-- =====================================================
+-- LIMPAR FUNÇÃO TEMPORÁRIA
+-- =====================================================
+DROP FUNCTION IF EXISTS create_index_if_column_exists;
 
 -- =====================================================
 -- FIM DO SCRIPT
