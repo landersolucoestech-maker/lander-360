@@ -1159,57 +1159,36 @@ function ArtistStep({
           {/* E. Representação */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold border-b pb-2">E. Representação</h3>
-            <p className="text-sm text-muted-foreground">Selecione o tipo de representação do artista (apenas uma opção)</p>
             
-            <div className="space-y-3">
-              {/* Opção: Nenhuma */}
-              <label className={cn(
-                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
-                !hasManager && !hasRecordLabel && !hasPublisher
-                  ? "border-primary bg-primary/5"
-                  : "border-muted hover:border-muted-foreground/50"
-              )}>
-                <input
-                  type="radio"
-                  name="representation"
-                  checked={!hasManager && !hasRecordLabel && !hasPublisher}
-                  onChange={() => {
-                    form.setValue('has_manager', false);
-                    form.setValue('has_record_label', false);
-                    form.setValue('has_publisher', false);
+            <div className="space-y-4">
+              <div>
+                <Label>Tipo de Representação</Label>
+                <Select 
+                  onValueChange={(value) => {
+                    form.setValue('has_manager', value === 'empresario');
+                    form.setValue('has_record_label', value === 'gravadora');
+                    form.setValue('has_publisher', value === 'editora');
                   }}
-                  className="w-4 h-4 text-primary"
-                />
-                <div>
-                  <p className="font-medium">Independente</p>
-                  <p className="text-sm text-muted-foreground">Sem empresário, gravadora ou editora</p>
-                </div>
-              </label>
+                  defaultValue="independente"
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de representação" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="independente">Independente (sem representação)</SelectItem>
+                    <SelectItem value="empresario">Empresário</SelectItem>
+                    <SelectItem value="gravadora">Gravadora</SelectItem>
+                    <SelectItem value="editora">Editora</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Opção: Empresário */}
-              <label className={cn(
-                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
-                hasManager ? "border-primary bg-primary/5" : "border-muted hover:border-muted-foreground/50"
-              )}>
-                <input
-                  type="radio"
-                  name="representation"
-                  checked={hasManager}
-                  onChange={() => {
-                    form.setValue('has_manager', true);
-                    form.setValue('has_record_label', false);
-                    form.setValue('has_publisher', false);
-                  }}
-                  className="w-4 h-4 text-primary"
-                />
-                <div>
-                  <p className="font-medium">Empresário</p>
-                  <p className="text-sm text-muted-foreground">Possui representação por empresário</p>
-                </div>
-              </label>
-
+              {/* Campos do Empresário */}
               {hasManager && (
-                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30 ml-4">
+                <div className="grid md:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="md:col-span-3">
+                    <p className="text-sm font-medium text-muted-foreground mb-3">Dados do Empresário</p>
+                  </div>
                   <div>
                     <Label>Nome do empresário</Label>
                     <Input {...form.register('manager_name')} placeholder="Nome completo" />
@@ -1225,30 +1204,12 @@ function ArtistStep({
                 </div>
               )}
 
-              {/* Opção: Gravadora */}
-              <label className={cn(
-                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
-                hasRecordLabel ? "border-primary bg-primary/5" : "border-muted hover:border-muted-foreground/50"
-              )}>
-                <input
-                  type="radio"
-                  name="representation"
-                  checked={hasRecordLabel}
-                  onChange={() => {
-                    form.setValue('has_manager', false);
-                    form.setValue('has_record_label', true);
-                    form.setValue('has_publisher', false);
-                  }}
-                  className="w-4 h-4 text-primary"
-                />
-                <div>
-                  <p className="font-medium">Gravadora</p>
-                  <p className="text-sm text-muted-foreground">Vinculado a uma gravadora</p>
-                </div>
-              </label>
-
+              {/* Campos da Gravadora */}
               {hasRecordLabel && (
-                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30 ml-4">
+                <div className="grid md:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="md:col-span-3">
+                    <p className="text-sm font-medium text-muted-foreground mb-3">Dados da Gravadora</p>
+                  </div>
                   <div>
                     <Label>Nome do responsável</Label>
                     <Input {...form.register('label_contact_name')} placeholder="Nome completo" />
@@ -1264,30 +1225,12 @@ function ArtistStep({
                 </div>
               )}
 
-              {/* Opção: Editora */}
-              <label className={cn(
-                "flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
-                hasPublisher ? "border-primary bg-primary/5" : "border-muted hover:border-muted-foreground/50"
-              )}>
-                <input
-                  type="radio"
-                  name="representation"
-                  checked={hasPublisher}
-                  onChange={() => {
-                    form.setValue('has_manager', false);
-                    form.setValue('has_record_label', false);
-                    form.setValue('has_publisher', true);
-                  }}
-                  className="w-4 h-4 text-primary"
-                />
-                <div>
-                  <p className="font-medium">Editora</p>
-                  <p className="text-sm text-muted-foreground">Vinculado a uma editora musical</p>
-                </div>
-              </label>
-
+              {/* Campos da Editora */}
               {hasPublisher && (
-                <div className="grid md:grid-cols-3 gap-4 pl-6 border-l-2 border-primary/30 ml-4">
+                <div className="grid md:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="md:col-span-3">
+                    <p className="text-sm font-medium text-muted-foreground mb-3">Dados da Editora</p>
+                  </div>
                   <div>
                     <Label>Nome do responsável</Label>
                     <Input {...form.register('publisher_contact_name')} placeholder="Nome completo" />
