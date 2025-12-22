@@ -1735,9 +1735,7 @@ function WorkStep({
                         <SelectValue placeholder="Função" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Autor">Autor</SelectItem>
-                        <SelectItem value="Compositor">Compositor</SelectItem>
-                        <SelectItem value="Autor/Compositor">Autor/Compositor</SelectItem>
+                        <SelectItem value="Autor / Compositor">Autor / Compositor</SelectItem>
                         <SelectItem value="Editor">Editor</SelectItem>
                       </SelectContent>
                     </Select>
