@@ -89,6 +89,7 @@ const App = () => (
               <DemoDataProvider>
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
+                <Route path="/cadastro-publico" element={<CadastroPublico />} />
                 <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
                 <Route path="/callback/google" element={<GoogleCallback />} />
 
