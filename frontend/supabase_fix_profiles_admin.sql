@@ -107,9 +107,16 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 -- PARTE 4: POLÍTICAS PARA USER_ARTISTS
 -- ============================================
 
--- Remover políticas antigas
-DROP POLICY IF EXISTS user_artists_all ON public.user_artists;
-DROP POLICY IF EXISTS user_artists_select ON public.user_artists;
+-- Remover TODAS as políticas antigas de user_artists
+DO $$ 
+DECLARE 
+  pol RECORD;
+BEGIN
+  FOR pol IN SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'user_artists'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.user_artists', pol.policyname);
+  END LOOP;
+END $$;
 
 -- SELECT: Todos autenticados podem ler (necessário para carregar artista vinculado)
 CREATE POLICY user_artists_select ON public.user_artists
