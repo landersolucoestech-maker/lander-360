@@ -616,7 +616,7 @@ export const useImportExport = () => {
       payment_type: toText(pick(idx, ...contractFieldMappings.payment_type)),
       responsible_person: toText(pick(idx, ...contractFieldMappings.responsible_person)),
       contractor_contact: toText(pick(idx, ...contractFieldMappings.contractor_contact_name)),
-      registry_office: parseBoolean(pick(idx, ...contractFieldMappings.registry_office)),
+      registry_office: toText(pick(idx, ...contractFieldMappings.registry_office)),
       registry_date: parseExcelDate(pick(idx, ...contractFieldMappings.registry_date)),
       terms: toText(pick(idx, ...contractFieldMappings.terms)),
       observations: toText(pick(idx, ...contractFieldMappings.observations)),
