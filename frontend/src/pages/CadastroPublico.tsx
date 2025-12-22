@@ -2105,15 +2105,14 @@ function PhonogramStep({
               </div>
 
               <div>
-                <Label htmlFor="version">Versão *</Label>
-                <Select onValueChange={(value) => form.setValue('version', value)}>
+                <Label htmlFor="phonogram_instrumental">Instrumental</Label>
+                <Select onValueChange={(value) => form.setValue('is_instrumental', value === 'sim')}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {phonogramVersionOptions.map((version) => (
-                      <SelectItem key={version} value={version}>{version}</SelectItem>
-                    ))}
+                    <SelectItem value="nao">Não</SelectItem>
+                    <SelectItem value="sim">Sim</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2145,6 +2144,20 @@ function PhonogramStep({
                   <SelectContent>
                     {languageOptions.map((lang) => (
                       <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="phonogram_genre">Gênero</Label>
+                <Select onValueChange={(value) => form.setValue('genre', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {genreOptions.map((genre) => (
+                      <SelectItem key={genre} value={genre}>{genre}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
