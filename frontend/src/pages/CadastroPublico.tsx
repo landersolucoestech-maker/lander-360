@@ -1502,8 +1502,7 @@ function WorkStep({
             language: work.language,
             status: 'Pendente Validação',
             participants: work.authors,
-            artist_id: work.artists[0]?.id,
-            observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${work.has_publisher ? work.publisher_name : 'Sem editora'}\nTipo Contrato: ${work.contract_type || 'N/A'}\nObra Original: ${work.is_original ? 'Sim' : 'Não'}\nArtistas: ${work.artists.map(a => a.stage_name || a.name).join(', ')}`,
+            observations: `[CADASTRO PÚBLICO]\nProtocolo: ${submissionId}\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nEditora: ${work.has_publisher ? work.publisher_name : 'Sem editora'}\nTipo Contrato: ${work.contract_type || 'N/A'}\nObra Original: ${work.is_original ? 'Sim' : 'Não'}`,
           })
           .select()
           .single();
@@ -1513,7 +1512,7 @@ function WorkStep({
         onWorkRegistered({
           id: workData.id,
           title: work.title,
-          artist_ids: work.artists.map(a => a.id),
+          artist_ids: [],
         });
       }
 
