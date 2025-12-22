@@ -7,7 +7,7 @@
 -- PARTE 1: CRIAR TABELAS
 -- ============================================================
 
--- 1️⃣ Tabela roles (funções)
+-- 1. Tabela roles (funções)
 CREATE TABLE IF NOT EXISTS roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS roles (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2️⃣ Tabela permissions (permissões: ação + módulo)
+-- 2. Tabela permissions (permissões: ação + módulo)
 CREATE TABLE IF NOT EXISTS permissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   action TEXT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS permissions (
   UNIQUE (action, module)
 );
 
--- 3️⃣ Tabela role_permissions (vínculo role <-> permission)
+-- 3. Tabela role_permissions (vínculo role <-> permission)
 CREATE TABLE IF NOT EXISTS role_permissions (
   role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
   permission_id UUID REFERENCES permissions(id) ON DELETE CASCADE,
@@ -33,13 +33,13 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   PRIMARY KEY (role_id, permission_id)
 );
 
--- 4️⃣ Tabela user_roles (vínculo user <-> role + setor)
+-- 4. Tabela user_roles (vínculo user <-> role + setor)
 CREATE TABLE IF NOT EXISTS user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL,
   role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
   sector TEXT,
-  artist_id UUID, -- Para roles de artista, vincula ao artista específico
+  artist_id UUID,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (user_id, role_id)
@@ -57,7 +57,6 @@ CREATE INDEX IF NOT EXISTS idx_permissions_action ON permissions(action);
 -- PARTE 2: POPULAR PERMISSÕES (AÇÕES x MÓDULOS)
 -- ============================================================
 
--- Gera todas as combinações de ação x módulo
 INSERT INTO permissions (action, module, description)
 SELECT 
   a AS action, 
@@ -111,7 +110,7 @@ ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 -- PARTE 4: ATRIBUIR PERMISSÕES ÀS ROLES
 -- ============================================================
 
--- 🔑 MASTER (todas as permissões)
+-- MASTER (todas as permissões)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -119,7 +118,7 @@ CROSS JOIN permissions p
 WHERE r.name = 'master'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ADMINISTRADOR (todas as permissões)
+-- ADMINISTRADOR (todas as permissões)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -127,7 +126,7 @@ CROSS JOIN permissions p
 WHERE r.name = 'administrador'
 ON CONFLICT DO NOTHING;
 
--- 🔑 GERENTE (sem delete em configuracoes/integracoes)
+-- GERENTE (sem delete em configuracoes/integracoes)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -136,7 +135,7 @@ WHERE r.name = 'gerente'
   AND NOT (p.module IN ('configuracoes', 'integracoes') AND p.action = 'delete')
 ON CONFLICT DO NOTHING;
 
--- 🔑 PRODUTOR MUSICAL
+-- PRODUTOR MUSICAL
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -147,7 +146,7 @@ JOIN permissions p ON (
 WHERE r.name = 'produtor_musical'
 ON CONFLICT DO NOTHING;
 
--- 🔑 EDITOR
+-- EDITOR
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -158,7 +157,7 @@ JOIN permissions p ON (
 WHERE r.name = 'editor'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ANALISTA FINANCEIRO
+-- ANALISTA FINANCEIRO
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -169,7 +168,7 @@ JOIN permissions p ON (
 WHERE r.name = 'analista_financeiro'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ESPECIALISTA MARKETING
+-- ESPECIALISTA MARKETING
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -180,7 +179,7 @@ JOIN permissions p ON (
 WHERE r.name = 'especialista_marketing'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ASSISTENTE PRODUÇÃO
+-- ASSISTENTE PRODUCAO
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -191,7 +190,7 @@ JOIN permissions p ON (
 WHERE r.name = 'assistente_producao'
 ON CONFLICT DO NOTHING;
 
--- 🔑 COORDENADOR EVENTOS
+-- COORDENADOR EVENTOS
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -202,7 +201,7 @@ JOIN permissions p ON (
 WHERE r.name = 'coordenador_eventos'
 ON CONFLICT DO NOTHING;
 
--- 🔑 TÉCNICO SOM
+-- TECNICO SOM
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -213,7 +212,7 @@ JOIN permissions p ON (
 WHERE r.name = 'tecnico_som'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ARTISTA GESTOR (acesso próprio amplo)
+-- ARTISTA GESTOR (acesso próprio amplo)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -224,7 +223,7 @@ JOIN permissions p ON (
 WHERE r.name = 'artista_gestor'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ARTISTA FINANCEIRO (acesso financeiro próprio)
+-- ARTISTA FINANCEIRO (acesso financeiro próprio)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -235,7 +234,7 @@ JOIN permissions p ON (
 WHERE r.name = 'artista_financeiro'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ARTISTA MARKETING (acesso marketing próprio)
+-- ARTISTA MARKETING (acesso marketing próprio)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -246,7 +245,7 @@ JOIN permissions p ON (
 WHERE r.name = 'artista_marketing'
 ON CONFLICT DO NOTHING;
 
--- 🔑 ARTISTA LEITOR (somente visualização)
+-- ARTISTA LEITOR (somente visualização)
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -261,30 +260,25 @@ ON CONFLICT DO NOTHING;
 -- PARTE 5: RLS (Row Level Security) POLICIES
 -- ============================================================
 
--- Habilitar RLS nas tabelas
 ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 
--- Policies para roles (leitura para autenticados)
-DROP POLICY IF EXISTS "Roles visíveis para autenticados" ON roles;
-CREATE POLICY "Roles visíveis para autenticados" ON roles
+DROP POLICY IF EXISTS roles_select_policy ON roles;
+CREATE POLICY roles_select_policy ON roles
   FOR SELECT TO authenticated USING (true);
 
--- Policies para permissions (leitura para autenticados)
-DROP POLICY IF EXISTS "Permissions visíveis para autenticados" ON permissions;
-CREATE POLICY "Permissions visíveis para autenticados" ON permissions
+DROP POLICY IF EXISTS permissions_select_policy ON permissions;
+CREATE POLICY permissions_select_policy ON permissions
   FOR SELECT TO authenticated USING (true);
 
--- Policies para role_permissions (leitura para autenticados)
-DROP POLICY IF EXISTS "Role_permissions visíveis para autenticados" ON role_permissions;
-CREATE POLICY "Role_permissions visíveis para autenticados" ON role_permissions
+DROP POLICY IF EXISTS role_permissions_select_policy ON role_permissions;
+CREATE POLICY role_permissions_select_policy ON role_permissions
   FOR SELECT TO authenticated USING (true);
 
--- Policies para user_roles
-DROP POLICY IF EXISTS "User_roles visíveis para próprio usuário ou admin" ON user_roles;
-CREATE POLICY "User_roles visíveis para próprio usuário ou admin" ON user_roles
+DROP POLICY IF EXISTS user_roles_select_policy ON user_roles;
+CREATE POLICY user_roles_select_policy ON user_roles
   FOR SELECT TO authenticated
   USING (
     user_id = auth.uid()
@@ -296,8 +290,8 @@ CREATE POLICY "User_roles visíveis para próprio usuário ou admin" ON user_rol
     )
   );
 
-DROP POLICY IF EXISTS "User_roles editáveis por admin" ON user_roles;
-CREATE POLICY "User_roles editáveis por admin" ON user_roles
+DROP POLICY IF EXISTS user_roles_all_policy ON user_roles;
+CREATE POLICY user_roles_all_policy ON user_roles
   FOR ALL TO authenticated
   USING (
     EXISTS (
@@ -327,7 +321,6 @@ DECLARE
   v_is_artist_role BOOLEAN;
   v_has_permission BOOLEAN;
 BEGIN
-  -- Verificar se é master (ignora tudo)
   SELECT EXISTS (
     SELECT 1 FROM user_roles ur
     JOIN roles r ON ur.role_id = r.id
@@ -338,7 +331,6 @@ BEGIN
     RETURN TRUE;
   END IF;
   
-  -- Verificar se tem a permissão
   SELECT EXISTS (
     SELECT 1 
     FROM user_roles ur
@@ -353,7 +345,6 @@ BEGIN
     RETURN FALSE;
   END IF;
   
-  -- Verificar se é role de artista (precisa ser dono do registro)
   SELECT EXISTS (
     SELECT 1 FROM user_roles ur
     JOIN roles r ON ur.role_id = r.id
@@ -361,7 +352,6 @@ BEGIN
   ) INTO v_is_artist_role;
   
   IF v_is_artist_role AND p_record_owner_id IS NOT NULL THEN
-    -- Artista só pode acessar seus próprios registros
     RETURN p_record_owner_id = p_user_id;
   END IF;
   
@@ -416,24 +406,3 @@ FROM user_roles ur
 JOIN roles r ON ur.role_id = r.id
 JOIN role_permissions rp ON r.id = rp.role_id
 JOIN permissions p ON rp.permission_id = p.id;
-
--- ============================================================
--- VERIFICAÇÃO FINAL
--- ============================================================
-
--- Contar registros criados
-DO $$
-DECLARE
-  roles_count INTEGER;
-  permissions_count INTEGER;
-  role_permissions_count INTEGER;
-BEGIN
-  SELECT COUNT(*) INTO roles_count FROM roles;
-  SELECT COUNT(*) INTO permissions_count FROM permissions;
-  SELECT COUNT(*) INTO role_permissions_count FROM role_permissions;
-  
-  RAISE NOTICE '✅ RBAC Setup Completo!';
-  RAISE NOTICE '   - Roles: %', roles_count;
-  RAISE NOTICE '   - Permissions: %', permissions_count;
-  RAISE NOTICE '   - Role-Permissions: %', role_permissions_count;
-END $$;
