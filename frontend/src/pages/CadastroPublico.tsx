@@ -347,7 +347,6 @@ interface PendingWork {
   genre: string;
   iswc?: string;
   authors: { name: string; role: string; percentage: number }[];
-  artists: ArtistSearchResult[];
   has_publisher: boolean;
   publisher_name?: string;
   contract_type?: string;
