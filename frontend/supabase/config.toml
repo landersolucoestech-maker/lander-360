@@ -16,5 +16,98 @@ enabled = true
 port = 54323
 api_url = "http://localhost"
 
-[functions]
+[functions.ai-gateway]
+verify_jwt = false
+
+[functions.analyze-audio-vibe]
+verify_jwt = false
+
+[functions.autentique-signature]
+verify_jwt = false
+
+[functions.belvo-integration]
+verify_jwt = false
+
+[functions.categorize-transaction]
+verify_jwt = false
+
+[functions.confirm-email-change]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.delete-user]
+verify_jwt = false
+
+[functions.fetch-release-metrics]
+verify_jwt = false
+
+[functions.fingerprint-register]
+verify_jwt = false
+
+[functions.fingerprint-sync]
+verify_jwt = false
+
+[functions.generate-creative-ideas]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.google-calendar-sync]
+verify_jwt = false
+
+[functions.instagram-metrics]
+verify_jwt = false
+
+[functions.landerzap-send]
+verify_jwt = false
+
+[functions.platform-dispute]
+verify_jwt = false
+
+[functions.platform-takedown]
+verify_jwt = false
+
+[functions.process-automations]
+verify_jwt = false
+
+[functions.request-email-change]
+verify_jwt = false
+
+[functions.search-abramus]
+verify_jwt = false
+
+[functions.search-participants]
+verify_jwt = false
+
+[functions.send-contract-email]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.send-notification]
+verify_jwt = false
+
+[functions.social-metrics]
+verify_jwt = false
+
+[functions.spotify-for-artists-metrics]
+verify_jwt = false
+
+[functions.spotify-for-artists-oauth]
+verify_jwt = false
+
+[functions.spotify-metrics]
+verify_jwt = false
+
+[functions.tiktok-metrics]
+verify_jwt = false
+
+[functions.tutorial-tts]
+verify_jwt = false
+
+[functions.youtube-metrics]
 verify_jwt = false
