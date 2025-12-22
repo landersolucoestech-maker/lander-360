@@ -1022,17 +1022,125 @@ function ArtistStep({
             </div>
           </div>
 
+          {/* Seção de Integrantes da Banda */}
+          {isBand && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold border-b pb-2 flex-1">Integrantes da Banda *</h3>
+                <Button type="button" variant="outline" size="sm" onClick={addBandMember}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar Integrante
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Adicione os integrantes da banda com suas respectivas funções e participações.
+              </p>
+
+              {bandMembers.length === 0 && (
+                <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                  <User className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">Nenhum integrante adicionado</p>
+                  <Button type="button" variant="outline" size="sm" className="mt-2" onClick={addBandMember}>
+                    <Plus className="h-4 w-4 mr-1" /> Adicionar Primeiro Integrante
+                  </Button>
+                </div>
+              )}
+
+              {bandMembers.map((member, index) => (
+                <div key={member.id} className="border rounded-lg p-4 space-y-4 bg-muted/20">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">Integrante {index + 1}</span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => removeBandMember(member.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs">Nome Artístico *</Label>
+                      <Input
+                        value={member.artistic_name}
+                        onChange={(e) => updateBandMember(member.id, 'artistic_name', e.target.value)}
+                        placeholder="Nome artístico"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Nome Civil (opcional)</Label>
+                      <Input
+                        value={member.civil_name || ''}
+                        onChange={(e) => updateBandMember(member.id, 'civil_name', e.target.value)}
+                        placeholder="Nome completo"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Documento (opcional)</Label>
+                      <Input
+                        value={member.document || ''}
+                        onChange={(e) => updateBandMember(member.id, 'document', e.target.value)}
+                        placeholder="CPF ou outro documento"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Função na Banda *</Label>
+                      <Select 
+                        value={member.role}
+                        onValueChange={(value) => updateBandMember(member.id, 'role', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a função" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bandRoleOptions.map((role) => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Participação % (opcional)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={member.percentage || ''}
+                        onChange={(e) => updateBandMember(member.id, 'percentage', parseInt(e.target.value) || 0)}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Observações (opcional)</Label>
+                      <Input
+                        value={member.observations || ''}
+                        onChange={(e) => updateBandMember(member.id, 'observations', e.target.value)}
+                        placeholder="Ex: também faz backing vocal"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {bandMembers.length > 0 && (
+                <div className={cn(
+                  "text-sm font-medium",
+                  totalBandPercentage === 100 ? "text-green-600" : "text-muted-foreground"
+                )}>
+                  Total de participação: {totalBandPercentage}%
+                  {totalBandPercentage !== 100 && totalBandPercentage > 0 && " (recomendado: 100%)"}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* B. Dados Pessoais */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">B. Dados Pessoais</h3>
+            <h3 className="text-lg font-semibold border-b pb-2">{isBand ? 'B. Dados da Banda / Responsável' : 'B. Dados Pessoais'}</h3>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="full_name">Nome Completo *</Label>
+                <Label htmlFor="full_name">{isBand ? 'Razão Social / Nome do Responsável *' : 'Nome Completo *'}</Label>
                 <Input
                   id="full_name"
                   {...form.register('full_name')}
-                  placeholder="Nome conforme documento"
+                  placeholder={isBand ? "Razão social ou nome do responsável" : "Nome conforme documento"}
                 />
                 {form.formState.errors.full_name && (
                   <p className="text-sm text-destructive mt-1">{form.formState.errors.full_name.message}</p>
@@ -1040,11 +1148,11 @@ function ArtistStep({
               </div>
 
               <div>
-                <Label htmlFor="cpf_cnpj">CPF / CNPJ *</Label>
+                <Label htmlFor="cpf_cnpj">{isBand ? 'CNPJ / CPF *' : 'CPF / CNPJ *'}</Label>
                 <Input
                   id="cpf_cnpj"
                   {...form.register('cpf_cnpj')}
-                  placeholder="000.000.000-00"
+                  placeholder={isBand ? "00.000.000/0000-00" : "000.000.000-00"}
                 />
                 {form.formState.errors.cpf_cnpj && (
                   <p className="text-sm text-destructive mt-1">{form.formState.errors.cpf_cnpj.message}</p>
