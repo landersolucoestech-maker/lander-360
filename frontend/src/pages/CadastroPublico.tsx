@@ -1964,9 +1964,8 @@ function PhonogramStep({
       isrc: data.isrc,
       work_id: data.work_id,
       work_title: selectedWork?.title || 'Obra não encontrada',
-      artists: [...selectedArtistsList],
-      interpreters: interpreters.filter(i => i.name.trim()),
       phonographic_producers: phonographicProducers.filter(p => p.name.trim()),
+      interpreters: interpreters.filter(i => i.name.trim()),
       producers: producers.filter(p => p.name.trim()),
       featured_artists: data.featured_artists,
     };
@@ -1979,10 +1978,9 @@ function PhonogramStep({
       master_rights_declaration: false,
       exploitation_authorization: false,
     });
-    setSelectedArtistsList([]);
-    setInterpreters([{ name: '', role: 'Principal' }]);
-    setPhonographicProducers([{ name: '', percentage: 100 }]);
-    setProducers([{ name: '', role: 'Produtor Musical' }]);
+    setPhonographicProducers([{ name: '', cpf_cnpj: '', percentage: 100 }]);
+    setInterpreters([{ name: '', cpf_cnpj: '', percentage: 100 }]);
+    setProducers([{ name: '', cpf_cnpj: '', percentage: 100 }]);
 
     toast({
       title: 'Fonograma adicionado à lista',
