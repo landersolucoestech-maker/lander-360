@@ -319,38 +319,72 @@ Proteção contra crashes não tratados no React.
 [x] 2. CORS melhorado com lista de origens permitidas ✅ CORRIGIDO
 [x] 3. CSP atualizada com novo domínio Supabase ✅ CORRIGIDO
 [x] 4. Erros tratados corretamente em create-user ✅ CORRIGIDO
-[ ] 5. Paginação implementada em services
-[ ] 6. Índices criados nas tabelas principais
-[ ] 7. Sistema de roles unificado
-[ ] 8. Scraping do Spotify removido/substituído
-[ ] 9. Backend Python removido
-[ ] 10. Types.ts modularizado
+[x] 5. Paginação implementada em services ✅ CORRIGIDO
+[x] 6. Script de índices criado (executar no Supabase) ✅ CORRIGIDO
+[x] 7. Sistema de roles unificado com migração automática ✅ CORRIGIDO
+[x] 8. Scraping do Spotify removido ✅ CORRIGIDO
+[x] 9. Backend Python removido ✅ CORRIGIDO
+[ ] 10. Types.ts modularizado (baixa prioridade)
 ```
 
 ---
 
 ## ✅ CORREÇÕES APLICADAS (Junho 2025)
 
-### 1. ProtectedRoute Reativada
+### Prioridade 1 - Segurança (Crítico)
+
+#### 1. ProtectedRoute Reativada
 - Verifica autenticação antes de renderizar rotas protegidas
 - Mostra spinner de loading durante verificação
 - Redireciona para `/auth` se não autenticado
 - Preserva a rota original para redirecionamento pós-login
 
-### 2. CORS Melhorado
+#### 2. CORS Melhorado
 - Lista de origens permitidas configurável
 - Suporte a variável de ambiente `ALLOWED_ORIGIN` para produção
 - Permite subdomínios do emergentagent.com automaticamente
 - Helper `createCorsResponse` para responses tipadas
 
-### 3. CSP Atualizada
+#### 3. CSP Atualizada
 - Domínio atualizado de `dkrrfnpvqrpakngigxsb` para `rlinswqockcnijhojnth`
 - Adicionado wildcard `*.supabase.co` para flexibilidade
 
-### 4. Tratamento de Erros em create-user
+#### 4. Tratamento de Erros em create-user
 - Erros de profile/role agora são coletados e retornados como `warnings`
 - Operação não falha silenciosamente
 - Cliente pode verificar se houve problemas parciais
+
+### Prioridade 2 - Performance e Arquitetura
+
+#### 5. Paginação Implementada
+- Novo utilitário `/src/lib/pagination.ts` com tipos e helpers
+- `ArtistsService.getPaginated()` com contagem total
+- `FinancialService.getPaginated()` com contagem total
+- `ContractsService.getPaginated()` com contagem total
+- Métodos `getAll()` mantidos com limite de 100 registros
+
+#### 6. Índices de Banco de Dados
+- Script SQL criado: `/supabase_create_indexes.sql`
+- 50+ índices para tabelas críticas
+- Índices compostos para queries comuns
+- Comando ANALYZE incluído para otimização
+
+#### 7. Sistema de Roles Unificado
+- `useUserRole.ts` refatorado com fonte de verdade única (`user_roles`)
+- Migração automática de `profiles.roles` para `user_roles`
+- Remoção de duplicatas
+- Default seguro para 'leitor'
+
+#### 8. Spotify Metrics Refatorado
+- Removido scraping frágil de HTML
+- Usa apenas API oficial do Spotify
+- Adicionados: álbuns recentes, artistas relacionados
+- Campo `monthly_listeners` agora é `null` (não disponível na API pública)
+
+#### 9. Backend Python Removido
+- Diretório `/app/backend` removido completamente
+- Elimina confusão sobre arquitetura
+- Toda lógica backend está nas Edge Functions
 
 ---
 
