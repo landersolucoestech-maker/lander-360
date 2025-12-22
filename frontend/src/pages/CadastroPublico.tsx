@@ -1912,12 +1912,11 @@ function WorkStep({
       </CardContent>
     </Card>
   );
-              </div>
+}
 
-              <div>
-                <Label htmlFor="language">Idioma *</Label>
-                <Select onValueChange={(value) => form.setValue('language', value)}>
-                  <SelectTrigger>
+// ============================================
+// COMPONENTE: FORMULÁRIO DE FONOGRAMA
+// ============================================
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
