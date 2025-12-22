@@ -772,7 +772,6 @@ function ArtistStep({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [bandMembers, setBandMembers] = useState<BandMember[]>([]);
 
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
