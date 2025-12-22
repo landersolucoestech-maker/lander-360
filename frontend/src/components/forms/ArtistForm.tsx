@@ -668,6 +668,55 @@ export function ArtistForm({
                     </FormItem>} />
               </div>
 
+              {/* Presskit/Midiakit */}
+              <div className="md:col-span-2">
+                <FormField control={form.control} name="presskit" render={({
+                field
+              }) => <FormItem>
+                      <FormLabel>Presskit / Midiakit (PDF)</FormLabel>
+                      <FormControl>
+                        {presskitName ? (
+                          <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                            <FileText className="h-8 w-8 text-primary" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{presskitName}</p>
+                              <p className="text-xs text-muted-foreground">Presskit pronto para upload</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removePresskit(field.onChange)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Remover
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="relative border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors cursor-pointer">
+                            <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">
+                              Clique para fazer upload ou arraste o arquivo aqui
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Aceita apenas PDF (Presskit/Midiakit - máx. 10MB)
+                            </p>
+                            <input 
+                              type="file" 
+                              accept=".pdf" 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                              onChange={e => handlePresskitChange(e, field.onChange)} 
+                            />
+                          </div>
+                        )}
+                      </FormControl>
+                      <FormDescription>
+                        Faça upload do Presskit ou Midiakit do artista em formato PDF
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>} />
+              </div>
+
               {/* Biografia */}
               <div className="md:col-span-2">
                 <FormField control={form.control} name="biography" render={({
