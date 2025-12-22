@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,11 +13,184 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 import { 
   Upload, Plus, Trash2, ChevronLeft, ChevronRight, Check, 
-  Music, User, Disc, AlertCircle, FileText, Image as ImageIcon
+  Music, User, Disc, AlertCircle, FileText, Image as ImageIcon, Search, X, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ============================================
+// COMPONENTE: BUSCA DE ARTISTAS
+// ============================================
+
+interface ArtistSearchResult {
+  id: string;
+  name: string;
+  stage_name: string;
+}
+
+interface ArtistSearchProps {
+  selectedArtists: ArtistSearchResult[];
+  onSelect: (artist: ArtistSearchResult) => void;
+  onRemove: (artistId: string) => void;
+  registeredArtists: RegisteredArtist[];
+  placeholder?: string;
+}
+
+function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, placeholder = "Digite o nome do artista..." }: ArtistSearchProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<ArtistSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  // Buscar artistas no banco de dados
+  const searchArtists = useCallback(async (term: string) => {
+    if (term.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // Primeiro, adiciona os artistas registrados na sessão atual que correspondem à busca
+      const localResults = registeredArtists
+        .filter(a => 
+          a.artistic_name.toLowerCase().includes(term.toLowerCase()) ||
+          a.full_name.toLowerCase().includes(term.toLowerCase())
+        )
+        .map(a => ({
+          id: a.id,
+          name: a.full_name,
+          stage_name: a.artistic_name,
+        }));
+
+      // Depois busca no banco de dados
+      const { data, error } = await supabase
+        .from('artists')
+        .select('id, name, stage_name')
+        .or(`name.ilike.%${term}%,stage_name.ilike.%${term}%`)
+        .limit(10);
+
+      if (error) throw error;
+
+      // Combina resultados locais com os do banco, removendo duplicatas
+      const dbResults = (data || []).map(a => ({
+        id: a.id,
+        name: a.name || '',
+        stage_name: a.stage_name || '',
+      }));
+
+      const allResults = [...localResults];
+      dbResults.forEach(dbArtist => {
+        if (!allResults.some(a => a.id === dbArtist.id)) {
+          allResults.push(dbArtist);
+        }
+      });
+
+      // Remove artistas já selecionados
+      const filteredResults = allResults.filter(
+        a => !selectedArtists.some(selected => selected.id === a.id)
+      );
+
+      setSearchResults(filteredResults);
+    } catch (error) {
+      console.error('Error searching artists:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [registeredArtists, selectedArtists]);
+
+  // Debounce da busca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm) {
+        searchArtists(searchTerm);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchArtists]);
+
+  return (
+    <div className="space-y-3">
+      {/* Artistas selecionados */}
+      {selectedArtists.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selectedArtists.map((artist) => (
+            <Badge key={artist.id} variant="secondary" className="flex items-center gap-1 py-1 px-3">
+              <User className="h-3 w-3" />
+              <span>{artist.stage_name || artist.name}</span>
+              <button
+                type="button"
+                onClick={() => onRemove(artist.id)}
+                className="ml-1 hover:text-destructive"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Campo de busca */}
+      <div className="relative">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder={placeholder}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setShowResults(true);
+            }}
+            onFocus={() => setShowResults(true)}
+            onBlur={() => setTimeout(() => setShowResults(false), 200)}
+            className="pl-10"
+          />
+          {isSearching && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+        </div>
+
+        {/* Resultados da busca */}
+        {showResults && searchResults.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-background border rounded-lg shadow-lg max-h-60 overflow-auto">
+            {searchResults.map((artist) => (
+              <button
+                key={artist.id}
+                type="button"
+                onClick={() => {
+                  onSelect(artist);
+                  setSearchTerm('');
+                  setSearchResults([]);
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-muted transition-colors flex items-center gap-3 border-b last:border-b-0"
+              >
+                <User className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">{artist.stage_name || 'Sem nome artístico'}</p>
+                  <p className="text-sm text-muted-foreground">{artist.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Mensagem quando não encontra */}
+        {showResults && searchTerm.length >= 2 && !isSearching && searchResults.length === 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-background border rounded-lg shadow-lg p-4 text-center text-muted-foreground">
+            Nenhum artista encontrado
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ============================================
 // CONSTANTES E OPÇÕES
