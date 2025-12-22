@@ -512,21 +512,7 @@ export default function Auth() {
             </div>
           )}
 
-          {/* Social Icons */}
-          <div className="flex justify-center gap-6 pt-4 py-0">
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <Facebook className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <Instagram className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <MessageCircle className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-500 hover:text-gray-700 transition-colors">
-              <Globe className="h-5 w-5" />
-            </a>
-          </div>
+          {/* Social Icons removed */}
         </div>
 
         {/* Copyright Footer */}
