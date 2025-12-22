@@ -185,6 +185,7 @@ export function useUsers() {
       setLoading(true);
 
       // Build update object - only include fields that are explicitly provided
+      // Usar 'department' ao invés de 'sector' para compatibilidade com o banco
       const updateData: Record<string, any> = {
         full_name: userData.full_name,
         role_display: userData.role,
@@ -200,7 +201,7 @@ export function useUsers() {
         updateData.phone = userData.phone || null;
       }
       if (userData.sector !== undefined) {
-        updateData.sector = userData.sector || null;
+        updateData.department = userData.sector || null;
       }
 
       // Update user profile in profiles table
