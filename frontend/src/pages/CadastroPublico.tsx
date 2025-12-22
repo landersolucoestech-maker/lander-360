@@ -2175,59 +2175,10 @@ function PhonogramStep({
               </div>
             </div>
 
-            {/* Intérpretes */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Intérpretes *</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addInterpreter}>
-                  <Plus className="h-4 w-4 mr-1" /> Adicionar
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">Adicione os intérpretes do fonograma</p>
-
-              {interpreters.map((interpreter, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-6">
-                    <Label className="text-xs">Nome do Intérprete</Label>
-                    <Input
-                      value={interpreter.name}
-                      onChange={(e) => updateInterpreter(index, 'name', e.target.value)}
-                      placeholder="Nome do intérprete"
-                    />
-                  </div>
-                  <div className="col-span-4">
-                    <Label className="text-xs">Função</Label>
-                    <Select 
-                      value={interpreter.role}
-                      onValueChange={(value) => updateInterpreter(index, 'role', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Função" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Principal">Principal</SelectItem>
-                        <SelectItem value="Participação">Participação</SelectItem>
-                        <SelectItem value="Featuring">Featuring</SelectItem>
-                        <SelectItem value="Backing Vocal">Backing Vocal</SelectItem>
-                        <SelectItem value="Músico">Músico</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-2">
-                    {interpreters.length > 1 && (
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeInterpreter(index)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Produtores Fonográficos */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Produtores Fonográficos</Label>
+                <Label className="text-base font-semibold">Produtores Fonográficos *</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addPhonographicProducer}>
                   <Plus className="h-4 w-4 mr-1" /> Adicionar
                 </Button>
@@ -2236,12 +2187,20 @@ function PhonogramStep({
 
               {phonographicProducers.map((producer, index) => (
                 <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-8">
+                  <div className="col-span-5">
                     <Label className="text-xs">Nome/Empresa</Label>
                     <Input
                       value={producer.name}
                       onChange={(e) => updatePhonographicProducer(index, 'name', e.target.value)}
-                      placeholder="Nome do produtor fonográfico ou empresa"
+                      placeholder="Nome ou razão social"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Label className="text-xs">CPF/CNPJ</Label>
+                    <Input
+                      value={producer.cpf_cnpj}
+                      onChange={(e) => updatePhonographicProducer(index, 'cpf_cnpj', e.target.value)}
+                      placeholder="000.000.000-00"
                     />
                   </div>
                   <div className="col-span-2">
@@ -2254,7 +2213,7 @@ function PhonogramStep({
                       onChange={(e) => updatePhonographicProducer(index, 'percentage', parseInt(e.target.value) || 0)}
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     {phonographicProducers.length > 1 && (
                       <Button type="button" variant="ghost" size="icon" onClick={() => removePhonographicProducer(index)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -2264,17 +2223,71 @@ function PhonogramStep({
                 </div>
               ))}
               
-              {phonographicProducers.some(p => p.name.trim()) && (
-                <div className={cn(
-                  "text-sm font-medium",
-                  totalProducerPercentage === 100 ? "text-green-600" : "text-amber-600"
-                )}>
-                  Total: {totalProducerPercentage}% {totalProducerPercentage !== 100 && "(recomendado: 100%)"}
-                </div>
-              )}
+              <div className={cn(
+                "text-sm font-medium",
+                totalPhonographicProducerPercentage === 100 ? "text-green-600" : "text-amber-600"
+              )}>
+                Total: {totalPhonographicProducerPercentage}% {totalPhonographicProducerPercentage !== 100 && "(deve ser 100%)"}
+              </div>
             </div>
 
-            {/* Produtores (Musicais) */}
+            {/* Intérpretes */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Intérpretes *</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addInterpreter}>
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Adicione os intérpretes do fonograma</p>
+
+              {interpreters.map((interpreter, index) => (
+                <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                  <div className="col-span-5">
+                    <Label className="text-xs">Nome do Intérprete</Label>
+                    <Input
+                      value={interpreter.name}
+                      onChange={(e) => updateInterpreter(index, 'name', e.target.value)}
+                      placeholder="Nome do intérprete"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <Label className="text-xs">CPF/CNPJ</Label>
+                    <Input
+                      value={interpreter.cpf_cnpj}
+                      onChange={(e) => updateInterpreter(index, 'cpf_cnpj', e.target.value)}
+                      placeholder="000.000.000-00"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-xs">%</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={interpreter.percentage}
+                      onChange={(e) => updateInterpreter(index, 'percentage', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    {interpreters.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeInterpreter(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              <div className={cn(
+                "text-sm font-medium",
+                totalInterpreterPercentage === 100 ? "text-green-600" : "text-amber-600"
+              )}>
+                Total: {totalInterpreterPercentage}% {totalInterpreterPercentage !== 100 && "(deve ser 100%)"}
+              </div>
+            </div>
+
+            {/* Produtores */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-base font-semibold">Produtores</Label>
@@ -2286,7 +2299,7 @@ function PhonogramStep({
 
               {producers.map((producer, index) => (
                 <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-6">
+                  <div className="col-span-5">
                     <Label className="text-xs">Nome</Label>
                     <Input
                       value={producer.name}
@@ -2295,25 +2308,24 @@ function PhonogramStep({
                     />
                   </div>
                   <div className="col-span-4">
-                    <Label className="text-xs">Função</Label>
-                    <Select 
-                      value={producer.role}
-                      onValueChange={(value) => updateProducer(index, 'role', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Função" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Produtor Musical">Produtor Musical</SelectItem>
-                        <SelectItem value="Engenheiro de Som">Engenheiro de Som</SelectItem>
-                        <SelectItem value="Mixagem">Mixagem</SelectItem>
-                        <SelectItem value="Masterização">Masterização</SelectItem>
-                        <SelectItem value="Arranjo">Arranjo</SelectItem>
-                        <SelectItem value="Diretor Musical">Diretor Musical</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-xs">CPF/CNPJ</Label>
+                    <Input
+                      value={producer.cpf_cnpj}
+                      onChange={(e) => updateProducer(index, 'cpf_cnpj', e.target.value)}
+                      placeholder="000.000.000-00"
+                    />
                   </div>
                   <div className="col-span-2">
+                    <Label className="text-xs">%</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={producer.percentage}
+                      onChange={(e) => updateProducer(index, 'percentage', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-1">
                     {producers.length > 1 && (
                       <Button type="button" variant="ghost" size="icon" onClick={() => removeProducer(index)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -2322,6 +2334,15 @@ function PhonogramStep({
                   </div>
                 </div>
               ))}
+
+              {producers.some(p => p.name.trim()) && (
+                <div className={cn(
+                  "text-sm font-medium",
+                  totalProducerPercentage === 100 ? "text-green-600" : "text-amber-600"
+                )}>
+                  Total: {totalProducerPercentage}% {totalProducerPercentage !== 100 && "(recomendado: 100%)"}
+                </div>
+              )}
             </div>
 
             {/* Declarações */}
