@@ -78,9 +78,9 @@ interface ReleaseFormProps {
 }
 
 const distributorOptions = [
-  { id: 'onerpm', label: 'ONErpm', description: 'Distribuidora global com presença na América Latina', website: 'https://onerpm.com' },
-  { id: 'distrokid', label: 'DistroKid', description: 'Distribuidora digital com distribuição ilimitada', website: 'https://distrokid.com' },
   { id: '30por1', label: '30por1', description: 'Distribuidora brasileira independente', website: 'https://30por1.com.br' },
+  { id: 'distrokid', label: 'DistroKid', description: 'Distribuidora digital com distribuição ilimitada', website: 'https://distrokid.com' },
+  { id: 'onerpm', label: 'ONErpm', description: 'Distribuidora global com presença na América Latina', website: 'https://onerpm.com' },
   { id: 'outras_distribuidoras', label: 'Outras', description: 'Outras distribuidoras digitais', website: '' },
 ];
 
