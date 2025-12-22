@@ -416,6 +416,7 @@ export function ArtistForm({
         observations: data.observations || null,
         image_url: imageUrl,
         documents_url: documentsUrl,
+        presskit_url: presskitUrl,
         artist_types: data.artist_types || [],
       };
 
