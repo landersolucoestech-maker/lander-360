@@ -1670,6 +1670,19 @@ function WorkStep({
                   placeholder="3:45"
                 />
               </div>
+
+              <div>
+                <Label htmlFor="is_instrumental">Instrumental</Label>
+                <Select onValueChange={(value) => form.setValue('is_instrumental', value === 'sim')}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nao">Não</SelectItem>
+                    <SelectItem value="sim">Sim</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Autor / Compositor / Editor */}
