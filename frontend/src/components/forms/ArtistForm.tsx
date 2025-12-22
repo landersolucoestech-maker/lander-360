@@ -64,6 +64,7 @@ const artistSchema = z.object({
   presskit: z.any().optional(),
   biography: z.string().optional(),
   artist_types: z.array(z.string()).min(1, 'Selecione pelo menos um tipo de artista'),
+  musician_roles: z.array(z.string()).optional(), // Funções do músico
   // Dados Pessoais
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
   birth_date: z.date().optional(),
