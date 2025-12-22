@@ -3,9 +3,24 @@
 -- Execute este script no SQL Editor do Supabase
 -- =====================================================
 
+-- Primeiro, verifica e adiciona colunas que podem estar faltando
+DO $$
+BEGIN
+    -- Adiciona transaction_date se não existir
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'financial_transactions' AND column_name = 'transaction_date'
+    ) THEN
+        ALTER TABLE financial_transactions ADD COLUMN transaction_date timestamptz;
+        -- Copia dados de 'date' para 'transaction_date' se existir
+        UPDATE financial_transactions SET transaction_date = date::timestamptz WHERE transaction_date IS NULL;
+    END IF;
+END $$;
+
 -- Índices para financial_transactions (tabela crítica para relatórios)
+-- Usa 'date' como fallback se transaction_date não existir
 CREATE INDEX IF NOT EXISTS idx_financial_transactions_date 
-  ON financial_transactions(transaction_date DESC);
+  ON financial_transactions(date DESC);
   
 CREATE INDEX IF NOT EXISTS idx_financial_transactions_artist 
   ON financial_transactions(artist_id);
@@ -21,7 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_financial_transactions_category
 
 -- Índice composto para queries comuns de relatórios financeiros
 CREATE INDEX IF NOT EXISTS idx_financial_transactions_date_type 
-  ON financial_transactions(transaction_date DESC, transaction_type);
+  ON financial_transactions(date DESC, transaction_type);
 
 -- Índices para releases (distribuição de música)
 CREATE INDEX IF NOT EXISTS idx_releases_artist 
