@@ -154,14 +154,14 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initia
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="audio">Áudio</SelectItem>
-                        <SelectItem value="video">Vídeo</SelectItem>
-                        <SelectItem value="estrutura">Estrutura</SelectItem>
                         <SelectItem value="computador">Computador</SelectItem>
-                        <SelectItem value="software">Software</SelectItem>
-                        <SelectItem value="mobilia">Mobilia</SelectItem>
-                        <SelectItem value="iluminacao">Iluminação</SelectItem>
                         <SelectItem value="escritorio">Escritório</SelectItem>
+                        <SelectItem value="estrutura">Estrutura</SelectItem>
+                        <SelectItem value="iluminacao">Iluminação</SelectItem>
+                        <SelectItem value="mobilia">Mobilia</SelectItem>
                         <SelectItem value="outros">Outros</SelectItem>
+                        <SelectItem value="software">Software</SelectItem>
+                        <SelectItem value="video">Vídeo</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
