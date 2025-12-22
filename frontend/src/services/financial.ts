@@ -37,6 +37,9 @@ export class FinancialService {
     const normalizedParams = normalizePaginationParams(params);
     const { from, to } = calculateRange(normalizedParams);
 
+    // Usa 'date' como campo de ordenação principal (sempre presente)
+    const sortField = normalizedParams.sortBy === 'created_at' ? 'date' : (normalizedParams.sortBy || 'date');
+
     const { data, error, count } = await supabase
       .from('financial_transactions')
       .select(`
@@ -47,7 +50,7 @@ export class FinancialService {
         projects:project_id (id, name),
         agenda_events:event_id (id, title)
       `, { count: 'exact' })
-      .order(normalizedParams.sortBy === 'created_at' ? 'transaction_date' : (normalizedParams.sortBy || 'transaction_date'), { 
+      .order(sortField, { 
         ascending: normalizedParams.sortOrder === 'asc' 
       })
       .range(from, to);
