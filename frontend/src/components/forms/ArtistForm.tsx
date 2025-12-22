@@ -1037,10 +1037,10 @@ export function ArtistForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Independente">Independente</SelectItem>
                         <SelectItem value="Com Empresário">Com Empresário</SelectItem>
-                        <SelectItem value="Gravadora">Gravadora</SelectItem>
                         <SelectItem value="Editora">Editora</SelectItem>
+                        <SelectItem value="Gravadora">Gravadora</SelectItem>
+                        <SelectItem value="Independente">Independente</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
