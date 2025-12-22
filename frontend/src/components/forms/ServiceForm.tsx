@@ -32,13 +32,13 @@ interface ServiceFormProps {
 
 const grupos = [
   { value: "agenciamento", label: "Agenciamento" },
-  { value: "producao_musical", label: "Produção Musical" },
-  { value: "producao_audiovisual", label: "Produção Audiovisual" },
-  { value: "editora", label: "Editora" },
-  { value: "design_grafico", label: "Design Gráfico" },
-  { value: "gerenciamento_redes_sociais", label: "Gerenciamento de Redes Sociais" },
-  { value: "trafego_pago", label: "Tráfego Pago" },
   { value: "criacao_sites", label: "Criação de Sites" },
+  { value: "design_grafico", label: "Design Gráfico" },
+  { value: "editora", label: "Editora" },
+  { value: "gerenciamento_redes_sociais", label: "Gerenciamento de Redes Sociais" },
+  { value: "producao_audiovisual", label: "Produção Audiovisual" },
+  { value: "producao_musical", label: "Produção Musical" },
+  { value: "trafego_pago", label: "Tráfego Pago" },
 ];
 
 const categories = [
