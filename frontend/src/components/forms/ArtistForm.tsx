@@ -878,12 +878,22 @@ export function ArtistForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Nubank">Nubank</SelectItem>
-                        <SelectItem value="Santander">Santander</SelectItem>
+                        <SelectItem value="Banco do Brasil">Banco do Brasil</SelectItem>
+                        <SelectItem value="Bradesco">Bradesco</SelectItem>
+                        <SelectItem value="C6 Bank">C6 Bank</SelectItem>
                         <SelectItem value="Caixa">Caixa</SelectItem>
-                        <SelectItem value="Itaú">Itaú</SelectItem>
-                        <SelectItem value="PicPay">PicPay</SelectItem>
                         <SelectItem value="Inter">Inter</SelectItem>
+                        <SelectItem value="Itaú">Itaú</SelectItem>
+                        <SelectItem value="Mercado Pago">Mercado Pago</SelectItem>
+                        <SelectItem value="Next">Next</SelectItem>
+                        <SelectItem value="Nubank">Nubank</SelectItem>
+                        <SelectItem value="Original">Original</SelectItem>
+                        <SelectItem value="PagBank">PagBank</SelectItem>
+                        <SelectItem value="PicPay">PicPay</SelectItem>
+                        <SelectItem value="Safra">Safra</SelectItem>
+                        <SelectItem value="Santander">Santander</SelectItem>
+                        <SelectItem value="Sicoob">Sicoob</SelectItem>
+                        <SelectItem value="Sicredi">Sicredi</SelectItem>
                         <SelectItem value="Outros">Outros</SelectItem>
                       </SelectContent>
                     </Select>
