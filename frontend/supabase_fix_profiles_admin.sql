@@ -30,12 +30,16 @@ $$;
 -- PARTE 2: POLÍTICAS PARA PROFILES
 -- ============================================
 
--- Remover políticas antigas
-DROP POLICY IF EXISTS profiles_all ON public.profiles;
-DROP POLICY IF EXISTS profiles_select ON public.profiles;
-DROP POLICY IF EXISTS profiles_update ON public.profiles;
-DROP POLICY IF EXISTS profiles_insert ON public.profiles;
-DROP POLICY IF EXISTS profiles_delete ON public.profiles;
+-- Remover TODAS as políticas antigas de profiles
+DO $$ 
+DECLARE 
+  pol RECORD;
+BEGIN
+  FOR pol IN SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'profiles'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.profiles', pol.policyname);
+  END LOOP;
+END $$;
 
 -- SELECT: Usuário vê seu perfil OU admin vê todos
 CREATE POLICY profiles_select ON public.profiles
