@@ -383,8 +383,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     if (!watchedSector || hasManualPermissionEdits || watchedPermissionMode !== 'automatic') return;
     const additions = sectorPermissionAdditions[watchedSector as keyof typeof sectorPermissionAdditions];
     if (!additions) return;
-    const safePermissions = watchedPermissions || {};
-    const merged: Record<string, string[]> = { ...safePermissions } as any;
+    const merged: Record<string, string[]> = { ...watchedPermissions } as any;
     Object.entries(additions).forEach(([moduleId, actions]) => {
       const existing = (merged[moduleId] || []) as string[];
       merged[moduleId] = Array.from(new Set([...existing, ...actions]));
