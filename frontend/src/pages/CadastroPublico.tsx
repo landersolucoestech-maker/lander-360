@@ -788,33 +788,6 @@ function ArtistStep({
   const hasManager = form.watch('has_manager');
   const hasRecordLabel = form.watch('has_record_label');
   const hasPublisher = form.watch('has_publisher');
-  const artistType = form.watch('artist_type');
-  const isBand = artistType === 'Banda';
-
-  // Funções para gerenciar integrantes da banda
-  const addBandMember = () => {
-    setBandMembers([...bandMembers, {
-      id: uuidv4(),
-      artistic_name: '',
-      civil_name: '',
-      document: '',
-      role: '',
-      percentage: 0,
-      observations: '',
-    }]);
-  };
-
-  const removeBandMember = (id: string) => {
-    setBandMembers(bandMembers.filter(m => m.id !== id));
-  };
-
-  const updateBandMember = (id: string, field: string, value: any) => {
-    setBandMembers(bandMembers.map(m => 
-      m.id === id ? { ...m, [field]: value } : m
-    ));
-  };
-
-  const totalBandPercentage = bandMembers.reduce((sum, m) => sum + (m.percentage || 0), 0);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -829,15 +802,6 @@ function ArtistStep({
   };
 
   const onSubmit = async (data: ArtistFormData) => {
-    // Validar integrantes se for banda
-    if (isBand && bandMembers.length === 0) {
-      toast({
-        title: 'Integrantes obrigatórios',
-        description: 'Adicione pelo menos um integrante da banda.',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     setIsSubmitting(true);
     try {
