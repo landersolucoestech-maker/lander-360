@@ -1,106 +1,119 @@
 <analysis>**original_problem_statement:**
-O usuário solicitou a migração de um projeto a partir de um repositório GitHub (). Os objetivos iniciais eram:
-1.  Analisar o repositório.
-2.  Remover todas as dependências da Lovable.
-3.  Adaptar o projeto para funcionar com Supabase, incluindo conexão e autenticação.
-4.  Criar todas as tabelas necessárias no Supabase e gerar os scripts SQL correspondentes.
-5.  Garantir que o projeto permanecesse funcional.
+The user initially requested a full migration of their Lander 360 project to a Supabase-centric architecture, which was completed. The task then evolved into a comprehensive technical audit. The agent performed the audit, implemented numerous high-priority security, performance, and refactoring fixes. Subsequently, the user reported a series of bugs related to user profiles, artist creation, contract imports, and data rendering, which were traced back to an inconsistent database schema (missing columns) and overly restrictive Row Level Security (RLS) policies. The agent systematically diagnosed and fixed these issues by providing SQL scripts to patch the database and correcting the frontend code. Most recently, the user requested several UI improvements, such as alphabetically sorting all dropdown lists and adding a Presskit/Midiakit upload field to the artist form, which were implemented.
 
-Durante a interação, os requisitos evoluíram para:
-- Conectar a um novo projeto Supabase fornecido pelo usuário.
-- Implementar todas as integrações de terceiros (Spotify, Google, OpenAI, etc.) do zero, usando novas chaves de API fornecidas pelo usuário.
-- Implantar todas as 32 Edge Functions do projeto no Supabase do usuário.
-- Por fim, o usuário solicitou uma análise técnica aprofundada e crítica de todo o sistema, atuando como um Arquiteto de Software Sênior/CTO.
+The final request from the user was to build a major new feature: a multi-step, public-facing registration form for new artists, musical works, and phonograms, based on a detailed specification document they provided.
 
 **User's preferred language**: Portuguese (pt-BR). The next agent MUST respond in Portuguese.
 
 **what currently exists?**
-O agente concluiu com sucesso a migração completa do projeto Lander 360. O frontend React/Vite foi extraído do repositório, as dependências Lovable foram removidas e o projeto foi conectado ao novo ambiente Supabase do usuário. Todas as 83 tabelas do banco de dados foram criadas com sucesso através de scripts SQL. Todas as 32 Edge Functions (backend serverless) foram reescritas e implantadas no Supabase do usuário, configuradas com as novas chaves de API fornecidas. O sistema está totalmente funcional, conectado ao banco de dados e com todas as integrações implantadas.
+The project is a full-stack React application using Supabase for the backend (Database, Auth, Storage) and Deno Edge Functions for serverless logic. The codebase has undergone significant improvements, including security hardening, database indexing, and code refactoring. Many database tables (, , , , etc.) have been patched with missing columns, and RLS policies have been corrected to resolve critical bugs. The UI has also been improved with alphabetically sorted lists and a new file upload field in the artist form. The system is largely functional, but the database schema has proven to be a recurring source of issues. The agent has just begun work on the new Public Registration Form feature.
 
 **Last working item**:
-*   **Last item agent was working:** O agente iniciou uma análise técnica aprofundada e crítica de toda a aplicação, conforme solicitado pelo usuário, que assumiu o papel de CTO. O agente estava na fase de exploração do código para coletar informações para esta auditoria.
+*   **Last item agent was working:** The agent started implementing the new Public Registration Form feature. It analyzed the user's detailed specification and created the main component file for this new page.
 *   **Status:** IN PROGRESS
-*   **Agent Testing Done:** N/A
-*   **Which testing method agent to use?** N/A (A tarefa atual é de análise e relatório, não de implementação ou teste de código).
-*   **User Testing Done:** N/A
+*   **Agent Testing Done:** N
+*   **Which testing method agent to use?** Frontend testing agent. This is a complex, multi-step form with significant conditional logic that requires thorough end-to-end testing after implementation.
+*   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-Não há problemas técnicos pendentes no código. A migração e a implantação foram concluídas. O único item em andamento é a tarefa de análise solicitada pelo usuário.
+There are no pending bugs reported by the user. The current focus is entirely on the new feature development.
 
 **In progress Task List**:
-*   **Task 1:** Realizar uma Auditoria Técnica Crítica do Sistema (P0)
-    *   **Where to resume:** O agente já realizou uma extensa exploração do código-fonte (serviços, contextos, tipos, etc.). O próximo passo é sintetizar esses dados e estruturar o relatório de auditoria de acordo com os requisitos rigorosos do usuário (foco em falhas, riscos, dívida técnica, etc.).
-    *   **What will be achieved with this?** O usuário receberá um relatório de auditoria técnica detalhado, apontando falhas, riscos e sugestões de melhoria para a arquitetura, backend, escalabilidade e segurança do sistema.
+*   **Task 1:** Implement the Public Registration Form (P0)
+    *   **Where to resume:** The file  has been created. The next step is to build the full functionality as specified by the user in message #537. This involves:
+        1.  Creating the initial screen with checkboxes to select the registration type (Artist, Work, Phonogram).
+        2.  Building a multi-step wizard that presents the forms in the mandatory sequence: Artist → Work → Phonogram.
+        3.  Implementing the conditional logic (e.g., forcing artist registration if work/phonogram is selected).
+        4.  Managing state across the steps (e.g., using a state management library or React Context).
+        5.  Integrating with existing services to save the data to the appropriate tables (, , ).
+        6.  Ensuring the submitted records are correctly flagged in the database (e.g., , ).
+    *   **What will be achieved with this?** A public-facing, unauthenticated form that allows external users to submit artists, works, and phonograms, which will then appear in the admin panel for review.
     *   **Status:** IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?** N/A
-    *   **Blocked on something:** Não.
+    *   **Should Test frontend/backend/both after fix?** Both. The frontend form logic is complex and needs thorough testing. The backend data creation via the Supabase client must be validated to ensure records are created with the correct status, origin, and relationships.
+    - **Blocked on something:** Database schema changes are required before this can be fully implemented (see Upcoming Tasks).
 
 **Upcoming and Future Tasks**
-*   As tarefas futuras serão definidas com base nos resultados e recomendações da auditoria técnica em andamento.
+*   **Upcoming Tasks:**
+    *   **(P0) Modify DB Schema for Public Form:** Before implementing the form's submission logic, you must create and execute an SQL script to add the following columns to the relevant tables (, , ):
+        -  (UUID) to group records from a single submission.
+        -  (TEXT) to identify records coming from the public form.
+    *   **(P1) Implement reCAPTCHA:** Integrate an invisible reCAPTCHA on the public form to prevent spam.
+    *   **(P1) Implement Save & Resume:** Use  to save form progress, allowing users to return and complete their submission later.
+    *   **(P2) Backend Notification Workflows:** Implement the notification system (email and/or in-app) to alert administrators about new submissions and to inform users about the status of their submissions (approved, rejected, etc.). This will likely require new Edge Functions.
+*   **Future Tasks:**
+    *   Address any remaining lower-priority items from the technical audit report ().
 
 **Completed work in this session**
-*   **Migração Completa do Lovable:** Removeu com sucesso as dependências  do  e o plugin do .
-*   **Configuração do Supabase:**
-    *   Conectou a aplicação ao projeto Supabase do usuário ().
-    *   Gerou e auxiliou na execução de scripts SQL para criar um esquema de banco de dados completo com 83 tabelas.
-    *   Gerou e aplicou scripts para corrigir colunas ausentes e políticas de RLS (Row Level Security).
-    *   Criou um gatilho de banco de dados () para popular a tabela  automaticamente em novos cadastros.
-*   **Implementação e Implantação de Edge Functions:**
-    *   Reescreveu 32 Edge Functions (lógica de backend) do zero com base na estrutura original e nas novas chaves de API fornecidas pelo usuário.
-    *   Implantou com sucesso todas as 32 funções no projeto Supabase do usuário usando a CLI do Supabase.
-*   **Gestão de Repositório:** Fez o push de todo o código atualizado, incluindo as novas Edge Functions, para o repositório GitHub do usuário.
+- **Technical Audit & Fixes:**
+  - Performed a full system audit and generated the report .
+  - Implemented all Priority 1 (Security) and Priority 2 (Performance/Refactoring) fixes.
+- **Database Schema & RLS Corrections:**
+  - Added numerous missing columns to , , , , .
+  - Created the  table to separate sensitive information.
+  - Fixed a critical infinite recursion error by rewriting the RLS policies for multiple tables.
+- **Bug Fixes & Feature Enhancements:**
+  - **Artist Form:** Added a Presskit/Midiakit PDF upload field and sorted all dropdown lists alphabetically.
+  - **Data Rendering:** Fixed an issue where financial transactions were not appearing by simplifying the data-fetching query.
+  - **Import:** Corrected a data type mismatch that was preventing contract file imports.
+  - **General UI:** Systematically scanned all major forms and sorted their dropdown lists alphabetically as requested.
+- **Deployment:** Deployed all 32 updated Edge Functions to the user's Supabase project.
 
 **Earlier issues found/mentioned but not fixed**
-*   A análise do agente (mensagem 245) identificou que o backend em Python () não é utilizado pelo sistema. Essa pasta permanece no projeto, mas não afeta a funcionalidade, pois toda a lógica de backend está nas Edge Functions do Supabase. A remoção não foi solicitada pelo usuário.
+*   None. All issues raised by the user during this session were addressed.
 
 **Known issue recurrence from previous fork**
 *   N/A
 
 **Code Architecture**
-*   **Frontend:** React, Vite, TypeScript, Tailwind CSS, shadcn/ui.
-*   **Backend:** Arquitetura Serverless usando Deno Edge Functions no Supabase. O diretório  (Python/FastAPI) existe, mas não é utilizado.
+*   **Frontend:** React, Vite, TypeScript, Tailwind CSS, shadcn/ui. Located in .
+*   **Backend:** Serverless via 32 Deno Edge Functions on Supabase. Located in .
 *   **Database:** Supabase (PostgreSQL).
-*   **Estrutura de Diretórios Relevante:**
-    *   : Contém toda a aplicação React.
-    *   : Código-fonte da aplicação.
-    *   : Configuração e código do Supabase.
-    *   : Diretório contendo todas as 32 Edge Functions (Deno).
-    *   : Arquivo de configuração do projeto Supabase.
+*   **Key Directories:**
+    *   : Contains the main page components.
+    *   : Contains all form components (e.g., ).
+    *   : Handles all communication with the Supabase client.
+    *   : Contains custom React hooks for data fetching and business logic.
+    *   : The Deno source code for all backend logic.
 
 **Key Technical Concepts**
-*   **Supabase (BaaS):** Utilizado para banco de dados (Postgres), autenticação, armazenamento e funções serverless.
-*   **Deno Edge Functions:** Toda a lógica de backend é implementada como funções TypeScript/JavaScript que rodam na infraestrutura serverless do Supabase.
-*   **Arquitetura Headless:** O frontend se comunica diretamente com a API do Supabase e as Edge Functions, tornando um backend de servidor tradicional obsoleto para este projeto.
+*   **Supabase (BaaS):** The core of the application, providing the database, authentication, storage, and serverless compute (Edge Functions).
+*   **Deno Edge Functions:** The entire backend is built on Deno/TypeScript functions running on Supabase's infrastructure.
+*   **Headless Architecture:** The frontend is decoupled and communicates directly with Supabase services.
+*   **React Hook Form & Zod:** Used extensively for robust form management and schema-based validation.
 
 **key DB schema**
-O esquema é extenso, com 83 tabelas. As tabelas principais incluem: , , , , , , , , , , e .
+The schema is extensive (94 tables). Key tables that have been recently modified or are relevant to the next task include:
+*   **artists:** uid=0(root) gid=0(root) groups=0(root), , , , ,  (newly added), . (Requires  and ).
+*   **music_registry** (represents Obras): uid=0(root) gid=0(root) groups=0(root), , , . (Requires  and ).
+*   **phonograms** (represents Fonogramas): uid=0(root) gid=0(root) groups=0(root), , . (Requires  and ).
+*   **artist_sensitive_data:** uid=0(root) gid=0(root) groups=0(root), , , , , .
 
 **changes in tech stack**
-*   O projeto foi migrado de um ambiente Lovable para uma pilha padrão React + Supabase.
-*   O backend de Python/FastAPI/MongoDB padrão do ambiente de trabalho foi substituído pela arquitetura serverless do Supabase.
+*   None in this session. The stack was solidified in the previous session.
 
 **All files of reference**
-*   : Diretório com as 32 Edge Functions implementadas.
-*   : Script SQL usado para adicionar colunas e políticas de RLS.
-*   : Arquivo TypeScript que define a estrutura do banco de dados, servindo como fonte da verdade.
-*   : Contém as chaves públicas para conexão com o Supabase.
+*   **/app/frontend/src/pages/CadastroPublico.tsx**: (New) The file created for the public registration feature.
+*   **/app/frontend/src/components/forms/ArtistForm.tsx**: (Updated) Heavily modified with the new presskit field and alphabetically sorted lists.
+*   **/app/frontend/src/services/financial.ts**: (Updated) The query to fetch transactions was simplified to fix a rendering bug.
+*   **/app/frontend/AUDITORIA_TECNICA_LANDER360.md**: (New) The comprehensive technical audit report.
+*   **/app/frontend/supabase_*.sql**: Numerous SQL scripts created during the session to patch the database schema and fix RLS policies.
 
-**Areas that need refactoring**
-*   O diretório  é obsoleto e pode ser removido para evitar confusão.
-*   A auditoria técnica em andamento provavelmente identificará outras áreas que necessitam de refatoração.
+**Areas that need refactoring**:
+*   **RLS Policies:** The current policies were simplified to  for authenticated users to fix critical bugs. They should be reviewed and tightened to provide more granular, role-based access control for better security.
+*   **DB Schema Synchronization:** The database schema is the single largest source of bugs. The  file is often inconsistent with the actual database. A robust process to generate types from the DB schema or use a single source of truth should be considered to prevent future issues.
 
 **key api endpoints**
-Todos os endpoints de API são Edge Functions do Supabase, invocadas via . Os principais incluem: , , , , .
+*   The application does not use a traditional REST API. All backend logic is either handled by direct Supabase table operations (e.g., ) or by invoking Deno Edge Functions (e.g., ).
 
 **Critical Info for New Agent**
-*   **TAREFA ATUAL:** A prioridade máxima é concluir a auditoria técnica. Você deve atuar como um Arquiteto de Software Sênior/CTO e produzir um relatório crítico e detalhado, seguindo estritamente o formato solicitado pelo usuário na mensagem 360.
-*   **ESTADO DO PROJETO:** O sistema está 100% funcional. A migração foi concluída, as tabelas do banco de dados foram criadas e todas as 32 Edge Functions foram implantadas com as chaves de API do usuário.
-*   **ARQUITETURA:** Lembre-se que este é um projeto headless. O backend Python em  é irrelevante. Toda a lógica está nas Edge Functions do Supabase, localizadas em .
+*   **TOP PRIORITY:** Your main task is to build the Public Registration Form as detailed in the user's specification (chat message #537). This is a large, multi-step feature.
+*   **DATABASE SCHEMA CHANGES REQUIRED:** Before you can save any data from the new form, you **MUST** create and run an SQL script to add the  and  columns to the ,  (Obras), and  (Fonogramas) tables.
+*   **DON'T TRUST THE TYPES:** Be aware that the database schema has been inconsistent. Do not fully trust the TypeScript types in . Be prepared to verify table structures directly in the database or to add missing columns as needed.
+*   **FOLLOW THE SPECS:** The user provided a very detailed specification for the new form. Follow it closely, paying special attention to the required form sequence (Artist → Work → Phonogram), conditional logic, and the specific data that needs to be saved (, , etc.).
 
 **documents and test_reports created in this job**
-*   
-*   
-*   
+*   /app/frontend/AUDITORIA_TECNICA_LANDER360.md
+*   Numerous SQL script files under  prefixed with .
 
 **Last 10 User Messages and any pending HUMAN messages**
 1.  
@@ -115,28 +128,30 @@ Todos os endpoints de API são Edge Functions do Supabase, invocadas via . Os pr
 10. 
 
 **Project Health Check:**
-*   **Broken:** Nada.
-*   **Mocked:** Existe um  para fins de demonstração, mas os serviços principais buscam dados reais do Supabase.
+*   **Broken:** The new Public Registration Form is a work-in-progress and not yet functional.
+*   **Mocked:** A  exists but does not interfere with the main application logic, which uses live Supabase data.
 
 **3rd Party Integrations**
-*   **Supabase:** Core BaaS.
-*   **OpenAI:**  (Requer ).
-*   **Claude:**  (Requer ).
-*   **Gemini:**  (Requer ).
-*   **Spotify API:**  (Requer , ).
-*   **YouTube Data API:**  (Requer ).
-*   **Google Calendar API:**  (Requer , ).
-*   **Meta/Instagram API:**  (Requer , , ).
-*   **TikTok Developer API:**  (Requer , ).
-*   **Resend:** Para envio de e-mails (Requer ).
-*   **Autentique:** Para assinaturas digitais (Requer ).
-*   **Nota:** Todas as chaves foram fornecidas pelo usuário e configuradas como secrets no projeto Supabase.
+*   **Supabase:** Core BaaS for Database, Auth, Storage, Edge Functions.
+*   **OpenAI, Claude, Gemini:** For AI features, invoked via the  Edge Function.
+*   **Spotify API:** For artist metrics.
+*   **YouTube Data API:** For video metrics.
+*   **Google Calendar API:** For calendar sync.
+*   **Meta/Instagram API:** For social media metrics.
+*   **TikTok Developer API:** For social media metrics.
+*   **Resend:** For sending emails.
+*   **Autentique:** For digital signatures.
+(Note: All keys are configured as secrets in the user's Supabase project.)
 
 **Testing status**
-*   **Testing agent used after significant changes:** NO
+*   **Testing agent used after significant changes:** YES (primarily the screenshot tool for UI debugging and verification).
 *   **Troubleshoot agent used after agent stuck in loop:** NO
 *   **Test files created:** []
-*   **Known regressions:** []
+*   **Known regressions:** None.
 
 **Credentials to test flow:**
-Não há credenciais de usuário. Para testar fluxos autenticados, é necessário criar um novo usuário através da interface de login/cadastro da aplicação, o que acionará o processo de autenticação do Supabase.</analysis>
+*   **Email:** 
+*   **Password:** 
+
+**What agent forgot to execute**
+*   The agent did not forget to execute anything, but the current task is mid-implementation. The immediate next step of adding the required  and  columns to the database was not explicitly planned before starting the UI work, and this will be a blocker for completing the feature.</analysis>
