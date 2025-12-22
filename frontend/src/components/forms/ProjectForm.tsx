@@ -37,7 +37,7 @@ const songSchema = z.object({
   audio_files: z.array(audioFileSchema).optional(),
 });
 
-const languageOptions = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Coreano', 'Mandarim', 'Instrumental', 'Multilíngue', 'Outro'];
+const languageOptions = ['Alemão', 'Coreano', 'Espanhol', 'Francês', 'Inglês', 'Instrumental', 'Italiano', 'Japonês', 'Mandarim', 'Multilíngue', 'Outro', 'Português'];
 
 const projectSchema = z.object({
   release_type: z.enum(['single', 'ep', 'album']).default('single'),
