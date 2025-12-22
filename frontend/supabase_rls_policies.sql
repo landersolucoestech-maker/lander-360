@@ -33,28 +33,30 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- TABELAS VINCULADAS AO USUÁRIO (user_id)
+-- INVOICES
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'invoices') THEN
     ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS user_own_invoices ON public.invoices;
-    CREATE POLICY user_own_invoices ON public.invoices FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+    DROP POLICY IF EXISTS auth_read_invoices ON public.invoices;
+    CREATE POLICY auth_read_invoices ON public.invoices FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
+-- INFLUENCERS
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'influencers') THEN
     ALTER TABLE public.influencers ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS user_own_influencers ON public.influencers;
-    CREATE POLICY user_own_influencers ON public.influencers FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+    DROP POLICY IF EXISTS auth_read_influencers ON public.influencers;
+    CREATE POLICY auth_read_influencers ON public.influencers FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
+-- LANDERZAP_CONVERSATIONS
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'landerzap_conversations') THEN
     ALTER TABLE public.landerzap_conversations ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS user_own_conversations ON public.landerzap_conversations;
-    CREATE POLICY user_own_conversations ON public.landerzap_conversations FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+    DROP POLICY IF EXISTS auth_read_conversations ON public.landerzap_conversations;
+    CREATE POLICY auth_read_conversations ON public.landerzap_conversations FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
@@ -62,37 +64,37 @@ END $$;
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'system_modules') THEN
     ALTER TABLE public.system_modules ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS admin_system_modules ON public.system_modules;
-    CREATE POLICY admin_system_modules ON public.system_modules FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role_id IN (SELECT id FROM public.roles WHERE name IN ('master','administrador'))));
+    DROP POLICY IF EXISTS auth_read_system_modules ON public.system_modules;
+    CREATE POLICY auth_read_system_modules ON public.system_modules FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'module_permissions') THEN
     ALTER TABLE public.module_permissions ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS admin_module_permissions ON public.module_permissions;
-    CREATE POLICY admin_module_permissions ON public.module_permissions FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role_id IN (SELECT id FROM public.roles WHERE name IN ('master','administrador'))));
+    DROP POLICY IF EXISTS auth_read_module_permissions ON public.module_permissions;
+    CREATE POLICY auth_read_module_permissions ON public.module_permissions FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
--- EDGE FUNCTIONS (ADMIN)
+-- EDGE FUNCTIONS
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'edge_functions') THEN
     ALTER TABLE public.edge_functions ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS admin_edge_functions ON public.edge_functions;
-    CREATE POLICY admin_edge_functions ON public.edge_functions FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role_id IN (SELECT id FROM public.roles WHERE name IN ('master','administrador'))));
+    DROP POLICY IF EXISTS auth_read_edge_functions ON public.edge_functions;
+    CREATE POLICY auth_read_edge_functions ON public.edge_functions FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'edge_function_permissions') THEN
     ALTER TABLE public.edge_function_permissions ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS admin_edge_permissions ON public.edge_function_permissions;
-    CREATE POLICY admin_edge_permissions ON public.edge_function_permissions FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.user_roles ur WHERE ur.user_id = auth.uid() AND ur.role_id IN (SELECT id FROM public.roles WHERE name IN ('master','administrador'))));
+    DROP POLICY IF EXISTS auth_read_edge_permissions ON public.edge_function_permissions;
+    CREATE POLICY auth_read_edge_permissions ON public.edge_function_permissions FOR SELECT TO authenticated USING (true);
   END IF;
 END $$;
 
--- TABELAS DE APOIO / CATÁLOGO
+-- SECTORS
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sectors') THEN
     ALTER TABLE public.sectors ENABLE ROW LEVEL SECURITY;
