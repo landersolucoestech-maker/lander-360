@@ -1,52 +1,55 @@
--- CRIAR SCHEMA INTERNO SE NÃO EXISTIR
 CREATE SCHEMA IF NOT EXISTS internal;
 
--- HABILITAR RLS NAS TABELAS QUE JÁ POSSUEM POLICIES
-ALTER TABLE public.artists ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_artists ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.releases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.financial_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.music_registry ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.phonograms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.royalties ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.marketing_campaigns ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.marketing_content ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.crm_contacts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.agenda_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.landerzap_conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.landerzap_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.artist_sensitive_data ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.artist_goals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.categorization_rules ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.takedown_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.licensing_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.contract_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.shares ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.share_participants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.role_permissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+DO $$
+DECLARE
+  t TEXT;
+  tables TEXT[] := ARRAY[
+    'artists','user_artists','projects','releases','contracts',
+    'financial_transactions','music_registry','phonograms',
+    'marketing_campaigns','marketing_content','crm_contacts',
+    'agenda_events','inventory_items','services','invoices',
+    'landerzap_conversations','landerzap_messages','users',
+    'artist_sensitive_data','artist_goals','notifications',
+    'categorization_rules','takedown_requests','licensing_requests',
+    'contract_templates','shares','share_participants',
+    'roles','permissions','role_permissions','user_roles',
+    'edge_function_logs','login_history','audit_logs'
+  ];
+BEGIN
+  FOREACH t IN ARRAY tables LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = t) THEN
+      EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+    END IF;
+  END LOOP;
+END $$;
 
--- TABELAS DE LOG/SISTEMA - HABILITAR RLS E BLOQUEAR ACESSO DIRETO
-ALTER TABLE public.edge_function_logs ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS deny_all_edge_logs ON public.edge_function_logs;
-CREATE POLICY deny_all_edge_logs ON public.edge_function_logs FOR ALL USING (false);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'edge_function_logs') THEN
+    DROP POLICY IF EXISTS deny_all_edge_logs ON public.edge_function_logs;
+    CREATE POLICY deny_all_edge_logs ON public.edge_function_logs FOR ALL USING (false);
+  END IF;
+END $$;
 
-ALTER TABLE public.login_history ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS deny_all_login_history ON public.login_history;
-CREATE POLICY deny_all_login_history ON public.login_history FOR ALL USING (auth.uid() IS NOT NULL);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'login_history') THEN
+    DROP POLICY IF EXISTS deny_all_login_history ON public.login_history;
+    CREATE POLICY deny_all_login_history ON public.login_history FOR ALL USING (auth.uid() IS NOT NULL);
+  END IF;
+END $$;
 
-ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS deny_all_audit_logs ON public.audit_logs;
-CREATE POLICY deny_all_audit_logs ON public.audit_logs FOR ALL USING (false);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'audit_logs') THEN
+    DROP POLICY IF EXISTS deny_all_audit_logs ON public.audit_logs;
+    CREATE POLICY deny_all_audit_logs ON public.audit_logs FOR ALL USING (false);
+  END IF;
+END $$;
 
--- MOVER VIEW COM SECURITY DEFINER PARA SCHEMA INTERNO
-ALTER VIEW IF EXISTS public.v_user_permissions SET SCHEMA internal;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.views WHERE table_schema = 'public' AND table_name = 'v_user_permissions') THEN
+    ALTER VIEW public.v_user_permissions SET SCHEMA internal;
+  END IF;
+END $$;
