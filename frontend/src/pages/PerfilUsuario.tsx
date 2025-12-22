@@ -58,10 +58,10 @@ const PerfilUsuario = () => {
     
     setIsLoading(true);
     try {
-      // Fetch profile data
+      // Fetch profile data - usando apenas colunas básicas
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, full_name, email, phone, avatar_url, department')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -84,7 +84,7 @@ const PerfilUsuario = () => {
         name: profile?.full_name || user.user_metadata?.full_name || "",
         email: user.email || "",
         phone: profile?.phone || "",
-        sector: profile?.sector || "",
+        sector: (profile as any)?.department || "",
         role: roleData?.role || "user",
         bio: "",
         avatarUrl: profile?.avatar_url || ""
