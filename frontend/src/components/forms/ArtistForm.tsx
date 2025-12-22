@@ -144,6 +144,7 @@ export function ArtistForm({
       artist_image: undefined,
       biography: artist?.bio || '',
       artist_types: (artist as any)?.artist_types || [],
+      musician_roles: (artist as any)?.musician_roles || [],
       full_name: artist?.full_name || '',
       birth_date: artist?.birth_date ? new Date(artist.birth_date) : undefined,
       cpf_cnpj: '', // Loaded from artist_sensitive_data table (admin only)
