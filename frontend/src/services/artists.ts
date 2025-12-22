@@ -1,5 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Artist, ArtistInsert, ArtistUpdate, ArtistWithDetails } from '@/types/database';
+import { 
+  PaginationParams, 
+  PaginatedResult, 
+  calculateRange, 
+  createPaginatedResult,
+  normalizePaginationParams,
+  DEFAULT_PAGE_SIZE
+} from '@/lib/pagination';
 
 // Query keys
 export const artistsQueryKeys = {
@@ -10,18 +18,37 @@ export const artistsQueryKeys = {
   detail: (id: string) => [...artistsQueryKeys.details(), id] as const,
   search: (query: string) => [...artistsQueryKeys.all, 'search', query] as const,
   secure: () => [...artistsQueryKeys.all, 'secure'] as const,
+  paginated: (params: PaginationParams) => [...artistsQueryKeys.all, 'paginated', params] as const,
 };
 
 export class ArtistsService {
-  // Get all artists
+  // Get all artists (mantido para compatibilidade, mas limitado a 100)
   static async getAll(): Promise<Artist[]> {
     const { data, error } = await supabase
       .from('artists')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100); // Limite de segurança
 
     if (error) throw error;
     return data || [];
+  }
+
+  // Get artists with pagination
+  static async getPaginated(params?: Partial<PaginationParams>): Promise<PaginatedResult<Artist>> {
+    const normalizedParams = normalizePaginationParams(params);
+    const { from, to } = calculateRange(normalizedParams);
+
+    const { data, error, count } = await supabase
+      .from('artists')
+      .select('*', { count: 'exact' })
+      .order(normalizedParams.sortBy || 'created_at', { 
+        ascending: normalizedParams.sortOrder === 'asc' 
+      })
+      .range(from, to);
+
+    if (error) throw error;
+    return createPaginatedResult(data || [], count || 0, normalizedParams);
   }
 
   // Get artist by ID
