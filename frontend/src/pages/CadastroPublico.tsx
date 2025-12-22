@@ -198,7 +198,7 @@ function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, 
 
 const genreOptions = ['Afrobeat', 'Afrobeats', 'Alternative Rock', 'Ambient', 'Arrocha', 'Axé', 'Bachata', 'Baião', 'Blues', 'Bossa Nova', 'Brega Funk', 'Choro', 'Country', 'Cumbia', 'Dancehall', 'Deep House', 'Drill', 'Dubstep', 'EDM', 'Eletrônica', 'Emo', 'Experimental', 'Flamenco', 'Folk', 'Forró', 'Funk', 'Funk Carioca', 'Gospel', 'Grunge', 'Hard Rock', 'Heavy Metal', 'Hip-Hop', 'House', 'Indie', 'Instrumental', 'Jazz', 'K-pop', 'Lo-fi', 'Metal', 'MPB', 'Música Religiosa', 'Pagode', 'Piseiro', 'Pop', 'Punk', 'R&B', 'Rap', 'Reggae', 'Reggaeton', 'Rock', 'Samba', 'Sertanejo', 'Soul', 'Techno', 'Trance', 'Trap', 'World Music'];
 
-const artistTypeOptions = ['DJ', 'Produtor', 'DJ / Produtor', 'Banda'];
+const artistTypeOptions = ['DJ', 'Produtor', 'DJ / Produtor', 'Músico', 'Banda'];
 
 const bankOptions = ['Banco do Brasil', 'Bradesco', 'C6 Bank', 'Caixa', 'Inter', 'Itaú', 'Mercado Pago', 'Next', 'Nubank', 'Original', 'PagBank', 'PicPay', 'Safra', 'Santander', 'Sicoob', 'Sicredi', 'Outros'];
 
