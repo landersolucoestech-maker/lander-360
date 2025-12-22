@@ -1,11 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { 
+  PaginationParams, 
+  PaginatedResult, 
+  calculateRange, 
+  createPaginatedResult,
+  normalizePaginationParams
+} from '@/lib/pagination';
 
 type FinancialTransaction = Database['public']['Tables']['financial_transactions']['Row'];
 type FinancialTransactionInsert = Database['public']['Tables']['financial_transactions']['Insert'];
 type FinancialTransactionUpdate = Database['public']['Tables']['financial_transactions']['Update'];
 
 export class FinancialService {
+  // Get all transactions (mantido para compatibilidade, mas limitado)
   static async getAll(): Promise<any[]> {
     const { data, error } = await supabase
       .from('financial_transactions')
@@ -17,10 +25,35 @@ export class FinancialService {
         projects:project_id (id, name),
         agenda_events:event_id (id, title)
       `)
-      .order('transaction_date', { ascending: false });
+      .order('transaction_date', { ascending: false })
+      .limit(100); // Limite de segurança
 
     if (error) throw error;
     return data || [];
+  }
+
+  // Get transactions with pagination
+  static async getPaginated(params?: Partial<PaginationParams>): Promise<PaginatedResult<any>> {
+    const normalizedParams = normalizePaginationParams(params);
+    const { from, to } = calculateRange(normalizedParams);
+
+    const { data, error, count } = await supabase
+      .from('financial_transactions')
+      .select(`
+        *,
+        artists:artist_id (id, name, stage_name),
+        crm_contacts:crm_contact_id (id, name, company),
+        contracts:contract_id (id, title),
+        projects:project_id (id, name),
+        agenda_events:event_id (id, title)
+      `, { count: 'exact' })
+      .order(normalizedParams.sortBy === 'created_at' ? 'transaction_date' : (normalizedParams.sortBy || 'transaction_date'), { 
+        ascending: normalizedParams.sortOrder === 'asc' 
+      })
+      .range(from, to);
+
+    if (error) throw error;
+    return createPaginatedResult(data || [], count || 0, normalizedParams);
   }
 
   static async getById(id: string): Promise<FinancialTransaction | null> {
