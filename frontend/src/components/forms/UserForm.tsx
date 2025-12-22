@@ -780,7 +780,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                       {permissionActions.map((action) => {
                         const Icon = action.icon;
-                        const isChecked = watchedPermissions[module.id as keyof typeof watchedPermissions]?.includes(action.id) || false;
+                        const safePermissions = watchedPermissions || {};
+                        const isChecked = safePermissions[module.id as keyof typeof safePermissions]?.includes(action.id) || false;
                         
                         return (
                           <div key={action.id} className="flex items-center space-x-2">
