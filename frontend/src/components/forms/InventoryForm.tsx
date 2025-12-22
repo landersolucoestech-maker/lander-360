@@ -118,21 +118,21 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initia
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="administrativo">Administrativo / Corporativo</SelectItem>
+                        <SelectItem value="arquivo">Arquivo e Documentação</SelectItem>
+                        <SelectItem value="artistico">Artístico (A&R – Artistas & Repertório)</SelectItem>
+                        <SelectItem value="comercial">Comercial / Vendas</SelectItem>
+                        <SelectItem value="comunicacao">Comunicação e Imprensa (PR)</SelectItem>
+                        <SelectItem value="distribuicao">Distribuição Digital</SelectItem>
+                        <SelectItem value="editora">Editora Musical (Publishing)</SelectItem>
+                        <SelectItem value="eventos">Eventos e Shows</SelectItem>
                         <SelectItem value="financeiro">Financeiro</SelectItem>
                         <SelectItem value="juridico">Jurídico</SelectItem>
-                        <SelectItem value="artistico">Artístico (A&R – Artistas & Repertório)</SelectItem>
-                        <SelectItem value="producao_musical">Produção Musical</SelectItem>
-                        <SelectItem value="producao_audiovisual">Produção Audiovisual</SelectItem>
-                        <SelectItem value="editora">Editora Musical (Publishing)</SelectItem>
-                        <SelectItem value="distribuicao">Distribuição Digital</SelectItem>
+                        <SelectItem value="logistica">Logística e Operações</SelectItem>
                         <SelectItem value="marketing">Marketing</SelectItem>
-                        <SelectItem value="comunicacao">Comunicação e Imprensa (PR)</SelectItem>
-                        <SelectItem value="eventos">Eventos e Shows</SelectItem>
-                        <SelectItem value="comercial">Comercial / Vendas</SelectItem>
+                        <SelectItem value="producao_audiovisual">Produção Audiovisual</SelectItem>
+                        <SelectItem value="producao_musical">Produção Musical</SelectItem>
                         <SelectItem value="rh">Recursos Humanos (RH)</SelectItem>
                         <SelectItem value="ti">Tecnologia / TI</SelectItem>
-                        <SelectItem value="arquivo">Arquivo e Documentação</SelectItem>
-                        <SelectItem value="logistica">Logística e Operações</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
