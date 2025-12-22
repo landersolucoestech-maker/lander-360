@@ -31,7 +31,7 @@ const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-?\d{4}$/;
 
 // Validação para PIX (CPF, CNPJ, email, telefone ou chave aleatória)
 const pixKeyRegex = /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\(\d{2}\)\s?\d{4,5}-?\d{4}|\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i;
-const artistTypeOptions = ['Compositor', 'DJ', 'DJ / Produtor', 'Intérprete', 'Músico', 'Produtor', 'Banda'];
+const artistTypeOptions = ['Compositor', 'DJ', 'DJ / Produtor', 'Intérprete', 'Músico', 'Produtor'];
 
 // Opções de funções para músicos
 const musicianRoleOptions = [
