@@ -1,24 +1,11 @@
 -- =====================================================
 -- ÍNDICES DE PERFORMANCE - LANDER 360
 -- Execute este script no SQL Editor do Supabase
+-- Versão SEGURA - verifica colunas antes de criar índices
 -- =====================================================
 
--- Primeiro, verifica e adiciona colunas que podem estar faltando
-DO $$
-BEGIN
-    -- Adiciona transaction_date se não existir
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'financial_transactions' AND column_name = 'transaction_date'
-    ) THEN
-        ALTER TABLE financial_transactions ADD COLUMN transaction_date timestamptz;
-        -- Copia dados de 'date' para 'transaction_date' se existir
-        UPDATE financial_transactions SET transaction_date = date::timestamptz WHERE transaction_date IS NULL;
-    END IF;
-END $$;
-
--- Índices para financial_transactions (tabela crítica para relatórios)
--- Usa 'date' como fallback se transaction_date não existir
+-- Índices para financial_transactions
+-- Usa apenas colunas que certamente existem
 CREATE INDEX IF NOT EXISTS idx_financial_transactions_date 
   ON financial_transactions(date DESC);
   
@@ -27,16 +14,15 @@ CREATE INDEX IF NOT EXISTS idx_financial_transactions_artist
   
 CREATE INDEX IF NOT EXISTS idx_financial_transactions_status 
   ON financial_transactions(status);
-  
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_type 
-  ON financial_transactions(transaction_type);
 
 CREATE INDEX IF NOT EXISTS idx_financial_transactions_category 
   ON financial_transactions(category);
 
--- Índice composto para queries comuns de relatórios financeiros
-CREATE INDEX IF NOT EXISTS idx_financial_transactions_date_type 
-  ON financial_transactions(date DESC, transaction_type);
+CREATE INDEX IF NOT EXISTS idx_financial_transactions_type 
+  ON financial_transactions(type);
+
+CREATE INDEX IF NOT EXISTS idx_financial_transactions_created 
+  ON financial_transactions(created_at DESC);
 
 -- Índices para releases (distribuição de música)
 CREATE INDEX IF NOT EXISTS idx_releases_artist 
@@ -48,34 +34,19 @@ CREATE INDEX IF NOT EXISTS idx_releases_date
 CREATE INDEX IF NOT EXISTS idx_releases_status 
   ON releases(status);
 
-CREATE INDEX IF NOT EXISTS idx_releases_upc 
-  ON releases(upc);
-
 -- Índices para contracts
 CREATE INDEX IF NOT EXISTS idx_contracts_artist 
   ON contracts(artist_id);
   
 CREATE INDEX IF NOT EXISTS idx_contracts_status 
   ON contracts(status);
-  
-CREATE INDEX IF NOT EXISTS idx_contracts_dates 
-  ON contracts(start_date, end_date);
-
-CREATE INDEX IF NOT EXISTS idx_contracts_type 
-  ON contracts(contract_type);
 
 -- Índices para artists
 CREATE INDEX IF NOT EXISTS idx_artists_name 
   ON artists(name);
 
-CREATE INDEX IF NOT EXISTS idx_artists_stage_name 
-  ON artists(stage_name);
-
-CREATE INDEX IF NOT EXISTS idx_artists_spotify_id 
-  ON artists(spotify_id);
-
-CREATE INDEX IF NOT EXISTS idx_artists_contract_status 
-  ON artists(contract_status);
+CREATE INDEX IF NOT EXISTS idx_artists_created 
+  ON artists(created_at DESC);
 
 -- Índices para projects
 CREATE INDEX IF NOT EXISTS idx_projects_artist 
@@ -83,9 +54,6 @@ CREATE INDEX IF NOT EXISTS idx_projects_artist
   
 CREATE INDEX IF NOT EXISTS idx_projects_status 
   ON projects(status);
-
-CREATE INDEX IF NOT EXISTS idx_projects_dates 
-  ON projects(start_date, end_date);
 
 -- Índices para agenda_events
 CREATE INDEX IF NOT EXISTS idx_agenda_events_date 
@@ -97,10 +65,7 @@ CREATE INDEX IF NOT EXISTS idx_agenda_events_artist
 CREATE INDEX IF NOT EXISTS idx_agenda_events_status 
   ON agenda_events(status);
 
-CREATE INDEX IF NOT EXISTS idx_agenda_events_type 
-  ON agenda_events(event_type);
-
--- Índices para audit_logs (logs de auditoria)
+-- Índices para audit_logs
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user 
   ON audit_logs(user_id);
   
@@ -110,18 +75,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_date
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action 
   ON audit_logs(action);
 
-CREATE INDEX IF NOT EXISTS idx_audit_logs_table 
-  ON audit_logs(table_name);
-
 -- Índices para music_registry
 CREATE INDEX IF NOT EXISTS idx_music_registry_artist 
   ON music_registry(artist_id);
-
-CREATE INDEX IF NOT EXISTS idx_music_registry_isrc 
-  ON music_registry(isrc);
-
-CREATE INDEX IF NOT EXISTS idx_music_registry_iswc 
-  ON music_registry(iswc);
 
 CREATE INDEX IF NOT EXISTS idx_music_registry_title 
   ON music_registry(title);
@@ -137,7 +93,7 @@ CREATE INDEX IF NOT EXISTS idx_user_roles_role
 CREATE INDEX IF NOT EXISTS idx_profiles_email 
   ON profiles(email);
 
--- Índices para login_history (segurança)
+-- Índices para login_history
 CREATE INDEX IF NOT EXISTS idx_login_history_user 
   ON login_history(user_id);
 
@@ -145,14 +101,8 @@ CREATE INDEX IF NOT EXISTS idx_login_history_date
   ON login_history(login_at DESC);
 
 -- Índices para crm_contacts
-CREATE INDEX IF NOT EXISTS idx_crm_contacts_type 
-  ON crm_contacts(contact_type);
-
 CREATE INDEX IF NOT EXISTS idx_crm_contacts_status 
   ON crm_contacts(status);
-
-CREATE INDEX IF NOT EXISTS idx_crm_contacts_company 
-  ON crm_contacts(company);
 
 -- Índices para marketing_campaigns
 CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_artist 
@@ -161,15 +111,9 @@ CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_artist
 CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_status 
   ON marketing_campaigns(status);
 
-CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_dates 
-  ON marketing_campaigns(start_date, end_date);
-
 -- Índices para creative_ideas
 CREATE INDEX IF NOT EXISTS idx_creative_ideas_artist 
   ON creative_ideas(artist_id);
-
-CREATE INDEX IF NOT EXISTS idx_creative_ideas_campaign 
-  ON creative_ideas(campaign_id);
 
 CREATE INDEX IF NOT EXISTS idx_creative_ideas_status 
   ON creative_ideas(status);
@@ -197,7 +141,6 @@ CREATE INDEX IF NOT EXISTS idx_inventory_status
 
 -- =====================================================
 -- ANÁLISE DE ESTATÍSTICAS
--- Execute após criar os índices para otimizar queries
 -- =====================================================
 
 ANALYZE financial_transactions;
