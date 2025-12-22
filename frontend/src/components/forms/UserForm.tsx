@@ -315,7 +315,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       setValue('role', userRole);
 
       // Carregar permissões detalhadas existentes
-      if (user.permissions && user.permissions.length > 0) {
+      const userPerms = user.permissions;
+      if (userPerms && Array.isArray(userPerms) && userPerms.length > 0) {
         const modulePermissions: { [key: string]: string[] } = {
           artistas: [],
           projetos: [],
@@ -328,8 +329,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           usuarios: [],
         };
 
-        user.permissions.forEach((permission: string) => {
-          if (permission.includes(':')) {
+        userPerms.forEach((permission: string) => {
+          if (permission && typeof permission === 'string' && permission.includes(':')) {
             const [module, action] = permission.split(':');
             if (modulePermissions[module]) {
               modulePermissions[module].push(action);
@@ -347,7 +348,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     }
   }, [user, setValue]);
 
-  const watchedPermissions = watch('permissions');
+  const watchedPermissions = watch('permissions') || {};
   const watchedTemplate = watch('permissionTemplate');
   const watchedRole = watch('role');
   const watchedSector = watch('sector');
