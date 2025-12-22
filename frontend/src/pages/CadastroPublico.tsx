@@ -1434,15 +1434,6 @@ function WorkStep({
 
   // Adicionar obra à lista pendente (não salva no banco ainda)
   const addToPendingList = (data: WorkFormData) => {
-    if (selectedArtistsList.length === 0) {
-      toast({
-        title: 'Artista obrigatório',
-        description: 'Selecione pelo menos um artista vinculado.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     if (totalPercentage !== 100) {
       toast({
         title: 'Percentual inválido',
@@ -1459,7 +1450,6 @@ function WorkStep({
       genre: data.genre,
       iswc: data.iswc,
       authors: [...authors],
-      artists: [...selectedArtistsList],
       has_publisher: data.has_publisher,
       publisher_name: data.publisher_name,
       contract_type: data.contract_type,
@@ -1476,7 +1466,6 @@ function WorkStep({
       is_original: true,
       editorial_representation: false,
     });
-    setSelectedArtistsList([]);
     setAuthors([{ name: '', role: '', percentage: 100 }]);
 
     toast({
