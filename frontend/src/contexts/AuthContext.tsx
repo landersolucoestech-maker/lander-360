@@ -52,43 +52,61 @@ const routeToModuleMap: Record<string, string[]> = {
 };
 
 // Permissões COMPLETAS por role - todos módulos listados explicitamente
+// ATUALIZADO conforme REGRA-MÃE DO SISTEMA
 const rolePermissions: Record<UserRole, string[]> = {
-  // Admin tem acesso a TUDO
+  // 🔐 ADMINISTRADOR MASTER - Acesso TOTAL
   admin: [
     'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
     'contratos', 'financeiro', 'agenda', 'inventario', 'usuarios', 
     'relatorios', 'gestao_shares', 'crm', 'servicos', 'landerzap', 
     'monitoramento', 'licenciamento', 'takedowns', 'marketing', 
-    'configuracoes', 'perfil'
+    'configuracoes', 'perfil', 'contabilidade', 'nota_fiscal'
   ],
-  // Gestor Artístico - acesso amplo exceto usuários e configurações
+  
+  // 🎯 A&R / GESTÃO ARTÍSTICA
+  // ✔ Artistas, Projetos, Obras & Fonogramas, Lançamentos, Contratos (view), Relatórios Artísticos
+  // ❌ Financeiro detalhado, Usuários, Configurações
   gestor_artistico: [
     'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
-    'contratos', 'agenda', 'relatorios', 'gestao_shares', 'marketing',
-    'monitoramento', 'licenciamento', 'takedowns', 'servicos', 'inventario',
-    'landerzap', 'crm', 'perfil'
+    'contratos', 'agenda', 'relatorios', 'landerzap', 'perfil'
   ],
-  // Financeiro - foco em finanças e contratos
+  
+  // 💰 FINANCEIRO
+  // ✔ Financeiro, Gestão de Shares, Nota Fiscal, Contabilidade, Relatórios Financeiros
   financeiro: [
-    'dashboard', 'financeiro', 'contratos', 'relatorios', 'gestao_shares',
-    'servicos', 'inventario', 'perfil'
+    'dashboard', 'financeiro', 'gestao_shares', 'contabilidade', 'nota_fiscal',
+    'relatorios', 'contratos', 'servicos', 'inventario', 'perfil', 'artistas', 'projetos'
   ],
-  // Marketing - foco em marketing e lançamentos
+  
+  // ⚖️ JURÍDICO
+  // ✔ Contratos, Registro de Obras & Fonogramas, Monitoramento, Licenciamento, Takedowns
+  juridico: [
+    'dashboard', 'contratos', 'registro_musicas', 'monitoramento', 'licenciamento',
+    'takedowns', 'relatorios', 'artistas', 'projetos', 'agenda', 'perfil'
+  ],
+  
+  // 📢 MARKETING
+  // ✔ Marketing (Visão Geral, Campanhas, Tarefas, Calendário, Métricas, Briefing, IA Criativa)
   marketing: [
     'dashboard', 'marketing', 'artistas', 'lancamentos', 'relatorios', 
     'agenda', 'projetos', 'crm', 'landerzap', 'perfil'
   ],
-  // Artista - acesso aos SEUS dados em vários módulos
+  
+  // 🎵 ARTISTA - Acesso apenas aos SEUS dados (modo artista)
+  // ✔ Meu Painel, Meu Perfil, Meus Projetos, Minhas Obras, Meus Lançamentos,
+  //   Meus Shares, Meus Contratos, Meu Financeiro (view), Minha Agenda
+  // ❌ Dados globais, Outros artistas, KPIs administrativos, Usuários, Configurações
   artista: [
     'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos',
-    'gestao_shares', 'contratos', 'financeiro', 'agenda', 'relatorios',
-    'marketing', 'monitoramento', 'licenciamento', 'takedowns', 'perfil'
+    'gestao_shares', 'contratos', 'financeiro', 'agenda', 'relatorios', 'landerzap', 'perfil'
   ],
-  // Colaborador - acesso limitado a projetos e agenda
+  
+  // 👥 COLABORADOR - Acesso limitado a projetos atribuídos
   colaborador: [
-    'dashboard', 'perfil', 'projetos', 'agenda', 'artistas', 'contratos', 'relatorios'
+    'dashboard', 'projetos', 'agenda', 'registro_musicas', 'lancamentos', 'perfil'
   ],
-  // Leitor - acesso de visualização a quase tudo
+  
+  // 👁️ LEITOR - Somente leitura de relatórios e dashboards
   leitor: [
     'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
     'contratos', 'financeiro', 'agenda', 'inventario', 'relatorios', 
