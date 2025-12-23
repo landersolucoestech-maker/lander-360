@@ -296,8 +296,8 @@ export const navigationConfig: NavigationItem[] = [
   // Inventário - Admin e financeiro
   { title: "Inventário", url: "/inventario", icon: Package, roles: ['admin', 'financeiro', 'gestor_artistico', 'leitor'], module: 'inventario', scope: 'empresa' },
   
-  // LanderZap - Communication
-  { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'landerzap', scope: 'empresa' },
+  // LanderZap - Livre para todos os usuários logados
+  { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'landerzap', scope: 'empresa' },
   
   // Usuários - Admin only
   { title: "Usuários", url: "/usuarios", icon: UserCog, roles: ['admin'], module: 'usuarios', scope: 'empresa' },
