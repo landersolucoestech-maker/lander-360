@@ -23,7 +23,8 @@ import {
   shouldShowMusicRegistry,
   shouldShowFinanceiro,
   shouldShowDistribuicao,
-  roleDisplayNames 
+  roleDisplayNames,
+  UserRole
 } from "@/lib/permissions";
 
 interface AppSidebarProps {
