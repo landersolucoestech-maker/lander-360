@@ -207,7 +207,11 @@ serve(async (req) => {
     console.log('DB operation:', dbOperation, 'Error:', dbError);
 
     return new Response(
-      JSON.stringify({ success: true, data: result }),
+      JSON.stringify({ 
+        success: true, 
+        data: result, 
+        db: { operation: dbOperation, error: dbError?.message || null }
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
