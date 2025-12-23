@@ -5,13 +5,20 @@ import { getSupabaseClient } from '../_shared/supabase.ts';
 const SPOTIFY_CLIENT_ID = Deno.env.get('SPOTIFY_CLIENT_ID');
 const SPOTIFY_CLIENT_SECRET = Deno.env.get('SPOTIFY_CLIENT_SECRET');
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
-const META_ACCESS_TOKEN = Deno.env.get('META_ACCESS_TOKEN');
 
 // Spotify
 async function getSpotifyMetrics(spotifyUrl: string) {
   try {
+    if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
+      console.log('[social-metrics] Spotify credentials not configured');
+      return null;
+    }
+    
     const match = spotifyUrl.match(/artist\/([a-zA-Z0-9]+)/);
-    if (!match) return null;
+    if (!match) {
+      console.log('[social-metrics] Invalid Spotify URL:', spotifyUrl);
+      return null;
+    }
     const artistId = match[1];
 
     const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
@@ -22,19 +29,34 @@ async function getSpotifyMetrics(spotifyUrl: string) {
       },
       body: 'grant_type=client_credentials',
     });
+    
+    if (!tokenResponse.ok) {
+      console.log('[social-metrics] Failed to get Spotify token');
+      return null;
+    }
+    
     const tokenData = await tokenResponse.json();
 
     const artistResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
       headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
     });
+    
+    if (!artistResponse.ok) {
+      console.log('[social-metrics] Failed to get Spotify artist data');
+      return null;
+    }
+    
     const artist = await artistResponse.json();
+    
+    console.log('[social-metrics] Spotify metrics fetched:', artist.name, artist.followers?.total);
 
     return {
       platform: 'spotify',
       followers: artist.followers?.total || 0,
       popularity: artist.popularity || 0,
     };
-  } catch {
+  } catch (error) {
+    console.error('[social-metrics] Spotify error:', error);
     return null;
   }
 }
@@ -42,122 +64,128 @@ async function getSpotifyMetrics(spotifyUrl: string) {
 // YouTube
 async function getYouTubeMetrics(youtubeUrl: string) {
   try {
-    if (!YOUTUBE_API_KEY) return null;
+    if (!YOUTUBE_API_KEY) {
+      console.log('[social-metrics] YouTube API key not configured');
+      return null;
+    }
 
     let channelId = null;
     const channelMatch = youtubeUrl.match(/channel\/([a-zA-Z0-9_-]+)/);
     const handleMatch = youtubeUrl.match(/\/@([a-zA-Z0-9_-]+)/);
+    const userMatch = youtubeUrl.match(/user\/([a-zA-Z0-9_-]+)/);
 
     if (channelMatch) {
       channelId = channelMatch[1];
     } else if (handleMatch) {
+      // Buscar por handle
       const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=statistics&forHandle=${handleMatch[1]}&key=${YOUTUBE_API_KEY}`
+        `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&forHandle=${handleMatch[1]}&key=${YOUTUBE_API_KEY}`
       );
       const data = await response.json();
       if (data.items?.[0]) {
+        console.log('[social-metrics] YouTube metrics fetched via handle:', data.items[0].snippet?.title);
         return {
           platform: 'youtube',
           subscribers: parseInt(data.items[0].statistics?.subscriberCount || '0', 10),
           views: parseInt(data.items[0].statistics?.viewCount || '0', 10),
+          videoCount: parseInt(data.items[0].statistics?.videoCount || '0', 10),
+        };
+      }
+    } else if (userMatch) {
+      // Buscar por username legado
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&forUsername=${userMatch[1]}&key=${YOUTUBE_API_KEY}`
+      );
+      const data = await response.json();
+      if (data.items?.[0]) {
+        console.log('[social-metrics] YouTube metrics fetched via user:', data.items[0].snippet?.title);
+        return {
+          platform: 'youtube',
+          subscribers: parseInt(data.items[0].statistics?.subscriberCount || '0', 10),
+          views: parseInt(data.items[0].statistics?.viewCount || '0', 10),
+          videoCount: parseInt(data.items[0].statistics?.videoCount || '0', 10),
         };
       }
     }
 
     if (channelId) {
       const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${YOUTUBE_API_KEY}`
+        `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${YOUTUBE_API_KEY}`
       );
       const data = await response.json();
       if (data.items?.[0]) {
+        console.log('[social-metrics] YouTube metrics fetched via channelId:', data.items[0].snippet?.title);
         return {
           platform: 'youtube',
           subscribers: parseInt(data.items[0].statistics?.subscriberCount || '0', 10),
           views: parseInt(data.items[0].statistics?.viewCount || '0', 10),
+          videoCount: parseInt(data.items[0].statistics?.videoCount || '0', 10),
         };
       }
     }
 
+    console.log('[social-metrics] Could not extract YouTube channel from URL:', youtubeUrl);
     return null;
-  } catch {
-    return null;
-  }
-}
-
-// Instagram (via scraping fallback)
-async function getInstagramMetrics(instagramUrl: string) {
-  try {
-    const match = instagramUrl.match(/instagram\.com\/([a-zA-Z0-9_.]+)/);
-    if (!match) return null;
-    const username = match[1];
-
-    const response = await fetch(`https://www.instagram.com/${username}/`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
-
-    if (!response.ok) return null;
-
-    const html = await response.text();
-    const followersMatch = html.match(/"edge_followed_by":\s*{\s*"count":\s*(\d+)/);
-    
-    return {
-      platform: 'instagram',
-      followers: followersMatch ? parseInt(followersMatch[1], 10) : 0,
-    };
-  } catch {
+  } catch (error) {
+    console.error('[social-metrics] YouTube error:', error);
     return null;
   }
 }
 
-// TikTok (via scraping)
-async function getTikTokMetrics(tiktokUrl: string) {
-  try {
-    const match = tiktokUrl.match(/tiktok\.com\/@?([a-zA-Z0-9_.]+)/);
-    if (!match) return null;
-    const username = match[1];
-
-    const response = await fetch(`https://www.tiktok.com/@${username}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
-
-    if (!response.ok) return null;
-
-    const html = await response.text();
-    const followersMatch = html.match(/"followerCount":\s*(\d+)/);
-    const likesMatch = html.match(/"heartCount":\s*(\d+)/);
-    
-    return {
-      platform: 'tiktok',
-      followers: followersMatch ? parseInt(followersMatch[1], 10) : 0,
-      likes: likesMatch ? parseInt(likesMatch[1], 10) : 0,
-    };
-  } catch {
-    return null;
-  }
-}
-
-// Deezer (API pública)
+// Deezer (API pública - não requer autenticação)
 async function getDeezerMetrics(deezerUrl: string) {
   try {
-    const match = deezerUrl.match(/deezer\.com\/(?:br\/|us\/|en\/)?artist\/(\d+)/);
-    if (!match) return null;
+    const match = deezerUrl.match(/deezer\.com\/(?:br\/|us\/|en\/|fr\/)?artist\/(\d+)/);
+    if (!match) {
+      console.log('[social-metrics] Invalid Deezer URL:', deezerUrl);
+      return null;
+    }
     const artistId = match[1];
 
     const response = await fetch(`https://api.deezer.com/artist/${artistId}`);
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.log('[social-metrics] Deezer API error');
+      return null;
+    }
 
     const data = await response.json();
+    if (data.error) {
+      console.log('[social-metrics] Deezer API returned error:', data.error);
+      return null;
+    }
+    
+    console.log('[social-metrics] Deezer metrics fetched:', data.name, data.nb_fan);
+    
     return {
       platform: 'deezer',
       followers: data.nb_fan || 0,
     };
-  } catch {
+  } catch (error) {
+    console.error('[social-metrics] Deezer error:', error);
     return null;
   }
+}
+
+// Instagram - Retorna null pois requer autenticação Meta/Instagram Graph API
+async function getInstagramMetrics(instagramUrl: string) {
+  // Instagram requer autenticação via Meta Graph API
+  // Por enquanto, retornamos null e o usuário pode cadastrar manualmente
+  console.log('[social-metrics] Instagram requires Meta Graph API authentication');
+  return null;
+}
+
+// TikTok - Retorna null pois requer autenticação
+async function getTikTokMetrics(tiktokUrl: string) {
+  // TikTok requer autenticação via TikTok for Developers API
+  // Por enquanto, retornamos null e o usuário pode cadastrar manualmente
+  console.log('[social-metrics] TikTok requires API authentication');
+  return null;
+}
+
+// Apple Music - Não tem API pública para métricas de artistas
+async function getAppleMusicMetrics(appleMusicUrl: string) {
+  console.log('[social-metrics] Apple Music does not have public artist metrics API');
+  return null;
 }
 
 serve(async (req) => {
@@ -165,79 +193,134 @@ serve(async (req) => {
   if (corsResponse) return corsResponse;
 
   try {
-    const { artistId, spotifyUrl, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl } = await req.json();
+    const body = await req.json();
+    const { artistId, spotifyUrl, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl } = body;
+    
+    console.log('[social-metrics] Request received for artistId:', artistId);
+    console.log('[social-metrics] URLs:', { spotifyUrl, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl });
 
     const results: Record<string, any> = {};
+    const errors: string[] = [];
     const promises: Promise<void>[] = [];
 
-    if (spotifyUrl) {
+    // Spotify
+    if (spotifyUrl && spotifyUrl.includes('spotify.com') && spotifyUrl.includes('/artist/')) {
       promises.push(
         getSpotifyMetrics(spotifyUrl).then(data => {
-          if (data) results.spotify = data;
-        })
+          if (data) {
+            results.spotify = data;
+          } else {
+            errors.push('Spotify: Não foi possível obter métricas');
+          }
+        }).catch(e => errors.push(`Spotify: ${e.message}`))
       );
     }
 
-    if (youtubeUrl) {
+    // YouTube
+    if (youtubeUrl && youtubeUrl.includes('youtube.com')) {
       promises.push(
         getYouTubeMetrics(youtubeUrl).then(data => {
-          if (data) results.youtube = data;
-        })
+          if (data) {
+            results.youtube = data;
+          } else {
+            errors.push('YouTube: Não foi possível obter métricas');
+          }
+        }).catch(e => errors.push(`YouTube: ${e.message}`))
       );
     }
 
-    if (instagramUrl) {
-      promises.push(
-        getInstagramMetrics(instagramUrl).then(data => {
-          if (data) results.instagram = data;
-        })
-      );
-    }
-
-    if (tiktokUrl) {
-      promises.push(
-        getTikTokMetrics(tiktokUrl).then(data => {
-          if (data) results.tiktok = data;
-        })
-      );
-    }
-
-    if (deezerUrl) {
+    // Deezer
+    if (deezerUrl && deezerUrl.includes('deezer.com')) {
       promises.push(
         getDeezerMetrics(deezerUrl).then(data => {
-          if (data) results.deezer = data;
-        })
+          if (data) {
+            results.deezer = data;
+          } else {
+            errors.push('Deezer: Não foi possível obter métricas');
+          }
+        }).catch(e => errors.push(`Deezer: ${e.message}`))
       );
+    }
+
+    // Instagram (não funciona sem autenticação)
+    if (instagramUrl && instagramUrl.includes('instagram.com')) {
+      errors.push('Instagram: Requer configuração da API Meta Graph');
+    }
+
+    // TikTok (não funciona sem autenticação)
+    if (tiktokUrl && tiktokUrl.includes('tiktok.com')) {
+      errors.push('TikTok: Requer configuração da API TikTok for Developers');
+    }
+
+    // Apple Music (não tem API pública)
+    if (appleMusicUrl && appleMusicUrl.includes('music.apple.com')) {
+      errors.push('Apple Music: Não possui API pública para métricas');
     }
 
     await Promise.all(promises);
+    
+    console.log('[social-metrics] Results:', results);
+    console.log('[social-metrics] Errors:', errors);
 
-    // Save to database if artistId provided
+    // Save to database if artistId provided and we have results
+    const dbResults: Record<string, any> = {};
+    
     if (artistId && Object.keys(results).length > 0) {
       const supabase = getSupabaseClient();
       const today = new Date().toISOString().split('T')[0];
 
       for (const [platform, data] of Object.entries(results)) {
-        await supabase.from('social_media_metrics').upsert({
-          artist_id: artistId,
-          platform,
-          metric_type: 'followers',
-          date: today,
-          followers: data.followers || 0,
-          value: data.views || data.likes || data.popularity || 0,
-        }, {
-          onConflict: 'artist_id,platform,date',
-        });
+        try {
+          const metricsData: any = {
+            artist_id: artistId,
+            platform,
+            metric_type: 'followers',
+            date: today,
+            followers: data.followers || data.subscribers || 0,
+          };
+          
+          // Adicionar campos específicos por plataforma
+          if (platform === 'youtube') {
+            metricsData.value = data.views || 0;
+            metricsData.reach = data.videoCount || 0;
+          } else if (platform === 'spotify') {
+            metricsData.value = data.popularity || 0;
+          }
+
+          const { error } = await supabase
+            .from('social_media_metrics')
+            .upsert(metricsData, {
+              onConflict: 'artist_id,platform,date',
+            });
+
+          if (error) {
+            console.error(`[social-metrics] DB error for ${platform}:`, error);
+            dbResults[platform] = { saved: false, error: error.message };
+          } else {
+            console.log(`[social-metrics] Saved ${platform} metrics to DB`);
+            dbResults[platform] = { saved: true };
+          }
+        } catch (dbError) {
+          console.error(`[social-metrics] DB exception for ${platform}:`, dbError);
+          dbResults[platform] = { saved: false, error: String(dbError) };
+        }
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, data: results, fetched_at: new Date().toISOString() }),
+      JSON.stringify({ 
+        success: Object.keys(results).length > 0,
+        data: results, 
+        db: dbResults,
+        errors: errors.length > 0 ? errors : undefined,
+        fetched_at: new Date().toISOString() 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    console.error('[social-metrics] Fatal error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
