@@ -215,19 +215,24 @@ function ReleaseDetailsContent({
     </div>;
 }
 const Lancamentos = () => {
+  const navigate = useNavigate();
+  
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
   const {
     toast
   } = useToast();
   const {
-    data: releasesData = [],
+    data: allReleasesData = [],
     isLoading,
     refetch
   } = useReleases();
   const {
-    data: artists = []
+    data: allArtists = []
   } = useArtists();
   const {
-    data: projects = []
+    data: allProjects = []
   } = useProjects();
   const deleteRelease = useDeleteRelease();
   const createRelease = useCreateRelease();
@@ -237,6 +242,28 @@ const Lancamentos = () => {
   } = useDataExport();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Aplicar filtro de artista
+  const releasesData = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allReleasesData.filter((r: any) => r.artist_id === artistId);
+    }
+    return allReleasesData;
+  }, [allReleasesData, shouldFilter, artistId]);
+
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allArtists.filter((a: any) => a.id === artistId);
+    }
+    return allArtists;
+  }, [allArtists, shouldFilter, artistId]);
+
+  const projects = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allProjects.filter((p: any) => p.artist_id === artistId);
+    }
+    return allProjects;
+  }, [allProjects, shouldFilter, artistId]);
 
   // Map database status to UI approval status
   const mapDbStatusToApprovalStatus = (dbStatus: string | undefined): 'em_analise' | 'aprovado' | 'rejeitado' | 'pausado' | 'takedown' => {
