@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -19,19 +19,62 @@ import { useImportExport } from "@/hooks/useImportExport";
 import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { usePhonograms } from "@/hooks/usePhonograms";
 import { useReleases } from "@/hooks/useReleases";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 const Projetos = () => {
-  const { data: projects = [], isLoading, error } = useProjects();
-  const { data: artists = [] } = useArtists();
-  const { data: musicRegistry = [] } = useMusicRegistry();
-  const { data: phonograms = [] } = usePhonograms();
-  const { data: releases = [] } = useReleases();
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
+  const { data: allProjects = [], isLoading, error } = useProjects();
+  const { data: allArtists = [] } = useArtists();
+  const { data: allMusicRegistry = [] } = useMusicRegistry();
+  const { data: allPhonograms = [] } = usePhonograms();
+  const { data: allReleases = [] } = useReleases();
   const deleteProjectMutation = useDeleteProject();
   const createProjectMutation = useCreateProject();
   const { exportToExcel, parseExcelFile } = useDataExport();
   const { parseProjectImportRow } = useImportExport();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Aplicar filtro de artista
+  const projects = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allProjects.filter((p: any) => p.artist_id === artistId);
+    }
+    return allProjects;
+  }, [allProjects, shouldFilter, artistId]);
+
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allArtists.filter((a: any) => a.id === artistId);
+    }
+    return allArtists;
+  }, [allArtists, shouldFilter, artistId]);
+
+  const musicRegistry = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allMusicRegistry.filter((m: any) => 
+        m.artist_id === artistId || 
+        (Array.isArray(m.artist_ids) && m.artist_ids.includes(artistId))
+      );
+    }
+    return allMusicRegistry;
+  }, [allMusicRegistry, shouldFilter, artistId]);
+
+  const phonograms = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allPhonograms.filter((p: any) => p.artist_id === artistId);
+    }
+    return allPhonograms;
+  }, [allPhonograms, shouldFilter, artistId]);
+
+  const releases = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allReleases.filter((r: any) => r.artist_id === artistId);
+    }
+    return allReleases;
+  }, [allReleases, shouldFilter, artistId]);
 
   const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
