@@ -451,26 +451,11 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   // Auto-aplicar permissões com base na Função selecionada (apenas no modo automático)
   useEffect(() => {
     if (!watchedRole || hasManualPermissionEdits || watchedPermissionMode !== 'automatic') return;
-    const roleToTemplateMap: Record<string, keyof typeof permissionTemplates> = {
-      'Master': 'administrador',
-      'Administrador': 'administrador',
-      'Gerente': 'editor',
-      'Editor': 'editor',
-      'Analista Financeiro': 'financeiro',
-      'Especialista em Marketing': 'marketing',
-      'Artista': 'artista',
-      'Produtor Musical': 'visualizador',
-      'Assistente de Produção': 'visualizador',
-      'Coordenador de Eventos': 'visualizador',
-      'Técnico de Som': 'visualizador',
-      'Designer Gráfico': 'visualizador',
-      'Social Media': 'marketing',
-      'Leitor': 'leitor',
-    };
-    const templateKey = roleToTemplateMap[watchedRole] || 'visualizador';
-    const template = permissionTemplates[templateKey];
+    
+    // O template é igual ao valor do role
+    const template = permissionTemplates[watchedRole as keyof typeof permissionTemplates];
     if (template && template.permissions) {
-      setValue('permissionTemplate', templateKey);
+      setValue('permissionTemplate', watchedRole);
       setValue('permissions', template.permissions);
     }
   }, [watchedRole, hasManualPermissionEdits, watchedPermissionMode, setValue]);
