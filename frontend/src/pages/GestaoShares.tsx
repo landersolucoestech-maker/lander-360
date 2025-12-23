@@ -22,6 +22,7 @@ import { useArtists } from "@/hooks/useArtists";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 interface ParticipantRoyalty {
   name: string;
@@ -31,22 +32,51 @@ interface ParticipantRoyalty {
 }
 
 const GestaoShares = () => {
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { data: releases = [], isLoading } = useReleases();
-  const { data: artists = [] } = useArtists();
+  const { data: allReleases = [], isLoading } = useReleases();
+  const { data: allArtists = [] } = useArtists();
   const updateRelease = useUpdateRelease();
 
-  // Fetch pending shares from database
-  const { data: pendingShares = [], isLoading: isLoadingPendingShares } = useQuery({
-    queryKey: ['pending-shares'],
+  // Aplicar filtro de artista
+  const releases = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allReleases.filter((r: any) => r.artist_id === artistId);
+    }
+    return allReleases;
+  }, [allReleases, shouldFilter, artistId]);
+
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allArtists.filter((a: any) => a.id === artistId);
+    }
+    return allArtists;
+  }, [allArtists, shouldFilter, artistId]);
+
+  // Fetch pending shares from database (filtrado por artista se necessário)
+  const { data: allPendingShares = [], isLoading: isLoadingPendingShares } = useQuery({
+    queryKey: ['pending-shares', artistId, shouldFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('pending_shares')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      // Note: pending_shares pode não ter artist_id direto, então filtramos via release_id
+      const { data, error } = await query;
       if (error) throw error;
+      
+      if (shouldFilter && artistId && data) {
+        // Filtrar por release_id que pertence ao artista
+        const artistReleaseIds = releases.map((r: any) => r.id);
+        return data.filter((s: any) => artistReleaseIds.includes(s.release_id));
+      }
+      
       return data || [];
+    }
     }
   });
 
