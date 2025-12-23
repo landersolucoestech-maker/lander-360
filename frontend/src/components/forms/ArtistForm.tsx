@@ -411,6 +411,12 @@ export function ArtistForm({
       }
 
       // Artist data (non-sensitive fields only)
+      // Combine documents and presskit URLs into a JSON structure
+      const documentsData = {
+        documents: documentsUrl || null,
+        presskit: presskitUrl || null,
+      };
+      
       const artistData: Record<string, any> = {
         name: data.artistic_name,
         genre: data.genre || null,
@@ -438,7 +444,7 @@ export function ArtistForm({
         distributor_emails: data.distributor_emails || {},
         observations: data.observations || null,
         image_url: imageUrl,
-        documents_url: documentsUrl,
+        documents_url: JSON.stringify(documentsData),
         artist_types: data.artist_types || [],
       };
 
