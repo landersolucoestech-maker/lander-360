@@ -305,41 +305,50 @@ const permissionTemplates: Record<string, { label: string; permissions: Record<s
 
 // Permissões adicionais com base no Setor (aplicadas de forma aditiva)
 const sectorPermissionAdditions: Record<string, Record<string, string[]>> = {
-  Financeiro: {
-    financeiro: ['visualizar', 'criar', 'editar', 'excluir', 'aprovar', 'exportar'],
-    contratos: ['visualizar', 'exportar'],
+  financeiro: {
+    financeiro: ['view', 'create', 'edit', 'delete', 'export'],
+    royalties: ['view', 'edit'],
+    nota_fiscal: ['view', 'create', 'edit'],
+    contratos: ['view', 'export'],
   },
-  Marketing: {
-    marketing: ['visualizar', 'criar', 'editar', 'excluir', 'aprovar', 'exportar'],
-    agenda: ['visualizar', 'criar', 'editar'],
+  marketing: {
+    marketing: ['view', 'create', 'edit', 'delete', 'export'],
+    crm: ['view', 'create', 'edit'],
+    agenda: ['view', 'create', 'edit'],
   },
-  Produção: {
-    projetos: ['visualizar', 'criar', 'editar'],
-    agenda: ['visualizar', 'criar', 'editar'],
+  producao: {
+    projetos: ['view', 'create', 'edit'],
+    lancamentos: ['view', 'create', 'edit'],
+    agenda: ['view', 'create', 'edit'],
   },
-  Eventos: {
-    agenda: ['visualizar', 'criar', 'editar'],
+  eventos: {
+    agenda: ['view', 'create', 'edit', 'delete'],
   },
-  Administrativo: {
-    contratos: ['visualizar', 'criar', 'editar'],
-    projetos: ['visualizar'],
+  administrativo: {
+    contratos: ['view', 'create', 'edit'],
+    projetos: ['view'],
   },
-  Artístico: {
-    artistas: ['visualizar', 'criar', 'editar'],
+  artistico: {
+    artistas: ['view', 'create', 'edit'],
+    projetos: ['view', 'create', 'edit'],
+    registro_musicas: ['view', 'create', 'edit'],
   },
-  Técnico: {
-    inventario: ['visualizar', 'criar', 'editar'],
+  tecnico: {
+    inventario: ['view', 'create', 'edit'],
   },
-  Comercial: {
-    projetos: ['visualizar'],
-    marketing: ['visualizar'],
+  comercial: {
+    projetos: ['view'],
+    crm: ['view', 'create', 'edit'],
+    marketing: ['view'],
   },
-  Jurídico: {
-    contratos: ['visualizar', 'criar', 'editar', 'exportar'],
+  juridico: {
+    contratos: ['view', 'create', 'edit', 'approve', 'export'],
+    registro_musicas: ['view', 'create', 'edit'],
   },
-  'Recursos Humanos': {},
-  TI: {
-    configuracoes: ['visualizar', 'editar'],
+  rh: {},
+  ti: {
+    configuracoes: ['view', 'edit'],
+    usuarios: ['view'],
   },
 };
 
