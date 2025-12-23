@@ -27,21 +27,45 @@ const MarketingTarefas = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
+  // Categorias ordenadas alfabeticamente
+  const categoryOptions = [
+    "Copywriting",
+    "Design",
+    "Publicidade",
+    "Social Media",
+    "Vídeo",
+  ];
+
+  // Status ordenados alfabeticamente
+  const statusOptions = [
+    "Atrasada",
+    "Concluída",
+    "Em Andamento",
+    "Pendente",
+  ];
+
+  // Prioridades ordenadas alfabeticamente
+  const priorityOptions = [
+    "Alta",
+    "Baixa",
+    "Média",
+  ];
+
   const filterOptions = [
     {
       key: "status",
       label: "Status",
-      options: ["Pendente", "Em Andamento", "Concluída", "Atrasada"]
+      options: statusOptions
     },
     {
       key: "priority",
       label: "Prioridade",
-      options: ["Alta", "Média", "Baixa"]
+      options: priorityOptions
     },
     {
       key: "category",
       label: "Categoria",
-      options: ["Design", "Publicidade", "Vídeo", "Social Media", "Copywriting"]
+      options: categoryOptions
     }
   ];
 
