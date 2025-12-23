@@ -54,16 +54,46 @@ export class ContractsService {
     const normalizedParams = normalizePaginationParams(params);
     const { from, to } = calculateRange(normalizedParams);
 
-    const { data, error, count } = await supabase
+    const { data: contracts, error, count } = await supabase
       .from('contracts')
-      .select('*, artists:artist_id(name, stage_name)', { count: 'exact' })
+      .select('*', { count: 'exact' })
       .order(normalizedParams.sortBy || 'created_at', { 
         ascending: normalizedParams.sortOrder === 'asc' 
       })
       .range(from, to);
 
     if (error) throw error;
-    return createPaginatedResult(data || [], count || 0, normalizedParams);
+    
+    if (!contracts || contracts.length === 0) {
+      return createPaginatedResult([], count || 0, normalizedParams);
+    }
+
+    // Get unique artist IDs
+    const artistIds = [...new Set(contracts.map(c => c.artist_id).filter(Boolean))];
+    
+    // Fetch artists separately to avoid multiple FK ambiguity
+    let artistsMap: Record<string, { name: string; stage_name?: string }> = {};
+    if (artistIds.length > 0) {
+      const { data: artists } = await supabase
+        .from('artists')
+        .select('id, name, stage_name')
+        .in('id', artistIds);
+      
+      if (artists) {
+        artistsMap = artists.reduce((acc, artist) => {
+          acc[artist.id] = { name: artist.name, stage_name: artist.stage_name };
+          return acc;
+        }, {} as Record<string, { name: string; stage_name?: string }>);
+      }
+    }
+
+    // Merge artist info into contracts
+    const contractsWithArtists = contracts.map(contract => ({
+      ...contract,
+      artists: contract.artist_id ? artistsMap[contract.artist_id] : undefined
+    }));
+
+    return createPaginatedResult(contractsWithArtists, count || 0, normalizedParams);
   }
 
   // Get contract by ID
