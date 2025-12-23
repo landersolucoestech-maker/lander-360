@@ -2,11 +2,14 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { corsHeaders, handleCors } from '../_shared/cors.ts';
 import { getSupabaseClient } from '../_shared/supabase.ts';
 
+// API Keys from Supabase Secrets
 const SPOTIFY_CLIENT_ID = Deno.env.get('SPOTIFY_CLIENT_ID');
 const SPOTIFY_CLIENT_SECRET = Deno.env.get('SPOTIFY_CLIENT_SECRET');
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
+const META_ACCESS_TOKEN = Deno.env.get('META_ACCESS_TOKEN');
+const TIKTOK_API_KEY = Deno.env.get('TIKTOK_API_KEY');
 
-// Spotify
+// Spotify - API Oficial
 async function getSpotifyMetrics(spotifyUrl: string) {
   try {
     if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
@@ -61,7 +64,7 @@ async function getSpotifyMetrics(spotifyUrl: string) {
   }
 }
 
-// YouTube
+// YouTube - Data API v3
 async function getYouTubeMetrics(youtubeUrl: string) {
   try {
     if (!YOUTUBE_API_KEY) {
@@ -77,7 +80,6 @@ async function getYouTubeMetrics(youtubeUrl: string) {
     if (channelMatch) {
       channelId = channelMatch[1];
     } else if (handleMatch) {
-      // Buscar por handle
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&forHandle=${handleMatch[1]}&key=${YOUTUBE_API_KEY}`
       );
@@ -92,7 +94,6 @@ async function getYouTubeMetrics(youtubeUrl: string) {
         };
       }
     } else if (userMatch) {
-      // Buscar por username legado
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&forUsername=${userMatch[1]}&key=${YOUTUBE_API_KEY}`
       );
@@ -132,7 +133,141 @@ async function getYouTubeMetrics(youtubeUrl: string) {
   }
 }
 
-// Deezer (API pública - não requer autenticação)
+// Instagram - Meta Graph API
+async function getInstagramMetrics(instagramUrl: string) {
+  try {
+    if (!META_ACCESS_TOKEN) {
+      console.log('[social-metrics] Meta access token not configured');
+      return null;
+    }
+
+    // Extrair username do Instagram
+    const match = instagramUrl.match(/instagram\.com\/([a-zA-Z0-9_.]+)/);
+    if (!match) {
+      console.log('[social-metrics] Invalid Instagram URL:', instagramUrl);
+      return null;
+    }
+    const username = match[1];
+
+    // Primeiro, buscar o Business Account ID associado
+    // A Meta Graph API requer um Instagram Business Account conectado a uma Facebook Page
+    const searchResponse = await fetch(
+      `https://graph.facebook.com/v18.0/ig_hashtag_search?user_id=me&q=${username}&access_token=${META_ACCESS_TOKEN}`
+    );
+    
+    // Tentar buscar métricas diretas se tivermos o Instagram Business Account ID
+    // Por padrão, tentar buscar via /me/accounts
+    const accountsResponse = await fetch(
+      `https://graph.facebook.com/v18.0/me/accounts?fields=instagram_business_account{id,username,followers_count,media_count}&access_token=${META_ACCESS_TOKEN}`
+    );
+    
+    if (!accountsResponse.ok) {
+      console.log('[social-metrics] Failed to get Instagram accounts');
+      return null;
+    }
+    
+    const accountsData = await accountsResponse.json();
+    console.log('[social-metrics] Instagram accounts data:', JSON.stringify(accountsData));
+    
+    // Procurar pelo username nas contas conectadas
+    for (const page of accountsData.data || []) {
+      const igAccount = page.instagram_business_account;
+      if (igAccount && igAccount.username?.toLowerCase() === username.toLowerCase()) {
+        console.log('[social-metrics] Instagram metrics fetched:', igAccount.username, igAccount.followers_count);
+        return {
+          platform: 'instagram',
+          followers: igAccount.followers_count || 0,
+          mediaCount: igAccount.media_count || 0,
+        };
+      }
+    }
+
+    // Se não encontrou nas contas, tentar busca direta por ID (requer permissões específicas)
+    console.log('[social-metrics] Instagram account not found in connected accounts');
+    return null;
+  } catch (error) {
+    console.error('[social-metrics] Instagram error:', error);
+    return null;
+  }
+}
+
+// TikTok - Research API ou Display API
+async function getTikTokMetrics(tiktokUrl: string) {
+  try {
+    if (!TIKTOK_API_KEY) {
+      console.log('[social-metrics] TikTok API key not configured');
+      return null;
+    }
+
+    // Extrair username do TikTok
+    const match = tiktokUrl.match(/tiktok\.com\/@?([a-zA-Z0-9_.]+)/);
+    if (!match) {
+      console.log('[social-metrics] Invalid TikTok URL:', tiktokUrl);
+      return null;
+    }
+    const username = match[1];
+
+    // TikTok Display API - requer OAuth do usuário
+    // TikTok Research API - requer aprovação especial
+    // Por enquanto, tentamos scraping como fallback
+    
+    const response = await fetch(`https://www.tiktok.com/@${username}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+      },
+    });
+
+    if (!response.ok) {
+      console.log('[social-metrics] TikTok request failed:', response.status);
+      return null;
+    }
+
+    const html = await response.text();
+    
+    // Tentar extrair dados do JSON embutido na página
+    const jsonMatch = html.match(/<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([^<]+)<\/script>/);
+    if (jsonMatch) {
+      try {
+        const jsonData = JSON.parse(jsonMatch[1]);
+        const userInfo = jsonData?.['__DEFAULT_SCOPE__']?.['webapp.user-detail']?.userInfo;
+        if (userInfo) {
+          console.log('[social-metrics] TikTok metrics fetched:', userInfo.user?.uniqueId, userInfo.stats?.followerCount);
+          return {
+            platform: 'tiktok',
+            followers: userInfo.stats?.followerCount || 0,
+            likes: userInfo.stats?.heartCount || 0,
+            videoCount: userInfo.stats?.videoCount || 0,
+          };
+        }
+      } catch (parseError) {
+        console.log('[social-metrics] Failed to parse TikTok JSON');
+      }
+    }
+
+    // Fallback: tentar regex simples
+    const followersMatch = html.match(/"followerCount":\s*(\d+)/);
+    const likesMatch = html.match(/"heartCount":\s*(\d+)/);
+    
+    if (followersMatch) {
+      console.log('[social-metrics] TikTok metrics fetched via regex');
+      return {
+        platform: 'tiktok',
+        followers: parseInt(followersMatch[1], 10),
+        likes: likesMatch ? parseInt(likesMatch[1], 10) : 0,
+      };
+    }
+
+    console.log('[social-metrics] Could not extract TikTok metrics');
+    return null;
+  } catch (error) {
+    console.error('[social-metrics] TikTok error:', error);
+    return null;
+  }
+}
+
+// Deezer - API Pública
 async function getDeezerMetrics(deezerUrl: string) {
   try {
     const match = deezerUrl.match(/deezer\.com\/(?:br\/|us\/|en\/|fr\/)?artist\/(\d+)/);
@@ -166,23 +301,7 @@ async function getDeezerMetrics(deezerUrl: string) {
   }
 }
 
-// Instagram - Retorna null pois requer autenticação Meta/Instagram Graph API
-async function getInstagramMetrics(instagramUrl: string) {
-  // Instagram requer autenticação via Meta Graph API
-  // Por enquanto, retornamos null e o usuário pode cadastrar manualmente
-  console.log('[social-metrics] Instagram requires Meta Graph API authentication');
-  return null;
-}
-
-// TikTok - Retorna null pois requer autenticação
-async function getTikTokMetrics(tiktokUrl: string) {
-  // TikTok requer autenticação via TikTok for Developers API
-  // Por enquanto, retornamos null e o usuário pode cadastrar manualmente
-  console.log('[social-metrics] TikTok requires API authentication');
-  return null;
-}
-
-// Apple Music - Não tem API pública para métricas de artistas
+// Apple Music - Não tem API pública
 async function getAppleMusicMetrics(appleMusicUrl: string) {
   console.log('[social-metrics] Apple Music does not have public artist metrics API');
   return null;
@@ -198,6 +317,12 @@ serve(async (req) => {
     
     console.log('[social-metrics] Request received for artistId:', artistId);
     console.log('[social-metrics] URLs:', { spotifyUrl, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl });
+    console.log('[social-metrics] API Keys configured:', {
+      spotify: !!SPOTIFY_CLIENT_ID,
+      youtube: !!YOUTUBE_API_KEY,
+      meta: !!META_ACCESS_TOKEN,
+      tiktok: !!TIKTOK_API_KEY,
+    });
 
     const results: Record<string, any> = {};
     const errors: string[] = [];
@@ -229,8 +354,34 @@ serve(async (req) => {
       );
     }
 
+    // Instagram
+    if (instagramUrl && instagramUrl.includes('instagram.com') && !instagramUrl.includes('/perfil')) {
+      promises.push(
+        getInstagramMetrics(instagramUrl).then(data => {
+          if (data) {
+            results.instagram = data;
+          } else {
+            errors.push('Instagram: Requer conta Business conectada à Meta');
+          }
+        }).catch(e => errors.push(`Instagram: ${e.message}`))
+      );
+    }
+
+    // TikTok
+    if (tiktokUrl && tiktokUrl.includes('tiktok.com') && !tiktokUrl.includes('@perfil')) {
+      promises.push(
+        getTikTokMetrics(tiktokUrl).then(data => {
+          if (data) {
+            results.tiktok = data;
+          } else {
+            errors.push('TikTok: Não foi possível obter métricas');
+          }
+        }).catch(e => errors.push(`TikTok: ${e.message}`))
+      );
+    }
+
     // Deezer
-    if (deezerUrl && deezerUrl.includes('deezer.com')) {
+    if (deezerUrl && deezerUrl.includes('deezer.com') && !deezerUrl.includes('/...')) {
       promises.push(
         getDeezerMetrics(deezerUrl).then(data => {
           if (data) {
@@ -242,19 +393,9 @@ serve(async (req) => {
       );
     }
 
-    // Instagram (não funciona sem autenticação)
-    if (instagramUrl && instagramUrl.includes('instagram.com')) {
-      errors.push('Instagram: Requer configuração da API Meta Graph');
-    }
-
-    // TikTok (não funciona sem autenticação)
-    if (tiktokUrl && tiktokUrl.includes('tiktok.com')) {
-      errors.push('TikTok: Requer configuração da API TikTok for Developers');
-    }
-
-    // Apple Music (não tem API pública)
+    // Apple Music
     if (appleMusicUrl && appleMusicUrl.includes('music.apple.com')) {
-      errors.push('Apple Music: Não possui API pública para métricas');
+      errors.push('Apple Music: API não disponível');
     }
 
     await Promise.all(promises);
@@ -262,7 +403,7 @@ serve(async (req) => {
     console.log('[social-metrics] Results:', results);
     console.log('[social-metrics] Errors:', errors);
 
-    // Save to database if artistId provided and we have results
+    // Save to database
     const dbResults: Record<string, any> = {};
     
     if (artistId && Object.keys(results).length > 0) {
@@ -279,7 +420,7 @@ serve(async (req) => {
             followers: data.followers || data.subscribers || 0,
           };
 
-          // Primeiro deletar registro existente para o mesmo artista/plataforma/data
+          // Delete existing record for today
           await supabase
             .from('social_media_metrics')
             .delete()
@@ -287,7 +428,7 @@ serve(async (req) => {
             .eq('platform', platform)
             .eq('date', today);
 
-          // Depois inserir novo registro
+          // Insert new record
           const { error } = await supabase
             .from('social_media_metrics')
             .insert(metricsData);
