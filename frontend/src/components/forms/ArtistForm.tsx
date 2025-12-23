@@ -411,14 +411,14 @@ export function ArtistForm({
       }
 
       // Artist data (non-sensitive fields only)
-      const artistData = {
+      const artistData: Record<string, any> = {
         name: data.artistic_name,
-        genre: data.genre,
-        bio: data.biography,
-        full_name: data.full_name,
+        genre: data.genre || null,
+        bio: data.biography || null,
+        full_name: data.full_name || null,
         birth_date: formatDateForDB(data.birth_date),
-        phone: data.phone,
-        email: data.email,
+        phone: data.phone || null,
+        email: data.email || null,
         spotify_url: data.spotify_profile || null,
         instagram: data.instagram || null,
         youtube_url: data.youtube || null,
@@ -426,7 +426,7 @@ export function ArtistForm({
         soundcloud: data.soundcloud || null,
         deezer_url: data.deezer || null,
         apple_music_url: data.apple_music || null,
-        profile_type: data.profile_type,
+        profile_type: data.profile_type || null,
         record_label_name: data.record_label_name || null,
         label_contact_name: data.label_contact_name || null,
         label_contact_phone: data.label_contact_phone || null,
@@ -439,9 +439,7 @@ export function ArtistForm({
         observations: data.observations || null,
         image_url: imageUrl,
         documents_url: documentsUrl,
-        presskit_url: presskitUrl,
         artist_types: data.artist_types || [],
-        musician_roles: data.musician_roles || [],
       };
 
       // Sensitive data stored separately (admin only access)
