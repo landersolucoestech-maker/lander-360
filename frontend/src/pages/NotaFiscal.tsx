@@ -16,16 +16,32 @@ const NotaFiscal = () => {
   const [filteredInvoices, setFilteredInvoices] = useState(allInvoices);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
+  // Tipos de nota fiscal ordenados alfabeticamente
+  const typeOptions = [
+    "Apresentação",
+    "Marketing",
+    "Produção",
+    "Royalties",
+  ];
+
+  // Status ordenados alfabeticamente
+  const statusOptions = [
+    "Cancelada",
+    "Emitida",
+    "Paga",
+    "Pendente",
+  ];
+
   const filterOptions = [
     {
       key: "status",
       label: "Status",
-      options: ["Emitida", "Pendente", "Paga", "Cancelada"]
+      options: statusOptions
     },
     {
       key: "type",
       label: "Tipo",
-      options: ["Royalties", "Produção", "Apresentação", "Marketing"]
+      options: typeOptions
     },
     {
       key: "client",
