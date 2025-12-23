@@ -55,10 +55,18 @@ const Financeiro = () => {
   const { toast } = useToast();
 
   // Use real data from database
-  const { data: transactions = [], isLoading } = useFinancialTransactions();
+  const { data: allTransactions = [], isLoading } = useFinancialTransactions();
   const createTransaction = useCreateFinancialTransaction();
   const updateTransaction = useUpdateFinancialTransaction();
   const deleteTransaction = useDeleteFinancialTransaction();
+
+  // Aplicar filtro de artista
+  const transactions = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allTransactions.filter((t: any) => t.artist_id === artistId);
+    }
+    return allTransactions;
+  }, [allTransactions, shouldFilter, artistId]);
 
   const handleNewTransaction = () => {
     setSelectedTransaction(undefined);
