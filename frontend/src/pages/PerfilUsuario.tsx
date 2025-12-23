@@ -301,12 +301,31 @@ const PerfilUsuario = () => {
 
   const getRoleLabel = (role: string) => {
     const roles: Record<string, string> = {
-      admin: "Administrador",
+      admin: "Administrador Master",
+      gestor_artistico: "A&R / Gestão Artística",
+      financeiro: "Financeiro / Contábil",
+      juridico: "Jurídico",
+      marketing: "Marketing",
+      artista: "Artista",
+      colaborador: "Colaborador / Freelancer",
+      leitor: "Leitor",
       manager: "Gerente",
       user: "Usuário"
     };
     return roles[role] || role;
   };
+
+  // Lista de níveis de acesso disponíveis (ordenados alfabeticamente)
+  const availableRoles = [
+    { value: "gestor_artistico", label: "A&R / Gestão Artística" },
+    { value: "admin", label: "Administrador Master" },
+    { value: "artista", label: "Artista" },
+    { value: "colaborador", label: "Colaborador / Freelancer" },
+    { value: "financeiro", label: "Financeiro / Contábil" },
+    { value: "juridico", label: "Jurídico" },
+    { value: "leitor", label: "Leitor" },
+    { value: "marketing", label: "Marketing" },
+  ];
 
   const sectors = [
     "Gestão",
