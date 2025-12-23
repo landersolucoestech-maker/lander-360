@@ -125,7 +125,7 @@ const Index = () => {
                     )}
                     <div className="flex flex-col gap-1">
                       <h1 className="text-2xl font-bold text-foreground">
-                        {isLoadingArtist ? 'Carregando...' : `Olá, ${getArtistDisplayName()}!`}
+                        {isLoadingArtist ? 'Carregando...' : `Olá, ${getDisplayName()}!`}
                       </h1>
                       <p className="text-sm text-muted-foreground">
                         Meu Painel - Visão geral da sua carreira
