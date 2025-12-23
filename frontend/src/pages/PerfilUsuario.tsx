@@ -285,28 +285,18 @@ const PerfilUsuario = () => {
         if (error) throw error;
       }
 
-      // Se for admin e alterou o role, atualizar na tabela user_roles
+      // Se for admin e alterou o role, atualizar na tabela profiles (roles array)
+      // A tabela user_roles pode não existir ou ter estrutura diferente
       if (isAdmin && editData.role !== profileData.role) {
-        // Primeiro remove o role anterior
-        await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', user.id);
-        
-        // Insere o novo role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: user.id,
-            role: editData.role
-          });
-        
-        if (roleError) {
-          console.error('Erro ao atualizar role:', roleError);
-        }
+        console.log('[PerfilUsuario] Role alterado de', profileData.role, 'para', editData.role);
+        // O role já foi atualizado no update acima através do campo roles: [editData.role]
+        // Não precisamos atualizar user_roles separadamente
       }
 
-      setProfileData(editData);
+      setProfileData({
+        ...editData,
+        role: editData.role // Garantir que o role local seja atualizado
+      });
       setIsEditing(false);
       toast({
         title: "Perfil atualizado",
