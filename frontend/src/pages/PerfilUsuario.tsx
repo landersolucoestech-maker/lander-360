@@ -49,6 +49,10 @@ const PerfilUsuario = () => {
 
   // Verificar se o usuário é administrador (pode editar nível de acesso e setor)
   const isAdmin = permissions?.isAdmin || permissions?.roles?.includes('admin');
+  
+  // Debug: Log para verificar permissões
+  console.log('[PerfilUsuario] Permissions:', permissions);
+  console.log('[PerfilUsuario] isAdmin:', isAdmin);
 
   useEffect(() => {
     if (user) {
