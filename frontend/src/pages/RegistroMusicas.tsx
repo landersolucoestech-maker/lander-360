@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -26,17 +26,53 @@ import { useCreateMusicRegistryEntry } from "@/hooks/useMusicRegistry";
 import { useCreatePhonogram } from "@/hooks/usePhonograms";
 import { useRef } from "react";
 import { PhonogramService } from "@/services/phonograms";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 const RegistroMusicas = () => {
-  const { data: musicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
-  const { data: phonograms = [], isLoading: isLoadingPhonograms } = usePhonograms();
-  const { data: artists = [] } = useArtists();
-  const { data: projects = [] } = useProjects();
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
+  const { data: allMusicRegistry = [], isLoading: isLoadingWorks } = useMusicRegistry();
+  const { data: allPhonograms = [], isLoading: isLoadingPhonograms } = usePhonograms();
+  const { data: allArtists = [] } = useArtists();
+  const { data: allProjects = [] } = useProjects();
   const deleteMusicEntry = useDeleteMusicRegistryEntry();
   const deletePhonogram = useDeletePhonogram();
   const createMusicEntry = useCreateMusicRegistryEntry();
   const createPhonogram = useCreatePhonogram();
   const { exportToExcel, parseExcelFile } = useDataExport();
+  
+  // Aplicar filtro de artista
+  const musicRegistry = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allMusicRegistry.filter((m: any) => 
+        m.artist_id === artistId || 
+        (Array.isArray(m.artist_ids) && m.artist_ids.includes(artistId))
+      );
+    }
+    return allMusicRegistry;
+  }, [allMusicRegistry, shouldFilter, artistId]);
+
+  const phonograms = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allPhonograms.filter((p: any) => p.artist_id === artistId);
+    }
+    return allPhonograms;
+  }, [allPhonograms, shouldFilter, artistId]);
+
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allArtists.filter((a: any) => a.id === artistId);
+    }
+    return allArtists;
+  }, [allArtists, shouldFilter, artistId]);
+
+  const projects = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allProjects.filter((p: any) => p.artist_id === artistId);
+    }
+    return allProjects;
+  }, [allProjects, shouldFilter, artistId]);
   
   const worksFileInputRef = useRef<HTMLInputElement>(null);
   const phonogramsFileInputRef = useRef<HTMLInputElement>(null);
