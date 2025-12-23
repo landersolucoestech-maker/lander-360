@@ -194,7 +194,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
           </div>
           <div>
             <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">
-              {isArtistMode ? "MODO ARTISTA" : "LANDER 360º"}
+              LANDER 360º
             </h1>
             {!rolesLoading && roles.length > 0 && (
               <p className="text-xs text-muted-foreground">
