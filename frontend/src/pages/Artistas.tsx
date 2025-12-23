@@ -24,7 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const Artistas = () => {
-  console.log('[Artistas Page] Rendering...');
+  console.log('==========================================');
+  console.log('[ARTISTAS PAGE] COMPONENT MOUNTED - v2');
+  console.log('==========================================');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   
   // Filtro de artista - se for usuário artista, filtra apenas seus dados
