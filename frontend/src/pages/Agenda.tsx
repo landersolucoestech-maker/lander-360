@@ -160,9 +160,54 @@ const Agenda = () => {
     }
   };
 
+  // Tipos de compromisso formatados e ordenados alfabeticamente
+  const eventTypeOptions = [
+    "Ensaios",
+    "Entrevistas",
+    "Podcasts",
+    "Produção de Conteúdo",
+    "Programas de TV",
+    "Rádio",
+    "Reuniões",
+    "Sessões de Estúdio",
+    "Sessões de Fotos",
+    "Shows",
+  ];
+
+  // Status ordenados alfabeticamente
+  const statusOptions = [
+    "Agendado",
+    "Cancelado",
+    "Concluído",
+    "Confirmado",
+    "Pendente",
+  ];
+
+  // Mapeamentos reversos
+  const eventTypeLabelToValue: Record<string, string> = {
+    "Ensaios": "ensaios",
+    "Entrevistas": "entrevistas",
+    "Podcasts": "podcasts",
+    "Produção de Conteúdo": "producao_conteudo",
+    "Programas de TV": "programas_tv",
+    "Rádio": "radio",
+    "Reuniões": "reunioes",
+    "Sessões de Estúdio": "sessoes_estudio",
+    "Sessões de Fotos": "sessoes_fotos",
+    "Shows": "shows",
+  };
+
+  const statusLabelToValue: Record<string, string> = {
+    "Agendado": "agendado",
+    "Cancelado": "cancelado",
+    "Concluído": "concluido",
+    "Confirmado": "confirmado",
+    "Pendente": "pendente",
+  };
+
   const filterOptions = [
-    { key: "event_type", label: "Tipo", options: ["sessoes_estudio", "ensaios", "sessoes_fotos", "shows", "entrevistas", "podcasts", "programas_tv", "radio", "producao_conteudo", "reunioes"] },
-    { key: "status", label: "Status", options: ["agendado", "cancelado", "pendente", "concluido", "confirmado"] }
+    { key: "event_type", label: "Tipo de Compromisso", options: eventTypeOptions },
+    { key: "status", label: "Status", options: statusOptions }
   ];
 
   const handleSearch = (term: string) => setSearchTerm(term);
@@ -173,8 +218,14 @@ const Agenda = () => {
     const matchesSearch = !searchTerm || event.event_name.toLowerCase().includes(searchTerm.toLowerCase()) || (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilters = Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
-      if (key === 'event_type') return event.event_type === value;
-      if (key === 'status') return event.status === value;
+      if (key === 'event_type') {
+        const dbValue = eventTypeLabelToValue[value] || value.toLowerCase().replace(/ /g, '_');
+        return event.event_type === dbValue;
+      }
+      if (key === 'status') {
+        const dbValue = statusLabelToValue[value] || value.toLowerCase();
+        return event.status === dbValue;
+      }
       return true;
     });
     return matchesSearch && matchesFilters;
