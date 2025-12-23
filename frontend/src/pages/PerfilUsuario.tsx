@@ -28,7 +28,7 @@ interface ProfileData {
 
 const PerfilUsuario = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, permissions } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +46,9 @@ const PerfilUsuario = () => {
     avatarUrl: ""
   });
   const [editData, setEditData] = useState<ProfileData>(profileData);
+
+  // Verificar se o usuário é administrador (pode editar nível de acesso e setor)
+  const isAdmin = permissions?.isAdmin || permissions?.roles?.includes('admin');
 
   useEffect(() => {
     if (user) {
