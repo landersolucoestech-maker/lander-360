@@ -120,8 +120,11 @@ export function ArtistCard({
       const deezerUrl = artist.socialMedia?.deezer || '';
       const appleMusicUrl = artist.socialMedia?.apple || '';
       
+      console.log('[ArtistCard] Social URLs:', { youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl });
+      
       if (youtubeUrl || instagramUrl || tiktokUrl || deezerUrl || appleMusicUrl) {
-        await fetchSocialMetrics.mutateAsync({
+        console.log('[ArtistCard] Chamando fetchSocialMetrics...');
+        const socialResult = await fetchSocialMetrics.mutateAsync({
           artistId: artist.id.toString(),
           youtubeUrl: youtubeUrl,
           instagramUrl: instagramUrl,
@@ -129,9 +132,31 @@ export function ArtistCard({
           deezerUrl: deezerUrl,
           appleMusicUrl: appleMusicUrl,
         });
+        console.log('[ArtistCard] Resultado Social:', socialResult);
+        if (socialResult?.success !== false) {
+          metricsUpdated = true;
+        }
+      }
+      
+      if (metricsUpdated) {
+        toast({
+          title: 'Métricas atualizadas',
+          description: `Métricas de ${artist.name} foram atualizadas com sucesso.`,
+        });
+      } else {
+        toast({
+          title: 'Sem atualizações',
+          description: 'Nenhuma métrica foi atualizada. Verifique as URLs das redes sociais.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Error fetching metrics:', error);
+      toast({
+        title: 'Erro',
+        description: 'Falha ao atualizar métricas. Tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
       setIsRefreshing(false);
     }
