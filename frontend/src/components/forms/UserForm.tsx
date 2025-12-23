@@ -439,9 +439,9 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
   const handleTemplateChange = (template: string) => {
     setValue('permissionTemplate', template);
-    if (template && permissionTemplates[template as keyof typeof permissionTemplates]) {
-      const templatePermissions = permissionTemplates[template as keyof typeof permissionTemplates].permissions;
-      setValue('permissions', templatePermissions);
+    const selectedTemplate = permissionTemplates[template as keyof typeof permissionTemplates];
+    if (template && selectedTemplate && selectedTemplate.permissions) {
+      setValue('permissions', selectedTemplate.permissions);
     }
   };
 
