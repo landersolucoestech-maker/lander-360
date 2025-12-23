@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -10,7 +10,7 @@ import { ReleaseCard } from "@/components/releases/ReleaseCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { ReleaseMetricsModal } from "@/components/modals/ReleaseMetricsModal";
-import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Loader2, Disc, Users, FileText, BarChart3, Trash2 } from "lucide-react";
+import { Music, Plus, Calendar, TrendingUp, Eye, AlertTriangle, Upload, Download, Loader2, Disc, Users, FileText, BarChart3, Trash2, PieChart } from "lucide-react";
 import { FaSpotify, FaApple, FaYoutube, FaDeezer } from "react-icons/fa";
 import { useReleaseMetrics } from "@/hooks/useReleaseMetrics";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,8 @@ import { useDataExport } from "@/hooks/useDataExport";
 import { formatDateBR } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
+import { useNavigate } from "react-router-dom";
 
 // Helper function to format numbers
 function formatNumber(num: number): string {
