@@ -229,30 +229,44 @@ const PerfilUsuario = () => {
 
       if (existingProfile) {
         // Profile existe - fazer update
+        // Só permite atualizar setor se for admin
+        const updateData: any = {
+          full_name: editData.name.trim(),
+          phone: editData.phone.trim() || null,
+          avatar_url: editData.avatarUrl || null,
+          updated_at: new Date().toISOString()
+        };
+        
+        // Apenas admin pode alterar o setor
+        if (isAdmin) {
+          updateData.department = editData.sector || null;
+        }
+
         const { error } = await supabase
           .from('profiles')
-          .update({
-            full_name: editData.name.trim(),
-            phone: editData.phone.trim() || null,
-            department: editData.sector || null,
-            avatar_url: editData.avatarUrl || null,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', user.id);
 
         if (error) throw error;
       } else {
         // Profile não existe - criar
+        // Só permite definir setor se for admin
+        const insertData: any = {
+          id: user.id,
+          email: user.email,
+          full_name: editData.name.trim(),
+          phone: editData.phone.trim() || null,
+          avatar_url: editData.avatarUrl || null
+        };
+        
+        // Apenas admin pode definir o setor
+        if (isAdmin) {
+          insertData.department = editData.sector || null;
+        }
+
         const { error } = await supabase
           .from('profiles')
-          .insert({
-            id: user.id,
-            email: user.email,
-            full_name: editData.name.trim(),
-            phone: editData.phone.trim() || null,
-            department: editData.sector || null,
-            avatar_url: editData.avatarUrl || null
-          });
+          .insert(insertData);
 
         if (error) throw error;
       }
