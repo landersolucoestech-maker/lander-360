@@ -567,8 +567,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         });
         
         if (result.success && result.data?.user?.id) {
-          // Link user to artist if role is Artista
-          if (data.role === 'Artista' && data.linkedArtistId) {
+          // Link user to artist if role is artista
+          if (data.role === 'artista' && data.linkedArtistId) {
             await supabase.from('user_artists').insert({
               user_id: result.data.user.id,
               artist_id: data.linkedArtistId,
