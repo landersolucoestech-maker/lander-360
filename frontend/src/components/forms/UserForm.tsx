@@ -414,10 +414,14 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       'Técnico de Som': 'visualizador',
       'Designer Gráfico': 'visualizador',
       'Social Media': 'marketing',
+      'Leitor': 'leitor',
     };
     const templateKey = roleToTemplateMap[watchedRole] || 'visualizador';
-    setValue('permissionTemplate', templateKey);
-    setValue('permissions', permissionTemplates[templateKey].permissions);
+    const template = permissionTemplates[templateKey];
+    if (template && template.permissions) {
+      setValue('permissionTemplate', templateKey);
+      setValue('permissions', template.permissions);
+    }
   }, [watchedRole, hasManualPermissionEdits, watchedPermissionMode, setValue]);
 
   // Ajustar permissões com base no Setor selecionado (aditivo, apenas no modo automático)
