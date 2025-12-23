@@ -278,7 +278,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                     )}>
                       <div className="flex items-center gap-3 px-3 py-2.5 flex-1 cursor-default">
                         <Upload className="h-4 w-4" />
-                        <span className="font-medium">Lançamentos</span>
+                        <span className="font-medium">{isArtistMode ? "Meus Lançamentos" : "Lançamentos"}</span>
                       </div>
                       <button
                         onClick={(e) => {
