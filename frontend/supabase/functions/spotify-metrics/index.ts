@@ -141,6 +141,8 @@ serve(async (req) => {
     // Salvar métricas no banco de dados
     const supabase = getSupabaseClient();
     
+    console.log('Saving metrics for artist_id:', artistId);
+    
     // Calcular total de streams das top tracks
     const totalStreams = topTracks.slice(0, 5).reduce((sum: number, track: any) => {
       // Não temos playcount direto, mas podemos usar popularity como métrica
@@ -158,9 +160,11 @@ serve(async (req) => {
       fetched_at: result.fetched_at,
     };
     
+    console.log('Metrics data:', JSON.stringify(metricsData));
+    
     // Verificar se já existe um registro recente (últimas 24h)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: existingMetrics } = await supabase
+    const { data: existingMetrics, error: selectError } = await supabase
       .from('spotify_metrics')
       .select('id, fetched_at')
       .eq('artist_id', artistId)
@@ -168,8 +172,16 @@ serve(async (req) => {
       .order('fetched_at', { ascending: false })
       .limit(1);
     
+    if (selectError) {
+      console.error('Error selecting existing metrics:', selectError);
+    }
+    
+    let dbOperation = 'none';
+    let dbError = null;
+    
     if (existingMetrics && existingMetrics.length > 0) {
       // Atualizar registro existente
+      dbOperation = 'update';
       const { error: updateError } = await supabase
         .from('spotify_metrics')
         .update(metricsData)
@@ -177,17 +189,22 @@ serve(async (req) => {
       
       if (updateError) {
         console.error('Error updating spotify metrics:', updateError);
+        dbError = updateError;
       }
     } else {
       // Criar novo registro
+      dbOperation = 'insert';
       const { error: insertError } = await supabase
         .from('spotify_metrics')
         .insert(metricsData);
       
       if (insertError) {
         console.error('Error inserting spotify metrics:', insertError);
+        dbError = insertError;
       }
     }
+    
+    console.log('DB operation:', dbOperation, 'Error:', dbError);
 
     return new Response(
       JSON.stringify({ success: true, data: result }),
