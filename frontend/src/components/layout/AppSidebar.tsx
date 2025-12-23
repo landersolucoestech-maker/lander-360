@@ -317,7 +317,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                     )}>
                       <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
                         <item.icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
+                        <span className="font-medium">{getNavTitle(item.title, isArtistMode)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -332,7 +332,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                     )}>
                       <div className="flex items-center gap-3 px-3 py-2.5 flex-1 cursor-default">
                         <DollarSign className="h-4 w-4" />
-                        <span className="font-medium">Financeiro</span>
+                        <span className="font-medium">{isArtistMode ? "Meu Financeiro" : "Financeiro"}</span>
                       </div>
                       <button
                         onClick={(e) => {
