@@ -90,6 +90,13 @@ export class ContractsService {
 
   // Update contract
   static async update(id: string, updates: ContractUpdate): Promise<Contract> {
+    // Buscar status atual antes de atualizar
+    const { data: currentContract } = await supabase
+      .from('contracts')
+      .select('status, artist_id')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('contracts')
       .update(updates)
@@ -98,6 +105,18 @@ export class ContractsService {
       .single();
 
     if (error) throw error;
+
+    // Se o status mudou para 'assinado' (vigente), criar usuário automaticamente para o artista
+    if (updates.status === 'assinado' && currentContract?.status !== 'assinado' && data.artist_id) {
+      try {
+        const result = await ArtistUserAutoCreationService.createUserForArtist(data.artist_id);
+        console.log('[ContractsService] Auto-criação de usuário:', result.message);
+      } catch (err) {
+        console.error('[ContractsService] Erro na auto-criação de usuário:', err);
+        // Não bloqueia a atualização do contrato se falhar a criação do usuário
+      }
+    }
+
     return data;
   }
 
