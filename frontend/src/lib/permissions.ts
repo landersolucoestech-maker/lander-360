@@ -547,7 +547,7 @@ export function shouldShowDistribuicao(userRoles: UserRole[]): boolean {
 
 // Get user's primary role for display
 export function getPrimaryRole(userRoles: UserRole[]): UserRole {
-  const priorityOrder: UserRole[] = ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'];
+  const priorityOrder: UserRole[] = ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'marketing', 'artista', 'colaborador', 'leitor'];
   for (const role of priorityOrder) {
     if (userRoles.includes(role)) return role;
   }
@@ -565,8 +565,13 @@ export const legacyRoleMapping: Record<string, UserRole> = {
   'manager': 'gestor_artistico',
   'produtor_artistico': 'gestor_artistico',
   'gestor_artistico': 'gestor_artistico',
+  'a&r': 'gestor_artistico',
   'financeiro': 'financeiro',
   'analista_financeiro': 'financeiro',
+  'contabil': 'financeiro',
+  'juridico': 'juridico',
+  'advogado': 'juridico',
+  'legal': 'juridico',
   'marketing': 'marketing',
   'social_media': 'marketing',
   'artista': 'artista',
@@ -597,7 +602,8 @@ export function mapLegacyRole(legacyRole: string): UserRole {
   if (!mapped) {
     if (normalized.includes('admin') || normalized.includes('master')) return 'admin';
     if (normalized.includes('gestor') || normalized.includes('gerente')) return 'gestor_artistico';
-    if (normalized.includes('financ')) return 'financeiro';
+    if (normalized.includes('financ') || normalized.includes('contab')) return 'financeiro';
+    if (normalized.includes('jurid') || normalized.includes('legal') || normalized.includes('advog')) return 'juridico';
     if (normalized.includes('market')) return 'marketing';
     if (normalized.includes('artist')) return 'artista';
   }
