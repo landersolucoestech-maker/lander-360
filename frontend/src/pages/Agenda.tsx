@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -19,6 +19,7 @@ import { useArtists } from "@/hooks/useArtists";
 import { useDataExport } from "@/hooks/useDataExport";
 import { useImportExport } from "@/hooks/useImportExport";
 import { useQueryClient } from "@tanstack/react-query";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 interface AgendaEvent {
   id: string;
