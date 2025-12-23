@@ -331,7 +331,7 @@ export function ArtistCard({
             </div>
 
             {/* Bottom Row - Streaming Metrics */}
-            {isValidSpotifyArtistUrl && (
+            {hasAnySocialMedia && (
               <div className="pt-4 border-t border-border">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-foreground">Métricas de Plataformas</h4>
