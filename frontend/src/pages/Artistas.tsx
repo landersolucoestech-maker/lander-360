@@ -829,31 +829,31 @@ const Artistas = () => {
               )}
             </div>
 
-            {/* KPI Cards - mostram dados filtrados para artistas */}
+            {/* KPI Cards - personalizados para artistas */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <DashboardCard 
-                title={isArtistUser ? "Meu Perfil" : "Total de Artistas"} 
+                title={isArtistUser ? "Meu Cadastro" : "Total de Artistas"} 
                 value={isLoading ? '...' : (shouldFilter ? artists.length : (artistsCount || displayArtists.length))} 
-                description={isArtistUser ? "artista vinculado" : "artistas cadastrados"} 
+                description={isArtistUser ? "perfil ativo" : "artistas cadastrados"} 
                 icon={Users} 
                 trend={isArtistUser ? undefined : kpiTrends.artists} 
               />
               <DashboardCard 
-                title={isArtistUser ? "Meus Projetos" : "Receita Média por Artista"} 
-                value={isArtistUser ? projects.length : "R$ 0"} 
-                description={isArtistUser ? "projetos ativos" : "média mensal"} 
-                icon={isArtistUser ? Music : DollarSign} 
+                title={isArtistUser ? "Meus Projetos" : "Projetos Ativos"} 
+                value={projects.length} 
+                description={isArtistUser ? "projetos vinculados" : "projetos em andamento"} 
+                icon={Music} 
               />
               <DashboardCard 
-                title={isArtistUser ? "Meus Contratos" : "Receita Total dos Artistas"} 
-                value={isArtistUser ? activeContracts.length : "R$ 0"} 
-                description={isArtistUser ? "contratos ativos" : "este mês"} 
+                title={isArtistUser ? "Meus Contratos" : "Contratos Vigentes"} 
+                value={activeContracts.length} 
+                description={isArtistUser ? "contratos ativos" : "contratos ativos"} 
                 icon={DollarSign} 
               />
               <DashboardCard 
-                title={isArtistUser ? "Meus Lançamentos" : "Artistas Lucrativos"} 
-                value={isArtistUser ? releases.length : "0%"} 
-                description={isArtistUser ? "total de lançamentos" : "lucrativos vs deficitários"} 
+                title={isArtistUser ? "Meus Lançamentos" : "Total de Lançamentos"} 
+                value={releases.length} 
+                description={isArtistUser ? "lançamentos publicados" : "lançamentos no catálogo"} 
                 icon={Star} 
               />
             </div>
