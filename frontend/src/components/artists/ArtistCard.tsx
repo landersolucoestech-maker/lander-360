@@ -63,6 +63,7 @@ export function ArtistCard({
   const [contractModalOpen, setContractModalOpen] = useState(false);
   const [modal360Open, setModal360Open] = useState(false);
   const deleteArtist = useDeleteArtist();
+  const { toast } = useToast();
   
   // Spotify metrics
   const spotifyUrl = artist.socialMedia?.spotify || '';
@@ -91,13 +92,25 @@ export function ArtistCard({
   const handleRefreshSpotify = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
+    
+    console.log('[ArtistCard] Iniciando refresh de métricas para:', artist.name);
+    console.log('[ArtistCard] spotifyUrl:', spotifyUrl);
+    console.log('[ArtistCard] isValidSpotifyArtistUrl:', isValidSpotifyArtistUrl);
+    
+    let metricsUpdated = false;
+    
     try {
       // Refresh Spotify metrics
       if (isValidSpotifyArtistUrl) {
-        await fetchSpotifyMetrics.mutateAsync({
+        console.log('[ArtistCard] Chamando fetchSpotifyMetrics...');
+        const result = await fetchSpotifyMetrics.mutateAsync({
           artistId: artist.id.toString(),
           spotifyUrl: spotifyUrl
         });
+        console.log('[ArtistCard] Resultado Spotify:', result);
+        if (result?.success !== false) {
+          metricsUpdated = true;
+        }
       }
       
       // Refresh other social metrics
