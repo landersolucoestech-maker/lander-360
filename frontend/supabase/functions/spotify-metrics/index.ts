@@ -143,24 +143,25 @@ serve(async (req) => {
     
     console.log('Saving metrics for artist_id:', artistId);
     
-    // Calcular total de streams das top tracks
+    // Calcular total de streams das top tracks (estimativa baseada na popularidade)
     const totalStreams = topTracks.slice(0, 5).reduce((sum: number, track: any) => {
-      // Não temos playcount direto, mas podemos usar popularity como métrica
-      return sum + (track.popularity || 0);
-    }, 0) * 10000; // Estimativa baseada na popularidade
+      const popularity = track.popularity || 0;
+      return sum + Math.round(popularity * popularity * 100);
+    }, 0);
     
+    let dbOperation = 'none';
+    let dbError = null;
+    
+    // 1. Salvar dados básicos na tabela spotify_metrics (sem top_tracks que não existe)
     const metricsData = {
       artist_id: artistId,
       spotify_artist_id: spotifyId,
       followers: result.followers,
       popularity: result.popularity,
       monthly_listeners: result.monthly_listeners,
-      top_tracks: result.top_tracks,
       total_streams: totalStreams,
       fetched_at: result.fetched_at,
     };
-    
-    console.log('Metrics data:', JSON.stringify(metricsData));
     
     // Verificar se já existe um registro recente (últimas 24h)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -176,11 +177,7 @@ serve(async (req) => {
       console.error('Error selecting existing metrics:', selectError);
     }
     
-    let dbOperation = 'none';
-    let dbError = null;
-    
     if (existingMetrics && existingMetrics.length > 0) {
-      // Atualizar registro existente
       dbOperation = 'update';
       const { error: updateError } = await supabase
         .from('spotify_metrics')
@@ -192,7 +189,6 @@ serve(async (req) => {
         dbError = updateError;
       }
     } else {
-      // Criar novo registro
       dbOperation = 'insert';
       const { error: insertError } = await supabase
         .from('spotify_metrics')
@@ -202,6 +198,31 @@ serve(async (req) => {
         console.error('Error inserting spotify metrics:', insertError);
         dbError = insertError;
       }
+    }
+    
+    // 2. Salvar dados completos (com top_tracks) na coluna spotify_data da tabela artists
+    const spotifyData = {
+      spotify_artist_id: spotifyId,
+      followers: result.followers,
+      popularity: result.popularity,
+      monthly_listeners: result.monthly_listeners,
+      total_streams: totalStreams,
+      top_tracks: result.top_tracks,
+      recent_albums: result.recent_albums,
+      related_artists: result.related_artists,
+      genres: result.genres,
+      fetched_at: result.fetched_at,
+    };
+    
+    const { error: artistUpdateError } = await supabase
+      .from('artists')
+      .update({ spotify_data: spotifyData })
+      .eq('id', artistId);
+    
+    if (artistUpdateError) {
+      console.error('Error updating artist spotify_data:', artistUpdateError);
+    } else {
+      console.log('Successfully updated artist spotify_data');
     }
     
     console.log('DB operation:', dbOperation, 'Error:', dbError);
