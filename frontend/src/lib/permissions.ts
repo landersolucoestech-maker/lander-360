@@ -231,34 +231,34 @@ export const defaultRolePermissions: Record<UserRole, Partial<Record<SystemModul
 
 // Music Registry sub-items
 export const musicRegistryItems: SubMenuItem[] = [
-  { title: "Obras & Fonogramas", url: "/registro-musicas", roles: ['admin', 'gestor_artistico'], module: 'registro_musicas' },
-  { title: "Monitoramento", url: "/monitoramento", roles: ['admin', 'gestor_artistico'], module: 'registro_musicas' },
-  { title: "Licenciamento", url: "/licenciamento", roles: ['admin', 'gestor_artistico'], module: 'registro_musicas' },
-  { title: "Takedowns", url: "/takedowns", roles: ['admin', 'gestor_artistico'], module: 'registro_musicas' },
+  { title: "Obras & Fonogramas", url: "/registro-musicas", roles: ['admin', 'gestor_artistico', 'leitor'], module: 'registro_musicas' },
+  { title: "Monitoramento", url: "/monitoramento", roles: ['admin', 'gestor_artistico', 'leitor'], module: 'registro_musicas' },
+  { title: "Licenciamento", url: "/licenciamento", roles: ['admin', 'gestor_artistico', 'leitor'], module: 'registro_musicas' },
+  { title: "Takedowns", url: "/takedowns", roles: ['admin', 'gestor_artistico', 'leitor'], module: 'registro_musicas' },
 ];
 
 // Distribuição sub-items
 export const distribuicaoItems: SubMenuItem[] = [
-  { title: "Distribuição", url: "/lancamentos", roles: ['admin', 'gestor_artistico', 'marketing', 'artista'], module: 'lancamentos' },
-  { title: "Gestão de Shares", url: "/gestao-shares", roles: ['admin', 'gestor_artistico', 'financeiro', 'artista'], module: 'royalties' },
+  { title: "Distribuição", url: "/lancamentos", roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'leitor'], module: 'lancamentos' },
+  { title: "Gestão de Shares", url: "/gestao-shares", roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'leitor'], module: 'royalties' },
 ];
 
 // Financeiro sub-items
 export const financeiroItems: SubMenuItem[] = [
-  { title: "Transações", url: "/financeiro", roles: ['admin', 'financeiro'], module: 'financeiro' },
-  { title: "Contabilidade", url: "/contabilidade", roles: ['admin', 'financeiro'], module: 'financeiro' },
-  { title: "Nota Fiscal", url: "/nota-fiscal", roles: ['admin', 'financeiro'], module: 'nota_fiscal' },
+  { title: "Transações", url: "/financeiro", roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro' },
+  { title: "Contabilidade", url: "/contabilidade", roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro' },
+  { title: "Nota Fiscal", url: "/nota-fiscal", roles: ['admin', 'financeiro', 'leitor'], module: 'nota_fiscal' },
 ];
 
 // Marketing sub-items with role restrictions
 export const marketingItems: SubMenuItem[] = [
-  { title: "Visão Geral", url: "/marketing/visao-geral", roles: ['admin', 'gestor_artistico', 'marketing', 'artista'], module: 'marketing' },
-  { title: "Campanhas", url: "/marketing/campanhas", roles: ['admin', 'gestor_artistico', 'marketing'], module: 'marketing' },
-  { title: "Gestão de Tarefas", url: "/marketing/tarefas", roles: ['admin', 'gestor_artistico', 'marketing'], module: 'marketing' },
-  { title: "Calendário de Conteúdo", url: "/marketing/calendario", roles: ['admin', 'gestor_artistico', 'marketing'], module: 'marketing' },
-  { title: "Métricas e Resultados", url: "/marketing/metricas", roles: ['admin', 'gestor_artistico', 'marketing', 'artista'], module: 'marketing' },
-  { title: "Central de Briefing", url: "/marketing/briefing", roles: ['admin', 'gestor_artistico', 'marketing'], module: 'marketing' },
-  { title: "IA Criativa", url: "/marketing/ia-criativa", roles: ['admin', 'gestor_artistico', 'marketing'], module: 'marketing' },
+  { title: "Visão Geral", url: "/marketing/visao-geral", roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'leitor'], module: 'marketing' },
+  { title: "Campanhas", url: "/marketing/campanhas", roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'marketing' },
+  { title: "Gestão de Tarefas", url: "/marketing/tarefas", roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'marketing' },
+  { title: "Calendário de Conteúdo", url: "/marketing/calendario", roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'marketing' },
+  { title: "Métricas e Resultados", url: "/marketing/metricas", roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'leitor'], module: 'marketing' },
+  { title: "Central de Briefing", url: "/marketing/briefing", roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'marketing' },
+  { title: "IA Criativa", url: "/marketing/ia-criativa", roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'marketing' },
 ];
 
 // Main navigation items with role restrictions
