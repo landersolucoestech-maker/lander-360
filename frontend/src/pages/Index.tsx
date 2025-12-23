@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Index = () => {
+  console.log('[Index/Dashboard Page] Rendering...');
   const { permissions, user } = useAuth();
   const isArtist = permissions.roles.includes('artista') && !permissions.isAdmin;
   
