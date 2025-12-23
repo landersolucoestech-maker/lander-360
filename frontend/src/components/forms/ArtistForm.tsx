@@ -370,8 +370,11 @@ export function ArtistForm({
   const onSubmit = async (data: ArtistFormData) => {
     try {
       let imageUrl = artist?.image_url || null;
-      let documentsUrl = artist?.documents_url || null;
-      let presskitUrl = (artist as any)?.presskit_url || null;
+      
+      // Parse existing documents to get individual URLs
+      const existingDocs = parseDocumentsUrl(artist?.documents_url);
+      let documentsUrl = existingDocs.documents;
+      let presskitUrl = existingDocs.presskit;
 
       // Upload imagem do artista se houver novo arquivo
       if (data.artist_image instanceof File) {
