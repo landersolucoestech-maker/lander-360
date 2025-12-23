@@ -53,19 +53,17 @@ export function AppSidebar({ className }: AppSidebarProps) {
   const { toast } = useToast();
 
   // Usar roles do novo sistema de permissões centralizado
-  // Se não tem roles definidas mas está autenticado, usa 'leitor' como fallback
   const roles = permissions.roles.length > 0 ? permissions.roles : (user ? ['leitor'] as UserRole[] : []);
   const primaryRole = permissions.primaryRole || 'leitor';
   const rolesLoading = !isFullyLoaded;
-
-  // Log para debug
-  console.log('[AppSidebar] Roles:', roles, 'Primary:', primaryRole, 'Loading:', rolesLoading);
+  
+  // MODO ARTISTA: verifica se usuário é artista (e não admin)
+  const isArtistMode = roles.includes('artista') && !permissions.isAdmin;
 
   // Se carregando ou sem usuário, não mostra navegação
   const filteredNavigation = useMemo(() => {
     if (rolesLoading) return [];
     if (!user) return [];
-    // Se tem roles, filtra. Se não, mostra tudo (fallback)
     if (roles.length === 0) {
       return getFilteredNavigation(['leitor']);
     }
