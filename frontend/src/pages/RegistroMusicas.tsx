@@ -235,7 +235,7 @@ const RegistroMusicas = () => {
   };
 
   const filterPhonograms = (searchTerm: string, filters: Record<string, string>) => {
-    let filtered = allPhonograms;
+    let filtered = mappedPhonograms;
 
     if (searchTerm) {
       filtered = filtered.filter(phono =>
