@@ -180,6 +180,31 @@ frontend:
         agent: "main"
         comment: "Navegação via menu lateral funcionando. Bug anterior de CDN resolvido."
 
+backend:
+  - task: "Métricas de plataformas (Spotify)"
+    implemented: true
+    working: true
+    file: "src/hooks/useSpotifyMetrics.ts, supabase/functions/spotify-metrics"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Edge Function do Spotify deployada e funcionando. Dados (1.3K seguidores) exibidos corretamente no card do artista Davizzin."
+
+  - task: "Métricas de outras redes sociais (YouTube, Instagram, TikTok)"
+    implemented: true
+    working: partial
+    file: "src/hooks/useSocialMetrics.ts, supabase/functions/social-metrics"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: partial
+        agent: "main"
+        comment: "Edge Function deployada. Funciona mas depende de URLs válidas cadastradas nos artistas. Muitos artistas têm placeholders em vez de URLs reais."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
