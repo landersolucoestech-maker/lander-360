@@ -8,25 +8,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDashboardStats, useMonthlyFinancialSummary, useTodayEvents } from "@/hooks/useDashboard";
+import { useLinkedArtist, useArtistDashboardStats } from "@/hooks/useLinkedArtist";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Users, Calendar, FileText, MapPin, Clock, TrendingUp, Headphones } from "lucide-react";
+import { Users, Calendar, FileText, MapPin, Clock, TrendingUp, Headphones, Music, FolderOpen, DollarSign } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 const Index = () => {
-  const {
-    data: stats,
-    isLoading,
-    error
-  } = useDashboardStats();
-  const {
-    data: financial,
-    isLoading: isLoadingFinancial
-  } = useMonthlyFinancialSummary();
-  const {
-    data: todayEvents = [],
-    isLoading: isLoadingEvents
-  } = useTodayEvents();
+  const { permissions, user } = useAuth();
+  const isArtist = permissions.roles.includes('artista') && !permissions.isAdmin;
+  
+  // Dados para admin/gestor (visão geral)
+  const { data: stats, isLoading, error } = useDashboardStats();
+  const { data: financial, isLoading: isLoadingFinancial } = useMonthlyFinancialSummary();
+  const { data: todayEvents = [], isLoading: isLoadingEvents } = useTodayEvents();
+  
+  // Dados para artista (visão personalizada)
+  const { data: linkedArtist, isLoading: isLoadingArtist } = useLinkedArtist();
+  const { data: artistStats, isLoading: isLoadingArtistStats } = useArtistDashboardStats(linkedArtist?.id || null);
+  
   const navigate = useNavigate();
 
-  // Use real data only - no mock fallbacks
+  // Dados padrão
   const displayStats = stats || {
     totalWorks: 0,
     activeArtists: 0,
@@ -44,12 +47,14 @@ const Index = () => {
     }
     return value.toString();
   };
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
+  
   const getEventTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       sessoes_estudio: "Estúdio",
@@ -61,6 +66,7 @@ const Index = () => {
     };
     return labels[type] || type;
   };
+  
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "confirmado":
@@ -73,7 +79,192 @@ const Index = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-  return <SidebarProvider>
+
+  // Se for artista, renderiza dashboard personalizado
+  if (isArtist) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <SidebarInset className="flex-1">
+            <div className="w-full h-full px-4 py-3 space-y-3">
+              {/* Header do Artista */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <SidebarTrigger className="h-9 w-9" />
+                  <div className="flex items-center gap-4">
+                    {linkedArtist && (
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={linkedArtist.avatar_url || ''} alt={linkedArtist.name} />
+                        <AvatarFallback>{linkedArtist.name?.charAt(0) || 'A'}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <h1 className="text-2xl font-bold text-foreground">
+                        {isLoadingArtist ? 'Carregando...' : `Olá, ${linkedArtist?.stage_name || linkedArtist?.name || 'Artista'}!`}
+                      </h1>
+                      <p className="text-sm text-muted-foreground">
+                        Visão geral da sua carreira
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* KPI Cards do Artista */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                <DashboardCard 
+                  title="Meus Projetos" 
+                  value={isLoadingArtistStats ? '...' : artistStats?.totalProjects || 0} 
+                  description="Projetos em andamento" 
+                  icon={FolderOpen} 
+                />
+                <DashboardCard 
+                  title="Meus Contratos" 
+                  value={isLoadingArtistStats ? '...' : artistStats?.activeContracts || 0} 
+                  description="Contratos ativos" 
+                  icon={FileText} 
+                />
+                <DashboardCard 
+                  title="Meus Lançamentos" 
+                  value={isLoadingArtistStats ? '...' : artistStats?.totalReleases || 0} 
+                  description="Total de lançamentos" 
+                  icon={Music} 
+                />
+                <DashboardCard 
+                  title="Meus Streams" 
+                  value={isLoadingArtistStats ? '...' : formatNumber(artistStats?.totalStreams || 0)} 
+                  description="Total de reproduções" 
+                  icon={Headphones} 
+                />
+              </div>
+
+              {/* Segunda linha de KPIs */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                <DashboardCard 
+                  title="Minhas Obras" 
+                  value={isLoadingArtistStats ? '...' : artistStats?.totalWorks || 0} 
+                  description="Obras registradas" 
+                  icon={Music} 
+                />
+                <DashboardCard 
+                  title="Valor em Contratos" 
+                  value={isLoadingArtistStats ? '...' : formatCurrency(artistStats?.contractsValue || 0)} 
+                  description="Total contratado" 
+                  icon={DollarSign} 
+                />
+              </div>
+
+              {/* Próximos Eventos do Artista */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Meus Próximos Eventos
+                    </CardTitle>
+                    <CardDescription>Compromissos agendados para você</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {isLoadingArtistStats ? (
+                      <div className="flex items-center justify-center py-8">
+                        <span className="text-muted-foreground">Carregando...</span>
+                      </div>
+                    ) : (artistStats?.upcomingEvents || []).length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground mb-4">
+                          Nenhum evento agendado
+                        </p>
+                        <Button variant="outline" onClick={() => navigate('/agenda')}>
+                          Ver Agenda
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {(artistStats?.upcomingEvents || []).map((event: any) => (
+                          <div key={event.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-foreground">{event.title}</span>
+                                {getStatusBadge(event.status || 'agendado')}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(event.start_date).toLocaleDateString('pt-BR')}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {event.start_time || '--:--'}
+                                </span>
+                                {event.location && (
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {event.location}
+                                  </span>
+                                )}
+                              </div>
+                              {event.event_type && (
+                                <Badge variant="outline" className="text-xs">
+                                  {getEventTypeLabel(event.event_type)}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        <Button variant="outline" className="w-full" onClick={() => navigate('/agenda')}>
+                          Ver Agenda Completa
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Card de Ações Rápidas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Ações Rápidas</CardTitle>
+                    <CardDescription>Acesse seus dados rapidamente</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/artistas')}>
+                      <Users className="h-4 w-4 mr-2" />
+                      Meu Perfil de Artista
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/projetos')}>
+                      <FolderOpen className="h-4 w-4 mr-2" />
+                      Meus Projetos
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/lancamentos')}>
+                      <Music className="h-4 w-4 mr-2" />
+                      Meus Lançamentos
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/contratos')}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Meus Contratos
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/financeiro')}>
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      Meu Financeiro
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/relatorios')}>
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Meus Relatórios
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  // Dashboard padrão para admin/gestor
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
@@ -90,7 +281,6 @@ const Index = () => {
                 </div>
               </div>
             </div>
-
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
@@ -115,16 +305,22 @@ const Index = () => {
                   <CardDescription>Compromissos agendados</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingEvents ? <div className="flex items-center justify-center py-8">
+                  {isLoadingEvents ? (
+                    <div className="flex items-center justify-center py-8">
                       <span className="text-muted-foreground">Carregando...</span>
-                    </div> : todayEvents.length === 0 ? <div className="flex flex-col items-center justify-center py-8 text-center">
+                    </div>
+                  ) : todayEvents.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
                       <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
                       <p className="text-muted-foreground mb-4">
                         Nenhum evento agendado para hoje
                       </p>
                       <Button variant="outline" onClick={() => navigate('/agenda')}>Ver Agenda Completa</Button>
-                    </div> : <div className="space-y-3">
-                      {todayEvents.map(event => <div key={event.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {todayEvents.map(event => (
+                        <div key={event.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-foreground">{event.title}</span>
@@ -141,10 +337,12 @@ const Index = () => {
                                 <Clock className="h-3 w-3" />
                                 {event.start_time || '--:--'} {event.end_time ? `- ${event.end_time}` : ''}
                               </span>
-                              {event.location && <span className="flex items-center gap-1">
+                              {event.location && (
+                                <span className="flex items-center gap-1">
                                   <MapPin className="h-3 w-3" />
                                   {event.location}
-                                </span>}
+                                </span>
+                              )}
                             </div>
                             {event.event_type && (
                               <Badge variant="outline" className="text-xs">
@@ -152,21 +350,24 @@ const Index = () => {
                               </Badge>
                             )}
                           </div>
-                        </div>)}
+                        </div>
+                      ))}
                       <Button variant="outline" className="w-full" onClick={() => navigate('/agenda')}>
                         Ver Agenda Completa
                       </Button>
-                    </div>}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
-
 
             {/* Featured Artists */}
             <FeaturedArtists />
           </div>
         </SidebarInset>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
+
 export default Index;
