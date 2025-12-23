@@ -43,58 +43,72 @@ export function AppSidebar({ className }: AppSidebarProps) {
   const { toast } = useToast();
 
   // Usar roles do novo sistema de permissões centralizado
-  const roles = permissions.roles;
-  const primaryRole = permissions.primaryRole;
+  // Se não tem roles definidas mas está autenticado, usa 'leitor' como fallback
+  const roles = permissions.roles.length > 0 ? permissions.roles : (user ? ['leitor'] as UserRole[] : []);
+  const primaryRole = permissions.primaryRole || 'leitor';
   const rolesLoading = !isFullyLoaded;
 
-  // IMPORTANTE: Enquanto carrega, NÃO mostrar nenhum item de navegação
-  // Isso elimina o "piscar" de módulos não autorizados
+  // Log para debug
+  console.log('[AppSidebar] Roles:', roles, 'Primary:', primaryRole, 'Loading:', rolesLoading);
+
+  // Se carregando ou sem usuário, não mostra navegação
   const filteredNavigation = useMemo(() => {
-    if (rolesLoading || roles.length === 0) {
-      return []; // VAZIO enquanto carrega
+    if (rolesLoading) return [];
+    if (!user) return [];
+    // Se tem roles, filtra. Se não, mostra tudo (fallback)
+    if (roles.length === 0) {
+      return getFilteredNavigation(['leitor']);
     }
     return getFilteredNavigation(roles);
-  }, [roles, rolesLoading]);
+  }, [roles, rolesLoading, user]);
 
   const filteredMarketingItems = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return [];
-    return getFilteredMarketingItems(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return [];
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return getFilteredMarketingItems(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const filteredMusicRegistryItems = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return [];
-    return getFilteredMusicRegistryItems(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return [];
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return getFilteredMusicRegistryItems(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const filteredFinanceiroItems = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return [];
-    return getFilteredFinanceiroItems(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return [];
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return getFilteredFinanceiroItems(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const showMarketing = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return false;
-    return shouldShowMarketing(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return false;
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return shouldShowMarketing(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const showMusicRegistry = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return false;
-    return shouldShowMusicRegistry(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return false;
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return shouldShowMusicRegistry(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const showFinanceiro = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return false;
-    return shouldShowFinanceiro(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return false;
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return shouldShowFinanceiro(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const filteredDistribuicaoItems = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return [];
-    return getFilteredDistribuicaoItems(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return [];
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return getFilteredDistribuicaoItems(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   const showDistribuicao = useMemo(() => {
-    if (rolesLoading || roles.length === 0) return false;
-    return shouldShowDistribuicao(roles);
-  }, [roles, rolesLoading]);
+    if (rolesLoading || !user) return false;
+    const effectiveRoles = roles.length > 0 ? roles : ['leitor'] as UserRole[];
+    return shouldShowDistribuicao(effectiveRoles);
+  }, [roles, rolesLoading, user]);
 
   // Items que são renderizados inline do navigationConfig (excluindo itens especiais)
   const excludedFromMain = ['Registro de Músicas', 'Financeiro', 'Configurações', 'Aparência'];
