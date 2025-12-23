@@ -266,32 +266,38 @@ export const navigationConfig: NavigationItem[] = [
   // Dashboard - All roles
   { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'relatorios', scope: 'empresa' },
   
-  // Artistas - Strategic roles only
-  { title: "Artistas", url: "/artistas", icon: Users, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'artistas', scope: 'artista' },
+  // Artistas - All roles can view
+  { title: "Artistas", url: "/artistas", icon: Users, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'artistas', scope: 'artista' },
   
-  // Projetos - Most creative roles
-  { title: "Projetos", url: "/projetos", icon: FolderOpen, roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'projetos', scope: 'projeto' },
+  // Projetos - All roles can view
+  { title: "Projetos", url: "/projetos", icon: FolderOpen, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'projetos', scope: 'projeto' },
   
   // Registro de Músicas - Strategic and artistic
-  { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico'], module: 'registro_musicas', scope: 'projeto' },
+  { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico', 'leitor'], module: 'registro_musicas', scope: 'projeto' },
   
-  // Contratos - Legal and strategic
-  { title: "Contratos", url: "/contratos", icon: FileText, roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'leitor'], module: 'contratos', scope: 'artista' },
+  // Gestão de Shares - Strategic and financial
+  { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
   
-  // Financeiro - Financial roles only
-  { title: "Financeiro", url: "/financeiro", icon: DollarSign, roles: ['admin', 'financeiro'], module: 'financeiro', scope: 'empresa' },
+  // Contratos - All roles can view
+  { title: "Contratos", url: "/contratos", icon: FileText, roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'colaborador', 'leitor'], module: 'contratos', scope: 'artista' },
+  
+  // Financeiro - Financial and admin
+  { title: "Financeiro", url: "/financeiro", icon: DollarSign, roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro', scope: 'empresa' },
   
   // Serviços - Admin and financial
-  { title: "Serviços", url: "/servicos", icon: Briefcase, roles: ['admin', 'gestor_artistico', 'financeiro'], module: 'servicos', scope: 'empresa' },
+  { title: "Serviços", url: "/servicos", icon: Briefcase, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'servicos', scope: 'empresa' },
   
-  // Agenda - Most roles
-  { title: "Agenda", url: "/agenda", icon: Calendar, roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'agenda', scope: 'empresa' },
+  // Agenda - All roles
+  { title: "Agenda", url: "/agenda", icon: Calendar, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'agenda', scope: 'empresa' },
   
-  // Inventário - Financial and admin
-  { title: "Inventário", url: "/inventario", icon: Package, roles: ['admin', 'financeiro', 'leitor'], module: 'inventario', scope: 'empresa' },
+  // Nota Fiscal - Financial
+  { title: "Nota Fiscal", url: "/nota-fiscal", icon: Receipt, roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro', scope: 'empresa' },
+  
+  // Inventário - All roles can view
+  { title: "Inventário", url: "/inventario", icon: Package, roles: ['admin', 'financeiro', 'gestor_artistico', 'leitor'], module: 'inventario', scope: 'empresa' },
   
   // LanderZap - Communication
-  { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'gestor_artistico', 'marketing'], module: 'landerzap', scope: 'empresa' },
+  { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'landerzap', scope: 'empresa' },
   
   // Usuários - Admin only
   { title: "Usuários", url: "/usuarios", icon: UserCog, roles: ['admin'], module: 'usuarios', scope: 'empresa' },
@@ -299,8 +305,8 @@ export const navigationConfig: NavigationItem[] = [
   // CRM - Business development
   { title: "CRM", url: "/crm", icon: UserCheck, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'crm', scope: 'empresa' },
   
-  // Relatórios - Most roles with different views
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'leitor'], module: 'relatorios', scope: 'empresa' },
+  // Relatórios - All roles
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'relatorios', scope: 'empresa' },
   
   // Configurações - Admin only
   { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ['admin'], module: 'configuracoes', scope: 'empresa' },
