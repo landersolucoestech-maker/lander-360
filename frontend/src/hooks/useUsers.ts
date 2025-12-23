@@ -190,6 +190,8 @@ export function useUsers() {
   }) => {
     try {
       setLoading(true);
+      
+      console.log('[useUsers] updateUser chamado com:', { userId, userData });
 
       // Build update object - only include fields that are explicitly provided
       // Usar 'department' ao invés de 'sector' para compatibilidade com o banco
@@ -211,6 +213,8 @@ export function useUsers() {
         updateData.department = userData.sector || null;
       }
 
+      console.log('[useUsers] Dados para atualizar profiles:', updateData);
+
       // Update user profile in profiles table
       const { error } = await supabase
         .from('profiles')
@@ -218,16 +222,25 @@ export function useUsers() {
         .eq('id', userId);
 
       if (error) {
+        console.error('[useUsers] Erro ao atualizar profiles:', error);
         throw error;
       }
+      
+      console.log('[useUsers] profiles atualizado com sucesso');
 
       // IMPORTANTE: Atualizar também a tabela user_roles para que as permissões funcionem corretamente
       if (userData.role) {
+        console.log('[useUsers] Atualizando user_roles para role:', userData.role);
+        
         // Primeiro remove os roles antigos
-        await supabase
+        const { error: deleteError } = await supabase
           .from('user_roles')
           .delete()
           .eq('user_id', userId);
+        
+        if (deleteError) {
+          console.error('[useUsers] Erro ao deletar roles antigos:', deleteError);
+        }
         
         // Insere o novo role
         const { error: roleError } = await supabase
@@ -238,10 +251,10 @@ export function useUsers() {
           });
         
         if (roleError) {
-          console.error('Erro ao atualizar role em user_roles:', roleError);
+          console.error('[useUsers] Erro ao inserir novo role:', roleError);
           // Não bloqueia, pois o profiles já foi atualizado
         } else {
-          console.log('[updateUser] Role atualizado em user_roles:', userData.role);
+          console.log('[useUsers] Role atualizado em user_roles:', userData.role);
         }
       }
 
@@ -253,7 +266,7 @@ export function useUsers() {
       await fetchUsers();
       return { success: true };
     } catch (error: any) {
-      console.error('Erro ao atualizar usuário:', error);
+      console.error('[useUsers] Erro ao atualizar usuário:', error);
       toast({
         title: "Erro",
         description: "Erro ao atualizar usuário.",
