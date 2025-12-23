@@ -231,7 +231,7 @@ const RegistroMusicas = () => {
   const handleClearPhonograms = () => {
     setPhonogramsSearchTerm("");
     setPhonogramsFilters({});
-    setFilteredPhonograms(allPhonograms);
+    setFilteredPhonograms(mappedPhonograms);
   };
 
   const filterPhonograms = (searchTerm: string, filters: Record<string, string>) => {
