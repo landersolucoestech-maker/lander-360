@@ -797,27 +797,30 @@ const Artistas = () => {
                   <p className="text-sm sm:text-base text-muted-foreground">Gerencie seus artistas e contratos</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept=".xlsx,.xls"
-                  onChange={handleImport}
-                  className="hidden"
-                />
-                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
-                  {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  <span className="hidden sm:inline">Importar</span>
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={handleExport} disabled={displayArtists.length === 0}>
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Exportar</span>
-                </Button>
-                <Button size="sm" className="gap-1 sm:gap-2" onClick={() => setCreateModalOpen(true)}>
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Novo Artista</span>
-                </Button>
-              </div>
+              {/* Botões de ação - ocultos para usuários artistas */}
+              {!isArtistUser && (
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept=".xlsx,.xls"
+                    onChange={handleImport}
+                    className="hidden"
+                  />
+                  <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                    {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    <span className="hidden sm:inline">Importar</span>
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1 sm:gap-2" onClick={handleExport} disabled={displayArtists.length === 0}>
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Exportar</span>
+                  </Button>
+                  <Button size="sm" className="gap-1 sm:gap-2" onClick={() => setCreateModalOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Novo Artista</span>
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* KPI Cards - mostram dados filtrados para artistas */}
