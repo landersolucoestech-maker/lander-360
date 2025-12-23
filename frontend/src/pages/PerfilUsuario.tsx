@@ -48,10 +48,15 @@ const PerfilUsuario = () => {
   const [editData, setEditData] = useState<ProfileData>(profileData);
 
   // Verificar se o usuário é administrador (pode editar nível de acesso e setor)
-  const isAdmin = permissions?.isAdmin || permissions?.roles?.includes('admin');
+  // Aceita: isAdmin flag, role 'admin', role_display contendo 'admin' ou 'master'
+  const isAdmin = permissions?.isAdmin || 
+                  permissions?.roles?.includes('admin') ||
+                  profileData.role?.toLowerCase().includes('admin') ||
+                  profileData.role?.toLowerCase().includes('master');
   
   // Debug: Log para verificar permissões
   console.log('[PerfilUsuario] Permissions:', permissions);
+  console.log('[PerfilUsuario] profileData.role:', profileData.role);
   console.log('[PerfilUsuario] isAdmin:', isAdmin);
 
   useEffect(() => {
