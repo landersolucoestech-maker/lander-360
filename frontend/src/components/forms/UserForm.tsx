@@ -80,11 +80,12 @@ interface UserFormProps {
   onCancel: () => void;
 }
 
-// Available roles for selection
+// Available roles for selection - ATUALIZADO conforme matriz de permissões
 const availableRoles: { value: UserRole; label: string; description: string }[] = [
   { value: 'admin', label: roleDisplayNames.admin, description: roleDescriptions.admin },
   { value: 'gestor_artistico', label: roleDisplayNames.gestor_artistico, description: roleDescriptions.gestor_artistico },
   { value: 'financeiro', label: roleDisplayNames.financeiro, description: roleDescriptions.financeiro },
+  { value: 'juridico', label: roleDisplayNames.juridico, description: roleDescriptions.juridico },
   { value: 'marketing', label: roleDisplayNames.marketing, description: roleDescriptions.marketing },
   { value: 'artista', label: roleDisplayNames.artista, description: roleDescriptions.artista },
   { value: 'colaborador', label: roleDisplayNames.colaborador, description: roleDescriptions.colaborador },
