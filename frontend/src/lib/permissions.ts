@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, Briefcase, FileSearch, Scale, MessageCircle, Palette, Film, Shield, LucideIcon, Eye, Lock } from "lucide-react";
+import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign, Calendar, Receipt, Package, UserCheck, BarChart3, UserCog, Megaphone, Settings, Briefcase, FileSearch, Scale, MessageCircle, Palette, Film, Shield, LucideIcon, Eye, Lock, PieChart } from "lucide-react";
 
 // ================================================
 // SISTEMA COMPLETO DE PERMISSÕES RBAC + ABAC
