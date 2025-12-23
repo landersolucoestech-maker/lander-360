@@ -538,8 +538,26 @@ const PerfilUsuario = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="role">Nível de Acesso</Label>
-                      <p className="text-sm py-2 px-3 bg-muted rounded-md">{getRoleLabel(profileData.role)}</p>
-                      {isEditing && (
+                      {isEditing && isAdmin ? (
+                        <Select
+                          value={editData.role}
+                          onValueChange={(value) => setEditData({ ...editData, role: value })}
+                        >
+                          <SelectTrigger id="role">
+                            <SelectValue placeholder="Selecione o nível de acesso" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableRoles.map((role) => (
+                              <SelectItem key={role.value} value={role.value}>
+                                {role.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm py-2 px-3 bg-muted rounded-md">{getRoleLabel(profileData.role)}</p>
+                      )}
+                      {isEditing && !isAdmin && (
                         <p className="text-xs text-muted-foreground">O nível de acesso é definido pelo administrador do sistema</p>
                       )}
                     </div>
