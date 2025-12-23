@@ -707,13 +707,86 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                 Configuração de Permissões
               </CardTitle>
               <CardDescription>
-                Escolha como configurar as permissões do usuário
+                Defina o setor, nível de acesso e permissões do usuário
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Setor e Nível de Acesso - Campos administrativos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b">
+                  <div className="space-y-2">
+                    <Label htmlFor="sector">Setor</Label>
+                    <Select value={watch('sector') || ''} onValueChange={(value) => setValue('sector', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o setor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSectors.map((sector) => (
+                          <SelectItem key={sector.value} value={sector.value}>
+                            {sector.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Nível de Acesso *</Label>
+                    <Select value={watch('role') || ''} onValueChange={(value) => setValue('role', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o nível de acesso" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableRoles.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {watch('role') && (
+                      <p className="text-xs text-muted-foreground">
+                        {availableRoles.find(r => r.value === watch('role'))?.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Vinculação de Artista - aparece apenas quando nível de acesso é 'artista' */}
+                {watch('role') === 'artista' && (
+                  <div className="space-y-2 pb-4 border-b">
+                    <Label htmlFor="linkedArtistId">
+                      <div className="flex items-center gap-2">
+                        <Music className="h-4 w-4" />
+                        Artista Vinculado *
+                      </div>
+                    </Label>
+                    <Select 
+                      value={watch('linkedArtistId') || linkedArtistId} 
+                      onValueChange={(value) => {
+                        setValue('linkedArtistId', value);
+                        setLinkedArtistId(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o artista" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {artists.map((artist) => (
+                          <SelectItem key={artist.id} value={artist.id}>
+                            {artist.stage_name || artist.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      O usuário terá acesso apenas aos dados deste artista.
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <Label>Modo de Configuração</Label>
+                  <Label>Modo de Configuração de Permissões</Label>
                   <Select value={watchedPermissionMode} onValueChange={(value) => setValue('permissionMode', value as 'automatic' | 'manual')}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o modo" />
