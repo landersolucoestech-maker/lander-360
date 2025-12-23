@@ -275,8 +275,8 @@ export const navigationConfig: NavigationItem[] = [
   // Registro de Músicas - Inclui artista (vê só suas obras)
   { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico', 'artista', 'leitor'], module: 'registro_musicas', scope: 'projeto' },
   
-  // Gestão de Shares - NÃO aparece no menu principal para artistas
-  { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
+  // Gestão de Shares - REMOVIDO DO MENU PRINCIPAL (está no submenu de Lançamentos)
+  // { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
   
   // Contratos - Inclui artista (vê só seus contratos)
   { title: "Contratos", url: "/contratos", icon: FileText, roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'colaborador', 'leitor'], module: 'contratos', scope: 'artista' },
