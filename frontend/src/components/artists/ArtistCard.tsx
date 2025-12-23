@@ -76,13 +76,8 @@ export function ArtistCard({
     !spotifyUrl.includes('/user/');
   
   // Verificar se há qualquer rede social cadastrada para mostrar a seção de métricas
-  const hasAnySocialMedia = 
-    isValidSpotifyArtistUrl ||
-    (artist.socialMedia?.youtube && artist.socialMedia.youtube !== 'Não temos' && artist.socialMedia.youtube !== 'Não tem') ||
-    (artist.socialMedia?.instagram && artist.socialMedia.instagram !== 'Não temos' && artist.socialMedia.instagram !== 'Não tem') ||
-    (artist.socialMedia?.tiktok && artist.socialMedia.tiktok !== 'Não temos' && artist.socialMedia.tiktok !== 'Não tem') ||
-    (artist.socialMedia?.deezer && artist.socialMedia.deezer !== 'Não temos' && artist.socialMedia.deezer !== 'Não tem') ||
-    (artist.socialMedia?.apple && artist.socialMedia.apple !== 'Não temos' && artist.socialMedia.apple !== 'Não tem');
+  // Agora mostramos para TODOS os artistas, pois as métricas podem ser carregadas mesmo sem URLs
+  const hasAnySocialMedia = true; // Sempre mostrar a seção de métricas
   const { data: spotifyMetrics, isLoading: isLoadingMetrics } = useArtistSpotifyMetrics(artist.id.toString());
   const fetchSpotifyMetrics = useFetchSpotifyMetrics();
   const { data: socialMetrics, isLoading: isLoadingSocial } = useArtistSocialMetrics(artist.id.toString());
