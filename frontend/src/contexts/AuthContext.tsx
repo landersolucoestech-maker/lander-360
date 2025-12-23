@@ -117,30 +117,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!userRolesError && userRolesData && userRolesData.length > 0) {
         const mappedRoles = userRolesData.map(r => mapLegacyRole(r.role as string));
+        console.log('[Auth] Roles from user_roles:', mappedRoles);
         return [...new Set(mappedRoles)];
       }
 
-      // FALLBACK: profiles.roles
+      // FALLBACK: profiles.roles e role_display
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('roles, role_display')
         .eq('id', userId)
         .single();
 
+      console.log('[Auth] Profile data:', profileData);
+
       if (!profileError && profileData) {
-        if (profileData.roles && profileData.roles.length > 0) {
+        // Primeiro tenta roles array
+        if (profileData.roles && Array.isArray(profileData.roles) && profileData.roles.length > 0) {
           const mappedRoles = profileData.roles.map((r: string) => mapLegacyRole(r));
+          console.log('[Auth] Roles from profiles.roles:', mappedRoles);
           return [...new Set(mappedRoles)];
         }
-        // Tentar role_display
+        
+        // Fallback para role_display
         if (profileData.role_display) {
-          return [mapLegacyRole(profileData.role_display)];
+          const mappedRole = mapLegacyRole(profileData.role_display);
+          console.log('[Auth] Role from role_display:', profileData.role_display, '->', mappedRole);
+          return [mappedRole];
         }
       }
 
+      console.log('[Auth] No roles found, defaulting to leitor');
       return ['leitor'];
     } catch (err) {
-      console.error('Error fetching user roles:', err);
+      console.error('[Auth] Error fetching user roles:', err);
       return ['leitor'];
     }
   }, []);
