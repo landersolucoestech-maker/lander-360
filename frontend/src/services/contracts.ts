@@ -77,7 +77,7 @@ export class ContractsService {
   }
 
   // Create new contract
-  static async create(contract: ContractInsert): Promise<Contract> {
+  static async create(contract: ContractInsert): Promise<Contract & { userCreationMessage?: string }> {
     const { data, error } = await supabase
       .from('contracts')
       .insert(contract)
@@ -86,22 +86,27 @@ export class ContractsService {
 
     if (error) throw error;
 
+    let userCreationMessage: string | undefined;
+
     // Se o contrato foi criado com status 'assinado' (vigente), criar usuário automaticamente para o artista
     if (data.status === 'assinado' && data.artist_id) {
       try {
         const result = await ArtistUserAutoCreationService.createUserForArtist(data.artist_id);
         console.log('[ContractsService] Auto-criação de usuário no novo contrato:', result.message);
+        if (result.success && result.userId) {
+          userCreationMessage = result.message;
+        }
       } catch (err) {
         console.error('[ContractsService] Erro na auto-criação de usuário:', err);
         // Não bloqueia a criação do contrato se falhar a criação do usuário
       }
     }
 
-    return data;
+    return { ...data, userCreationMessage };
   }
 
   // Update contract
-  static async update(id: string, updates: ContractUpdate): Promise<Contract> {
+  static async update(id: string, updates: ContractUpdate): Promise<Contract & { userCreationMessage?: string }> {
     // Buscar status atual antes de atualizar
     const { data: currentContract } = await supabase
       .from('contracts')
@@ -118,16 +123,24 @@ export class ContractsService {
 
     if (error) throw error;
 
+    let userCreationMessage: string | undefined;
+
     // Se o status mudou para 'assinado' (vigente), criar usuário automaticamente para o artista
     if (updates.status === 'assinado' && currentContract?.status !== 'assinado' && data.artist_id) {
       try {
         const result = await ArtistUserAutoCreationService.createUserForArtist(data.artist_id);
         console.log('[ContractsService] Auto-criação de usuário:', result.message);
+        if (result.success && result.userId) {
+          userCreationMessage = result.message;
+        }
       } catch (err) {
         console.error('[ContractsService] Erro na auto-criação de usuário:', err);
         // Não bloqueia a atualização do contrato se falhar a criação do usuário
       }
     }
+
+    return { ...data, userCreationMessage };
+  }
 
     return data;
   }
