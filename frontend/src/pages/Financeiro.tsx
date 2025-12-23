@@ -392,27 +392,95 @@ const Financeiro = () => {
   };
 
   // Categories for filtering
-  const receitasCategories = ['venda_musicas', 'streaming', 'shows', 'licenciamento', 'merchandising', 'publicidade', 'producao', 'distribuicao', 'gestao'];
-  const despesasCategories = ['produtores', 'caches', 'comissao', 'marketing', 'equipe', 'infraestrutura', 'registros', 'juridicos', 'salarios', 'aluguel', 'manutencao', 'viagens', 'licencas', 'contabilidade', 'estudio', 'equipamentos', 'servicos'];
-  const investimentosCategories = ['producao_musical', 'marketing_digital', 'equipamentos', 'estudio', 'clipes', 'turnê', 'capacitacao'];
+  // Categorias formatadas e ordenadas alfabeticamente
+  const receitasCategoriesFormatted = [
+    { value: 'distribuicao', label: 'Distribuição' },
+    { value: 'gestao', label: 'Gestão' },
+    { value: 'licenciamento', label: 'Licenciamento' },
+    { value: 'merchandising', label: 'Merchandising' },
+    { value: 'producao', label: 'Produção' },
+    { value: 'publicidade', label: 'Publicidade' },
+    { value: 'shows', label: 'Shows' },
+    { value: 'streaming', label: 'Streaming' },
+    { value: 'venda_musicas', label: 'Venda de Músicas' },
+  ];
+  
+  const despesasCategoriesFormatted = [
+    { value: 'aluguel', label: 'Aluguel' },
+    { value: 'caches', label: 'Cachês' },
+    { value: 'comissao', label: 'Comissão' },
+    { value: 'contabilidade', label: 'Contabilidade' },
+    { value: 'equipamentos', label: 'Equipamentos' },
+    { value: 'equipe', label: 'Equipe' },
+    { value: 'estudio', label: 'Estúdio' },
+    { value: 'infraestrutura', label: 'Infraestrutura' },
+    { value: 'juridicos', label: 'Jurídicos' },
+    { value: 'licencas', label: 'Licenças' },
+    { value: 'manutencao', label: 'Manutenção' },
+    { value: 'marketing', label: 'Marketing' },
+    { value: 'produtores', label: 'Produtores' },
+    { value: 'registros', label: 'Registros' },
+    { value: 'salarios', label: 'Salários' },
+    { value: 'servicos', label: 'Serviços' },
+    { value: 'viagens', label: 'Viagens' },
+  ];
+  
+  const investimentosCategoriesFormatted = [
+    { value: 'capacitacao', label: 'Capacitação' },
+    { value: 'clipes', label: 'Clipes' },
+    { value: 'equipamentos', label: 'Equipamentos' },
+    { value: 'estudio', label: 'Estúdio' },
+    { value: 'marketing_digital', label: 'Marketing Digital' },
+    { value: 'producao_musical', label: 'Produção Musical' },
+    { value: 'turne', label: 'Turnê' },
+  ];
+
+  // Combinar todas as categorias únicas e ordenar
+  const allCategoriesMap = new Map<string, string>();
+  [...receitasCategoriesFormatted, ...despesasCategoriesFormatted, ...investimentosCategoriesFormatted].forEach(cat => {
+    allCategoriesMap.set(cat.value, cat.label);
+  });
+  allCategoriesMap.set('outros', 'Outros');
+  
+  const allCategoriesLabels = Array.from(allCategoriesMap.values()).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+  // Mapeamento reverso para filtros
+  const categoryLabelToValue: Record<string, string> = {};
+  allCategoriesMap.forEach((label, value) => {
+    categoryLabelToValue[label] = value;
+  });
 
   const filterOptions = [
     {
       key: "transaction_type",
       label: "Tipo",
-      options: ["receitas", "despesas", "investimentos"]
+      options: ["Despesas", "Investimentos", "Receitas"]
     },
     {
       key: "status",
       label: "Status",
-      options: ["pendente", "aprovado", "pago", "cancelado"]
+      options: ["Aprovado", "Cancelado", "Pago", "Pendente"]
     },
     {
       key: "category",
-      label: "Categoria",
-      options: [...receitasCategories, ...despesasCategories, ...investimentosCategories, "outros"]
+      label: "Todas as Categorias",
+      options: allCategoriesLabels
     }
   ];
+
+  // Mapeamentos reversos para tipos e status
+  const typeLabelToValue: Record<string, string> = {
+    "Despesas": "despesas",
+    "Investimentos": "investimentos",
+    "Receitas": "receitas",
+  };
+
+  const statusLabelToValue: Record<string, string> = {
+    "Aprovado": "aprovado",
+    "Cancelado": "cancelado",
+    "Pago": "pago",
+    "Pendente": "pendente",
+  };
 
   const handleSearch = (searchTerm: string) => {
     setSearchTerm(searchTerm);
@@ -437,9 +505,18 @@ const Financeiro = () => {
 
     const matchesFilters = Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
-      if (key === 'transaction_type') return transaction.transaction_type === value;
-      if (key === 'status') return transaction.status === value;
-      if (key === 'category') return transaction.category === value;
+      if (key === 'transaction_type') {
+        const dbValue = typeLabelToValue[value] || value.toLowerCase();
+        return transaction.transaction_type === dbValue;
+      }
+      if (key === 'status') {
+        const dbValue = statusLabelToValue[value] || value.toLowerCase();
+        return transaction.status === dbValue;
+      }
+      if (key === 'category') {
+        const dbValue = categoryLabelToValue[value] || value.toLowerCase().replace(/ /g, '_');
+        return transaction.category === dbValue;
+      }
       return true;
     });
 
