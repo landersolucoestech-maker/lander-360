@@ -126,7 +126,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
   );
   
   const afterDistribuicao = filteredNavigation.filter(item => 
-    ['Gestão de Shares', 'Contratos'].includes(item.title)
+    ['Contratos'].includes(item.title)
   );
   
   const afterFinanceiro = filteredNavigation.filter(item => 
