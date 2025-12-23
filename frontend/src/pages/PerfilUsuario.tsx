@@ -250,6 +250,11 @@ const PerfilUsuario = () => {
         console.log('[PerfilUsuario] Salvando - isAdmin:', isAdmin, 'sector:', editData.sector);
         if (isAdmin) {
           updateData.department = editData.sector || null;
+          // Admin também pode alterar o role
+          if (editData.role) {
+            updateData.role_display = editData.role;
+            updateData.roles = [editData.role];
+          }
         }
 
         console.log('[PerfilUsuario] updateData:', updateData);
