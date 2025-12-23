@@ -278,20 +278,19 @@ serve(async (req) => {
             date: today,
             followers: data.followers || data.subscribers || 0,
           };
-          
-          // Adicionar campos específicos por plataforma
-          if (platform === 'youtube') {
-            metricsData.value = data.views || 0;
-            metricsData.reach = data.videoCount || 0;
-          } else if (platform === 'spotify') {
-            metricsData.value = data.popularity || 0;
-          }
 
+          // Primeiro deletar registro existente para o mesmo artista/plataforma/data
+          await supabase
+            .from('social_media_metrics')
+            .delete()
+            .eq('artist_id', artistId)
+            .eq('platform', platform)
+            .eq('date', today);
+
+          // Depois inserir novo registro
           const { error } = await supabase
             .from('social_media_metrics')
-            .upsert(metricsData, {
-              onConflict: 'artist_id,platform,date',
-            });
+            .insert(metricsData);
 
           if (error) {
             console.error(`[social-metrics] DB error for ${platform}:`, error);
