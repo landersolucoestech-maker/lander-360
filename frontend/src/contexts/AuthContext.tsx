@@ -48,12 +48,12 @@ const routeToModuleMap: Record<string, string[]> = {
   '/takedowns': ['takedowns'],
   '/marketing': ['marketing'],
   '/configuracoes': ['configuracoes'],
-  '/perfil': ['perfil'], // Sempre permitido para usuário autenticado
+  '/perfil': ['perfil'],
 };
 
-// Permissões por role
+// Permissões por role - admin tem acesso a TUDO
 const rolePermissions: Record<UserRole, string[]> = {
-  admin: ['*'], // Acesso total
+  admin: ['*', 'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 'contratos', 'financeiro', 'agenda', 'inventario', 'usuarios', 'relatorios', 'gestao_shares', 'crm', 'servicos', 'landerzap', 'monitoramento', 'licenciamento', 'takedowns', 'marketing', 'configuracoes', 'perfil'],
   gestor_artistico: ['dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 'agenda', 'relatorios', 'perfil'],
   financeiro: ['dashboard', 'financeiro', 'contabilidade', 'contratos', 'nota_fiscal', 'relatorios', 'perfil'],
   marketing: ['dashboard', 'marketing', 'artistas', 'lancamentos', 'relatorios', 'perfil'],
