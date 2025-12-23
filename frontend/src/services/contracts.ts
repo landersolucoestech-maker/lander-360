@@ -13,12 +13,16 @@ import { ArtistUserAutoCreationService } from './artistUserAutoCreation';
 export class ContractsService {
   // Get all contracts with artist info (mantido para compatibilidade, mas limitado)
   static async getAll(): Promise<(Contract & { artists?: { name: string; stage_name?: string } })[]> {
+    console.log('[ContractsService.getAll] Starting query without artists join');
+    
     // First get contracts
     const { data: contracts, error: contractsError } = await supabase
       .from('contracts')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(100); // Limite de segurança
+
+    console.log('[ContractsService.getAll] Query result:', { contracts: contracts?.length, error: contractsError });
 
     if (contractsError) throw contractsError;
     if (!contracts || contracts.length === 0) return [];
