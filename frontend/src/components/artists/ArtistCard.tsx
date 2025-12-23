@@ -93,10 +93,12 @@ export function ArtistCard({
     console.log('[ArtistCard] isValidSpotifyArtistUrl:', isValidSpotifyArtistUrl);
     
     let metricsUpdated = false;
+    let hasValidUrls = false;
     
     try {
       // Refresh Spotify metrics
       if (isValidSpotifyArtistUrl) {
+        hasValidUrls = true;
         console.log('[ArtistCard] Chamando fetchSpotifyMetrics...');
         const result = await fetchSpotifyMetrics.mutateAsync({
           artistId: artist.id.toString(),
@@ -108,24 +110,44 @@ export function ArtistCard({
         }
       }
       
-      // Refresh other social metrics
+      // Refresh other social metrics - verificar se são URLs válidas (não placeholders)
       const youtubeUrl = artist.socialMedia?.youtube || '';
       const instagramUrl = artist.socialMedia?.instagram || '';
       const tiktokUrl = artist.socialMedia?.tiktok || '';
       const deezerUrl = artist.socialMedia?.deezer || '';
       const appleMusicUrl = artist.socialMedia?.apple || '';
       
-      console.log('[ArtistCard] Social URLs:', { youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl });
+      // Validar se as URLs são reais (não placeholders genéricos)
+      const isValidUrl = (url: string, domain: string) => {
+        if (!url) return false;
+        if (url === 'Não temos' || url === 'Não tem') return false;
+        // Verificar se não é um placeholder genérico
+        const placeholders = ['/perfil', '/channel/...', '/@perfil', '/artist/...'];
+        for (const placeholder of placeholders) {
+          if (url.endsWith(placeholder)) return false;
+        }
+        return url.includes(domain);
+      };
       
-      if (youtubeUrl || instagramUrl || tiktokUrl || deezerUrl || appleMusicUrl) {
+      const validYoutube = isValidUrl(youtubeUrl, 'youtube');
+      const validInstagram = isValidUrl(instagramUrl, 'instagram');
+      const validTiktok = isValidUrl(tiktokUrl, 'tiktok');
+      const validDeezer = isValidUrl(deezerUrl, 'deezer');
+      const validApple = isValidUrl(appleMusicUrl, 'music.apple');
+      
+      console.log('[ArtistCard] Social URLs:', { youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl });
+      console.log('[ArtistCard] Valid URLs:', { validYoutube, validInstagram, validTiktok, validDeezer, validApple });
+      
+      if (validYoutube || validInstagram || validTiktok || validDeezer || validApple) {
+        hasValidUrls = true;
         console.log('[ArtistCard] Chamando fetchSocialMetrics...');
         const socialResult = await fetchSocialMetrics.mutateAsync({
           artistId: artist.id.toString(),
-          youtubeUrl: youtubeUrl,
-          instagramUrl: instagramUrl,
-          tiktokUrl: tiktokUrl,
-          deezerUrl: deezerUrl,
-          appleMusicUrl: appleMusicUrl,
+          youtubeUrl: validYoutube ? youtubeUrl : '',
+          instagramUrl: validInstagram ? instagramUrl : '',
+          tiktokUrl: validTiktok ? tiktokUrl : '',
+          deezerUrl: validDeezer ? deezerUrl : '',
+          appleMusicUrl: validApple ? appleMusicUrl : '',
         });
         console.log('[ArtistCard] Resultado Social:', socialResult);
         if (socialResult?.success !== false) {
@@ -138,10 +160,15 @@ export function ArtistCard({
           title: 'Métricas atualizadas',
           description: `Métricas de ${artist.name} foram atualizadas com sucesso.`,
         });
+      } else if (!hasValidUrls) {
+        toast({
+          title: 'URLs não cadastradas',
+          description: 'Cadastre as URLs das redes sociais para atualizar as métricas.',
+        });
       } else {
         toast({
           title: 'Sem atualizações',
-          description: 'Nenhuma métrica foi atualizada. Verifique as URLs das redes sociais.',
+          description: 'Nenhuma métrica foi atualizada. Verifique se as URLs estão corretas.',
           variant: 'destructive',
         });
       }
