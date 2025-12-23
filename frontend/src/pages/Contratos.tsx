@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -21,11 +21,16 @@ import { useImportExport } from "@/hooks/useImportExport";
 import { Contract } from "@/types/database";
 import { formatDateBR } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 
 const Contratos = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
