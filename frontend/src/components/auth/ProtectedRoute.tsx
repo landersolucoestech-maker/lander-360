@@ -21,14 +21,14 @@ export function ProtectedRoute({ children, requiredModule }: ProtectedRouteProps
   const { user, loading, permissionsLoading, permissions, isFullyLoaded } = useAuth();
   const location = useLocation();
 
-  console.log('[ProtectedRoute] Render:', { 
-    pathname: location.pathname,
-    loading, 
-    permissionsLoading, 
-    isFullyLoaded,
-    hasUser: !!user,
-    primaryRole: permissions?.primaryRole
-  });
+  console.log('[ProtectedRoute] ===== DEBUG =====');
+  console.log('[ProtectedRoute] pathname:', location.pathname);
+  console.log('[ProtectedRoute] loading:', loading);
+  console.log('[ProtectedRoute] permissionsLoading:', permissionsLoading);
+  console.log('[ProtectedRoute] isFullyLoaded:', isFullyLoaded);
+  console.log('[ProtectedRoute] hasUser:', !!user);
+  console.log('[ProtectedRoute] isAdmin:', permissions?.isAdmin);
+  console.log('[ProtectedRoute] ==================');
 
   // Loading de autenticação
   if (loading) {
