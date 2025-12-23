@@ -15,7 +15,7 @@ export class ContractsService {
   static async getAll(): Promise<(Contract & { artists?: { name: string; stage_name?: string } })[]> {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, artists(name, stage_name)')
+      .select('*, artists:artist_id(name, stage_name)')
       .order('created_at', { ascending: false })
       .limit(100); // Limite de segurança
 
