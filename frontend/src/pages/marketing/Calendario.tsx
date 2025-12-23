@@ -21,22 +21,56 @@ const MarketingCalendario = () => {
   const agendados = allContent.filter(c => c.status === "Agendado").length;
   const publicados = allContent.filter(c => c.status === "Publicado").length;
 
+  // Plataformas ordenadas alfabeticamente
+  const platformOptions = [
+    "Facebook",
+    "Instagram",
+    "TikTok",
+    "Twitter",
+    "YouTube",
+  ];
+
+  // Status ordenados alfabeticamente
+  const statusOptions = [
+    "Agendado",
+    "Pausado",
+    "Publicado",
+    "Rascunho",
+  ];
+
+  // Tipos ordenados alfabeticamente
+  const typeOptions = [
+    "Anúncio",
+    "Carrossel",
+    "Post",
+    "Stories",
+    "Vídeo",
+  ];
+
+  // Formatos ordenados alfabeticamente
+  const formatOptions = [
+    "Carrossel",
+    "Imagem",
+    "Texto",
+    "Vídeo",
+  ];
+
   const filterOptions = [{
     key: "platform",
     label: "Plataforma",
-    options: ["Instagram", "TikTok", "Facebook", "YouTube", "Twitter"]
+    options: platformOptions
   }, {
     key: "status",
     label: "Status",
-    options: ["Agendado", "Rascunho", "Publicado", "Pausado"]
+    options: statusOptions
   }, {
     key: "type",
     label: "Tipo",
-    options: ["Post", "Stories", "Vídeo", "Anúncio", "Carrossel"]
+    options: typeOptions
   }, {
     key: "contentType",
     label: "Formato",
-    options: ["Imagem", "Vídeo", "Carrossel", "Texto"]
+    options: formatOptions
   }];
 
   const handleSearch = (searchTerm: string) => {
