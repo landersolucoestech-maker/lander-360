@@ -97,6 +97,16 @@ export const useCreateContract = () => {
         title: 'Sucesso',
         description: `Contrato "${(newContract as any).title || newContract.contract_type}" criado com sucesso.`,
       });
+      
+      // Se um usuário foi criado automaticamente para o artista
+      if ((newContract as any).userCreationMessage) {
+        setTimeout(() => {
+          toast({
+            title: '🎵 Acesso do Artista Criado',
+            description: (newContract as any).userCreationMessage,
+          });
+        }, 1000);
+      }
     },
     onError: (error) => {
       console.error('Error creating contract:', error);
@@ -125,6 +135,16 @@ export const useUpdateContract = () => {
         title: 'Sucesso',
         description: `Contrato "${(updatedContract as any).title || updatedContract.contract_type}" atualizado com sucesso.`,
       });
+      
+      // Se um usuário foi criado automaticamente para o artista
+      if ((updatedContract as any).userCreationMessage) {
+        setTimeout(() => {
+          toast({
+            title: '🎵 Acesso do Artista Criado',
+            description: (updatedContract as any).userCreationMessage,
+          });
+        }, 1000);
+      }
     },
     onError: (error) => {
       console.error('Error updating contract:', error);
