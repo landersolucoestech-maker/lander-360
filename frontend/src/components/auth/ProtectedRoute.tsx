@@ -38,16 +38,19 @@ export function ProtectedRoute({ children, requiredModule }: ProtectedRouteProps
 
   // Não autenticado
   if (!user) {
+    console.log('[ProtectedRoute] No user, redirecting to /auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // Loading de permissões
   if (permissionsLoading || !isFullyLoaded) {
+    console.log('[ProtectedRoute] Loading permissions...');
     return <LoadingScreen message="Carregando..." />;
   }
 
   // Verificar permissão
   const hasPermission = checkPermission(location.pathname, permissions, requiredModule);
+  console.log('[ProtectedRoute] Permission check:', { pathname: location.pathname, hasPermission });
 
   if (!hasPermission) {
     console.log('[ProtectedRoute] Access denied for:', location.pathname);
@@ -55,6 +58,7 @@ export function ProtectedRoute({ children, requiredModule }: ProtectedRouteProps
   }
 
   // Tudo OK - renderiza
+  console.log('[ProtectedRoute] Rendering children for:', location.pathname);
   return <>{children}</>;
 }
 
