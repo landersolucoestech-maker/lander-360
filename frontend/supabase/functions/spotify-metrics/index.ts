@@ -155,7 +155,6 @@ serve(async (req) => {
       followers: result.followers,
       popularity: result.popularity,
       monthly_listeners: result.monthly_listeners,
-      total_streams: totalStreams,
       fetched_at: result.fetched_at,
     };
     
