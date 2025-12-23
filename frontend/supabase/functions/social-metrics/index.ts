@@ -7,7 +7,8 @@ const SPOTIFY_CLIENT_ID = Deno.env.get('SPOTIFY_CLIENT_ID');
 const SPOTIFY_CLIENT_SECRET = Deno.env.get('SPOTIFY_CLIENT_SECRET');
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
 const META_ACCESS_TOKEN = Deno.env.get('META_ACCESS_TOKEN');
-const TIKTOK_API_KEY = Deno.env.get('TIKTOK_API_KEY');
+const TIKTOK_CLIENT_KEY = Deno.env.get('TIKTOK_CLIENT_KEY');
+const TIKTOK_CLIENT_SECRET = Deno.env.get('TIKTOK_CLIENT_SECRET');
 
 // Spotify - API Oficial
 async function getSpotifyMetrics(spotifyUrl: string) {
