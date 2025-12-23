@@ -193,9 +193,13 @@ export function AppSidebar({ className }: AppSidebarProps) {
             <img src="/assets/a21a1ab1-df8a-4b7b-a1e4-0e36f63eff02.png" alt="Lander 360º Logo" className="h-10 w-auto object-contain" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">LANDER 360º</h1>
+            <h1 className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">
+              {isArtistMode ? "MODO ARTISTA" : "LANDER 360º"}
+            </h1>
             {!rolesLoading && roles.length > 0 && (
-              <p className="text-xs text-muted-foreground">{roleDisplayNames[primaryRole]}</p>
+              <p className="text-xs text-muted-foreground">
+                {isArtistMode ? "Área do Artista" : roleDisplayNames[primaryRole]}
+              </p>
             )}
           </div>
         </div>
