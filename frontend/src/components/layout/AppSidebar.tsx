@@ -24,12 +24,21 @@ import {
   shouldShowFinanceiro,
   shouldShowDistribuicao,
   roleDisplayNames,
+  artistModeNavTitles,
   UserRole
 } from "@/lib/permissions";
 
 interface AppSidebarProps {
   className?: string;
 }
+
+// Helper para obter título no modo artista
+const getNavTitle = (title: string, isArtistMode: boolean): string => {
+  if (isArtistMode && artistModeNavTitles[title]) {
+    return artistModeNavTitles[title];
+  }
+  return title;
+};
 
 export function AppSidebar({ className }: AppSidebarProps) {
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
