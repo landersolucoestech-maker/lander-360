@@ -80,31 +80,31 @@ interface UserFormProps {
   onCancel: () => void;
 }
 
-// Available roles for selection - ATUALIZADO conforme matriz de permissões
+// Available roles for selection - ORDEM ALFABÉTICA pelo label
 const availableRoles: { value: UserRole; label: string; description: string }[] = [
-  { value: 'admin', label: roleDisplayNames.admin, description: roleDescriptions.admin },
-  { value: 'gestor_artistico', label: roleDisplayNames.gestor_artistico, description: roleDescriptions.gestor_artistico },
-  { value: 'financeiro', label: roleDisplayNames.financeiro, description: roleDescriptions.financeiro },
-  { value: 'juridico', label: roleDisplayNames.juridico, description: roleDescriptions.juridico },
-  { value: 'marketing', label: roleDisplayNames.marketing, description: roleDescriptions.marketing },
-  { value: 'artista', label: roleDisplayNames.artista, description: roleDescriptions.artista },
-  { value: 'colaborador', label: roleDisplayNames.colaborador, description: roleDescriptions.colaborador },
-  { value: 'leitor', label: roleDisplayNames.leitor, description: roleDescriptions.leitor },
+  { value: 'gestor_artistico', label: 'A&R / Gestão Artística', description: roleDescriptions.gestor_artistico },
+  { value: 'admin', label: 'Administrador Master', description: roleDescriptions.admin },
+  { value: 'artista', label: 'Artista', description: roleDescriptions.artista },
+  { value: 'colaborador', label: 'Colaborador / Freelancer', description: roleDescriptions.colaborador },
+  { value: 'financeiro', label: 'Financeiro / Contábil', description: roleDescriptions.financeiro },
+  { value: 'juridico', label: 'Jurídico', description: roleDescriptions.juridico },
+  { value: 'leitor', label: 'Leitor (Read-only)', description: roleDescriptions.leitor },
+  { value: 'marketing', label: 'Marketing', description: roleDescriptions.marketing },
 ];
 
-// Available sectors for selection
+// Available sectors for selection - ORDEM ALFABÉTICA pelo label
 const availableSectors: { value: Sector; label: string }[] = [
-  { value: 'producao', label: sectorDisplayNames.producao },
-  { value: 'administrativo', label: sectorDisplayNames.administrativo },
-  { value: 'financeiro', label: sectorDisplayNames.financeiro },
-  { value: 'marketing', label: sectorDisplayNames.marketing },
-  { value: 'comercial', label: sectorDisplayNames.comercial },
-  { value: 'tecnico', label: sectorDisplayNames.tecnico },
-  { value: 'artistico', label: sectorDisplayNames.artistico },
-  { value: 'eventos', label: sectorDisplayNames.eventos },
-  { value: 'juridico', label: sectorDisplayNames.juridico },
-  { value: 'rh', label: sectorDisplayNames.rh },
-  { value: 'ti', label: sectorDisplayNames.ti },
+  { value: 'administrativo', label: 'Administrativo' },
+  { value: 'artistico', label: 'Artístico' },
+  { value: 'comercial', label: 'Comercial' },
+  { value: 'eventos', label: 'Eventos' },
+  { value: 'financeiro', label: 'Financeiro' },
+  { value: 'juridico', label: 'Jurídico' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'producao', label: 'Produção' },
+  { value: 'rh', label: 'Recursos Humanos' },
+  { value: 'tecnico', label: 'Técnico' },
+  { value: 'ti', label: 'TI' },
 ];
 
 // Modules for permission configuration
