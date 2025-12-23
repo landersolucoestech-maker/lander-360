@@ -47,16 +47,44 @@ const Contratos = () => {
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: dbContracts = [], isLoading } = useContracts();
-  const contracts: any[] = dbContracts;
-  const { data: activeContracts = [] } = useActiveContracts();
-  const { data: expiringSoon = [] } = useContractsExpiringSoon(30);
-  const { data: artists = [] } = useArtists();
+  const { data: allContracts = [], isLoading } = useContracts();
+  const { data: allActiveContracts = [] } = useActiveContracts();
+  const { data: allExpiringSoon = [] } = useContractsExpiringSoon(30);
+  const { data: allArtists = [] } = useArtists();
   const deleteContract = useDeleteContract();
   const createContract = useCreateContract();
   const { toast } = useToast();
   const { exportToExcel } = useDataExport();
   const { parseExcelFile, parseContractImportRow } = useImportExport();
+
+  // Aplicar filtro de artista
+  const contracts = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allContracts.filter((c: any) => c.artist_id === artistId);
+    }
+    return allContracts;
+  }, [allContracts, shouldFilter, artistId]);
+
+  const activeContracts = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allActiveContracts.filter((c: any) => c.artist_id === artistId);
+    }
+    return allActiveContracts;
+  }, [allActiveContracts, shouldFilter, artistId]);
+
+  const expiringSoon = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allExpiringSoon.filter((c: any) => c.artist_id === artistId);
+    }
+    return allExpiringSoon;
+  }, [allExpiringSoon, shouldFilter, artistId]);
+
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allArtists.filter((a: any) => a.id === artistId);
+    }
+    return allArtists;
+  }, [allArtists, shouldFilter, artistId]);
 
   const serviceTypeLabels: Record<string, string> = {
     empresariamento: 'Empresariamento',
