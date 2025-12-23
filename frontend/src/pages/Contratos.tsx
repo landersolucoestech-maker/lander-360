@@ -47,7 +47,7 @@ const Contratos = () => {
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: allContracts = [], isLoading } = useContracts();
+  const { data: allContracts = [], isLoading, error } = useContracts();
   const { data: allActiveContracts = [] } = useActiveContracts();
   const { data: allExpiringSoon = [] } = useContractsExpiringSoon(30);
   const { data: allArtists = [] } = useArtists();
@@ -56,6 +56,12 @@ const Contratos = () => {
   const { toast } = useToast();
   const { exportToExcel } = useDataExport();
   const { parseExcelFile, parseContractImportRow } = useImportExport();
+
+  // Debug logs
+  console.log('[Contratos] isLoading:', isLoading);
+  console.log('[Contratos] error:', error);
+  console.log('[Contratos] allContracts:', allContracts);
+  console.log('[Contratos] allContracts.length:', allContracts?.length);
 
   // Aplicar filtro de artista
   const contracts = useMemo(() => {
