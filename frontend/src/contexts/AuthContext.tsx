@@ -61,32 +61,39 @@ const rolePermissions: Record<UserRole, string[]> = {
     'monitoramento', 'licenciamento', 'takedowns', 'marketing', 
     'configuracoes', 'perfil'
   ],
-  // Gestor Artístico
+  // Gestor Artístico - acesso amplo exceto usuários e configurações
   gestor_artistico: [
     'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
-    'contratos', 'agenda', 'relatorios', 'perfil'
+    'contratos', 'agenda', 'relatorios', 'gestao_shares', 'marketing',
+    'monitoramento', 'licenciamento', 'takedowns', 'servicos', 'inventario',
+    'landerzap', 'crm', 'perfil'
   ],
-  // Financeiro
+  // Financeiro - foco em finanças e contratos
   financeiro: [
-    'dashboard', 'financeiro', 'contratos', 'relatorios', 'perfil'
+    'dashboard', 'financeiro', 'contratos', 'relatorios', 'gestao_shares',
+    'servicos', 'inventario', 'perfil'
   ],
-  // Marketing
+  // Marketing - foco em marketing e lançamentos
   marketing: [
-    'dashboard', 'marketing', 'artistas', 'lancamentos', 'relatorios', 'perfil'
+    'dashboard', 'marketing', 'artistas', 'lancamentos', 'relatorios', 
+    'agenda', 'projetos', 'crm', 'landerzap', 'perfil'
   ],
-  // Artista - acesso limitado
+  // Artista - acesso aos SEUS dados em vários módulos
   artista: [
-    'dashboard', 'perfil', 'agenda', 'lancamentos', 'artistas'
+    'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos',
+    'gestao_shares', 'contratos', 'financeiro', 'agenda', 'relatorios',
+    'marketing', 'monitoramento', 'licenciamento', 'takedowns', 'perfil'
   ],
-  // Colaborador
+  // Colaborador - acesso limitado a projetos e agenda
   colaborador: [
-    'dashboard', 'perfil', 'projetos', 'agenda', 'artistas'
+    'dashboard', 'perfil', 'projetos', 'agenda', 'artistas', 'contratos', 'relatorios'
   ],
-  // Leitor - acesso básico a visualização de tudo (somente leitura no UI)
+  // Leitor - acesso de visualização a quase tudo
   leitor: [
     'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
     'contratos', 'financeiro', 'agenda', 'inventario', 'relatorios', 
-    'gestao_shares', 'crm', 'servicos', 'marketing', 'perfil'
+    'gestao_shares', 'crm', 'servicos', 'marketing', 'monitoramento',
+    'licenciamento', 'takedowns', 'perfil'
   ],
 };
 
