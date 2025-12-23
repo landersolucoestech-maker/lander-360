@@ -226,37 +226,7 @@ export function useUsers() {
         throw error;
       }
       
-      console.log('[useUsers] profiles atualizado com sucesso');
-
-      // IMPORTANTE: Atualizar também a tabela user_roles para que as permissões funcionem corretamente
-      if (userData.role) {
-        console.log('[useUsers] Atualizando user_roles para role:', userData.role);
-        
-        // Primeiro remove os roles antigos
-        const { error: deleteError } = await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', userId);
-        
-        if (deleteError) {
-          console.error('[useUsers] Erro ao deletar roles antigos:', deleteError);
-        }
-        
-        // Insere o novo role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: userId,
-            role: userData.role
-          });
-        
-        if (roleError) {
-          console.error('[useUsers] Erro ao inserir novo role:', roleError);
-          // Não bloqueia, pois o profiles já foi atualizado
-        } else {
-          console.log('[useUsers] Role atualizado em user_roles:', userData.role);
-        }
-      }
+      console.log('[useUsers] profiles atualizado com sucesso - role:', userData.role, 'sector:', userData.sector);
 
       toast({
         title: "Sucesso",
