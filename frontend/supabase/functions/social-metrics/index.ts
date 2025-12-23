@@ -195,7 +195,7 @@ async function getInstagramMetrics(instagramUrl: string) {
 // TikTok - Research API ou Display API
 async function getTikTokMetrics(tiktokUrl: string) {
   try {
-    if (!TIKTOK_API_KEY) {
+    if (!TIKTOK_CLIENT_KEY) {
       console.log('[social-metrics] TikTok API key not configured');
       return null;
     }
