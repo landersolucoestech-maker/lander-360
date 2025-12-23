@@ -308,7 +308,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                   </SidebarMenuItem>
                 )}
 
-                {/* Gestão de Shares, Contratos */}
+                {/* Contratos */}
                 {afterDistribuicao.map(item => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className={cn(
