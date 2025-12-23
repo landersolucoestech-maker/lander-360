@@ -92,31 +92,40 @@ export const useFetchSpotifyMetrics = () => {
 
   return useMutation({
     mutationFn: async ({ artistId, spotifyUrl }: { artistId: string; spotifyUrl?: string }) => {
-      const { data, error } = await supabase.functions.invoke('spotify-metrics', {
-        body: { artistId, spotifyUrl },
-      });
+      try {
+        const { data, error } = await supabase.functions.invoke('spotify-metrics', {
+          body: { artistId, spotifyUrl },
+        });
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+        if (error) {
+          console.warn('Spotify metrics edge function not available:', error.message);
+          return { success: false, message: 'Função de métricas Spotify não disponível' };
+        }
+        if (data?.error) {
+          console.warn('Spotify metrics returned error:', data.error);
+          return { success: false, message: data.error };
+        }
 
-      return data as FetchSpotifyMetricsResponse;
+        return data as FetchSpotifyMetricsResponse;
+      } catch (err) {
+        console.warn('Failed to fetch Spotify metrics:', err);
+        return { success: false, message: 'Não foi possível buscar métricas do Spotify' };
+      }
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['spotify-metrics', variables.artistId] });
-      queryClient.invalidateQueries({ queryKey: ['spotify-metrics-history', variables.artistId] });
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Métricas do Spotify atualizadas com sucesso.',
-      });
+      if ((data as any)?.success !== false) {
+        queryClient.invalidateQueries({ queryKey: ['spotify-metrics', variables.artistId] });
+        queryClient.invalidateQueries({ queryKey: ['spotify-metrics-history', variables.artistId] });
+        
+        toast({
+          title: 'Sucesso',
+          description: 'Métricas do Spotify atualizadas com sucesso.',
+        });
+      }
     },
     onError: (error: Error) => {
-      console.error('Error fetching Spotify metrics:', error);
-      toast({
-        title: 'Erro',
-        description: error.message || 'Falha ao buscar métricas do Spotify.',
-        variant: 'destructive',
-      });
+      console.warn('Error fetching Spotify metrics:', error);
+      // Don't show error toast for edge function unavailability
     },
   });
 };
