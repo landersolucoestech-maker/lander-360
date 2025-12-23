@@ -288,55 +288,57 @@ export const marketingItems: SubMenuItem[] = [
   { title: "IA Criativa", url: "/marketing/ia-criativa", roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'marketing' },
 ];
 
-// Main navigation items with role restrictions
+// Main navigation items with role restrictions - MATRIZ ATUALIZADA
 export const navigationConfig: NavigationItem[] = [
-  // Dashboard - All roles
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'relatorios', scope: 'empresa' },
+  // 📊 CORE
+  // Dashboard - Todos podem ver (artista vê "Meu Painel")
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, roles: ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'relatorios', scope: 'empresa' },
   
-  // Artistas - All roles can view (artista vê só seus dados)
-  { title: "Artistas", url: "/artistas", icon: Users, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'artistas', scope: 'artista' },
+  // Relatórios - Todos (artista vê "Meus Relatórios")
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3, roles: ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'relatorios', scope: 'empresa' },
   
-  // Projetos - All roles can view (artista vê só seus projetos)
-  { title: "Projetos", url: "/projetos", icon: FolderOpen, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'projetos', scope: 'projeto' },
+  // Agenda - Todos (artista vê "Minha Agenda")
+  { title: "Agenda", url: "/agenda", icon: Calendar, roles: ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'agenda', scope: 'empresa' },
   
-  // Registro de Músicas - Inclui artista (vê só suas obras)
-  { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico', 'artista', 'leitor'], module: 'registro_musicas', scope: 'projeto' },
-  
-  // Gestão de Shares - REMOVIDO DO MENU PRINCIPAL (está no submenu de Lançamentos)
-  // { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
-  
-  // Contratos - Inclui artista (vê só seus contratos)
-  { title: "Contratos", url: "/contratos", icon: FileText, roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'colaborador', 'leitor'], module: 'contratos', scope: 'artista' },
-  
-  // Financeiro - Inclui artista (vê só seus dados financeiros)
-  { title: "Financeiro", url: "/financeiro", icon: DollarSign, roles: ['admin', 'financeiro', 'artista', 'leitor'], module: 'financeiro', scope: 'empresa' },
-  
-  // Serviços - Admin, financeiro e gestor (NÃO para artista)
-  { title: "Serviços", url: "/servicos", icon: Briefcase, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'servicos', scope: 'empresa' },
-  
-  // Agenda - Inclui artista (vê só sua agenda)
-  { title: "Agenda", url: "/agenda", icon: Calendar, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'agenda', scope: 'empresa' },
-  
-  // Nota Fiscal - Financial (NÃO para artista)
-  { title: "Nota Fiscal", url: "/nota-fiscal", icon: Receipt, roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro', scope: 'empresa' },
-  
-  // Inventário - Admin e financeiro (NÃO para artista)
-  { title: "Inventário", url: "/inventario", icon: Package, roles: ['admin', 'financeiro', 'gestor_artistico', 'leitor'], module: 'inventario', scope: 'empresa' },
-  
-  // LanderZap - Livre para todos os usuários logados
-  { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'landerzap', scope: 'empresa' },
-  
-  // Usuários - Admin only
+  // Usuários & Permissões - Admin only
   { title: "Usuários", url: "/usuarios", icon: UserCog, roles: ['admin'], module: 'usuarios', scope: 'empresa' },
-  
-  // CRM - Business development (NÃO para artista)
-  { title: "CRM", url: "/crm", icon: UserCheck, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'crm', scope: 'empresa' },
-  
-  // Relatórios - Inclui artista (vê só seus relatórios)
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'relatorios', scope: 'empresa' },
   
   // Configurações - Admin only
   { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ['admin'], module: 'configuracoes', scope: 'empresa' },
+  
+  // 🎵 ARTÍSTICO & PRODUÇÃO
+  // Artistas - Artista vê "Meu Perfil"
+  { title: "Artistas", url: "/artistas", icon: Users, roles: ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'marketing', 'artista', 'leitor'], module: 'artistas', scope: 'artista' },
+  
+  // Projetos - Artista vê "Meus Projetos"
+  { title: "Projetos", url: "/projetos", icon: FolderOpen, roles: ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'projetos', scope: 'projeto' },
+  
+  // Inventário Técnico - NÃO para artista
+  { title: "Inventário", url: "/inventario", icon: Package, roles: ['admin', 'financeiro', 'gestor_artistico', 'leitor'], module: 'inventario', scope: 'empresa' },
+  
+  // 📚 EDITORIAL & DIREITOS (Registro de Músicas é dropdown)
+  { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico', 'juridico', 'artista', 'leitor'], module: 'registro_musicas', scope: 'projeto' },
+  
+  // ⚖️ JURÍDICO
+  // Contratos - Artista vê "Meus Contratos"
+  { title: "Contratos", url: "/contratos", icon: FileText, roles: ['admin', 'gestor_artistico', 'financeiro', 'juridico', 'artista', 'leitor'], module: 'contratos', scope: 'artista' },
+  
+  // 💰 FINANCEIRO
+  // Financeiro - Artista vê "Meu Financeiro" (visualização)
+  { title: "Financeiro", url: "/financeiro", icon: DollarSign, roles: ['admin', 'financeiro', 'artista', 'leitor'], module: 'financeiro', scope: 'empresa' },
+  
+  // Nota Fiscal - NÃO para artista
+  { title: "Nota Fiscal", url: "/nota-fiscal", icon: Receipt, roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro', scope: 'empresa' },
+  
+  // 💼 COMERCIAL & RELACIONAMENTO
+  // Serviços - NÃO para artista
+  { title: "Serviços", url: "/servicos", icon: Briefcase, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'servicos', scope: 'empresa' },
+  
+  // CRM - NÃO para artista
+  { title: "CRM", url: "/crm", icon: UserCheck, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'crm', scope: 'empresa' },
+  
+  // LanderZap - Livre para todos
+  { title: "LanderZap", url: "/lander", icon: MessageCircle, roles: ['admin', 'gestor_artistico', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'landerzap', scope: 'empresa' },
 ];
 
 // Mapeamento de títulos para MODO ARTISTA
