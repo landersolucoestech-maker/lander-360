@@ -13,14 +13,40 @@ import { ArtistUserAutoCreationService } from './artistUserAutoCreation';
 export class ContractsService {
   // Get all contracts with artist info (mantido para compatibilidade, mas limitado)
   static async getAll(): Promise<(Contract & { artists?: { name: string; stage_name?: string } })[]> {
-    const { data, error } = await supabase
+    // First get contracts
+    const { data: contracts, error: contractsError } = await supabase
       .from('contracts')
-      .select('*, artists:artist_id(name, stage_name)')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(100); // Limite de segurança
 
-    if (error) throw error;
-    return data || [];
+    if (contractsError) throw contractsError;
+    if (!contracts || contracts.length === 0) return [];
+
+    // Get unique artist IDs
+    const artistIds = [...new Set(contracts.map(c => c.artist_id).filter(Boolean))];
+    
+    // Fetch artists separately to avoid multiple FK ambiguity
+    let artistsMap: Record<string, { name: string; stage_name?: string }> = {};
+    if (artistIds.length > 0) {
+      const { data: artists } = await supabase
+        .from('artists')
+        .select('id, name, stage_name')
+        .in('id', artistIds);
+      
+      if (artists) {
+        artistsMap = artists.reduce((acc, artist) => {
+          acc[artist.id] = { name: artist.name, stage_name: artist.stage_name };
+          return acc;
+        }, {} as Record<string, { name: string; stage_name?: string }>);
+      }
+    }
+
+    // Merge artist info into contracts
+    return contracts.map(contract => ({
+      ...contract,
+      artists: contract.artist_id ? artistsMap[contract.artist_id] : undefined
+    }));
   }
 
   // Get contracts with pagination
