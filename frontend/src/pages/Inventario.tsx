@@ -108,21 +108,53 @@ const Inventario = () => {
     filterEquipment(currentSearchTerm, currentFilters);
   }, [inventoryData]);
 
+  // Extrair locais únicos do inventário e ordenar alfabeticamente
+  const uniqueLocations = useMemo(() => {
+    const locations = new Set<string>();
+    allEquipment.forEach((item: any) => {
+      if (item.location) locations.add(item.location);
+    });
+    // Adicionar locais padrão se não existirem
+    ['Dj Stay', 'Escritório', 'Estoque', 'Estúdio 1', 'Estúdio 2'].forEach(loc => locations.add(loc));
+    return Array.from(locations).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [allEquipment]);
+
+  // Categorias ordenadas alfabeticamente
+  const categoryOptions = [
+    "Áudio",
+    "Computador",
+    "Equipamento",
+    "Escritório",
+    "Estrutura",
+    "Iluminação",
+    "Mobília",
+    "Software",
+    "Vídeo",
+  ];
+
+  // Status ordenados alfabeticamente
+  const statusOptions = [
+    "Danificado",
+    "Disponível",
+    "Em Uso",
+    "Manutenção",
+  ];
+
   const filterOptions = [
     {
       key: "category",
       label: "Categoria",
-      options: ["Computador", "Audio", "Video", "Software", "Equipamento", "Estrutura", "Mobilia", "Iluminação", "Escritorio"]
+      options: categoryOptions
     },
     {
       key: "status",
       label: "Status",
-      options: ["Disponivel", "Em Uso", "Manutenção", "Danificado"]
+      options: statusOptions
     },
     {
       key: "location",
       label: "Local",
-      options: ["Escritorio", "Estudio 1", "Estudio 2", "Dj Stay", "Estoque"]
+      options: uniqueLocations
     }
   ];
 
