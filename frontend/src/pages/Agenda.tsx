@@ -44,6 +44,9 @@ interface AgendaEvent {
 }
 
 const Agenda = () => {
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | undefined>();
@@ -60,13 +63,28 @@ const Agenda = () => {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { data: agendaEvents = [], isLoading } = useAgenda();
-  const { data: artists = [] } = useArtists();
+  const { data: allAgendaEvents = [], isLoading } = useAgenda();
+  const { data: allArtists = [] } = useArtists();
   const createEvent = useCreateAgendaEvent();
   const updateEvent = useUpdateAgendaEvent();
   const deleteEvent = useDeleteAgendaEvent();
   const { exportToExcel } = useDataExport();
   const { parseExcelFile, parseAgendaImportRow } = useImportExport();
+
+  // Aplicar filtro de artista
+  const agendaEvents = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allAgendaEvents.filter((e: any) => e.artist_id === artistId);
+    }
+    return allAgendaEvents;
+  }, [allAgendaEvents, shouldFilter, artistId]);
+
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allArtists.filter((a: any) => a.id === artistId);
+    }
+    return allArtists;
+  }, [allArtists, shouldFilter, artistId]);
 
   const events: AgendaEvent[] = agendaEvents.map((e: any) => ({
     id: e.id,
