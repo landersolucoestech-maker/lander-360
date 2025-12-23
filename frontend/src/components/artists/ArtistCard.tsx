@@ -503,7 +503,11 @@ export function ArtistCard({
                         <span className="text-[10px] font-medium text-foreground">YouTube</span>
                       </div>
                       <div className="text-base font-bold text-foreground">
-                        {socialMetrics?.youtube?.subscribers ? formatNumber(socialMetrics.youtube.subscribers) : 'N/D'}
+                        {socialMetrics?.youtube?.subscribers 
+                          ? formatNumber(socialMetrics.youtube.subscribers) 
+                          : artist.socialMedia?.youtube && !artist.socialMedia.youtube.includes('/...')
+                            ? 'Atualizar' 
+                            : 'Sem URL'}
                       </div>
                       <div className="text-[9px] text-muted-foreground">Inscritos</div>
                       {socialMetrics?.youtube?.views ? (
@@ -524,7 +528,11 @@ export function ArtistCard({
                           <span className="text-[9px] font-medium text-foreground">Apple Music</span>
                         </div>
                         <div className="text-sm font-bold text-foreground">
-                          {socialMetrics?.apple?.followers ? formatNumber(socialMetrics.apple.followers) : 'N/D'}
+                          {socialMetrics?.apple?.followers 
+                            ? formatNumber(socialMetrics.apple.followers) 
+                            : artist.socialMedia?.apple 
+                              ? 'N/A' 
+                              : 'Sem URL'}
                         </div>
                         <div className="text-[8px] text-muted-foreground">Seguidores</div>
                       </div>
@@ -534,7 +542,11 @@ export function ArtistCard({
                           <span className="text-[9px] font-medium text-foreground">Deezer</span>
                         </div>
                         <div className="text-sm font-bold text-foreground">
-                          {socialMetrics?.deezer?.followers ? formatNumber(socialMetrics.deezer.followers) : 'N/D'}
+                          {socialMetrics?.deezer?.followers 
+                            ? formatNumber(socialMetrics.deezer.followers) 
+                            : artist.socialMedia?.deezer && !artist.socialMedia.deezer.includes('/...')
+                              ? 'Atualizar' 
+                              : 'Sem URL'}
                         </div>
                         <div className="text-[8px] text-muted-foreground">Fãs</div>
                       </div>
