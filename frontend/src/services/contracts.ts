@@ -8,6 +8,7 @@ import {
   createPaginatedResult,
   normalizePaginationParams
 } from '@/lib/pagination';
+import { ArtistUserAutoCreationService } from './artistUserAutoCreation';
 
 export class ContractsService {
   // Get all contracts with artist info (mantido para compatibilidade, mas limitado)
