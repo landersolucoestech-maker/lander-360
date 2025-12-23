@@ -138,6 +138,57 @@ serve(async (req) => {
       fetched_at: new Date().toISOString(),
     };
 
+    // Salvar métricas no banco de dados
+    const supabase = getSupabaseClient();
+    
+    // Calcular total de streams das top tracks
+    const totalStreams = topTracks.slice(0, 5).reduce((sum: number, track: any) => {
+      // Não temos playcount direto, mas podemos usar popularity como métrica
+      return sum + (track.popularity || 0);
+    }, 0) * 10000; // Estimativa baseada na popularidade
+    
+    const metricsData = {
+      artist_id: artistId,
+      spotify_artist_id: spotifyId,
+      followers: result.followers,
+      popularity: result.popularity,
+      monthly_listeners: result.monthly_listeners,
+      total_streams: totalStreams,
+      top_tracks: result.top_tracks,
+      fetched_at: result.fetched_at,
+    };
+    
+    // Verificar se já existe um registro recente (últimas 24h)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: existingMetrics } = await supabase
+      .from('spotify_metrics')
+      .select('id, fetched_at')
+      .eq('artist_id', artistId)
+      .gte('fetched_at', oneDayAgo)
+      .order('fetched_at', { ascending: false })
+      .limit(1);
+    
+    if (existingMetrics && existingMetrics.length > 0) {
+      // Atualizar registro existente
+      const { error: updateError } = await supabase
+        .from('spotify_metrics')
+        .update(metricsData)
+        .eq('id', existingMetrics[0].id);
+      
+      if (updateError) {
+        console.error('Error updating spotify metrics:', updateError);
+      }
+    } else {
+      // Criar novo registro
+      const { error: insertError } = await supabase
+        .from('spotify_metrics')
+        .insert(metricsData);
+      
+      if (insertError) {
+        console.error('Error inserting spotify metrics:', insertError);
+      }
+    }
+
     return new Response(
       JSON.stringify({ success: true, data: result }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
