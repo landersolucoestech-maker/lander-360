@@ -3,6 +3,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://rlinswqockcnijhojnth.supabase.co',
+  'https://sonartista.preview.emergentagent.com',
 ];
 
 // Em produção, defina ALLOWED_ORIGIN como variável de ambiente
