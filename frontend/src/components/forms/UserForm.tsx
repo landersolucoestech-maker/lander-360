@@ -194,6 +194,20 @@ const permissionTemplates: Record<string, { label: string; permissions: Record<s
       usuarios: [],
     }
   },
+  marketing: {
+    label: 'Marketing',
+    permissions: {
+      artistas: ['view'],
+      projetos: ['view'],
+      marketing: ['view', 'create', 'edit', 'delete', 'export'],
+      financeiro: [],
+      contratos: [],
+      agenda: ['view', 'create', 'edit'],
+      inventario: [],
+      configuracoes: [],
+      usuarios: [],
+    }
+  },
   leitor: {
     label: 'Leitor (Read-only)',
     permissions: {
@@ -204,6 +218,34 @@ const permissionTemplates: Record<string, { label: string; permissions: Record<s
       contratos: ['view'],
       agenda: ['view'],
       inventario: ['view'],
+      configuracoes: [],
+      usuarios: [],
+    }
+  },
+  visualizador: {
+    label: 'Visualizador',
+    permissions: {
+      artistas: ['view'],
+      projetos: ['view'],
+      marketing: ['view'],
+      financeiro: ['view'],
+      contratos: ['view'],
+      agenda: ['view'],
+      inventario: ['view'],
+      configuracoes: [],
+      usuarios: [],
+    }
+  },
+  editor: {
+    label: 'Editor',
+    permissions: {
+      artistas: ['view', 'create', 'edit'],
+      projetos: ['view', 'create', 'edit'],
+      marketing: ['view', 'create', 'edit'],
+      financeiro: ['view'],
+      contratos: ['view', 'edit'],
+      agenda: ['view', 'create', 'edit'],
+      inventario: ['view', 'edit'],
       configuracoes: [],
       usuarios: [],
     }
