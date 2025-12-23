@@ -127,9 +127,26 @@ export function ArtistForm({
   const [selectedDistributors, setSelectedDistributors] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(artist?.image_url || null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
-  const [documentName, setDocumentName] = useState<string | null>(artist?.documents_url ? 'Documento carregado' : null);
+  
+  // Parse documents_url JSON to get individual URLs
+  const parseDocumentsUrl = (url: string | null | undefined) => {
+    if (!url) return { documents: null, presskit: null };
+    try {
+      const parsed = JSON.parse(url);
+      return {
+        documents: parsed.documents || null,
+        presskit: parsed.presskit || null,
+      };
+    } catch {
+      // If not JSON, assume it's a direct URL for documents
+      return { documents: url, presskit: null };
+    }
+  };
+  
+  const parsedDocs = parseDocumentsUrl(artist?.documents_url);
+  const [documentName, setDocumentName] = useState<string | null>(parsedDocs.documents ? 'Documento carregado' : null);
   const [presskitFile, setPresskitFile] = useState<File | null>(null);
-  const [presskitName, setPresskitName] = useState<string | null>((artist as any)?.presskit_url ? 'Presskit carregado' : null);
+  const [presskitName, setPresskitName] = useState<string | null>(parsedDocs.presskit ? 'Presskit carregado' : null);
   const [isUploadingPresskit, setIsUploadingPresskit] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
