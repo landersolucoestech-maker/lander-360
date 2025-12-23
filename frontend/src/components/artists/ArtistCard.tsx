@@ -12,6 +12,7 @@ import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationM
 import { useDeleteArtist } from "@/hooks/useArtists";
 import { useArtistSpotifyMetrics, useFetchSpotifyMetrics } from "@/hooks/useSpotifyMetrics";
 import { useArtistSocialMetrics, useFetchSocialMetrics } from "@/hooks/useSocialMetrics";
+import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, Users, Headphones, BarChart3, RefreshCw, Loader2, Eye, Sparkles } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud, FaApple, FaDeezer } from "react-icons/fa";
 interface ArtistCardProps {
