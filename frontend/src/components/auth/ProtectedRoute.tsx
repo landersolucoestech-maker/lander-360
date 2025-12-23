@@ -21,8 +21,18 @@ export function ProtectedRoute({ children, requiredModule }: ProtectedRouteProps
   const { user, loading, permissionsLoading, permissions, isFullyLoaded } = useAuth();
   const location = useLocation();
 
+  console.log('[ProtectedRoute] Render:', { 
+    pathname: location.pathname,
+    loading, 
+    permissionsLoading, 
+    isFullyLoaded,
+    hasUser: !!user,
+    primaryRole: permissions?.primaryRole
+  });
+
   // Loading de autenticação
   if (loading) {
+    console.log('[ProtectedRoute] Showing auth loading...');
     return <LoadingScreen message="Verificando autenticação..." />;
   }
 
