@@ -142,9 +142,6 @@ export class ContractsService {
     return { ...data, userCreationMessage };
   }
 
-    return data;
-  }
-
   // Delete contract
   static async delete(id: string): Promise<void> {
     const { error } = await supabase
