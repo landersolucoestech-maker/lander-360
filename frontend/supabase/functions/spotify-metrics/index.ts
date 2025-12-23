@@ -156,7 +156,6 @@ serve(async (req) => {
       popularity: result.popularity,
       monthly_listeners: result.monthly_listeners,
       total_streams: totalStreams,
-      top_tracks: result.top_tracks,
       fetched_at: result.fetched_at,
     };
     
