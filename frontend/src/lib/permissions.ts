@@ -275,7 +275,7 @@ export const navigationConfig: NavigationItem[] = [
   // Registro de Músicas - Inclui artista (vê só suas obras)
   { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico', 'artista', 'leitor'], module: 'registro_musicas', scope: 'projeto' },
   
-  // Gestão de Shares - NÃO aparece no menu principal para artistas (acessa via sub-menu de Lançamentos)
+  // Gestão de Shares - NÃO aparece no menu principal para artistas
   { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
   
   // Contratos - Inclui artista (vê só seus contratos)
@@ -284,16 +284,16 @@ export const navigationConfig: NavigationItem[] = [
   // Financeiro - Inclui artista (vê só seus dados financeiros)
   { title: "Financeiro", url: "/financeiro", icon: DollarSign, roles: ['admin', 'financeiro', 'artista', 'leitor'], module: 'financeiro', scope: 'empresa' },
   
-  // Serviços - Admin, financeiro e gestor
+  // Serviços - Admin, financeiro e gestor (NÃO para artista)
   { title: "Serviços", url: "/servicos", icon: Briefcase, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'servicos', scope: 'empresa' },
   
   // Agenda - Inclui artista (vê só sua agenda)
   { title: "Agenda", url: "/agenda", icon: Calendar, roles: ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'], module: 'agenda', scope: 'empresa' },
   
-  // Nota Fiscal - Financial
+  // Nota Fiscal - Financial (NÃO para artista)
   { title: "Nota Fiscal", url: "/nota-fiscal", icon: Receipt, roles: ['admin', 'financeiro', 'leitor'], module: 'financeiro', scope: 'empresa' },
   
-  // Inventário - Admin e financeiro
+  // Inventário - Admin e financeiro (NÃO para artista)
   { title: "Inventário", url: "/inventario", icon: Package, roles: ['admin', 'financeiro', 'gestor_artistico', 'leitor'], module: 'inventario', scope: 'empresa' },
   
   // LanderZap - Livre para todos os usuários logados
@@ -302,7 +302,7 @@ export const navigationConfig: NavigationItem[] = [
   // Usuários - Admin only
   { title: "Usuários", url: "/usuarios", icon: UserCog, roles: ['admin'], module: 'usuarios', scope: 'empresa' },
   
-  // CRM - Business development
+  // CRM - Business development (NÃO para artista)
   { title: "CRM", url: "/crm", icon: UserCheck, roles: ['admin', 'gestor_artistico', 'marketing', 'leitor'], module: 'crm', scope: 'empresa' },
   
   // Relatórios - Inclui artista (vê só seus relatórios)
@@ -311,6 +311,34 @@ export const navigationConfig: NavigationItem[] = [
   // Configurações - Admin only
   { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ['admin'], module: 'configuracoes', scope: 'empresa' },
 ];
+
+// Mapeamento de títulos para MODO ARTISTA
+export const artistModeLabels: Record<string, { title: string; subtitle: string }> = {
+  '/': { title: 'Meu Painel', subtitle: 'Visão geral da sua carreira' },
+  '/artistas': { title: 'Meu Perfil', subtitle: 'Informações, contratos e dados da sua carreira' },
+  '/projetos': { title: 'Meus Projetos', subtitle: 'EPs, álbuns, singles e projetos autorais' },
+  '/registro-musicas': { title: 'Meus Registros Musicais', subtitle: 'Obras, fonogramas, ISRC e ISWC' },
+  '/lancamentos': { title: 'Meus Lançamentos', subtitle: 'Distribuição digital e status por plataforma' },
+  '/gestao-shares': { title: 'Meus Shares', subtitle: 'Splits dos seus lançamentos' },
+  '/contratos': { title: 'Meus Contratos', subtitle: 'Contratos fonográficos, editoriais e licenciamento' },
+  '/financeiro': { title: 'Meu Financeiro', subtitle: 'Royalties, ganhos e saldo disponível' },
+  '/agenda': { title: 'Minha Agenda', subtitle: 'Shows, compromissos e eventos' },
+  '/relatorios': { title: 'Meus Relatórios', subtitle: 'Performance, financeiro e distribuição' },
+  '/marketing': { title: 'Meu Marketing', subtitle: 'Campanhas e métricas da sua carreira' },
+};
+
+// Mapeamento de títulos de navegação para MODO ARTISTA (sidebar)
+export const artistModeNavTitles: Record<string, string> = {
+  'Dashboard': 'Meu Painel',
+  'Artistas': 'Meu Perfil',
+  'Projetos': 'Meus Projetos',
+  'Registro de Músicas': 'Meus Registros',
+  'Contratos': 'Meus Contratos',
+  'Financeiro': 'Meu Financeiro',
+  'Agenda': 'Minha Agenda',
+  'Relatórios': 'Meus Relatórios',
+  'LanderZap': 'LanderZap',
+};
 
 // Role display names
 export const roleDisplayNames: Record<UserRole, string> = {
