@@ -85,6 +85,18 @@ export class ContractsService {
       .single();
 
     if (error) throw error;
+
+    // Se o contrato foi criado com status 'assinado' (vigente), criar usuário automaticamente para o artista
+    if (data.status === 'assinado' && data.artist_id) {
+      try {
+        const result = await ArtistUserAutoCreationService.createUserForArtist(data.artist_id);
+        console.log('[ContractsService] Auto-criação de usuário no novo contrato:', result.message);
+      } catch (err) {
+        console.error('[ContractsService] Erro na auto-criação de usuário:', err);
+        // Não bloqueia a criação do contrato se falhar a criação do usuário
+      }
+    }
+
     return data;
   }
 
