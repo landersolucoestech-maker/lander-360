@@ -16,7 +16,7 @@ interface AuthContextType {
   loading: boolean;
   permissionsLoading: boolean;
   permissions: UserPermissions;
-  isFullyLoaded: boolean; // Auth + Permissions carregados
+  isFullyLoaded: boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -24,7 +24,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
-// Mapeamento de rotas para módulos de permissão
+// Mapeamento de rotas para módulos
 const routeToModuleMap: Record<string, string[]> = {
   '/': ['dashboard'],
   '/artistas': ['artistas'],
@@ -51,22 +51,50 @@ const routeToModuleMap: Record<string, string[]> = {
   '/perfil': ['perfil'],
 };
 
-// Permissões por role - admin tem acesso a TUDO
+// Permissões COMPLETAS por role - todos módulos listados explicitamente
 const rolePermissions: Record<UserRole, string[]> = {
-  admin: ['*', 'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 'contratos', 'financeiro', 'agenda', 'inventario', 'usuarios', 'relatorios', 'gestao_shares', 'crm', 'servicos', 'landerzap', 'monitoramento', 'licenciamento', 'takedowns', 'marketing', 'configuracoes', 'perfil'],
-  gestor_artistico: ['dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 'agenda', 'relatorios', 'perfil'],
-  financeiro: ['dashboard', 'financeiro', 'contabilidade', 'contratos', 'nota_fiscal', 'relatorios', 'perfil'],
-  marketing: ['dashboard', 'marketing', 'artistas', 'lancamentos', 'relatorios', 'perfil'],
-  artista: ['dashboard', 'perfil', 'agenda', 'lancamentos'],
-  colaborador: ['dashboard', 'perfil', 'projetos', 'agenda'],
-  leitor: ['dashboard', 'perfil'],
+  // Admin tem acesso a TUDO
+  admin: [
+    'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
+    'contratos', 'financeiro', 'agenda', 'inventario', 'usuarios', 
+    'relatorios', 'gestao_shares', 'crm', 'servicos', 'landerzap', 
+    'monitoramento', 'licenciamento', 'takedowns', 'marketing', 
+    'configuracoes', 'perfil'
+  ],
+  // Gestor Artístico
+  gestor_artistico: [
+    'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
+    'contratos', 'agenda', 'relatorios', 'perfil'
+  ],
+  // Financeiro
+  financeiro: [
+    'dashboard', 'financeiro', 'contratos', 'relatorios', 'perfil'
+  ],
+  // Marketing
+  marketing: [
+    'dashboard', 'marketing', 'artistas', 'lancamentos', 'relatorios', 'perfil'
+  ],
+  // Artista - acesso limitado
+  artista: [
+    'dashboard', 'perfil', 'agenda', 'lancamentos', 'artistas'
+  ],
+  // Colaborador
+  colaborador: [
+    'dashboard', 'perfil', 'projetos', 'agenda', 'artistas'
+  ],
+  // Leitor - acesso básico a visualização de tudo (somente leitura no UI)
+  leitor: [
+    'dashboard', 'artistas', 'projetos', 'registro_musicas', 'lancamentos', 
+    'contratos', 'financeiro', 'agenda', 'inventario', 'relatorios', 
+    'gestao_shares', 'crm', 'servicos', 'marketing', 'perfil'
+  ],
 };
 
 const defaultPermissions: UserPermissions = {
   roles: [],
   primaryRole: 'leitor',
   isAdmin: false,
-  canAccess: () => false,
+  canAccess: () => true, // Por padrão, permite (será sobrescrito)
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -79,37 +107,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [permissions, setPermissions] = useState<UserPermissions>(defaultPermissions);
 
   // Função para verificar se pode acessar um módulo
-  const canAccess = useCallback((module: string, roles: UserRole[]): boolean => {
-    if (roles.length === 0) return false;
-    if (roles.includes('admin')) return true;
-    
-    for (const role of roles) {
-      const allowedModules = rolePermissions[role] || [];
-      if (allowedModules.includes('*') || allowedModules.includes(module)) {
+  const createCanAccess = useCallback((roles: UserRole[], isAdmin: boolean) => {
+    return (module: string): boolean => {
+      // Admin SEMPRE tem acesso
+      if (isAdmin) return true;
+      
+      // Se não tem roles definidas, permite acesso básico
+      if (roles.length === 0) return true;
+      
+      // Verifica se alguma das roles do usuário permite acesso ao módulo
+      for (const role of roles) {
+        const allowedModules = rolePermissions[role];
+        if (allowedModules && allowedModules.includes(module)) {
+          return true;
+        }
+      }
+      
+      // Se o módulo não está na lista de nenhuma role, permite por padrão
+      // (para não bloquear páginas não configuradas)
+      const allConfiguredModules = Object.values(rolePermissions).flat();
+      if (!allConfiguredModules.includes(module)) {
         return true;
       }
-    }
-    return false;
+      
+      return false;
+    };
   }, []);
-
-  // Função para verificar se pode acessar uma rota
-  const canAccessRoute = useCallback((path: string, roles: UserRole[]): boolean => {
-    // Rotas sempre permitidas para autenticados
-    if (path === '/perfil') return true;
-    
-    // Encontra o módulo correspondente à rota
-    const basePath = '/' + path.split('/')[1];
-    const modules = routeToModuleMap[basePath] || routeToModuleMap[path];
-    
-    if (!modules) return true; // Rota não mapeada = permitida
-    
-    return modules.some(module => canAccess(module, roles));
-  }, [canAccess]);
 
   // Buscar roles do usuário
   const fetchUserRoles = useCallback(async (userId: string): Promise<UserRole[]> => {
     try {
-      // FONTE PRINCIPAL: user_roles table
+      // FONTE 1: user_roles table
       const { data: userRolesData, error: userRolesError } = await supabase
         .from('user_roles')
         .select('role')
@@ -117,21 +145,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!userRolesError && userRolesData && userRolesData.length > 0) {
         const mappedRoles = userRolesData.map(r => mapLegacyRole(r.role as string));
-        console.log('[Auth] Roles from user_roles:', mappedRoles);
+        console.log('[Auth] Roles from user_roles table:', mappedRoles);
         return [...new Set(mappedRoles)];
       }
 
-      // FALLBACK: profiles.roles e role_display
+      // FONTE 2: profiles table
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('roles, role_display')
         .eq('id', userId)
         .single();
 
-      console.log('[Auth] Profile data:', profileData);
-
       if (!profileError && profileData) {
-        // Primeiro tenta roles array
+        // Tenta roles array primeiro
         if (profileData.roles && Array.isArray(profileData.roles) && profileData.roles.length > 0) {
           const mappedRoles = profileData.roles.map((r: string) => mapLegacyRole(r));
           console.log('[Auth] Roles from profiles.roles:', mappedRoles);
@@ -141,11 +167,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fallback para role_display
         if (profileData.role_display) {
           const mappedRole = mapLegacyRole(profileData.role_display);
-          console.log('[Auth] Role from role_display:', profileData.role_display, '->', mappedRole);
+          console.log('[Auth] Role from profiles.role_display:', profileData.role_display, '->', mappedRole);
           return [mappedRole];
         }
       }
 
+      // Fallback: leitor (acesso básico)
       console.log('[Auth] No roles found, defaulting to leitor');
       return ['leitor'];
     } catch (err) {
@@ -158,7 +185,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadPermissions = async () => {
       if (!user?.id) {
-        setPermissions(defaultPermissions);
+        setPermissions({
+          ...defaultPermissions,
+          canAccess: () => false,
+        });
         setPermissionsLoading(false);
         return;
       }
@@ -167,6 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       try {
         const roles = await fetchUserRoles(user.id);
+        const isAdmin = roles.includes('admin');
         
         const getPrimaryRole = (): UserRole => {
           const priorityOrder: UserRole[] = ['admin', 'gestor_artistico', 'financeiro', 'marketing', 'artista', 'colaborador', 'leitor'];
@@ -176,19 +207,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return 'leitor';
         };
 
+        const primaryRole = getPrimaryRole();
+        console.log('[Auth] User permissions loaded:', { roles, primaryRole, isAdmin });
+
         setPermissions({
           roles,
-          primaryRole: getPrimaryRole(),
-          isAdmin: roles.includes('admin'),
-          canAccess: (module: string) => canAccess(module, roles),
+          primaryRole,
+          isAdmin,
+          canAccess: createCanAccess(roles, isAdmin),
         });
       } catch (error) {
-        console.error('Error loading permissions:', error);
+        console.error('[Auth] Error loading permissions:', error);
+        // Em caso de erro, permite acesso básico
         setPermissions({
-          ...defaultPermissions,
           roles: ['leitor'],
           primaryRole: 'leitor',
-          canAccess: (module: string) => canAccess(module, ['leitor']),
+          isAdmin: false,
+          canAccess: createCanAccess(['leitor'], false),
         });
       } finally {
         setPermissionsLoading(false);
@@ -196,25 +231,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     loadPermissions();
-  }, [user?.id, fetchUserRoles, canAccess]);
+  }, [user?.id, fetchUserRoles, createCanAccess]);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Se logout, limpar permissões imediatamente
         if (!session?.user) {
-          setPermissions(defaultPermissions);
+          setPermissions({
+            ...defaultPermissions,
+            canAccess: () => false,
+          });
           setPermissionsLoading(false);
         }
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -232,9 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName
-        }
+        data: { full_name: fullName }
       }
     });
     
@@ -242,7 +275,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    setPermissionsLoading(true); // Começar loading de permissões
+    setPermissionsLoading(true);
     
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -296,7 +329,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setSession(null);
-      setPermissions(defaultPermissions);
+      setPermissions({
+        ...defaultPermissions,
+        canAccess: () => false,
+      });
     }
   };
 
@@ -347,22 +383,5 @@ export function useAuth() {
   return context;
 }
 
-// Hook auxiliar para verificar permissão de rota
-export function useRoutePermission(path: string): boolean {
-  const { permissions, isFullyLoaded } = useAuth();
-  
-  if (!isFullyLoaded) return false;
-  
-  // Rotas sempre permitidas
-  if (path === '/perfil' || path === '/') return true;
-  
-  const basePath = '/' + path.split('/')[1];
-  const modules = routeToModuleMap[basePath] || routeToModuleMap[path];
-  
-  if (!modules) return true;
-  
-  return modules.some(module => permissions.canAccess(module));
-}
-
-// Exportar mapeamentos para uso no sidebar
+// Exportar mapeamentos para uso no sidebar e ProtectedRoute
 export { routeToModuleMap, rolePermissions };
