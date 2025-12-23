@@ -638,36 +638,59 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                   />
                 </div>
 
+                {/* SETOR - vem primeiro */}
+                <div className="space-y-2">
+                  <Label htmlFor="sector">
+                    Setor *
+                  </Label>
+                  <Select value={watch('sector')} onValueChange={(value) => setValue('sector', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o setor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableSectors.map((sector) => (
+                        <SelectItem key={sector.value} value={sector.value}>
+                          {sector.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.sector && (
+                    <p className="text-sm text-destructive">{errors.sector.message}</p>
+                  )}
+                </div>
+
+                {/* FUNÇÃO - vem depois do setor */}
                 <div className="space-y-2">
                   <Label htmlFor="role">
-                    Função {watchedPermissionMode === 'automatic' ? '*' : '(opcional)'}
+                    Função *
                   </Label>
                   <Select value={watch('role')} onValueChange={(value) => setValue('role', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a função" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Administrador">Administrador</SelectItem>
-                      <SelectItem value="Analista Financeiro">Analista Financeiro</SelectItem>
-                      <SelectItem value="Artista">Artista</SelectItem>
-                      <SelectItem value="Assistente de Produção">Assistente de Produção</SelectItem>
-                      <SelectItem value="Coordenador de Eventos">Coordenador de Eventos</SelectItem>
-                      <SelectItem value="Designer Gráfico">Designer Gráfico</SelectItem>
-                      <SelectItem value="Editor">Editor</SelectItem>
-                      <SelectItem value="Especialista em Marketing">Especialista em Marketing</SelectItem>
-                      <SelectItem value="Gerente">Gerente</SelectItem>
-                      <SelectItem value="Master">Master</SelectItem>
-                      <SelectItem value="Produtor Musical">Produtor Musical</SelectItem>
-                      <SelectItem value="Social Media">Social Media</SelectItem>
-                      <SelectItem value="Técnico de Som">Técnico de Som</SelectItem>
+                      {availableRoles.map((role) => (
+                        <SelectItem key={role.value} value={role.value}>
+                          <div className="flex flex-col">
+                            <span>{role.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  {watch('role') && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {availableRoles.find(r => r.value === watch('role'))?.description}
+                    </p>
+                  )}
                   {errors.role && (
                     <p className="text-sm text-destructive">{errors.role.message}</p>
                   )}
                 </div>
 
-                {watch('role') === 'Artista' && (
+                {/* Artista vinculado - aparece apenas quando função é 'artista' */}
+                {watch('role') === 'artista' && (
                   <div className="space-y-2">
                     <Label htmlFor="linkedArtistId">
                       <div className="flex items-center gap-2">
@@ -701,33 +724,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                     </p>
                   </div>
                 )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="sector">
-                    Setor {watchedPermissionMode === 'automatic' ? '*' : '(opcional)'}
-                  </Label>
-                  <Select value={watch('sector')} onValueChange={(value) => setValue('sector', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o setor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Administrativo">Administrativo</SelectItem>
-                      <SelectItem value="Artístico">Artístico</SelectItem>
-                      <SelectItem value="Comercial">Comercial</SelectItem>
-                      <SelectItem value="Eventos">Eventos</SelectItem>
-                      <SelectItem value="Financeiro">Financeiro</SelectItem>
-                      <SelectItem value="Jurídico">Jurídico</SelectItem>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Produção">Produção</SelectItem>
-                      <SelectItem value="Recursos Humanos">Recursos Humanos</SelectItem>
-                      <SelectItem value="Técnico">Técnico</SelectItem>
-                      <SelectItem value="TI">TI</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.sector && (
-                    <p className="text-sm text-destructive">{errors.sector.message}</p>
-                  )}
-                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="status">Status *</Label>
