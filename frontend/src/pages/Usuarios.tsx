@@ -240,9 +240,32 @@ const Usuarios = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos os Cargos</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="manager">Gerente</SelectItem>
-                      <SelectItem value="user">Usuário</SelectItem>
+                      {uniqueRoles.length > 0 ? (
+                        uniqueRoles.map(role => (
+                          <SelectItem key={role} value={role}>
+                            {role === 'admin' ? 'Administrador Master' :
+                             role === 'gestor_artistico' ? 'A&R / Gestão Artística' :
+                             role === 'financeiro' ? 'Financeiro / Contábil' :
+                             role === 'juridico' ? 'Jurídico' :
+                             role === 'marketing' ? 'Marketing' :
+                             role === 'artista' ? 'Artista' :
+                             role === 'colaborador' ? 'Colaborador / Freelancer' :
+                             role === 'leitor' ? 'Leitor' :
+                             role}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="admin">Administrador Master</SelectItem>
+                          <SelectItem value="gestor_artistico">A&R / Gestão Artística</SelectItem>
+                          <SelectItem value="artista">Artista</SelectItem>
+                          <SelectItem value="colaborador">Colaborador / Freelancer</SelectItem>
+                          <SelectItem value="financeiro">Financeiro / Contábil</SelectItem>
+                          <SelectItem value="juridico">Jurídico</SelectItem>
+                          <SelectItem value="leitor">Leitor</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
 
