@@ -15,6 +15,7 @@ import { useMusicRegistry } from "@/hooks/useMusicRegistry";
 import { usePhonograms } from "@/hooks/usePhonograms";
 import { useActiveContracts } from "@/hooks/useContracts";
 import { useDataExport } from "@/hooks/useDataExport";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 import { supabase } from "@/integrations/supabase/client";
 import { ArtistSensitiveDataService } from "@/services/artistSensitiveData";
 import { Users, Plus, Music, DollarSign, Star, Upload, Download, Trash2, Loader2 } from "lucide-react";
@@ -24,17 +25,67 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const Artistas = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const { data: artists, isLoading, error } = useArtists();
+  
+  // Filtro de artista - se for usuário artista, filtra apenas seus dados
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
+  const { data: allArtists, isLoading, error } = useArtists();
   const { data: artistsCount } = useArtistsCount();
-  const { data: projects = [] } = useProjects();
-  const { data: releases = [] } = useReleases();
-  const { data: musicRegistry = [] } = useMusicRegistry();
-  const { data: phonograms = [] } = usePhonograms();
-  const { data: activeContracts = [] } = useActiveContracts();
+  const { data: allProjects = [] } = useProjects();
+  const { data: allReleases = [] } = useReleases();
+  const { data: allMusicRegistry = [] } = useMusicRegistry();
+  const { data: allPhonograms = [] } = usePhonograms();
+  const { data: allActiveContracts = [] } = useActiveContracts();
   const deleteArtist = useDeleteArtist();
   const createArtist = useCreateArtist();
   const { exportToExcel, parseExcelFile } = useDataExport();
   const { toast } = useToast();
+  
+  // Aplicar filtro de artista nos dados
+  const artists = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return (allArtists || []).filter((a: any) => a.id === artistId);
+    }
+    return allArtists || [];
+  }, [allArtists, shouldFilter, artistId]);
+
+  const projects = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allProjects.filter((p: any) => p.artist_id === artistId);
+    }
+    return allProjects;
+  }, [allProjects, shouldFilter, artistId]);
+
+  const releases = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allReleases.filter((r: any) => r.artist_id === artistId);
+    }
+    return allReleases;
+  }, [allReleases, shouldFilter, artistId]);
+
+  const musicRegistry = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allMusicRegistry.filter((m: any) => 
+        m.artist_id === artistId || 
+        (Array.isArray(m.artist_ids) && m.artist_ids.includes(artistId))
+      );
+    }
+    return allMusicRegistry;
+  }, [allMusicRegistry, shouldFilter, artistId]);
+
+  const phonograms = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allPhonograms.filter((p: any) => p.artist_id === artistId);
+    }
+    return allPhonograms;
+  }, [allPhonograms, shouldFilter, artistId]);
+
+  const activeContracts = useMemo(() => {
+    if (shouldFilter && artistId) {
+      return allActiveContracts.filter((c: any) => c.artist_id === artistId);
+    }
+    return allActiveContracts;
+  }, [allActiveContracts, shouldFilter, artistId]);
   
   const [filteredArtists, setFilteredArtists] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
