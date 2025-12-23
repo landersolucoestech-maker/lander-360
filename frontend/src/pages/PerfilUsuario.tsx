@@ -242,16 +242,21 @@ const PerfilUsuario = () => {
         };
         
         // Apenas admin pode alterar o setor
+        console.log('[PerfilUsuario] Salvando - isAdmin:', isAdmin, 'sector:', editData.sector);
         if (isAdmin) {
           updateData.department = editData.sector || null;
         }
 
+        console.log('[PerfilUsuario] updateData:', updateData);
         const { error } = await supabase
           .from('profiles')
           .update(updateData)
           .eq('id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('[PerfilUsuario] Erro ao atualizar:', error);
+          throw error;
+        }
       } else {
         // Profile não existe - criar
         // Só permite definir setor se for admin
