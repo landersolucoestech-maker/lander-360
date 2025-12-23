@@ -119,20 +119,36 @@ const Projetos = () => {
     }
   }, [projects]);
 
-  // Extract unique values for filter dropdowns
-  const uniqueArtists = [...new Set(artists.map(a => a.stage_name || a.name).filter(Boolean))].sort();
-  const uniqueGenres = [...new Set(projects.flatMap(p => {
-    const details = getProjectDetails(p);
-    const songs = details?.songs || [];
-    return songs.map((s: any) => s.genre).filter(Boolean);
-  }))].sort();
-  const uniqueReleaseTypes = ['Single', 'EP', 'Álbum'];
+  // Extract unique values for filter dropdowns - Ordenados alfabeticamente
+  const uniqueArtists = [...new Set(artists.map(a => a.stage_name || a.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  
+  // Extrair gêneros de projetos e também de artistas para lista completa
+  const uniqueGenres = useMemo(() => {
+    const genres = new Set<string>();
+    // Gêneros dos projetos
+    projects.forEach(p => {
+      const details = getProjectDetails(p);
+      const songs = details?.songs || [];
+      songs.forEach((s: any) => {
+        if (s.genre) genres.add(s.genre);
+      });
+      // Gênero do projeto em si
+      if ((p as any).genre) genres.add((p as any).genre);
+    });
+    // Gêneros dos artistas
+    artists.forEach((a: any) => {
+      if (a.genre) genres.add(a.genre);
+    });
+    return Array.from(genres).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [projects, artists]);
+  
+  const uniqueReleaseTypes = ['Álbum', 'EP', 'Single'].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
   const filterOptions = [
-    { key: "status", label: "Status", options: ["Concluído", "Em Andamento", "Rascunho", "Cancelado"] },
+    { key: "status", label: "Status", options: ["Cancelado", "Concluído", "Em Andamento", "Rascunho"].sort((a, b) => a.localeCompare(b, 'pt-BR')) },
     { key: "artist", label: "Artista", options: uniqueArtists },
     { key: "release_type", label: "Tipo de Lançamento", options: uniqueReleaseTypes },
-    { key: "genre", label: "Gênero", options: uniqueGenres },
+    { key: "genre", label: "Gênero", options: uniqueGenres.length > 0 ? uniqueGenres : ["Todos os Gêneros"] },
   ];
 
   const handleSearch = (searchTerm: string) => {
