@@ -565,6 +565,13 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           }
         }
         
+        console.log('[UserForm] Atualizando usuário:', {
+          userId: user.id,
+          fullName: data.fullName,
+          sector: data.sector,
+          role: data.role,
+        });
+        
         // Atualizar usuário existente (sem alterar o email diretamente)
         const result = await updateUser(user.id, {
           full_name: sanitizeInput(data.fullName),
@@ -574,6 +581,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           role: sanitizeInput(data.role || ''),
           permissions: allPermissions,
         });
+        
+        console.log('[UserForm] Resultado da atualização:', result);
         
         if (result.success) {
           // Handle artist linking for Artista role
