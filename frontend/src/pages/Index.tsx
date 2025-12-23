@@ -29,6 +29,20 @@ const Index = () => {
   
   const navigate = useNavigate();
 
+  // Função para obter o nome do artista para exibição
+  const getArtistDisplayName = () => {
+    // Primeiro tenta nome artístico do artista vinculado
+    if (linkedArtist?.stage_name) return linkedArtist.stage_name;
+    // Depois tenta nome real do artista vinculado
+    if (linkedArtist?.name) return linkedArtist.name;
+    // Fallback: nome completo do usuário logado
+    if (user?.user_metadata?.full_name) return user.user_metadata.full_name;
+    // Fallback: primeira parte do email
+    if (user?.email) return user.email.split('@')[0];
+    // Último fallback
+    return 'Artista';
+  };
+
   // Dados padrão
   const displayStats = stats || {
     totalWorks: 0,
