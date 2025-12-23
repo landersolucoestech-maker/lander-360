@@ -494,11 +494,13 @@ export function getPrimaryRole(userRoles: UserRole[]): UserRole {
 export const legacyRoleMapping: Record<string, UserRole> = {
   'admin': 'admin',
   'administrador': 'admin',
+  'administrador_(master)': 'admin',
   'master': 'admin',
   'empresario': 'gestor_artistico',
   'gerente': 'gestor_artistico',
   'manager': 'gestor_artistico',
   'produtor_artistico': 'gestor_artistico',
+  'gestor_artistico': 'gestor_artistico',
   'financeiro': 'financeiro',
   'analista_financeiro': 'financeiro',
   'marketing': 'marketing',
@@ -509,10 +511,32 @@ export const legacyRoleMapping: Record<string, UserRole> = {
   'leitor': 'leitor',
   'visualizador': 'leitor',
   'user': 'leitor',
+  'usuario': 'leitor',
+  'usuário': 'leitor',
 };
 
 // Convert legacy role to new role
 export function mapLegacyRole(legacyRole: string): UserRole {
-  const normalized = legacyRole.toLowerCase().replace(/\s+/g, '_');
-  return legacyRoleMapping[normalized] || 'leitor';
+  if (!legacyRole) return 'leitor';
+  
+  // Normaliza: lowercase, remove acentos, espaços viram underscore
+  const normalized = legacyRole
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/\s+/g, '_')
+    .replace(/[()]/g, ''); // Remove parênteses
+  
+  const mapped = legacyRoleMapping[normalized];
+  
+  // Se não encontrou mapeamento direto, tenta match parcial
+  if (!mapped) {
+    if (normalized.includes('admin') || normalized.includes('master')) return 'admin';
+    if (normalized.includes('gestor') || normalized.includes('gerente')) return 'gestor_artistico';
+    if (normalized.includes('financ')) return 'financeiro';
+    if (normalized.includes('market')) return 'marketing';
+    if (normalized.includes('artist')) return 'artista';
+  }
+  
+  return mapped || 'leitor';
 }
