@@ -161,16 +161,38 @@ const RegistroMusicas = () => {
     setFilteredPhonograms(mappedPhonograms);
   }, [phonograms, artists, musicRegistry]);
 
+  // Extrair gêneros únicos das obras cadastradas e ordenar alfabeticamente
+  const uniqueGenres = useMemo(() => {
+    const genres = new Set<string>();
+    allSongs.forEach((song: any) => {
+      if (song.genre) genres.add(song.genre);
+    });
+    // Também buscar de artistas
+    (artists || []).forEach((artist: any) => {
+      if (artist.genre) genres.add(artist.genre);
+    });
+    return Array.from(genres).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [allSongs, artists]);
+
+  // Status ordenados alfabeticamente (sem "Pendente" conforme solicitado)
+  const statusOptions = [
+    "Aprovada",
+    "Cancelado",
+    "Em Análise",
+    "Pendente de Registro",
+    "Recusada",
+  ];
+
   const filterOptions = [
     {
       key: "status",
       label: "Status",
-      options: ["Em Análise", "Aprovada", "Recusada", "Pendente", "Pendente de Registro", "Cancelado"]
+      options: statusOptions
     },
     {
       key: "genre",
       label: "Gênero",
-      options: ["MPB", "Rock", "Pop", "Sertanejo", "Funk", "Trap", "Eletrônica"]
+      options: uniqueGenres.length > 0 ? uniqueGenres : ["Todos os Gêneros"]
     }
   ];
 
