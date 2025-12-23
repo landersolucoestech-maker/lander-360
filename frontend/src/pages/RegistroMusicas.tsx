@@ -55,7 +55,7 @@ const RegistroMusicas = () => {
 
   const phonograms = useMemo(() => {
     if (shouldFilter && artistId) {
-      return allPhonograms.filter((p: any) => p.artist_id === artistId);
+      return mappedPhonograms.filter((p: any) => p.artist_id === artistId);
     }
     return allPhonograms;
   }, [allPhonograms, shouldFilter, artistId]);
@@ -666,11 +666,11 @@ const RegistroMusicas = () => {
   };
 
   const phonogramsKPIs = {
-    total: allPhonograms.length,
-    pending: allPhonograms.filter(s => pendingStatuses.includes(s.statusDisplay) || !s.status || s.status === 'pendente').length,
-    inReview: allPhonograms.filter(s => inReviewStatuses.includes(s.statusDisplay) || s.status === 'em_analise').length,
-    accepted: allPhonograms.filter(s => acceptedStatuses.includes(s.statusDisplay) || s.status === 'aceita').length,
-    approvalRate: allPhonograms.length > 0 ? Math.min(Math.round((allPhonograms.filter(s => acceptedStatuses.includes(s.statusDisplay) || s.status === 'aceita').length / allPhonograms.length) * 100), 100) : 0,
+    total: mappedPhonograms.length,
+    pending: mappedPhonograms.filter(s => pendingStatuses.includes(s.statusDisplay) || !s.status || s.status === 'pendente').length,
+    inReview: mappedPhonograms.filter(s => inReviewStatuses.includes(s.statusDisplay) || s.status === 'em_analise').length,
+    accepted: mappedPhonograms.filter(s => acceptedStatuses.includes(s.statusDisplay) || s.status === 'aceita').length,
+    approvalRate: mappedPhonograms.length > 0 ? Math.min(Math.round((mappedPhonograms.filter(s => acceptedStatuses.includes(s.statusDisplay) || s.status === 'aceita').length / mappedPhonograms.length) * 100), 100) : 0,
   };
 
   return (
@@ -981,7 +981,7 @@ const RegistroMusicas = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {allPhonograms.length === 0 ? (
+                    {mappedPhonograms.length === 0 ? (
                       <div className="text-center py-12">
                         <Disc className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-medium mb-2">Nenhum fonograma registrado</h3>
