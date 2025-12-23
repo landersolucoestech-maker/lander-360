@@ -109,20 +109,33 @@ export const useFetchSocialMetrics = () => {
       deezerUrl?: string;
       appleMusicUrl?: string;
     }) => {
-      const { data, error } = await supabase.functions.invoke('social-metrics', {
-        body: { artistId, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl },
-      });
+      try {
+        const { data, error } = await supabase.functions.invoke('social-metrics', {
+          body: { artistId, youtubeUrl, instagramUrl, tiktokUrl, deezerUrl, appleMusicUrl },
+        });
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+        if (error) {
+          console.warn('Social metrics edge function not available:', error.message);
+          return { success: false, message: 'Função de métricas sociais não disponível' };
+        }
+        if (data?.error) {
+          console.warn('Social metrics returned error:', data.error);
+          return { success: false, message: data.error };
+        }
 
-      return data;
+        return data;
+      } catch (err) {
+        console.warn('Failed to fetch social metrics:', err);
+        return { success: false, message: 'Não foi possível buscar métricas sociais' };
+      }
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['social-metrics', variables.artistId] });
+      if (data?.success !== false) {
+        queryClient.invalidateQueries({ queryKey: ['social-metrics', variables.artistId] });
+      }
     },
     onError: (error: Error) => {
-      console.error('Error fetching social metrics:', error);
+      console.warn('Error fetching social metrics:', error);
     },
   });
 };
