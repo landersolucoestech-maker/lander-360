@@ -54,30 +54,45 @@ export function ProtectedRoute({ children, requiredModule }: ProtectedRouteProps
  */
 function checkRoutePermission(
   pathname: string, 
-  permissions: { canAccess: (module: string) => boolean; isAdmin: boolean },
+  permissions: { canAccess: (module: string) => boolean; isAdmin: boolean; roles?: string[] },
   requiredModule?: string
 ): boolean {
-  // Admin tem acesso a tudo
-  if (permissions.isAdmin) return true;
+  console.log('[ProtectedRoute] Checking permission for:', pathname, 'isAdmin:', permissions.isAdmin);
+  
+  // Admin tem acesso a tudo - verificação prioritária
+  if (permissions.isAdmin) {
+    console.log('[ProtectedRoute] Admin access granted');
+    return true;
+  }
 
   // Se módulo específico foi passado, verificar ele
   if (requiredModule) {
-    return permissions.canAccess(requiredModule);
+    const hasAccess = permissions.canAccess(requiredModule);
+    console.log('[ProtectedRoute] Required module:', requiredModule, 'hasAccess:', hasAccess);
+    return hasAccess;
   }
 
   // Rotas sempre permitidas para usuários autenticados
   const alwaysAllowed = ['/perfil', '/'];
-  if (alwaysAllowed.includes(pathname)) return true;
+  if (alwaysAllowed.includes(pathname)) {
+    console.log('[ProtectedRoute] Always allowed route');
+    return true;
+  }
 
   // Encontrar módulo pela rota
   const basePath = '/' + pathname.split('/')[1];
   const modules = routeToModuleMap[basePath] || routeToModuleMap[pathname];
 
   // Rota não mapeada = permitida (para não quebrar rotas não configuradas)
-  if (!modules || modules.length === 0) return true;
+  if (!modules || modules.length === 0) {
+    console.log('[ProtectedRoute] Unmapped route, allowing');
+    return true;
+  }
 
   // Verificar se tem permissão em pelo menos um dos módulos da rota
-  return modules.some(module => permissions.canAccess(module));
+  const hasAccess = modules.some(module => permissions.canAccess(module));
+  console.log('[ProtectedRoute] Modules:', modules, 'hasAccess:', hasAccess);
+  return hasAccess;
 }
 
 /**
