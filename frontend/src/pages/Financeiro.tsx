@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -30,9 +30,13 @@ import {
   useUpdateFinancialTransaction,
   useDeleteFinancialTransaction 
 } from "@/hooks/useFinancial";
+import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 
 const Financeiro = () => {
+  // Filtro de artista
+  const { shouldFilter, artistId, isArtistUser } = useArtistFilter();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
