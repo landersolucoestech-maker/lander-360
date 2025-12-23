@@ -432,7 +432,7 @@ export function ArtistCard({
                         {socialMetrics?.instagram?.followers 
                           ? formatNumber(socialMetrics.instagram.followers) 
                           : artist.socialMedia?.instagram && !artist.socialMedia.instagram.includes('/perfil') 
-                            ? 'Atualizar' 
+                            ? 'API Meta' 
                             : 'Sem URL'}
                       </div>
                       <div className="text-[9px] text-muted-foreground">Seguidores</div>
