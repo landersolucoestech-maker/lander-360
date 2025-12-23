@@ -346,14 +346,13 @@ export const artistModeLabels: Record<string, { title: string; subtitle: string 
   '/': { title: 'Meu Painel', subtitle: 'Visão geral da sua carreira' },
   '/artistas': { title: 'Meu Perfil', subtitle: 'Informações, contratos e dados da sua carreira' },
   '/projetos': { title: 'Meus Projetos', subtitle: 'EPs, álbuns, singles e projetos autorais' },
-  '/registro-musicas': { title: 'Meus Registros Musicais', subtitle: 'Obras, fonogramas, ISRC e ISWC' },
+  '/registro-musicas': { title: 'Minhas Obras & Fonogramas', subtitle: 'ISRC, ISWC e registros' },
   '/lancamentos': { title: 'Meus Lançamentos', subtitle: 'Distribuição digital e status por plataforma' },
   '/gestao-shares': { title: 'Meus Shares', subtitle: 'Splits dos seus lançamentos' },
   '/contratos': { title: 'Meus Contratos', subtitle: 'Contratos fonográficos, editoriais e licenciamento' },
   '/financeiro': { title: 'Meu Financeiro', subtitle: 'Royalties, ganhos e saldo disponível' },
   '/agenda': { title: 'Minha Agenda', subtitle: 'Shows, compromissos e eventos' },
   '/relatorios': { title: 'Meus Relatórios', subtitle: 'Performance, financeiro e distribuição' },
-  '/marketing': { title: 'Meu Marketing', subtitle: 'Campanhas e métricas da sua carreira' },
 };
 
 // Mapeamento de títulos de navegação para MODO ARTISTA (sidebar)
@@ -361,7 +360,7 @@ export const artistModeNavTitles: Record<string, string> = {
   'Dashboard': 'Meu Painel',
   'Artistas': 'Meu Perfil',
   'Projetos': 'Meus Projetos',
-  'Registro de Músicas': 'Meus Registros',
+  'Registro de Músicas': 'Minhas Obras & Fonogramas',
   'Contratos': 'Meus Contratos',
   'Financeiro': 'Meu Financeiro',
   'Agenda': 'Minha Agenda',
@@ -371,9 +370,10 @@ export const artistModeNavTitles: Record<string, string> = {
 
 // Role display names
 export const roleDisplayNames: Record<UserRole, string> = {
-  admin: 'Administrador da Empresa',
-  gestor_artistico: 'Gestor Artístico (A&R / Manager)',
+  admin: 'Administrador Master',
+  gestor_artistico: 'A&R / Gestão Artística',
   financeiro: 'Financeiro / Contábil',
+  juridico: 'Jurídico',
   marketing: 'Marketing',
   artista: 'Artista',
   colaborador: 'Colaborador / Freelancer',
