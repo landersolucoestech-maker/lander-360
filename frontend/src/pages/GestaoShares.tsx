@@ -77,8 +77,10 @@ const GestaoShares = () => {
       
       return data || [];
     }
-    }
   });
+
+  // Alias para pendingShares (já filtrado)
+  const pendingShares = allPendingShares;
 
   // Mutation to create pending share
   const createPendingShare = useMutation({
