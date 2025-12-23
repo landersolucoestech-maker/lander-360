@@ -788,13 +788,19 @@ const Artistas = () => {
         <AppSidebar />
         <SidebarInset className="flex-1">
           <div className="w-full h-full px-4 py-3 space-y-3">
-            {/* Header */}
+            {/* Header - personalizado para artistas */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="h-9 w-9" />
                 <div className="flex flex-col gap-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Artistas</h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">Gerencie seus artistas e contratos</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                    {isArtistUser ? "Meu Perfil Artístico" : "Artistas"}
+                  </h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    {isArtistUser 
+                      ? "Informações, contratos e dados da sua carreira" 
+                      : "Gerencie seus artistas e contratos"}
+                  </p>
                 </div>
               </div>
               {/* Botões de ação - ocultos para usuários artistas */}
