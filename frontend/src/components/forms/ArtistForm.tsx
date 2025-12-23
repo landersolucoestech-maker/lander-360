@@ -57,28 +57,28 @@ const musicianRoleOptions = [
 const artistSchema = z.object({
   // Informações Básicas
   artistic_name: z.string().min(1, 'Nome artístico é obrigatório'),
-  genre: z.string().min(1, 'Gênero musical é obrigatório'),
+  genre: z.string().optional().default(''),
   music_language: z.string().optional(),
   artist_image: z.any().optional(),
   documents: z.any().optional(),
   presskit: z.any().optional(),
   biography: z.string().optional(),
-  artist_types: z.array(z.string()).min(1, 'Selecione pelo menos um tipo de artista'),
+  artist_types: z.array(z.string()).optional().default([]),
   musician_roles: z.array(z.string()).optional(), // Funções do músico
   // Dados Pessoais
-  full_name: z.string().min(1, 'Nome completo é obrigatório'),
+  full_name: z.string().optional().default(''),
   birth_date: z.date().optional(),
-  cpf_cnpj: z.string().min(1, 'CPF/CNPJ é obrigatório').regex(cpfCnpjRegex, 'Formato de CPF/CNPJ inválido'),
-  rg: z.string().min(1, 'RG é obrigatório'),
-  full_address: z.string().min(1, 'Endereço completo é obrigatório'),
-  phone: z.string().min(1, 'Telefone é obrigatório').regex(phoneRegex, 'Formato de telefone inválido (ex: (11) 99999-9999)'),
-  email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
+  cpf_cnpj: z.string().optional().refine(val => !val || cpfCnpjRegex.test(val), 'Formato de CPF/CNPJ inválido'),
+  rg: z.string().optional(),
+  full_address: z.string().optional(),
+  phone: z.string().optional().refine(val => !val || phoneRegex.test(val), 'Formato de telefone inválido (ex: (11) 99999-9999)'),
+  email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, 'Email inválido'),
   // Dados Bancários
-  bank: z.string().min(1, 'Banco é obrigatório'),
-  agency: z.string().min(1, 'Agência é obrigatória'),
-  account: z.string().min(1, 'Conta é obrigatória'),
+  bank: z.string().optional(),
+  agency: z.string().optional(),
+  account: z.string().optional(),
   pix_key: z.string().optional().refine(val => !val || pixKeyRegex.test(val), 'Formato de chave PIX inválido'),
-  account_holder: z.string().min(1, 'Titular da conta é obrigatório'),
+  account_holder: z.string().optional(),
   // Redes Sociais e Perfis
   spotify_profile: z.string().optional(),
   instagram: z.string().optional(),
@@ -88,17 +88,17 @@ const artistSchema = z.object({
   deezer: z.string().optional(),
   apple_music: z.string().optional(),
   // Tipo de Perfil e Dados do Responsável
-  profile_type: z.string().min(1, 'Tipo de perfil é obrigatório'),
+  profile_type: z.string().optional().default('Artista Independente'),
   record_label_name: z.string().optional(),
   label_contact_name: z.string().optional(),
   label_contact_phone: z.string().optional(),
-  label_contact_email: z.string().email('Email inválido').optional().or(z.literal('')),
+  label_contact_email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, 'Email inválido'),
   manager_name: z.string().optional(),
   manager_phone: z.string().optional(),
-  manager_email: z.string().email('Email inválido').optional().or(z.literal('')),
+  manager_email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, 'Email inválido'),
   // Distribuidoras
   distributors: z.array(z.string()).optional(),
-  distributor_emails: z.record(z.string().email('Email inválido').optional().or(z.literal(''))).optional(),
+  distributor_emails: z.record(z.string().optional()).optional(),
   // Observações
   observations: z.string().optional()
 });
