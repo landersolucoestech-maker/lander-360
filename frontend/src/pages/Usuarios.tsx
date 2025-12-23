@@ -35,8 +35,11 @@ const Usuarios = () => {
   const [userToDelete, setUserToDelete] = useState<any>(null);
   const [userToToggle, setUserToToggle] = useState<any>(null);
 
-  // Get unique sectors for filter dropdown
-  const uniqueSectors = [...new Set(users.map(u => u.sector).filter(Boolean))];
+  // Get unique sectors for filter dropdown - ordenados alfabeticamente
+  const uniqueSectors = [...new Set(users.map(u => u.sector).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  
+  // Get unique roles for filter dropdown - ordenados alfabeticamente
+  const uniqueRoles = [...new Set(users.flatMap(u => u.roles || []).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
   useEffect(() => {
     let filtered = users;
