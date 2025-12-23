@@ -382,12 +382,13 @@ export const roleDisplayNames: Record<UserRole, string> = {
 
 // Role descriptions
 export const roleDescriptions: Record<UserRole, string> = {
-  admin: 'Gerenciar usuários, criar selos/artistas/contratos, acesso total aos módulos, relatórios financeiros e royalties, aprovações finais',
-  gestor_artistico: 'Criar lançamentos, upload de fonogramas e capas, acompanhar performance, sem acesso financeiro sensível',
-  financeiro: 'Visualizar e editar contratos, gerar relatórios financeiros, gerenciar splits de royalties, registrar pagamentos, sem permissão criativa',
-  marketing: 'Gerenciar campanhas, integrações com Meta, TikTok, Google Ads e DSPs, criar links smart/pre-save, visualizar métricas não financeiras',
-  artista: 'Visualizar dados próprios, métricas de streaming, royalties (somente leitura), documentos e contratos, comunicação com a equipe',
-  colaborador: 'Acesso somente a projetos atribuídos, upload de arquivos, comentários, sem acesso financeiro',
+  admin: 'Acesso total a todos os módulos do sistema',
+  gestor_artistico: 'Artistas, Projetos, Obras & Fonogramas, Lançamentos, Contratos (visualização), Relatórios Artísticos',
+  financeiro: 'Financeiro, Gestão de Shares, Nota Fiscal, Contabilidade, Relatórios Financeiros',
+  juridico: 'Contratos, Registro de Obras e Fonogramas, Monitoramento, Licenciamento, Takedowns',
+  marketing: 'Marketing (Visão Geral, Campanhas, Tarefas, Calendário, Métricas, Briefing, IA Criativa)',
+  artista: 'Meu Painel, Meu Perfil, Meus Projetos, Minhas Obras, Meus Lançamentos, Meus Shares, Meus Contratos, Meu Financeiro (visualização), Minha Agenda',
+  colaborador: 'Acesso somente a projetos atribuídos, upload de arquivos, comentários',
   leitor: 'Somente leitura de relatórios e dashboards, sem ações no sistema',
 };
 
