@@ -533,7 +533,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         
         if (result.success) {
           // Handle artist linking for Artista role
-          if (data.role === 'Artista' && data.linkedArtistId) {
+          if (data.role === 'artista' && data.linkedArtistId) {
             // Remove existing links and add new one
             await supabase.from('user_artists').delete().eq('user_id', user.id);
             await supabase.from('user_artists').insert({
@@ -541,7 +541,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               artist_id: data.linkedArtistId,
               access_level: 'owner'
             });
-          } else if (data.role !== 'Artista') {
+          } else if (data.role !== 'artista') {
             // Remove artist link if role is not Artista
             await supabase.from('user_artists').delete().eq('user_id', user.id);
           }
