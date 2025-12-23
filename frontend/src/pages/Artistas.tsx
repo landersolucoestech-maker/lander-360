@@ -417,10 +417,39 @@ const Artistas = () => {
 
   const currentArtists = filteredArtists.length ? filteredArtists : displayArtists;
 
+  // Extrair gêneros únicos dos artistas cadastrados e ordenar alfabeticamente
+  const uniqueGenres = useMemo(() => {
+    const genres = new Set<string>();
+    (artists || []).forEach((artist: any) => {
+      if (artist.genre) {
+        genres.add(artist.genre);
+      }
+    });
+    return Array.from(genres).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [artists]);
+
+  // Extrair perfis/tipos de artista únicos e ordenar alfabeticamente
+  const uniqueProfiles = useMemo(() => {
+    const profiles = new Set<string>();
+    (artists || []).forEach((artist: any) => {
+      // artist_types é um array
+      if (Array.isArray(artist.artist_types)) {
+        artist.artist_types.forEach((type: string) => {
+          if (type) profiles.add(type);
+        });
+      }
+      // perfil pode ser string
+      if (artist.perfil) {
+        profiles.add(artist.perfil);
+      }
+    });
+    return Array.from(profiles).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [artists]);
+
   const filterOptions = [
-    { key: "genre", label: "Gênero", options: ["Funk", "Rock", "Pop", "MPB", "Sertanejo"] },
+    { key: "genre", label: "Gênero", options: uniqueGenres.length > 0 ? uniqueGenres : ["Todos os Gêneros"] },
     { key: "status", label: "Status", options: ["Ativo", "Inativo"] },
-    { key: "perfil", label: "Perfil", options: ["Independente", "Com Empresário", "Gravadora", "Editora", "Produtor", "Compositor"] },
+    { key: "perfil", label: "Perfil Artístico", options: uniqueProfiles.length > 0 ? uniqueProfiles : ["Todos os Perfis"] },
     { key: "contrato", label: "Contrato", options: ["Com Contrato Ativo", "Sem Contrato Ativo"] }
   ];
 
