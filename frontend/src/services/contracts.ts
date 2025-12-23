@@ -30,7 +30,7 @@ export class ContractsService {
 
     const { data, error, count } = await supabase
       .from('contracts')
-      .select('*, artists(name, stage_name)', { count: 'exact' })
+      .select('*, artists:artist_id(name, stage_name)', { count: 'exact' })
       .order(normalizedParams.sortBy || 'created_at', { 
         ascending: normalizedParams.sortOrder === 'asc' 
       })
