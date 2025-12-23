@@ -857,10 +857,10 @@ const Artistas = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Lista de Artistas</CardTitle>
-                    <CardDescription>Visão geral de todos os artistas</CardDescription>
+                    <CardTitle>{isArtistUser ? "Meu Perfil de Artista" : "Lista de Artistas"}</CardTitle>
+                    <CardDescription>{isArtistUser ? "Visualize suas informações como artista" : "Visão geral de todos os artistas"}</CardDescription>
                   </div>
-                  {selectedItems.length > 0 && (
+                  {!isArtistUser && selectedItems.length > 0 && (
                     <Button variant="destructive" size="sm" className="gap-2" onClick={() => setIsBulkDeleteModalOpen(true)}>
                       <Trash2 className="h-4 w-4" />
                       Excluir Selecionados ({selectedItems.length})
