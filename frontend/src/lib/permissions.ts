@@ -4,11 +4,12 @@ import { LayoutDashboard, Users, FolderOpen, Music, Upload, FileText, DollarSign
 // SISTEMA COMPLETO DE PERMISSÕES RBAC + ABAC
 // ================================================
 
-// 7 Perfis padrão conforme especificação
+// 8 Perfis padrão conforme especificação
 export type UserRole = 
-  | 'admin'              // Administrador da Empresa
-  | 'gestor_artistico'   // Gestor Artístico (A&R / Manager)
+  | 'admin'              // Administrador Master (acesso total)
+  | 'gestor_artistico'   // A&R / Gestão Artística
   | 'financeiro'         // Financeiro / Contábil
+  | 'juridico'           // Jurídico
   | 'marketing'          // Marketing
   | 'artista'            // Artista (usuário final)
   | 'colaborador'        // Colaborador / Freelancer
