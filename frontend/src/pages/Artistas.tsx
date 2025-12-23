@@ -369,6 +369,7 @@ const Artistas = () => {
         deezer: dbArtist.deezer_url,
         apple: dbArtist.apple_music_url
       },
+      spotifyData: dbArtist.spotify_data || null,
       stats: {
         projetos: artistStats[dbArtist.id]?.projetos || 0,
         obras: artistStats[dbArtist.id]?.obras || 0,
