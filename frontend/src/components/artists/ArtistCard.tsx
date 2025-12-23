@@ -429,7 +429,11 @@ export function ArtistCard({
                         <span className="text-[10px] font-medium text-foreground">Instagram</span>
                       </div>
                       <div className="text-base font-bold text-foreground">
-                        {socialMetrics?.instagram?.followers ? formatNumber(socialMetrics.instagram.followers) : 'N/D'}
+                        {socialMetrics?.instagram?.followers 
+                          ? formatNumber(socialMetrics.instagram.followers) 
+                          : artist.socialMedia?.instagram && !artist.socialMedia.instagram.includes('/perfil') 
+                            ? 'Atualizar' 
+                            : 'Sem URL'}
                       </div>
                       <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
@@ -441,7 +445,11 @@ export function ArtistCard({
                         <span className="text-[10px] font-medium text-foreground">TikTok</span>
                       </div>
                       <div className="text-base font-bold text-foreground">
-                        {socialMetrics?.tiktok?.followers ? formatNumber(socialMetrics.tiktok.followers) : 'N/D'}
+                        {socialMetrics?.tiktok?.followers 
+                          ? formatNumber(socialMetrics.tiktok.followers) 
+                          : artist.socialMedia?.tiktok && !artist.socialMedia.tiktok.includes('@perfil')
+                            ? 'Atualizar' 
+                            : 'Sem URL'}
                       </div>
                       <div className="text-[9px] text-muted-foreground">Seguidores</div>
                     </div>
