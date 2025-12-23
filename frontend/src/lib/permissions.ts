@@ -276,7 +276,7 @@ export const navigationConfig: NavigationItem[] = [
   { title: "Registro de Músicas", url: "/registro-musicas", icon: Music, roles: ['admin', 'gestor_artistico', 'leitor'], module: 'registro_musicas', scope: 'projeto' },
   
   // Gestão de Shares - Strategic and financial
-  { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
+  { title: "Gestão de Shares", url: "/gestao-shares", icon: PieChart, roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'leitor'], module: 'gestao_shares', scope: 'projeto' },
   
   // Contratos - All roles can view
   { title: "Contratos", url: "/contratos", icon: FileText, roles: ['admin', 'gestor_artistico', 'financeiro', 'artista', 'colaborador', 'leitor'], module: 'contratos', scope: 'artista' },
