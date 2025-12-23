@@ -86,8 +86,9 @@ export interface SubMenuItem {
   module: SystemModule;
 }
 
-// Permissões padrão por perfil
+// Permissões padrão por perfil - MATRIZ ATUALIZADA
 export const defaultRolePermissions: Record<UserRole, Partial<Record<SystemModule, ModulePermission[]>>> = {
+  // 🔐 ADMINISTRADOR MASTER - Acesso total a todos os módulos
   admin: {
     artistas: ['view', 'create', 'edit', 'delete', 'export'],
     projetos: ['view', 'create', 'edit', 'delete', 'export'],
@@ -108,46 +109,70 @@ export const defaultRolePermissions: Record<UserRole, Partial<Record<SystemModul
     nota_fiscal: ['view', 'create', 'edit', 'delete', 'export'],
     landerzap: ['view', 'create', 'edit', 'delete'],
   },
+  // 🎯 A&R / GESTÃO ARTÍSTICA
   gestor_artistico: {
     artistas: ['view', 'create', 'edit'],
     projetos: ['view', 'create', 'edit'],
     lancamentos: ['view', 'create', 'submit'],
-    contratos: ['view'],
+    contratos: ['view'], // Apenas visualização
     royalties: ['view'],
     financeiro: [],
     marketing: ['view'],
     integracoes: ['view'],
     usuarios: [],
-    relatorios: ['view'],
+    relatorios: ['view'], // Relatórios artísticos
     configuracoes: [],
-    registro_musicas: ['view', 'create', 'edit'],
-    crm: ['view', 'create', 'edit'],
+    registro_musicas: ['view', 'create', 'edit'], // Obras & Fonogramas
+    crm: ['view'],
     agenda: ['view', 'create', 'edit'],
     inventario: [],
     servicos: ['view'],
     nota_fiscal: [],
     landerzap: ['view', 'create'],
   },
+  // 💰 FINANCEIRO
   financeiro: {
     artistas: ['view'],
     projetos: ['view'],
     lancamentos: ['view'],
-    contratos: ['view', 'edit', 'export'],
-    royalties: ['view', 'calculate', 'edit', 'pay', 'export'],
+    contratos: ['view'],
+    royalties: ['view', 'calculate', 'edit', 'pay', 'export'], // Gestão de Shares
     financeiro: ['view', 'create', 'edit', 'export', 'close_period'],
     marketing: [],
     integracoes: ['view'],
     usuarios: [],
-    relatorios: ['view', 'export'],
+    relatorios: ['view', 'export'], // Relatórios Financeiros
     configuracoes: [],
     registro_musicas: ['view'],
     crm: ['view'],
     agenda: ['view'],
     inventario: ['view'],
     servicos: ['view', 'edit'],
-    nota_fiscal: ['view', 'create', 'edit', 'export'],
+    nota_fiscal: ['view', 'create', 'edit', 'export'], // Nota Fiscal
     landerzap: [],
   },
+  // ⚖️ JURÍDICO
+  juridico: {
+    artistas: ['view'],
+    projetos: ['view'],
+    lancamentos: ['view'],
+    contratos: ['view', 'create', 'edit', 'sign', 'approve', 'export'], // Contratos
+    royalties: ['view'],
+    financeiro: [],
+    marketing: [],
+    integracoes: [],
+    usuarios: [],
+    relatorios: ['view'],
+    configuracoes: [],
+    registro_musicas: ['view', 'create', 'edit'], // Registro de Obras e Fonogramas
+    crm: [],
+    agenda: ['view'],
+    inventario: [],
+    servicos: [],
+    nota_fiscal: [],
+    landerzap: [],
+  },
+  // 📢 MARKETING
   marketing: {
     artistas: ['view'],
     projetos: ['view'],
@@ -168,21 +193,22 @@ export const defaultRolePermissions: Record<UserRole, Partial<Record<SystemModul
     nota_fiscal: [],
     landerzap: ['view', 'create'],
   },
+  // 🎵 ARTISTA - Visão personalizada (apenas seus dados)
   artista: {
-    artistas: ['view'],
-    projetos: ['view'],
-    lancamentos: ['view'],
-    contratos: ['view'],
-    royalties: ['view'],
-    financeiro: [],
-    marketing: ['view'],
+    artistas: ['view'], // Meu Perfil
+    projetos: ['view'], // Meus Projetos
+    lancamentos: ['view'], // Meus Lançamentos
+    contratos: ['view'], // Meus Contratos
+    royalties: ['view'], // Meus Shares
+    financeiro: ['view'], // Meu Financeiro (visualização)
+    marketing: [],
     integracoes: [],
     usuarios: [],
-    relatorios: ['view'],
+    relatorios: ['view'], // Meus Relatórios
     configuracoes: [],
-    registro_musicas: ['view'],
+    registro_musicas: ['view'], // Minhas Obras & Fonogramas
     crm: [],
-    agenda: ['view'],
+    agenda: ['view'], // Minha Agenda
     inventario: [],
     servicos: [],
     nota_fiscal: [],
