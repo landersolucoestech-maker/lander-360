@@ -115,6 +115,38 @@ const Contratos = () => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Mapeamento reverso: label formatado -> valor do banco
+  const serviceTypeLabelToValue: Record<string, string> = {
+    "Agenciamento": "agenciamento",
+    "Distribuição": "distribuicao",
+    "Edição": "edicao",
+    "Empresariamento": "empresariamento",
+    "Empresariamento Suporte": "empresariamento_suporte",
+    "Gestão": "gestao",
+    "Licenciamento": "licenciamento",
+    "Marketing": "marketing",
+    "Outros": "outros",
+    "Parceria": "parceria",
+    "Produção Audiovisual": "producao_audiovisual",
+    "Produção Musical": "producao_musical",
+    "Publicidade": "publicidade",
+    "Shows": "shows",
+  };
+
+  const statusLabelToValue: Record<string, string> = {
+    "Assinado": "assinado",
+    "Expirado": "expirado",
+    "Pendente": "pendente",
+    "Rascunho": "rascunho",
+    "Rescindido": "rescindido",
+  };
+
+  const clientTypeLabelToValue: Record<string, string> = {
+    "Artista": "artista",
+    "Empresa": "empresa",
+    "Pessoa": "pessoa",
+  };
+
   const filteredContracts = contracts.filter(contract => {
     const matchesSearch = !searchTerm || 
       ((contract as any).title || contract.contract_type).toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -123,9 +155,18 @@ const Contratos = () => {
 
     const matchesFilters = Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
-      if (key === 'service_type') return (contract as any).service_type === value;
-      if (key === 'status') return (contract as any).status === value;
-      if (key === 'client_type') return (contract as any).client_type === value;
+      if (key === 'service_type') {
+        const dbValue = serviceTypeLabelToValue[value] || value.toLowerCase();
+        return (contract as any).service_type === dbValue;
+      }
+      if (key === 'status') {
+        const dbValue = statusLabelToValue[value] || value.toLowerCase();
+        return (contract as any).status === dbValue;
+      }
+      if (key === 'client_type') {
+        const dbValue = clientTypeLabelToValue[value] || value.toLowerCase();
+        return (contract as any).client_type === dbValue;
+      }
       return true;
     });
 
