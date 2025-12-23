@@ -479,7 +479,7 @@ const PerfilUsuario = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="sector">Setor</Label>
-                      {isEditing ? (
+                      {isEditing && isAdmin ? (
                         <Select
                           value={editData.sector}
                           onValueChange={(value) => setEditData({ ...editData, sector: value })}
@@ -498,13 +498,16 @@ const PerfilUsuario = () => {
                       ) : (
                         <p className="text-sm py-2 px-3 bg-muted rounded-md">{profileData.sector || "Não definido"}</p>
                       )}
+                      {isEditing && !isAdmin && (
+                        <p className="text-xs text-muted-foreground">O setor é definido pelo administrador do sistema</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="role">Nível de Acesso</Label>
                       <p className="text-sm py-2 px-3 bg-muted rounded-md">{getRoleLabel(profileData.role)}</p>
                       {isEditing && (
-                        <p className="text-xs text-muted-foreground">O nível de acesso é definido pelo administrador</p>
+                        <p className="text-xs text-muted-foreground">O nível de acesso é definido pelo administrador do sistema</p>
                       )}
                     </div>
                   </div>
