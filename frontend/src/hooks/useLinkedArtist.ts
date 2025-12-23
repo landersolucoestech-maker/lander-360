@@ -9,15 +9,23 @@ interface LinkedArtist {
   avatar_url: string | null;
 }
 
+interface ArtistFilterContext {
+  isArtistUser: boolean;
+  artistId: string | null;
+  artistName: string | null;
+  isLoading: boolean;
+  shouldFilter: boolean; // true se deve filtrar por artista
+}
+
 /**
  * Hook para obter o artista vinculado ao usuário atual
  * Usado quando o usuário tem role "artista" para filtrar dados
  */
 export function useLinkedArtist() {
   const { user, permissions } = useAuth();
-  const isArtist = permissions.roles.includes('artista') && !permissions.isAdmin;
+  const isArtistUser = permissions.roles.includes('artista') && !permissions.isAdmin;
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['linkedArtist', user?.id],
     queryFn: async (): Promise<LinkedArtist | null> => {
       if (!user?.id) return null;
@@ -51,12 +59,35 @@ export function useLinkedArtist() {
         return null;
       }
 
-      console.log('[useLinkedArtist] Linked artist:', artistData);
       return artistData;
     },
-    enabled: !!user?.id && isArtist,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
   });
+
+  return {
+    ...query,
+    isArtistUser,
+  };
+}
+
+/**
+ * Hook que retorna o contexto de filtragem por artista
+ * Use em qualquer página/componente que precisa filtrar dados por artista
+ */
+export function useArtistFilter(): ArtistFilterContext {
+  const { user, permissions, isFullyLoaded } = useAuth();
+  const isArtistUser = permissions.roles.includes('artista') && !permissions.isAdmin;
+  
+  const { data: linkedArtist, isLoading: isLoadingArtist } = useLinkedArtist();
+
+  return {
+    isArtistUser,
+    artistId: isArtistUser ? (linkedArtist?.id || null) : null,
+    artistName: linkedArtist?.stage_name || linkedArtist?.name || null,
+    isLoading: !isFullyLoaded || (isArtistUser && isLoadingArtist),
+    shouldFilter: isArtistUser && !!linkedArtist?.id,
+  };
 }
 
 /**
@@ -69,7 +100,6 @@ export function useArtistDashboardStats(artistId: string | null) {
       if (!artistId) return null;
 
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
       // Buscar dados específicos do artista em paralelo
       const [
@@ -98,7 +128,7 @@ export function useArtistDashboardStats(artistId: string | null) {
           .select('id, spotify_streams, apple_music_streams, deezer_streams, youtube_views')
           .eq('artist_id', artistId),
         
-        // Eventos do artista para hoje
+        // Eventos do artista
         supabase
           .from('agenda_events')
           .select('id, title, start_date, start_time, end_time, location, status, event_type')
