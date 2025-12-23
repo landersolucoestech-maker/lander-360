@@ -322,7 +322,7 @@ serve(async (req) => {
       spotify: !!SPOTIFY_CLIENT_ID,
       youtube: !!YOUTUBE_API_KEY,
       meta: !!META_ACCESS_TOKEN,
-      tiktok: !!TIKTOK_API_KEY,
+      tiktok: !!TIKTOK_CLIENT_KEY,
     });
 
     const results: Record<string, any> = {};
