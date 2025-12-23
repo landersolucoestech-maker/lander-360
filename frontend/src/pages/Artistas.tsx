@@ -820,12 +820,33 @@ const Artistas = () => {
               </div>
             </div>
 
-            {/* KPI Cards */}
+            {/* KPI Cards - mostram dados filtrados para artistas */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <DashboardCard title="Total de Artistas" value={isLoading ? '...' : artistsCount || displayArtists.length} description="artistas cadastrados" icon={Users} trend={kpiTrends.artists} />
-              <DashboardCard title="Receita Média por Artista" value="R$ 0" description="média mensal" icon={DollarSign} />
-              <DashboardCard title="Receita Total dos Artistas" value="R$ 0" description="este mês" icon={DollarSign} />
-              <DashboardCard title="Artistas Lucrativos" value="0%" description="lucrativos vs deficitários" icon={Star} />
+              <DashboardCard 
+                title={isArtistUser ? "Meu Perfil" : "Total de Artistas"} 
+                value={isLoading ? '...' : (shouldFilter ? artists.length : (artistsCount || displayArtists.length))} 
+                description={isArtistUser ? "artista vinculado" : "artistas cadastrados"} 
+                icon={Users} 
+                trend={isArtistUser ? undefined : kpiTrends.artists} 
+              />
+              <DashboardCard 
+                title={isArtistUser ? "Meus Projetos" : "Receita Média por Artista"} 
+                value={isArtistUser ? projects.length : "R$ 0"} 
+                description={isArtistUser ? "projetos ativos" : "média mensal"} 
+                icon={isArtistUser ? Music : DollarSign} 
+              />
+              <DashboardCard 
+                title={isArtistUser ? "Meus Contratos" : "Receita Total dos Artistas"} 
+                value={isArtistUser ? activeContracts.length : "R$ 0"} 
+                description={isArtistUser ? "contratos ativos" : "este mês"} 
+                icon={DollarSign} 
+              />
+              <DashboardCard 
+                title={isArtistUser ? "Meus Lançamentos" : "Artistas Lucrativos"} 
+                value={isArtistUser ? releases.length : "0%"} 
+                description={isArtistUser ? "total de lançamentos" : "lucrativos vs deficitários"} 
+                icon={Star} 
+              />
             </div>
 
             {/* Search and Filters */}
