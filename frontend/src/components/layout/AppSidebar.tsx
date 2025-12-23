@@ -371,7 +371,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                     )}>
                       <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
                         <item.icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
+                        <span className="font-medium">{getNavTitle(item.title, isArtistMode)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -386,7 +386,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                     )}>
                       <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 rounded-md">
                         <item.icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
+                        <span className="font-medium">{getNavTitle(item.title, isArtistMode)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -403,7 +403,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                       )}
                     >
                       <Megaphone className="h-4 w-4" />
-                      <span className="font-medium">Marketing</span>
+                      <span className="font-medium">{isArtistMode ? "Meu Marketing" : "Marketing"}</span>
                       <ChevronDown className={cn("h-4 w-4 transition-transform ml-auto", isMarketingOpen && "rotate-180")} />
                     </SidebarMenuButton>
                     {isMarketingOpen && (
