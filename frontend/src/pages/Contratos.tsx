@@ -132,10 +132,44 @@ const Contratos = () => {
     return matchesSearch && matchesFilters;
   });
 
+  // Tipos de serviço formatados e ordenados alfabeticamente
+  const serviceTypeOptions = [
+    "Agenciamento",
+    "Distribuição",
+    "Edição",
+    "Empresariamento",
+    "Empresariamento Suporte",
+    "Gestão",
+    "Licenciamento",
+    "Marketing",
+    "Outros",
+    "Parceria",
+    "Produção Audiovisual",
+    "Produção Musical",
+    "Publicidade",
+    "Shows",
+  ];
+
+  // Status ordenados alfabeticamente
+  const statusOptions = [
+    "Assinado",
+    "Expirado",
+    "Pendente",
+    "Rascunho",
+    "Rescindido",
+  ];
+
+  // Tipos de cliente incluindo "Pessoa"
+  const clientTypeOptions = [
+    "Artista",
+    "Empresa",
+    "Pessoa",
+  ];
+
   const filterOptions = [
-    { key: "service_type", label: "Tipo de Serviço", options: ["empresariamento", "gestao", "agenciamento", "edicao", "distribuicao", "marketing", "producao_musical", "producao_audiovisual", "licenciamento", "publicidade", "parceria", "shows", "outros"] },
-    { key: "status", label: "Status", options: ["pendente", "assinado", "expirado", "rescindido", "rascunho"] },
-    { key: "client_type", label: "Tipo de Cliente", options: ["artista", "empresa"] }
+    { key: "service_type", label: "Tipo de Contrato", options: serviceTypeOptions },
+    { key: "status", label: "Status", options: statusOptions },
+    { key: "client_type", label: "Tipo de Cliente", options: clientTypeOptions }
   ];
 
   const handleSearch = (term: string) => setSearchTerm(term);
