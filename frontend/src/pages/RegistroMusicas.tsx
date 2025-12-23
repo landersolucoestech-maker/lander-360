@@ -133,11 +133,11 @@ const RegistroMusicas = () => {
   });
 
   // Transform phonograms data
-  const allPhonograms = phonograms.map(phono => {
+  const mappedPhonograms = phonograms.map(phono => {
     // Primeiro tenta buscar artista do fonograma, depois da obra vinculada
     const linkedWork = musicRegistry.find(m => m.id === phono.work_id);
-    const artistId = phono.artist_id || linkedWork?.artist_id;
-    const artist = artists.find(a => a.id === artistId);
+    const phonoArtistId = phono.artist_id || linkedWork?.artist_id;
+    const artist = artists.find(a => a.id === phonoArtistId);
     const workParticipants = linkedWork?.participants as any[] || [];
     const composers = workParticipants
       .filter((p: any) => p.role === 'compositor' || p.role === 'compositor_autor')
@@ -158,7 +158,7 @@ const RegistroMusicas = () => {
   }, [musicRegistry, artists]);
 
   useEffect(() => {
-    setFilteredPhonograms(allPhonograms);
+    setFilteredPhonograms(mappedPhonograms);
   }, [phonograms, artists, musicRegistry]);
 
   const filterOptions = [
