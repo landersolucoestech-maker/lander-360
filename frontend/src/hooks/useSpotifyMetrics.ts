@@ -34,6 +34,13 @@ export interface FetchSpotifyMetricsResponse {
   error?: string;
 }
 
+
+// Get cached top tracks for an artist (from memory, not DB)
+export const useSpotifyTopTracks = (artistId: string | undefined) => {
+  const queryClient = useQueryClient();
+  return queryClient.getQueryData<TopTrack[]>(['spotify-top-tracks', artistId]) || [];
+};
+
 // Get latest metrics for an artist
 export const useArtistSpotifyMetrics = (artistId: string | undefined) => {
   return useQuery({
