@@ -10,7 +10,7 @@ import { ArtistContractModal } from "@/components/modals/ArtistContractModal";
 import { Artist360Modal } from "@/components/modals/Artist360Modal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useDeleteArtist } from "@/hooks/useArtists";
-import { useArtistSpotifyMetrics, useFetchSpotifyMetrics, useSpotifyTopTracks } from "@/hooks/useSpotifyMetrics";
+import { useArtistSpotifyMetrics, useFetchSpotifyMetrics } from "@/hooks/useSpotifyMetrics";
 import { useArtistSocialMetrics, useFetchSocialMetrics } from "@/hooks/useSocialMetrics";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, Users, Headphones, BarChart3, RefreshCw, Loader2, Eye, Sparkles } from "lucide-react";
