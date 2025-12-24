@@ -172,13 +172,13 @@ export function FeaturedArtists() {
             <Star className="h-5 w-5 text-yellow-500" />
             Artistas em Destaque
           </CardTitle>
-          <CardDescription>Artistas com maior relevância no período</CardDescription>
+          <CardDescription>Artistas com contrato vigente e maior relevância</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Star className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
-              Nenhum artista cadastrado ainda
+              Nenhum artista com contrato vigente
             </p>
           </div>
         </CardContent>
