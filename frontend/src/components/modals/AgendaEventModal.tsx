@@ -58,7 +58,7 @@ export const AgendaEventModal: React.FC<AgendaEventModalProps> = ({
   };
 
   const initialData = event ? {
-    event_name: event.event_name,
+    event_name: event.title || (event as any).event_name || '',
     start_date: parseDateFromDB(event.start_date),
     start_time: event.start_time || '',
     end_date: parseDateFromDB(event.end_date),
