@@ -396,7 +396,7 @@ const Relatorios = () => {
         // Create artists map for lookup
         const artistsMap: Record<string, string> = {};
         artistsList.forEach((a: any) => {
-          artistsMap[a.id] = a.stage_name || a.name || '';
+          artistsMap[a.id] = a.name || '';
         });
 
         const getStatusLabel = (status: string) => {
@@ -426,7 +426,7 @@ const Relatorios = () => {
         return projectsData.flatMap((project: any) => {
           const details = getProjectDetails(project);
           const songs = details?.songs || [];
-          const artistName = project.artist_id ? artistsMap[project.artist_id] || '' : (project.artists?.stage_name || project.artists?.name || '');
+          const artistName = project.artist_id ? artistsMap[project.artist_id] || '' : (project.artists?.name || '');
           
           if (songs.length > 0) {
             return songs.map((song: any) => ({
