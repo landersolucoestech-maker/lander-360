@@ -246,9 +246,9 @@ export class ContractsService {
       if (activeStatuses.includes(contract.status?.toLowerCase() || '')) {
         return true;
       }
-      // Check date-based active state
-      const startDate = contract.start_date || contract.effective_from;
-      const endDate = contract.end_date || contract.effective_to;
+      // Check date-based active state - use effective_from/effective_to as primary
+      const startDate = contract.effective_from || contract.start_date;
+      const endDate = contract.effective_to || contract.end_date;
       if (startDate && startDate <= today && (!endDate || endDate >= today)) {
         return true;
       }
@@ -261,7 +261,7 @@ export class ContractsService {
     const { data, error } = await supabase
       .from('contracts')
       .select('*')
-      .order('end_date', { ascending: true });
+      .order('effective_to', { ascending: true });
 
     if (error) throw error;
     
@@ -271,9 +271,9 @@ export class ContractsService {
     futureDate.setDate(futureDate.getDate() + days);
     const futureDateStr = formatDateForDB(futureDate) || '';
     
-    // Filter contracts expiring within the specified days - check both end_date and effective_to
+    // Filter contracts expiring within the specified days - use effective_to as primary
     return (data || []).filter(contract => {
-      const endDate = contract.end_date || contract.effective_to;
+      const endDate = contract.effective_to || contract.end_date;
       if (!endDate) return false;
       // Must be active (not expired) and expiring within the period
       return endDate >= todayStr && endDate <= futureDateStr;
