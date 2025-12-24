@@ -80,7 +80,9 @@ export function SpotifyMetricsCard({ artistId, spotifyUrl }: SpotifyMetricsCardP
     );
   }
 
-  const topTracks = (metrics?.top_tracks || []) as TopTrack[];
+  const dbTopTracks = (metrics?.top_tracks || []) as TopTrack[];
+  // Use cached top tracks (from API response) if available, otherwise fall back to DB
+  const topTracks = cachedTopTracks.length > 0 ? cachedTopTracks : dbTopTracks;
   const displayedTracks = showAllTracks ? topTracks : topTracks.slice(0, 5);
 
   return (
