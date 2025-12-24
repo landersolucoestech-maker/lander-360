@@ -12,7 +12,7 @@ import { ArtistUserAutoCreationService } from './artistUserAutoCreation';
 
 export class ContractsService {
   // Get all contracts with artist info (mantido para compatibilidade, mas limitado)
-  static async getAll(): Promise<(Contract & { artists?: { name: string; stage_name?: string } })[]> {
+  static async getAll(): Promise<(Contract & { artists?: { name: string; full_name?: string } })[]> {
     console.log('[ContractsService.getAll] Starting query without artists join');
     
     // First get contracts
@@ -31,18 +31,18 @@ export class ContractsService {
     const artistIds = [...new Set(contracts.map(c => c.artist_id).filter(Boolean))];
     
     // Fetch artists separately to avoid multiple FK ambiguity
-    let artistsMap: Record<string, { name: string; stage_name?: string }> = {};
+    let artistsMap: Record<string, { name: string; full_name?: string }> = {};
     if (artistIds.length > 0) {
       const { data: artists } = await supabase
         .from('artists')
-        .select('id, name, stage_name')
+        .select('id, name, full_name')
         .in('id', artistIds);
       
       if (artists) {
         artistsMap = artists.reduce((acc, artist) => {
-          acc[artist.id] = { name: artist.name, stage_name: artist.stage_name };
+          acc[artist.id] = { name: artist.name, full_name: artist.full_name };
           return acc;
-        }, {} as Record<string, { name: string; stage_name?: string }>);
+        }, {} as Record<string, { name: string; full_name?: string }>);
       }
     }
 
@@ -54,7 +54,7 @@ export class ContractsService {
   }
 
   // Get contracts with pagination
-  static async getPaginated(params?: Partial<PaginationParams>): Promise<PaginatedResult<Contract & { artists?: { name: string; stage_name?: string } }>> {
+  static async getPaginated(params?: Partial<PaginationParams>): Promise<PaginatedResult<Contract & { artists?: { name: string; full_name?: string } }>> {
     const normalizedParams = normalizePaginationParams(params);
     const { from, to } = calculateRange(normalizedParams);
 
