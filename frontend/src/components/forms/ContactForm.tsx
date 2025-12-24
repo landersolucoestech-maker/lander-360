@@ -341,7 +341,7 @@ export function ContactForm({ onSubmit, onCancel, initialData }: ContactFormProp
               <SelectItem value="fotografo">Fotógrafo</SelectItem>
               <SelectItem value="funcionarios">Funcionários</SelectItem>
               <SelectItem value="graficas">Gráficas</SelectItem>
-              <SelectItem value="gravadora_musical">Gravadora musical</SelectItem>
+              <SelectItem value="gravadora">Gravadora</SelectItem>
               <SelectItem value="hoteis">Hotéis</SelectItem>
               <SelectItem value="influenciador">Influenciador(a)</SelectItem>
               <SelectItem value="instrutor_vocal">Instrutor vocal</SelectItem>
