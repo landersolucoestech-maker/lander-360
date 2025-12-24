@@ -16,7 +16,7 @@ export interface ContractData {
   contracted_address: string;
   contracted_email?: string;
   contracted_phone?: string;
-  contracted_stage_name?: string;
+  contracted_artistic_name?: string;
   
   // Contract details
   contract_title: string;
@@ -108,7 +108,7 @@ function generatePartiesHTML(templateType: string, data: ContractData, companyDa
   
   const landerFullText = `${companyData.company_name}, ${companyData.company_type}, inscrita no CNPJ nº ${companyData.cnpj}, com sede na ${companyData.company_address}, representada por ${companyData.representative_name}, ${companyData.representative_nationality}, ${companyData.representative_marital_status}, ${companyData.representative_profession}, portador do RG nº ${companyData.representative_rg} e CPF nº ${companyData.representative_cpf}, residente e domiciliado na ${companyData.representative_address}`;
   
-  const contractedFullText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_stage_name ? `, cujo nome artístico é "${data.contracted_stage_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}`;
+  const contractedFullText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_artistic_name ? `, cujo nome artístico é "${data.contracted_artistic_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}`;
 
   switch (structure) {
     case 'production':
@@ -224,7 +224,7 @@ function replaceVariables(text: string, data: ContractData): string {
     '{{contracted_address}}': data.contracted_address || '',
     '{{contracted_email}}': data.contracted_email || '',
     '{{contracted_phone}}': data.contracted_phone || '',
-    '{{contracted_stage_name}}': data.contracted_stage_name || data.contracted_name || '',
+    '{{contracted_artistic_name}}': data.contracted_artistic_name || data.contracted_name || '',
     '{{contract_title}}': data.contract_title || '',
     '{{service_type}}': data.service_type || '',
     '{{start_date}}': formatDateBR(data.start_date) || '',
@@ -667,7 +667,7 @@ export async function generateContractPDF(template: ContractTemplate, data: Cont
   yPosition += 5;
   
   pdf.setFont('times', 'normal');
-  const contractedText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_stage_name ? `, cujo nome artístico é "${data.contracted_stage_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}, doravante denominado(a) "${secondPartyLabel.replace(':', '')}".`;
+  const contractedText = `${data.contracted_name || '(nome completo)'}, (nacionalidade), (idade), (profissão), portador(a) do RG nº _________ (órgão expedidor), CPF nº ${data.contracted_cpf_cnpj || '_______'}${data.contracted_artistic_name ? `, cujo nome artístico é "${data.contracted_artistic_name}"` : ''}, residente e domiciliado(a) em ${data.contracted_address || '(endereço completo)'}, doravante denominado(a) "${secondPartyLabel.replace(':', '')}".`;
   addWrappedText(contractedText, 11);
   yPosition += 10;
 
