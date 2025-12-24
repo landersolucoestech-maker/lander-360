@@ -151,7 +151,7 @@ export function FeaturedArtists() {
             <Star className="h-5 w-5 text-yellow-500" />
             Artistas em Destaque
           </CardTitle>
-          <CardDescription>Artistas com maior relevância no período</CardDescription>
+          <CardDescription>Artistas com contrato vigente e maior relevância</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -194,7 +194,7 @@ export function FeaturedArtists() {
             <Star className="h-5 w-5 text-yellow-500" />
             Artistas em Destaque
           </CardTitle>
-          <CardDescription>Artistas com maior relevância no período</CardDescription>
+          <CardDescription>Artistas com contrato vigente e maior relevância</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
