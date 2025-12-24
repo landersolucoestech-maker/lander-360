@@ -180,7 +180,7 @@ export const AgendaEventForm: React.FC<AgendaEventFormProps> = ({
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {form.watch('start_date') ? 
-                      format(form.watch('start_date')!, "dd/MM/yyyy", { locale: ptBR }) : 
+                      formatDateBR(form.watch('start_date')!) : 
                       "Selecionar data"
                     }
                   </Button>
