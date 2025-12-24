@@ -395,7 +395,7 @@ export function ArtistProfileModal({
                   <ExternalLink className="h-3 w-3" />
                 </Button>
               )}
-              {!artist.instagram && !artist.instagram_url && !artist.socialMedia?.instagram &&
+              {!artist.instagram_url && !artist.socialMedia?.instagram &&
                !artist.spotify_url && !artist.socialMedia?.spotify &&
                !artist.youtube_url && !artist.socialMedia?.youtube &&
                !artist.tiktok && !artist.socialMedia?.tiktok &&
