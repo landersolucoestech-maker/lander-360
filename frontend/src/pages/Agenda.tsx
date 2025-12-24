@@ -275,7 +275,7 @@ const Agenda = () => {
   const handleExport = () => {
     const rawEvents = events.map(e => ({
       ...e,
-      title: e.event_name,
+      title: e.title,
     }));
     exportToExcel(rawEvents, "agenda", "Eventos", "agenda");
   };
