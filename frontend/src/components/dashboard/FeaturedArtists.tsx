@@ -43,10 +43,29 @@ export function FeaturedArtists() {
   const { data: artists, isLoading } = useQuery({
     queryKey: ['featured-artists'],
     queryFn: async (): Promise<FeaturedArtist[]> => {
+      // First, get artists with active contracts
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: activeContracts, error: contractsError } = await supabase
+        .from('contracts')
+        .select('artist_id')
+        .or(`status.eq.ativo,status.eq.active`)
+        .gte('effective_to', today);
+
+      if (contractsError) throw contractsError;
+      
+      // Get unique artist IDs with active contracts
+      const artistIdsWithContract = [...new Set((activeContracts || []).map(c => c.artist_id).filter(Boolean))];
+      
+      if (artistIdsWithContract.length === 0) {
+        return [];
+      }
+
+      // Fetch only artists with active contracts
       const { data: artistsData, error: artistsError } = await supabase
         .from('artists')
         .select('*')
-        .limit(50);
+        .in('id', artistIdsWithContract);
 
       if (artistsError) throw artistsError;
       if (!artistsData || artistsData.length === 0) return [];
@@ -55,12 +74,14 @@ export function FeaturedArtists() {
       const { data: spotifyMetrics } = await supabase
         .from('spotify_metrics')
         .select('*')
+        .in('artist_id', artistIdsWithContract)
         .order('created_at', { ascending: false });
 
-      // Fetch financial transactions for revenue estimation
+      // Fetch financial transactions for revenue
       const { data: transactions } = await supabase
         .from('financial_transactions')
         .select('artist_id, amount, type')
+        .in('artist_id', artistIdsWithContract)
         .eq('type', 'receitas')
         .eq('status', 'pago');
 
@@ -77,21 +98,23 @@ export function FeaturedArtists() {
         const latestMetric = artistMetrics[0];
         const previousMetric = artistMetrics[1];
 
-        // Calculate streams variation
+        // Use real data from spotify_metrics
         const currentStreams = latestMetric?.monthly_listeners || 0;
+        const currentFollowers = latestMetric?.followers || 0;
         const previousStreams = previousMetric?.monthly_listeners || currentStreams;
+        const previousFollowers = previousMetric?.followers || currentFollowers;
+        
+        // Calculate streams variation percentage
         const streamsVariation = previousStreams > 0 
           ? Math.round(((currentStreams - previousStreams) / previousStreams) * 100) 
           : 0;
 
+        // Calculate followers growth
+        const followersGrowth = currentFollowers - previousFollowers;
+
         // Calculate revenue from transactions
         const artistTransactions = (transactions || []).filter(t => t.artist_id === artist.id);
         const estimatedRevenue = artistTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-        // Followers growth (from spotify metrics)
-        const currentFollowers = latestMetric?.followers || 0;
-        const previousFollowers = previousMetric?.followers || currentFollowers;
-        const followersGrowth = currentFollowers - previousFollowers;
 
         // Relevance score based on multiple factors
         const relevanceScore = (currentStreams * 0.4) + (currentFollowers * 0.3) + (estimatedRevenue * 0.3);
@@ -102,7 +125,7 @@ export function FeaturedArtists() {
           metrics: {
             totalStreams: currentStreams,
             streamsVariation,
-            uniqueListeners: Math.round(currentStreams * 0.7), // Estimated unique listeners
+            uniqueListeners: currentFollowers, // Use followers as listeners
             followersGrowth,
             estimatedRevenue
           }
