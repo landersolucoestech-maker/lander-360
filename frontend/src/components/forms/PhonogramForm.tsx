@@ -540,7 +540,7 @@ export function PhonogramForm({
   const getFilteredArtists = (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 1) return artists.slice(0, 15);
     const term = searchTerm.toLowerCase();
-    return artists.filter((artist: any) => artist.name?.toLowerCase().includes(term) || artist.stage_name?.toLowerCase().includes(term) || artist.full_name?.toLowerCase().includes(term)).slice(0, 15);
+    return artists.filter((artist: any) => artist.name?.toLowerCase().includes(term) || artist.full_name?.toLowerCase().includes(term)).slice(0, 15);
   };
 
   // Filtrar performers dos projetos para intérpretes
@@ -559,7 +559,7 @@ export function PhonogramForm({
     return getProjectProducers().filter(p => p.name.toLowerCase().includes(term)).slice(0, 15);
   };
   const handleSelectArtist = (artist: any, fieldName: string, index: number) => {
-    const displayName = artist.stage_name || artist.name || artist.full_name;
+    const displayName = artist.name || artist.full_name;
     form.setValue(`${fieldName}.${index}.name` as any, displayName);
     setOpenParticipantPopovers(prev => ({
       ...prev,
