@@ -206,7 +206,7 @@ const Projetos = () => {
         
         // Check artist name
         const artist = artists.find(a => a.id === project.artist_id);
-        const artistName = artist?.stage_name || artist?.name || '';
+        const artistName = artist?.name || '';
         if (artistName.toLowerCase().includes(term)) return true;
         
         // Check songs data
@@ -245,7 +245,7 @@ const Projetos = () => {
           }
           if (key === "artist") {
             const artist = artists.find(a => a.id === project.artist_id);
-            const artistName = artist?.stage_name || artist?.name || '';
+            const artistName = artist?.name || '';
             return artistName === value;
           }
           if (key === "release_type") {
