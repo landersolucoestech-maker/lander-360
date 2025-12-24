@@ -6,12 +6,12 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Contract } from "@/types/database";
-import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileText, Calendar, DollarSign, User, Building, Briefcase, Percent, FileCheck, ClipboardList } from "lucide-react";
 import { useArtists } from "@/hooks/useArtists";
 import { useProjects } from "@/hooks/useProjects";
 import { useCrmContacts } from "@/hooks/useCrm";
+import { formatDateBR } from "@/lib/utils";
 
 interface ContractViewModalProps {
   isOpen: boolean;
