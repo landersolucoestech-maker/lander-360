@@ -12,6 +12,26 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Converte uma string de data do banco (yyyy-MM-dd) para um objeto Date
+ * Adiciona horário ao meio-dia para evitar problemas de fuso horário
+ * que causam a data voltar um dia (ex: 23/12 -> 22/12)
+ */
+export function parseDateFromDB(dateString: string | null | undefined): Date | undefined {
+  if (!dateString) return undefined
+  try {
+    // Se a string já contém horário (ISO completo), usa parseISO normal
+    if (dateString.includes('T') || dateString.includes(' ')) {
+      return parseISO(dateString)
+    }
+    // Se é apenas data (yyyy-MM-dd), adiciona horário ao meio-dia
+    // para evitar problemas de conversão de fuso horário
+    return parseISO(`${dateString}T12:00:00`)
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Converte uma data para o fuso horário de Brasília
  */
 export function toBrazilTime(date: Date | string | null | undefined): Date | null {
