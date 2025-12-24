@@ -95,7 +95,7 @@ export const musicRegistrationSchema = z.object({
  */
 export const artistValidationSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  stage_name: z.string().optional(),
+  full_name: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   phone: z.string().optional(),
   genre: z.string().optional(),

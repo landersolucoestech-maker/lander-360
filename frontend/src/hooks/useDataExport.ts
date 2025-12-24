@@ -61,7 +61,7 @@ const artistColumns = {
   created_at: 'Data de Criação',
   updated_at: 'Última Atualização',
 
-  // Nomes (stage_name e legal_name são mesclados em name e full_name no transform)
+  // Nomes (full_name são mesclados em name e full_name no transform)
   name: 'Nome Artístico',
   full_name: 'Nome Completo',
 
@@ -380,7 +380,7 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     
     // Handle special case for artist fields (sem mutar o objeto original)
     if (entityType === 'artists') {
-      // Mesclar stage_name em name (Nome Artístico) se name estiver vazio
+      // Usar name (Nome Artístico) se name estiver vazio
       item.name = item.name || item.'';
       // Mesclar legal_name em full_name (Nome Completo) se full_name estiver vazio
       item.full_name = item.full_name || item.legal_name || '';

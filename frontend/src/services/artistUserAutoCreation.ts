@@ -27,10 +27,10 @@ export class ArtistUserAutoCreationService {
   /**
    * Busca dados do artista
    */
-  static async getArtistData(artistId: string): Promise<{ email: string; name: string; stage_name?: string } | null> {
+  static async getArtistData(artistId: string): Promise<{ email: string; name: string; full_name?: string } | null> {
     const { data, error } = await supabase
       .from('artists')
-      .select('email, name, stage_name')
+      .select('email, name, full_name')
       .eq('id', artistId)
       .single();
     
