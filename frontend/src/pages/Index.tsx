@@ -461,7 +461,7 @@ const Index = () => {
                           {/* Header - Nome e Status */}
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <h4 className="font-semibold text-foreground">{event.event_name || event.title}</h4>
+                              <h4 className="font-semibold text-foreground">{event.title}</h4>
                               {event.event_type && (
                                 <Badge variant="outline" className="text-xs mt-1">
                                   {getEventTypeLabel(event.event_type)}
