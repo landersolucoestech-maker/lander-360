@@ -443,7 +443,6 @@ const Projetos = () => {
       const artistsMap: Record<string, string> = {};
       artists.forEach(a => {
         if (a.name) artistsMap[a.name.toLowerCase()] = a.id;
-        if (a.stage_name) artistsMap[a.stage_name.toLowerCase()] = a.id;
         if (a.full_name) artistsMap[(a.full_name as string).toLowerCase()] = a.id;
       });
 
