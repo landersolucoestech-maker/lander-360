@@ -457,36 +457,67 @@ const Index = () => {
                   ) : (
                     <div className="space-y-3">
                       {todayEvents.map(event => (
-                        <div key={event.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-foreground">{event.title}</span>
-                              {getStatusBadge(event.status || 'agendado')}
-                            </div>
-                            {event.artists && (
-                              <div className="flex items-center gap-1 text-sm text-primary">
-                                <Users className="h-3 w-3" />
-                                <span>{event.artists.stage_name || event.artists.name}</span>
-                              </div>
-                            )}
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {event.start_time || '--:--'} {event.end_time ? `- ${event.end_time}` : ''}
-                              </span>
-                              {event.location && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
-                                  {event.location}
-                                </span>
+                        <div key={event.id} className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                          {/* Header - Nome e Status */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-foreground">{event.event_name || event.title}</h4>
+                              {event.event_type && (
+                                <Badge variant="outline" className="text-xs mt-1">
+                                  {getEventTypeLabel(event.event_type)}
+                                </Badge>
                               )}
                             </div>
-                            {event.event_type && (
-                              <Badge variant="outline" className="text-xs">
-                                {getEventTypeLabel(event.event_type)}
-                              </Badge>
+                            {getStatusBadge(event.status || 'agendado')}
+                          </div>
+                          
+                          {/* Info Grid */}
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            {/* Data */}
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+                              <span>{formatDateBR(event.start_date)}</span>
+                            </div>
+                            
+                            {/* Horário */}
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                              <span>{event.start_time || '--:--'} {event.end_time ? `- ${event.end_time}` : ''}</span>
+                            </div>
+                            
+                            {/* Local */}
+                            {(event.venue_name || event.location) && (
+                              <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                                <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate">{event.venue_name || event.location}</span>
+                              </div>
+                            )}
+                            
+                            {/* Endereço */}
+                            {event.venue_address && (
+                              <div className="flex items-center gap-2 text-muted-foreground col-span-2 text-xs">
+                                <Info className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{event.venue_address}</span>
+                              </div>
                             )}
                           </div>
+                          
+                          {/* Envolvidos (Artista) */}
+                          {event.artists && (
+                            <div className="mt-2 pt-2 border-t border-border">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-sm font-medium text-primary">
+                                  {event.artists.stage_name || event.artists.name}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Descrição se houver */}
+                          {event.description && (
+                            <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{event.description}</p>
+                          )}
                         </div>
                       ))}
                       <Button variant="outline" className="w-full" onClick={() => navigate('/agenda')}>
