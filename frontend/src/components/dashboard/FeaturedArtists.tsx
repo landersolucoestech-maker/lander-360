@@ -93,10 +93,13 @@ export function FeaturedArtists() {
         const latestMetric = artistMetrics[0];
         const previousMetric = artistMetrics[1];
         const hasActiveContract = artistsWithActiveContract.has(artist.id);
+        
+        // Get spotify_data from artist (contains top_tracks and total_streams)
+        const spotifyData = (artist as any).spotify_data || {};
 
-        // Use real data from spotify_metrics
-        const currentStreams = latestMetric?.monthly_listeners || 0;
-        const currentFollowers = latestMetric?.followers || 0;
+        // Use real data from spotify_metrics and spotify_data
+        const currentStreams = spotifyData?.total_streams || latestMetric?.monthly_listeners || 0;
+        const currentFollowers = latestMetric?.followers || spotifyData?.followers || 0;
         const previousStreams = previousMetric?.monthly_listeners || currentStreams;
         const previousFollowers = previousMetric?.followers || currentFollowers;
         
