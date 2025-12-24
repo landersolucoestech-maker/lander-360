@@ -18,7 +18,7 @@ export const useFinancialReport = () => {
           status,
           payment_method,
           observations,
-          artists:artist_id(name, stage_name),
+          artists:artist_id(name, full_name),
           crm_contacts:crm_contact_id(name, company)
         `)
         .order("date", { ascending: false });
@@ -65,7 +65,7 @@ export const useMusicReport = () => {
           release_date,
           writers,
           publishers,
-          artists:artist_id(name, stage_name)
+          artists:artist_id(name, full_name)
         `)
         .order("title", { ascending: true });
 
@@ -93,7 +93,7 @@ export const useReleasesReport = () => {
           label,
           distributors,
           copyright,
-          artists:artist_id(name, stage_name)
+          artists:artist_id(name, full_name)
         `)
         .order("release_date", { ascending: false });
 
@@ -152,7 +152,7 @@ export const usePhonogramsReport = () => {
           recording_date,
           label,
           master_owner,
-          artists:artist_id(name, stage_name)
+          artists:artist_id(name, full_name)
         `)
         .order("title", { ascending: true });
 
@@ -180,7 +180,7 @@ export const useContractsReport = () => {
           end_date,
           value,
           royalties_percentage,
-          artists:artist_id(name, stage_name)
+          artists:artist_id(name, full_name)
         `)
         .order("created_at", { ascending: false });
 
@@ -207,7 +207,7 @@ export const useProjectsReport = () => {
           end_date,
           budget,
           created_at,
-          artists:artist_id(name, stage_name)
+          artists:artist_id(name, full_name)
         `)
         .order("created_at", { ascending: false });
 
