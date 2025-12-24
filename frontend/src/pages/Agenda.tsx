@@ -23,7 +23,8 @@ import { useArtistFilter } from "@/hooks/useLinkedArtist";
 
 interface AgendaEvent {
   id: string;
-  event_name: string;
+  title: string;
+  event_name?: string; // Legacy field - use title instead
   start_date: string;
   start_time?: string;
   end_date?: string;
