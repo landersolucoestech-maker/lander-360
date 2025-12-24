@@ -203,14 +203,18 @@ export function ArtistCard({
     return num.toString();
   };
 
-  // Calculate total streams from top tracks (using popularity as estimate)
-  // A API do Spotify não fornece streams diretamente, então usamos a popularidade como indicador
+  // Get total streams - use total_streams from metrics, or calculate from top_tracks
   const topTracksFromMetrics = (spotifyMetrics?.top_tracks as any[]) || [];
-  const totalStreams = topTracksFromMetrics.slice(0, 5).reduce((sum: number, track: any) => {
+  const calculatedStreams = topTracksFromMetrics.slice(0, 5).reduce((sum: number, track: any) => {
     const popularity = track?.popularity || 0;
     // Estimativa: popularidade 100 = ~100M streams, escala logarítmica
     return sum + Math.round(popularity * popularity * 100);
   }, 0);
+  
+  // Use total_streams if available, otherwise use calculated value
+  const totalStreams = spotifyMetrics?.total_streams && spotifyMetrics.total_streams > 0 
+    ? spotifyMetrics.total_streams 
+    : calculatedStreams;
   
   return <>
       <Card className="py-4 px-5 md:py-5 md:px-6">
