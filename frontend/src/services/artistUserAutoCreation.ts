@@ -107,7 +107,7 @@ export class ArtistUserAutoCreationService {
         password: tempPassword,
         options: {
           data: {
-            full_name: artistData.name || artistData.stage_name || 'Artista',
+            full_name: artistData.name || artistData.name || 'Artista',
             role: 'artista'
           }
         }
@@ -126,7 +126,7 @@ export class ArtistUserAutoCreationService {
         .upsert({
           id: userId,
           email: artistData.email,
-          full_name: artistData.name || artistData.stage_name || 'Artista',
+          full_name: artistData.name || artistData.name || 'Artista',
           role_display: 'Artista',
           status: 'active',
           permissions: defaultRolePermissions.artista,

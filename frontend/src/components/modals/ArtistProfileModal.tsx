@@ -97,8 +97,8 @@ export function ArtistProfileModal({
             <div className="flex-1 space-y-4">
               <div>
                 <h2 className="text-2xl font-bold">{artist.name}</h2>
-                {artist.stage_name && artist.stage_name !== artist.name && (
-                  <p className="text-sm text-muted-foreground">Nome artístico: {artist.stage_name}</p>
+                {artist.name && artist.name !== artist.name && (
+                  <p className="text-sm text-muted-foreground">Nome artístico: {artist.name}</p>
                 )}
                 <p className="text-lg text-muted-foreground">{artist.genre || 'Gênero não informado'}</p>
               </div>

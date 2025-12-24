@@ -381,7 +381,7 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     // Handle special case for artist fields (sem mutar o objeto original)
     if (entityType === 'artists') {
       // Mesclar stage_name em name (Nome Artístico) se name estiver vazio
-      item.name = item.name || item.stage_name || '';
+      item.name = item.name || item.'';
       // Mesclar legal_name em full_name (Nome Completo) se full_name estiver vazio
       item.full_name = item.full_name || item.legal_name || '';
 
@@ -650,7 +650,7 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     if (entityType === 'contracts') {
       // Add artist name from related data or artistsMap
       if (item.artists?.name || item.artists?.name) {
-        item.artist_name = item.artists.stage_name || item.artists.name;
+        item.artist_name = item.artists.name || item.artists.name;
       } else if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
         item.artist_name = artistsMap[item.artist_id];
       }

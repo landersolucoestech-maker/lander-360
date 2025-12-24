@@ -166,7 +166,7 @@ export function FinancialViewModal({ open, onOpenChange, transaction }: Financia
               {transaction.artists && (
                 <div>
                   <label className="text-sm text-muted-foreground">Fornecedor/Cliente (Artista)</label>
-                  <p className="font-medium">{transaction.artists.stage_name || transaction.artists.name}</p>
+                  <p className="font-medium">{transaction.artists.name || transaction.artists.name}</p>
                 </div>
               )}
               {transaction.crm_contacts && (

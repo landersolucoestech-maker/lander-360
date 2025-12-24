@@ -326,7 +326,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
         
         const matchedArtist = artists.find(a => 
           a.name?.toLowerCase() === artistName.toLowerCase() ||
-          a.stage_name?.toLowerCase() === artistName.toLowerCase() ||
+          a.name?.toLowerCase() === artistName.toLowerCase() ||
           a.full_name?.toLowerCase() === artistName.toLowerCase()
         );
 
@@ -803,7 +803,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           // Find artist in database
           const matchedArtist = artists.find(a => 
             a.name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim() ||
-            a.stage_name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim() ||
+            a.name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim() ||
             a.full_name?.toLowerCase() === exclusiveArtistComposer.name?.toLowerCase().trim()
           );
           

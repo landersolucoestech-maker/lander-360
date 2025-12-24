@@ -508,7 +508,7 @@ const Index = () => {
                               <div className="flex items-center gap-2">
                                 <Users className="h-3.5 w-3.5 text-primary" />
                                 <span className="text-sm font-medium text-primary">
-                                  {event.artists.stage_name || event.artists.name}
+                                  {event.artists.name || event.artists.name}
                                 </span>
                               </div>
                             </div>

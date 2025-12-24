@@ -519,7 +519,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
     try {
       // Find the artist_id from the selected project
       const projectArtist = artists.find(a => 
-        a.stage_name === data.artist_name || a.name === data.artist_name
+        a.name === data.artist_name || a.name === data.artist_name
       );
       
       // Check if status is changing to "aprovado" and was not already approved

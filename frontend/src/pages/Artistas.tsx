@@ -479,7 +479,7 @@ const Artistas = () => {
         artist.name?.toLowerCase().includes(term) || 
         artist.email?.toLowerCase().includes(term) || 
         artist.genre?.toLowerCase().includes(term) ||
-        artist.stage_name?.toLowerCase().includes(term)
+        artist.name?.toLowerCase().includes(term)
       );
     }
 

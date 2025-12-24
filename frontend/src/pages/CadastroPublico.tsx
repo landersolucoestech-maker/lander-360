@@ -78,7 +78,7 @@ function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, 
       const dbResults = (data || []).map(a => ({
         id: a.id,
         name: a.name || '',
-        stage_name: a.stage_name || '',
+        name: a.name || '',
       }));
 
       const allResults = [...localResults];
@@ -173,7 +173,7 @@ function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, 
               >
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">{artist.stage_name || 'Sem nome artístico'}</p>
+                  <p className="font-medium">{artist.name || 'Sem nome artístico'}</p>
                   <p className="text-sm text-muted-foreground">{artist.name}</p>
                 </div>
               </button>

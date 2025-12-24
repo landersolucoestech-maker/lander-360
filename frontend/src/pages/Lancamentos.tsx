@@ -494,7 +494,7 @@ const Lancamentos = () => {
 
         // Find artist by name
         const artistName = row['Nome do Artista'] || row['Artista'] || row['artist'] || '';
-        const matchedArtist = artists.find((a: any) => a.name?.toLowerCase() === artistName.toLowerCase() || a.stage_name?.toLowerCase() === artistName.toLowerCase());
+        const matchedArtist = artists.find((a: any) => a.name?.toLowerCase() === artistName.toLowerCase() || a.name?.toLowerCase() === artistName.toLowerCase());
 
         // Find project by name
         const projectName = row['Projeto Vinculado'] || row['Projeto'] || row['project_name'] || '';

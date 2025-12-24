@@ -432,7 +432,7 @@ const Contratos = () => {
                                 </div>
                                 <div className="space-y-1 min-w-0">
                                   <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{(contract as any).title || contract.contract_type}</h3>
-                                  {(contract as any).artists && <p className="text-xs sm:text-sm text-muted-foreground truncate">Artista: {(contract as any).artists.stage_name || (contract as any).artists.name}</p>}
+                                  {(contract as any).artists && <p className="text-xs sm:text-sm text-muted-foreground truncate">Artista: {(contract as any).artists.name || (contract as any).artists.name}</p>}
                                   <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                                     {(contract as any).service_type && <Badge variant="secondary" className="text-xs">{serviceTypeLabels[(contract as any).service_type as keyof typeof serviceTypeLabels]}</Badge>}
                                     <Badge variant={(contract as any).status === "assinado" ? "default" : (contract as any).status === "expirado" || (contract as any).status === "rescindido" ? "destructive" : (contract as any).status === "pendente" ? "secondary" : "outline"} className="text-xs">

@@ -58,7 +58,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
     const normalized = normalizeName(name);
     return artists.find(a => 
       normalizeName(a.name || '') === normalized ||
-      normalizeName(a.stage_name || '') === normalized ||
+      normalizeName(a.name || '') === normalized ||
       normalizeName(a.full_name || '') === normalized
     );
   };
@@ -83,7 +83,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
       // Check if input name matches any variation of existing participant's artist
       if (pMatchingArtist) {
         if (normalizeName(pMatchingArtist.name || '') === normalized ||
-            normalizeName(pMatchingArtist.stage_name || '') === normalized ||
+            normalizeName(pMatchingArtist.'') === normalized ||
             normalizeName(pMatchingArtist.full_name || '') === normalized) {
           return true;
         }
@@ -92,7 +92,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
       // Check if existing participant name matches any variation of input's artist
       if (matchingArtist) {
         if (normalizeName(matchingArtist.name || '') === pNormalized ||
-            normalizeName(matchingArtist.stage_name || '') === pNormalized ||
+            normalizeName(matchingArtist.'') === pNormalized ||
             normalizeName(matchingArtist.full_name || '') === pNormalized) {
           return true;
         }

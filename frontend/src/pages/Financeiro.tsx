@@ -909,7 +909,7 @@ const Financeiro = () => {
                             <div className="flex items-center gap-2 flex-wrap">
                               {transaction.artists && (
                                 <Badge variant="outline" className="text-xs">
-                                  {transaction.artists.stage_name || transaction.artists.name}
+                                  {transaction.artists.name || transaction.artists.name}
                                 </Badge>
                               )}
                               {transaction.crm_contacts && (

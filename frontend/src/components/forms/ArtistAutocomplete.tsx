@@ -31,7 +31,7 @@ export function ArtistAutocomplete({
   const filteredArtists = artists.filter(artist => {
     const searchTerm = inputValue.toLowerCase();
     const name = artist.name?.toLowerCase() || '';
-    const stageName = artist.stage_name?.toLowerCase() || '';
+    const stageName = artist.name?.toLowerCase() || '';
     const fullName = artist.full_name?.toLowerCase() || '';
     
     return (

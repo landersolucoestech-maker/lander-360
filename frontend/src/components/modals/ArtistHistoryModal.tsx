@@ -39,7 +39,7 @@ export function ArtistHistoryModal({
 
   // Buscar lançamentos do artista (por artist_id e por nome nas tracks)
   const { data: releases, isLoading: releasesLoading } = useQuery({
-    queryKey: ['artist-releases', artist.id, artist.name, artist.stage_name],
+    queryKey: ['artist-releases', artist.id, artist.name, artist.name],
     queryFn: async () => {
       // Buscar por artist_id
       const { data: byId, error: errorById } = await supabase
@@ -58,7 +58,7 @@ export function ArtistHistoryModal({
       
       if (errorAll) throw errorAll;
 
-      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      const artistNames = [artist.name, artist.name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
       
       const byName = (all || []).filter(release => {
         const tracks = release.tracks as any[] || [];
@@ -120,7 +120,7 @@ export function ArtistHistoryModal({
 
   // Buscar projetos do artista (por artist_id e por nome nos participantes)
   const { data: projects, isLoading: projectsLoading } = useQuery({
-    queryKey: ['artist-projects', artist.id, artist.name, artist.stage_name],
+    queryKey: ['artist-projects', artist.id, artist.name, artist.name],
     queryFn: async () => {
       // Buscar por artist_id
       const { data: byId, error: errorById } = await supabase
@@ -139,7 +139,7 @@ export function ArtistHistoryModal({
       
       if (errorAll) throw errorAll;
 
-      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      const artistNames = [artist.name, artist.name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
       
       const byName = (allProjects || []).filter(project => {
         if (!project.audio_files) return false;
@@ -171,7 +171,7 @@ export function ArtistHistoryModal({
 
   // Buscar obras musicais do artista (por artist_id e por nome nos participantes)
   const { data: musicRegistry, isLoading: musicLoading } = useQuery({
-    queryKey: ['artist-music', artist.id, artist.name, artist.stage_name],
+    queryKey: ['artist-music', artist.id, artist.name, artist.name],
     queryFn: async () => {
       // Buscar por artist_id
       const { data: byId, error: errorById } = await supabase
@@ -190,7 +190,7 @@ export function ArtistHistoryModal({
       
       if (errorAll) throw errorAll;
 
-      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      const artistNames = [artist.name, artist.name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
       
       const byName = (all || []).filter(music => {
         const participants = music.participants as any[] || [];
@@ -219,7 +219,7 @@ export function ArtistHistoryModal({
 
   // Buscar fonogramas do artista (por artist_id e por nome nos participantes)
   const { data: phonograms, isLoading: phonogramsLoading } = useQuery({
-    queryKey: ['artist-phonograms', artist.id, artist.name, artist.stage_name],
+    queryKey: ['artist-phonograms', artist.id, artist.name, artist.name],
     queryFn: async () => {
       // Buscar por artist_id
       const { data: byId, error: errorById } = await supabase
@@ -238,7 +238,7 @@ export function ArtistHistoryModal({
       
       if (errorAll) throw errorAll;
 
-      const artistNames = [artist.name, artist.stage_name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
+      const artistNames = [artist.name, artist.name, artist.full_name].filter(Boolean).map(n => n?.toLowerCase());
       
       const byName = (all || []).filter(phonogram => {
         const participants = phonogram.participants as any[] || [];

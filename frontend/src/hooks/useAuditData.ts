@@ -36,7 +36,7 @@ export const useAuditData = () => {
     return artists.map(artist => {
       const missingFields: string[] = [];
       if (!artist.full_name) missingFields.push("Nome Completo");
-      if (!artist.stage_name) missingFields.push("Nome Artístico");
+      if (!artist.name) missingFields.push("Nome Artístico");
       if (!artist.birth_date) missingFields.push("Data de Nascimento");
       if (!artist.email) missingFields.push("E-mail");
       if (!artist.phone) missingFields.push("Telefone");

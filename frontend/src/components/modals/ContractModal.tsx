@@ -135,7 +135,7 @@ export const ContractModal: React.FC<ContractModalProps> = ({
             id: artist.id,
             name: artist.name,
             full_name: artist.full_name || undefined,
-            stage_name: artist.stage_name || undefined,
+            name: artist.name || undefined,
             // Note: cpf_cnpj, rg, full_address moved to artist_sensitive_data table (admin only)
             cpf_cnpj: undefined,
             rg: undefined,
