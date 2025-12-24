@@ -81,6 +81,7 @@ export function ArtistCard({
   const hasAnySocialMedia = true; // Sempre mostrar a seção de métricas
   const { data: spotifyMetrics, isLoading: isLoadingMetrics } = useArtistSpotifyMetrics(artist.id.toString());
   const fetchSpotifyMetrics = useFetchSpotifyMetrics();
+  const cachedTopTracks = useSpotifyTopTracks(artist.id.toString());
   const { data: socialMetrics, isLoading: isLoadingSocial } = useArtistSocialMetrics(artist.id.toString());
   const fetchSocialMetrics = useFetchSocialMetrics();
   const [isRefreshing, setIsRefreshing] = useState(false);
