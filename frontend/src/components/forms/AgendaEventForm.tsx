@@ -228,7 +228,7 @@ export const AgendaEventForm: React.FC<AgendaEventFormProps> = ({
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {form.watch('end_date') ? 
-                      format(form.watch('end_date')!, "dd/MM/yyyy", { locale: ptBR }) : 
+                      formatDateBR(form.watch('end_date')!) : 
                       "Selecionar data (opcional)"
                     }
                   </Button>
