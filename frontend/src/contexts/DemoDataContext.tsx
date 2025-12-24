@@ -12,7 +12,7 @@ export const demoArtists = [
   {
     id: '1',
     name: 'Marina Silva',
-    stage_name: 'Marina',
+    full_name: 'Marina Silva',
     genre: 'Pop',
     email: 'marina@email.com',
     phone: '(11) 99999-1111',
@@ -26,7 +26,7 @@ export const demoArtists = [
   {
     id: '2',
     name: 'Carlos Eduardo Santos',
-    stage_name: 'Cadu',
+    full_name: 'Carlos Eduardo Silva',
     genre: 'Hip Hop',
     email: 'cadu@email.com',
     phone: '(21) 98888-2222',
@@ -40,7 +40,7 @@ export const demoArtists = [
   {
     id: '3',
     name: 'Fernanda Costa',
-    stage_name: 'Fer Costa',
+    full_name: 'Fernanda Costa',
     genre: 'MPB',
     email: 'fer@email.com',
     phone: '(31) 97777-3333',
@@ -54,7 +54,7 @@ export const demoArtists = [
   {
     id: '4',
     name: 'André Oliveira',
-    stage_name: 'Dré',
+    full_name: 'André Santos',
     genre: 'Rock',
     email: 'dre@email.com',
     phone: '(41) 96666-4444',
@@ -68,7 +68,7 @@ export const demoArtists = [
   {
     id: '5',
     name: 'Julia Mendes',
-    stage_name: 'Julz',
+    full_name: 'Julia Mendes',
     genre: 'Eletrônico',
     email: 'julz@email.com',
     phone: '(51) 95555-5555',
