@@ -224,7 +224,7 @@ const Agenda = () => {
   const handleClear = () => { setSearchTerm(""); setFilters({}); };
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = !searchTerm || event.event_name.toLowerCase().includes(searchTerm.toLowerCase()) || (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = !searchTerm || (event.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilters = Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
       if (key === 'event_type') {
