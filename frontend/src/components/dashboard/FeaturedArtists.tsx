@@ -43,45 +43,40 @@ export function FeaturedArtists() {
   const { data: artists, isLoading } = useQuery({
     queryKey: ['featured-artists'],
     queryFn: async (): Promise<FeaturedArtist[]> => {
-      // First, get artists with active contracts
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { data: activeContracts, error: contractsError } = await supabase
-        .from('contracts')
-        .select('artist_id')
-        .or(`status.eq.ativo,status.eq.active`)
-        .gte('effective_to', today);
-
-      if (contractsError) throw contractsError;
-      
-      // Get unique artist IDs with active contracts
-      const artistIdsWithContract = [...new Set((activeContracts || []).map(c => c.artist_id).filter(Boolean))];
-      
-      if (artistIdsWithContract.length === 0) {
-        return [];
-      }
-
-      // Fetch only artists with active contracts
+      // Fetch all artists
       const { data: artistsData, error: artistsError } = await supabase
         .from('artists')
         .select('*')
-        .in('id', artistIdsWithContract);
+        .limit(50);
 
       if (artistsError) throw artistsError;
       if (!artistsData || artistsData.length === 0) return [];
+
+      const artistIds = artistsData.map(a => a.id);
+
+      // Check which artists have active contracts
+      const today = new Date().toISOString().split('T')[0];
+      const { data: activeContracts } = await supabase
+        .from('contracts')
+        .select('artist_id')
+        .in('artist_id', artistIds)
+        .or(`status.eq.ativo,status.eq.active,status.eq.assinado`)
+        .gte('effective_to', today);
+
+      const artistsWithActiveContract = new Set((activeContracts || []).map(c => c.artist_id));
 
       // Fetch spotify metrics for all artists
       const { data: spotifyMetrics } = await supabase
         .from('spotify_metrics')
         .select('*')
-        .in('artist_id', artistIdsWithContract)
+        .in('artist_id', artistIds)
         .order('created_at', { ascending: false });
 
       // Fetch financial transactions for revenue
       const { data: transactions } = await supabase
         .from('financial_transactions')
         .select('artist_id, amount, type')
-        .in('artist_id', artistIdsWithContract)
+        .in('artist_id', artistIds)
         .eq('type', 'receitas')
         .eq('status', 'pago');
 
@@ -97,6 +92,7 @@ export function FeaturedArtists() {
         const artistMetrics = metricsMap.get(artist.id) || [];
         const latestMetric = artistMetrics[0];
         const previousMetric = artistMetrics[1];
+        const hasActiveContract = artistsWithActiveContract.has(artist.id);
 
         // Use real data from spotify_metrics
         const currentStreams = latestMetric?.monthly_listeners || 0;
@@ -116,22 +112,25 @@ export function FeaturedArtists() {
         const artistTransactions = (transactions || []).filter(t => t.artist_id === artist.id);
         const estimatedRevenue = artistTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-        // Relevance score based on multiple factors
-        const relevanceScore = (currentStreams * 0.4) + (currentFollowers * 0.3) + (estimatedRevenue * 0.3);
+        // Relevance score - prioritize artists with active contracts
+        const contractBonus = hasActiveContract ? 1000000 : 0;
+        const relevanceScore = contractBonus + (currentStreams * 0.4) + (currentFollowers * 0.3) + (estimatedRevenue * 0.3);
 
         return {
           ...artist,
           relevanceScore,
+          hasActiveContract,
           metrics: {
             totalStreams: currentStreams,
             streamsVariation,
-            uniqueListeners: currentFollowers, // Use followers as listeners
+            uniqueListeners: currentFollowers,
             followersGrowth,
             estimatedRevenue
           }
         };
       });
 
+      // Sort by relevance and take top 4
       return artistsWithMetrics
         .sort((a, b) => b.relevanceScore - a.relevanceScore)
         .slice(0, 4);
