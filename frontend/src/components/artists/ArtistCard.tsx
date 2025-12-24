@@ -209,10 +209,14 @@ export function ArtistCard({
   const topTracksFromArtist = spotifyData?.top_tracks || [];
   const topTracksFromMetrics = (spotifyMetrics?.top_tracks as any[]) || [];
   
-  // Use data from artist.spotify_data first (most complete), then spotifyMetrics
-  const topTracks = topTracksFromArtist.length > 0 ? topTracksFromArtist : topTracksFromMetrics;
+  // Use cached top tracks first (most recent from Atualizar), then artist.spotify_data, then spotifyMetrics
+  const topTracks = cachedTopTracks.length > 0 
+    ? cachedTopTracks 
+    : topTracksFromArtist.length > 0 
+      ? topTracksFromArtist 
+      : topTracksFromMetrics;
   
-  // Get total streams - use from spotify_data, or calculate from top_tracks popularity
+  // Get total streams - calculate from top_tracks popularity
   const calculatedStreams = topTracks.slice(0, 5).reduce((sum: number, track: any) => {
     const popularity = track?.popularity || 0;
     // Estimativa: popularidade 100 = ~100M streams, escala logarítmica
