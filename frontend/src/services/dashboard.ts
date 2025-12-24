@@ -547,7 +547,9 @@ export class DashboardService {
       const { data, error } = await supabase
         .from('agenda_events')
         .select(`
-          id, title, start_date, start_time, end_time, location, status, event_type,
+          id, title, event_name, start_date, start_time, end_date, end_time, 
+          location, venue_name, venue_address, status, event_type, description,
+          expected_audience, ticket_price, observations,
           artists:artist_id (id, name, stage_name)
         `)
         .gte('start_date', todayStr)
