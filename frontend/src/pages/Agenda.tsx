@@ -115,10 +115,19 @@ const Agenda = () => {
 
   const handleSubmitEvent = async (data: any) => {
     try {
+      // Usa formatDateForDB para manter a data correta no fuso de Brasília
+      const startDateForDB = data.start_date instanceof Date 
+        ? formatDateForDB(data.start_date) 
+        : data.start_date;
+      const endDateForDB = data.end_date instanceof Date 
+        ? formatDateForDB(data.end_date) 
+        : data.end_date || null;
+        
       const eventData = {
         title: data.event_name,
-        start_date: data.start_date instanceof Date ? data.start_date.toISOString() : new Date(data.start_date).toISOString(),
-        end_date: data.end_date instanceof Date ? data.end_date.toISOString() : data.end_date ? new Date(data.end_date).toISOString() : null,
+        event_name: data.event_name,
+        start_date: startDateForDB,
+        end_date: endDateForDB,
         start_time: data.start_time || null,
         end_time: data.end_time || null,
         location: data.location || null,
