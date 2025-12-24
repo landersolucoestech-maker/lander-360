@@ -423,7 +423,7 @@ const Agenda = () => {
                                    <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />}
                                 </div>
                                 <div className="space-y-1 min-w-0">
-                                  <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{event.event_name}</h3>
+                                  <h3 className="font-medium text-foreground text-sm sm:text-base truncate">{event.title}</h3>
                                   <div className="flex flex-wrap items-center gap-1">
                                     <Badge variant="secondary" className="text-xs">{eventTypeLabels[event.event_type as keyof typeof eventTypeLabels]}</Badge>
                                     <Badge variant={event.status === "confirmado" ? "default" : event.status === "cancelado" ? "destructive" : "secondary"} className="text-xs">{statusLabels[event.status]}</Badge>
