@@ -89,7 +89,7 @@ const Agenda = () => {
 
   const events: AgendaEvent[] = agendaEvents.map((e: any) => ({
     id: e.id,
-    event_name: e.title,
+    title: e.title,
     start_date: e.start_date,
     start_time: e.start_time,
     end_date: e.end_date,
