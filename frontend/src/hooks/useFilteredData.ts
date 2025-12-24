@@ -54,7 +54,7 @@ export function useFilteredProjects() {
         .from('projects')
         .select(`
           *,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -83,7 +83,7 @@ export function useFilteredContracts() {
         .from('contracts')
         .select(`
           *,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -112,7 +112,7 @@ export function useFilteredReleases() {
         .from('releases')
         .select(`
           *,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -194,7 +194,7 @@ export function useFilteredAgendaEvents() {
         .from('agenda_events')
         .select(`
           *,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .order('start_date', { ascending: true });
 
@@ -223,7 +223,7 @@ export function useFilteredFinancialTransactions() {
         .from('financial_transactions')
         .select(`
           *,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .order('date', { ascending: false });
 
@@ -284,7 +284,7 @@ export function useFilteredMarketingCampaigns() {
         .from('marketing_campaigns')
         .select(`
           *,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .order('created_at', { ascending: false });
 
