@@ -83,7 +83,6 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
       // Check if input name matches any variation of existing participant's artist
       if (pMatchingArtist) {
         if (normalizeName(pMatchingArtist.name || '') === normalized ||
-            normalizeName(pMatchingArtist.'') === normalized ||
             normalizeName(pMatchingArtist.full_name || '') === normalized) {
           return true;
         }
@@ -92,7 +91,6 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
       // Check if existing participant name matches any variation of input's artist
       if (matchingArtist) {
         if (normalizeName(matchingArtist.name || '') === pNormalized ||
-            normalizeName(matchingArtist.'') === pNormalized ||
             normalizeName(matchingArtist.full_name || '') === pNormalized) {
           return true;
         }
