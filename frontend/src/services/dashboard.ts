@@ -550,7 +550,7 @@ export class DashboardService {
           id, title, start_date, start_time, end_date, end_time, 
           location, venue_name, venue_address, status, event_type, description,
           expected_audience, ticket_price, observations,
-          artists:artist_id (id, name, stage_name)
+          artists:artist_id (id, name, full_name)
         `)
         .gte('start_date', todayStr)
         .lt('start_date', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
