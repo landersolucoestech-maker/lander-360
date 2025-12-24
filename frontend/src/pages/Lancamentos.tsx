@@ -294,7 +294,7 @@ const Lancamentos = () => {
     const artist = artists.find((a: any) => a.id === release.artist_id);
     return {
       ...release,
-      artist: artist?.stage_name || artist?.name || 'Artista Desconhecido',
+      artist: artist?.name || artist?.name || 'Artista Desconhecido',
       cover: release.cover_url,
       releaseDate: release.release_date || new Date().toISOString(),
       approvalStatus: mapDbStatusToApprovalStatus(release.status),
@@ -431,7 +431,7 @@ const Lancamentos = () => {
   };
   const handleExport = () => {
     const artistsMap = artists.reduce((acc: Record<string, string>, artist: any) => {
-      acc[artist.id] = artist.stage_name || artist.name;
+      acc[artist.id] = artist.name;
       return acc;
     }, {});
 

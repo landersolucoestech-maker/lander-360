@@ -198,7 +198,7 @@ ${suggestion.kpis.map(k => `- ${formatValue(k)}`).join('\n')}
                 </SelectTrigger>
                 <SelectContent>
                   {artists?.map(a => (
-                    <SelectItem key={a.id} value={a.id}>{a.stage_name || a.name}</SelectItem>
+                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

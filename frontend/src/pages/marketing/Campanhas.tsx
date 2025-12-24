@@ -385,8 +385,8 @@ const MarketingCampanhas = () => {
                               )}
                             </div>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              {campaign.artists?.stage_name || campaign.artists?.name ? (
-                                <span>{campaign.artists?.stage_name || campaign.artists?.name}</span>
+                              {campaign.artists?.name || campaign.artists?.name ? (
+                                <span>{campaign.artists?.name || campaign.artists?.name}</span>
                               ) : null}
                               {campaign.start_date && campaign.end_date && (
                                 <span className="flex items-center">
@@ -465,7 +465,7 @@ const MarketingCampanhas = () => {
                             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                             <SelectContent>
                               {artists.map(a => (
-                                <SelectItem key={a.id} value={a.id}>{a.stage_name || a.name}</SelectItem>
+                                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -714,7 +714,7 @@ const MarketingCampanhas = () => {
                           <div className="absolute bottom-4 left-4 right-4">
                             <div className="bg-background/80 backdrop-blur-sm rounded-lg p-3">
                               <p className="font-semibold">{selectedRelease?.title || "Selecione um lançamento"}</p>
-                              <p className="text-sm text-muted-foreground">{selectedArtist?.stage_name || selectedArtist?.name || "Artista"}</p>
+                              <p className="text-sm text-muted-foreground">{selectedArtist?.name || selectedArtist?.name || "Artista"}</p>
                               {selectedRelease?.genre && (
                                 <Badge variant="secondary" className="mt-2">{selectedRelease.genre}</Badge>
                               )}

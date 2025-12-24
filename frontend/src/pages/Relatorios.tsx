@@ -323,7 +323,7 @@ const Relatorios = () => {
         return musicData.map((m: any) => ({
           id: m.id?.slice(0, 8) || "N/A",
           titulo: m.title || "N/A",
-          artista: m.artists?.stage_name || m.artists?.name || "N/A",
+          artista: m.artists?.name || m.artists?.name || "N/A",
           genero: m.genre || "N/A",
           isrc: m.isrc || "N/A",
           iswc: m.iswc || "N/A",
@@ -335,7 +335,7 @@ const Relatorios = () => {
         return phonogramsData.map((p: any) => ({
           id: p.id?.slice(0, 8) || "N/A",
           titulo: p.title || "N/A",
-          artista: p.artists?.stage_name || p.artists?.name || "N/A",
+          artista: p.artists?.name || p.artists?.name || "N/A",
           isrc: p.isrc || "N/A",
           genero: p.genre || "N/A",
           label: p.label || "N/A",
@@ -346,7 +346,7 @@ const Relatorios = () => {
         return releasesData.map((r: any) => ({
           id: r.id?.slice(0, 8) || "N/A",
           titulo: r.title || "N/A",
-          artista: r.artists?.stage_name || r.artists?.name || "N/A",
+          artista: r.artists?.name || r.artists?.name || "N/A",
           tipo: r.release_type || r.type || "N/A",
           data_lancamento: r.release_date ? formatDateBR(r.release_date) : "N/A",
           status: translateStatus(r.status) || "N/A",
@@ -358,7 +358,7 @@ const Relatorios = () => {
         return contractsData.map((c: any) => ({
           id: c.id?.slice(0, 8) || "N/A",
           titulo: c.title || "N/A",
-          artista: c.artists?.stage_name || c.artists?.name || "N/A",
+          artista: c.artists?.name || c.artists?.name || "N/A",
           tipo_contrato: c.contract_type || "N/A",
           tipo_servico: c.service_type || "N/A",
           status: translateStatus(c.status) || "N/A",

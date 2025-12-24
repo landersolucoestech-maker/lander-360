@@ -122,7 +122,7 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
                   <User className="h-4 w-4" />
                   <span className="text-sm font-medium">Artista</span>
                 </div>
-                <div className="font-medium">{artist.stage_name || artist.name}</div>
+                <div className="font-medium">{artist.name}</div>
                 {artist.email && <div className="text-sm text-muted-foreground">{artist.email}</div>}
               </div>
             )}

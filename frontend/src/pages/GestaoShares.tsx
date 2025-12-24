@@ -197,7 +197,7 @@ const GestaoShares = () => {
   const getArtistName = (artistId: string | null) => {
     if (!artistId) return "N/A";
     const artist = artists.find(a => a.id === artistId);
-    return artist?.stage_name || artist?.name || "N/A";
+    return artist?.name || artist?.name || "N/A";
   };
 
   const translateReleaseType = (type: string | null) => {
@@ -560,7 +560,7 @@ const GestaoShares = () => {
                         <SelectItem value="all">Todos os artistas</SelectItem>
                         {artists.map(artist => (
                           <SelectItem key={artist.id} value={artist.id}>
-                            {artist.stage_name || artist.name}
+                            {artist.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

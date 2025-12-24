@@ -201,7 +201,7 @@ const Artistas = () => {
       
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.stage_name || artist.name;
+        const stageName = artist.name;
         
         let isParticipant = false;
         songs.forEach((song: any) => {
@@ -243,7 +243,7 @@ const Artistas = () => {
       
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.stage_name || artist.name;
+        const stageName = artist.name;
         
         let isParticipant = false;
         if (Array.isArray(tracks)) {
@@ -286,7 +286,7 @@ const Artistas = () => {
       
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.stage_name || artist.name;
+        const stageName = artist.name;
         
         if (artistMatchesParticipant(artistName, stageName, participants) && music.artist_id !== artist.id) {
           if (!stats[artist.id]) {
@@ -318,7 +318,7 @@ const Artistas = () => {
       
       artistsList.forEach((artist: any) => {
         const artistName = artist.full_name || artist.name;
-        const stageName = artist.stage_name || artist.name;
+        const stageName = artist.name;
         
         if (artistMatchesParticipant(artistName, stageName, participants) && phonogram.artist_id !== artist.id) {
           if (!stats[artist.id]) {

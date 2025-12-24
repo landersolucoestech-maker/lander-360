@@ -139,7 +139,7 @@ export function ArtistProfileModal({
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Nome Artístico:</span>
-                <p>{artist.stage_name || artist.name || 'Não informado'}</p>
+                <p>{artist.name || 'Não informado'}</p>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">CPF/CNPJ:</span>

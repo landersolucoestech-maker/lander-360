@@ -114,11 +114,11 @@ export const useIntelligentAnalysis = () => {
             type: 'inconsistency',
             severity: 'warning',
             title: 'Artista Sem Contrato Ativo',
-            description: `${artist.stage_name || artist.name} tem lançamentos mas não possui contrato ativo.`,
+            description: `${artist.name} tem lançamentos mas não possui contrato ativo.`,
             module: 'Artistas',
             actionable: true,
             suggestedAction: 'Regularizar situação contratual',
-            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.stage_name || artist.name }],
+            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.name }],
             createdAt: now
           });
         }
@@ -130,11 +130,11 @@ export const useIntelligentAnalysis = () => {
             type: 'opportunity',
             severity: 'info',
             title: 'Oportunidade de Definir Metas',
-            description: `${artist.stage_name || artist.name} possui contrato mas não tem metas definidas.`,
+            description: `${artist.name} possui contrato mas não tem metas definidas.`,
             module: 'Artistas',
             actionable: true,
             suggestedAction: 'Definir OKRs e metas de crescimento',
-            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.stage_name || artist.name }],
+            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.name }],
             createdAt: now
           });
         }
@@ -146,11 +146,11 @@ export const useIntelligentAnalysis = () => {
             type: 'inconsistency',
             severity: 'info',
             title: 'Perfil Incompleto',
-            description: `${artist.stage_name || artist.name} não possui redes sociais cadastradas.`,
+            description: `${artist.name} não possui redes sociais cadastradas.`,
             module: 'Artistas',
             actionable: true,
             suggestedAction: 'Completar perfil com links de redes sociais',
-            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.stage_name || artist.name }],
+            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.name }],
             createdAt: now
           });
         }
@@ -337,11 +337,11 @@ export const useIntelligentAnalysis = () => {
             type: 'opportunity',
             severity: 'info',
             title: 'Oportunidade de Novo Projeto',
-            description: `${artist.stage_name || artist.name} tem lançamentos mas nenhum projeto ativo.`,
+            description: `${artist.name} tem lançamentos mas nenhum projeto ativo.`,
             module: 'Projetos',
             actionable: true,
             suggestedAction: 'Propor produção de novo projeto',
-            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.stage_name || artist.name }],
+            relatedEntities: [{ type: 'artist', id: artist.id, name: artist.name }],
             createdAt: now
           });
         }

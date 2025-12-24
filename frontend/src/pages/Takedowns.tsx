@@ -299,7 +299,7 @@ const Takedowns = () => {
                               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                               <SelectContent>
                                 {artists.map(a => (
-                                  <SelectItem key={a.id} value={a.id}>{a.stage_name || a.name}</SelectItem>
+                                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -384,7 +384,7 @@ const Takedowns = () => {
                             <TableCell className="font-medium">
                               <div>
                                 <p>{takedown.title}</p>
-                                <p className="text-sm text-muted-foreground">{takedown.artists?.stage_name || takedown.artists?.name || '-'}</p>
+                                <p className="text-sm text-muted-foreground">{takedown.artists?.name || takedown.artists?.name || '-'}</p>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -478,7 +478,7 @@ const Takedowns = () => {
                             <div>
                               <p className="font-medium">{takedown.title}</p>
                               <p className="text-sm text-muted-foreground">
-                                {takedown.artists?.stage_name || takedown.artists?.name} • {reasonLabels[takedown.reason]}
+                                {takedown.artists?.name || takedown.artists?.name} • {reasonLabels[takedown.reason]}
                               </p>
                             </div>
                           </div>

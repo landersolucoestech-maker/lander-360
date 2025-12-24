@@ -207,7 +207,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
   const releaseArtist = release?.artist_id 
     ? artists.find(a => a.id === release.artist_id) 
     : null;
-  const artistDisplayName = releaseArtist?.stage_name || releaseArtist?.name || '';
+  const artistDisplayName = releaseArtist?.name || releaseArtist?.name || '';
 
   // Map database status to form status
   const mapDbStatusToFormStatus = (dbStatus: string | undefined): 'em_analise' | 'aprovado' | 'rejeitado' | 'pausado' => {
@@ -322,7 +322,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
       // Get artist from project's artist_id - use stage_name first, then name
       const projectArtist = artists.find(a => a.id === selectedProject.artist_id);
       if (projectArtist) {
-        const artistDisplayName = projectArtist.stage_name || projectArtist.name || '';
+        const artistDisplayName = projectArtist.name || '';
         form.setValue('artist_name', artistDisplayName);
         
         // Auto-select artist's distributors
@@ -368,7 +368,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         }
         
         // Get artist display name for tracks
-        const trackArtistName = projectArtist?.stage_name || projectArtist?.name || 
+        const trackArtistName = projectArtist?.name || projectArtist?.name || 
           firstSong.performers?.[0]?.name || firstSong.composers?.[0]?.name || '';
         
         // Create tracks from songs - find ISRC from phonogram

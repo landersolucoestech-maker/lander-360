@@ -142,7 +142,7 @@ export const CreativeAIHistory = () => {
                 <SelectItem value="all">Todos</SelectItem>
                 {artists?.filter(artist => artist.id).map(artist => (
                   <SelectItem key={artist.id} value={artist.id}>
-                    {artist.stage_name || artist.name}
+                    {artist.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -226,7 +226,7 @@ export const CreativeAIHistory = () => {
                       {idea.title}
                     </TableCell>
                     <TableCell>
-                      {idea.artists?.stage_name || idea.artists?.name || '—'}
+                      {idea.artists?.name || idea.artists?.name || '—'}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{idea.suggested_channel || '—'}</Badge>
@@ -340,7 +340,7 @@ export const CreativeAIHistory = () => {
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                 <div>
                   <p className="text-xs text-muted-foreground">Artista</p>
-                  <p className="text-sm">{selectedIdea.artists?.stage_name || selectedIdea.artists?.name || '—'}</p>
+                  <p className="text-sm">{selectedIdea.artists?.name || selectedIdea.artists?.name || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Objetivo</p>

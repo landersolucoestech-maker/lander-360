@@ -80,7 +80,7 @@ export function ArtistAutocomplete({
   // Nome para exibição no dropdown: Nome Real (Nome Artístico)
   const getDisplayName = (artist: any) => {
     const realName = artist.full_name || artist.legal_name;
-    const artisticName = artist.stage_name || artist.name;
+    const artisticName = artist.name;
     
     if (realName && realName !== artisticName) {
       return `${realName} (${artisticName})`;
@@ -109,8 +109,8 @@ export function ArtistAutocomplete({
               onClick={() => handleSelectArtist(getRealName(artist))}
             >
               <div className="font-medium">{getRealName(artist)}</div>
-              {(artist.stage_name || artist.name) && getRealName(artist) !== (artist.stage_name || artist.name) && (
-                <div className="text-xs text-muted-foreground">Nome artístico: {artist.stage_name || artist.name}</div>
+              {(artist.name) && getRealName(artist) !== (artist.name) && (
+                <div className="text-xs text-muted-foreground">Nome artístico: {artist.name}</div>
               )}
               {artist.genre && (
                 <div className="text-xs text-muted-foreground">{artist.genre}</div>

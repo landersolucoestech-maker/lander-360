@@ -142,7 +142,7 @@ export const CreativeAIChatbot = () => {
     }
 
     const artistName = selectedArtist 
-      ? artists?.find(a => a.id === selectedArtist)?.stage_name || artists?.find(a => a.id === selectedArtist)?.name || 'Geral'
+      ? artists?.find(a => a.id === selectedArtist)?.name || artists?.find(a => a.id === selectedArtist)?.name || 'Geral'
       : 'Geral';
     
     try {
@@ -269,7 +269,7 @@ export const CreativeAIChatbot = () => {
                 <SelectItem value="all">Nenhum (geral)</SelectItem>
                 {artists?.filter((artist) => artist.id).map((artist) => (
                   <SelectItem key={artist.id} value={artist.id}>
-                    {artist.stage_name || artist.name}
+                    {artist.name}
                   </SelectItem>
                 ))}
               </SelectContent>

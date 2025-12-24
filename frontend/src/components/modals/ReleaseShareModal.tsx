@@ -41,7 +41,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
   const getArtistName = (artistId: string | null) => {
     if (!artistId) return "N/A";
     const artist = artists.find(a => a.id === artistId);
-    return artist?.stage_name || artist?.name || "N/A";
+    return artist?.name || artist?.name || "N/A";
   };
 
   // Normalize name for comparison (lowercase, trim, remove accents)
@@ -121,7 +121,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
         // Add main artist (prefer stage name for display)
         const mainArtist = artists.find(a => a.id === release.artist_id);
         if (mainArtist) {
-          const displayName = mainArtist.stage_name || mainArtist.name || "N/A";
+          const displayName = mainArtist.name || "N/A";
           if (displayName !== "N/A") {
             participantsList.push({ name: displayName, role: "Artista Principal", percentage: 0, shareStatus: 'pending' });
           }
@@ -136,7 +136,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
               if (name && !isNameDuplicate(name, participantsList)) {
                 // Use stage name if artist is found
                 const artist = findMatchingArtist(name);
-                const displayName = artist?.stage_name || name;
+                const displayName = artist?.name || name;
                 participantsList.push({ name: displayName, role: "Compositor", percentage: 0, shareStatus: 'pending' });
               }
             });
@@ -147,7 +147,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
               const name = typeof p === 'string' ? p.trim() : (p as any).name?.trim();
               if (name && !isNameDuplicate(name, participantsList)) {
                 const artist = findMatchingArtist(name);
-                const displayName = artist?.stage_name || name;
+                const displayName = artist?.name || name;
                 participantsList.push({ name: displayName, role: "Intérprete", percentage: 0, shareStatus: 'pending' });
               }
             });
@@ -158,7 +158,7 @@ export function ReleaseShareModal({ open, onOpenChange, release, onSuccess }: Re
               const name = typeof p === 'string' ? p.trim() : (p as any).name?.trim();
               if (name && !isNameDuplicate(name, participantsList)) {
                 const artist = findMatchingArtist(name);
-                const displayName = artist?.stage_name || name;
+                const displayName = artist?.name || name;
                 participantsList.push({ name: displayName, role: "Produtor", percentage: 0, shareStatus: 'pending' });
               }
             });

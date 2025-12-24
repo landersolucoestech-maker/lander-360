@@ -650,7 +650,7 @@ export const getArtistsReportData = async () => {
 
   return artists?.map(artist => ({
     name: artist.legal_name || artist.name,
-    stage_name: artist.stage_name || artist.name,
+    stage_name: artist.name,
     email: artist.email || 'contato@exemplo.com',
     phone: artist.phone || '(11) 99999-9999',
     genre: artist.genre || 'Pop',

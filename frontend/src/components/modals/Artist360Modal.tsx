@@ -181,13 +181,13 @@ export function Artist360Modal({ open, onOpenChange, artist }: Artist360ModalPro
             <Avatar className="h-16 w-16">
               <AvatarImage src={artist.image_url || artist.avatar} />
               <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                {(artist.stage_name || artist.name || "A").substring(0, 2).toUpperCase()}
+                {(artist.name || "A").substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <DialogTitle className="text-2xl">{artist.stage_name || artist.name}</DialogTitle>
+              <DialogTitle className="text-2xl">{artist.name}</DialogTitle>
               <DialogDescription className="sr-only">
-                Visão completa 360º do artista {artist.stage_name || artist.name}
+                Visão completa 360º do artista {artist.name}
               </DialogDescription>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline">{artist.genre || "Sem gênero"}</Badge>
@@ -601,7 +601,7 @@ export function Artist360Modal({ open, onOpenChange, artist }: Artist360ModalPro
             </TabsContent>
 
             <TabsContent value="goals" className="mt-4">
-              <ArtistGoalsSection artistId={artist.id} artistName={artist.stage_name || artist.name} />
+              <ArtistGoalsSection artistId={artist.id} artistName={artist.name} />
             </TabsContent>
             </>
             )}

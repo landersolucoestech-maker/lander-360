@@ -76,7 +76,7 @@ const sendEventNotification = async (event: any, artistId: string) => {
 
     const eventDate = format(new Date(event.start_date), "dd/MM/yyyy", { locale: ptBR });
     const eventTime = event.start_time || 'Horário a definir';
-    const artistName = artist.stage_name || artist.name;
+    const artistName = artist.name;
 
     const notificationPromises: Promise<any>[] = [];
 

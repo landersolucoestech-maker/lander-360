@@ -112,7 +112,7 @@ const LanderZap = () => {
 
       const artists: Contact[] = (artistsRes.data || []).map(a => ({
         id: a.id,
-        name: a.stage_name || a.name,
+        name: a.name,
         email: a.email || undefined,
         phone: a.phone || undefined,
         type: 'artist' as const,

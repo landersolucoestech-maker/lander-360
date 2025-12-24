@@ -277,7 +277,7 @@ const Licenciamento = () => {
                               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                               <SelectContent>
                                 {artists.map(a => (
-                                  <SelectItem key={a.id} value={a.id}>{a.stage_name || a.name}</SelectItem>
+                                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -435,7 +435,7 @@ const Licenciamento = () => {
                               <TableCell className="font-medium">{license.title}</TableCell>
                               <TableCell>
                                 <div className="text-sm">
-                                  <p>{license.artists?.stage_name || license.artists?.name || '-'}</p>
+                                  <p>{license.artists?.name || license.artists?.name || '-'}</p>
                                   <p className="text-muted-foreground">{license.music_registry?.title || '-'}</p>
                                 </div>
                               </TableCell>
@@ -529,7 +529,7 @@ const Licenciamento = () => {
                           <div>
                             <p className="font-medium">{license.title}</p>
                             <p className="text-sm text-muted-foreground">
-                              {license.artists?.stage_name || license.artists?.name} - {license.music_registry?.title}
+                              {license.artists?.name || license.artists?.name} - {license.music_registry?.title}
                             </p>
                           </div>
                           <div className="flex items-center gap-4">

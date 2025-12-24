@@ -55,8 +55,8 @@ function ArtistDropdown({ value, onChange }: { value?: string; onChange: (value:
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">
           {artists.map((artist) => (
-            <SelectItem key={artist.id} value={artist.stage_name || artist.name}>
-              {artist.stage_name || artist.name}
+            <SelectItem key={artist.id} value={artist.name}>
+              {artist.name}
             </SelectItem>
           ))}
         </SelectContent>

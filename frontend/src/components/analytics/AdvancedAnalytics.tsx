@@ -211,7 +211,7 @@ export function AdvancedAnalytics() {
             <SelectItem value="all">Todos os Artistas</SelectItem>
             {artists.map((artist: any) => (
               <SelectItem key={artist.id} value={artist.id}>
-                {artist.stage_name || artist.name}
+                {artist.name}
               </SelectItem>
             ))}
           </SelectContent>

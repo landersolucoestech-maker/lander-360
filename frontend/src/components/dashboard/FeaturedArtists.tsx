@@ -211,7 +211,7 @@ export function FeaturedArtists() {
                   {artist.image_url ? (
                     <img
                       src={artist.image_url}
-                      alt={artist.stage_name || artist.name}
+                      alt={artist.name}
                       className="absolute inset-0 w-full h-full object-cover object-center"
                     />
                   ) : (
@@ -253,7 +253,7 @@ export function FeaturedArtists() {
                     {/* Name and Genre */}
                     <div>
                       <h3 className="text-xl font-bold text-white uppercase tracking-wide truncate">
-                        {artist.stage_name || artist.name}
+                        {artist.name}
                       </h3>
                       <div className="flex gap-2 mt-2">
                         {artist.genre && (

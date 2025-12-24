@@ -119,7 +119,7 @@ export const FinancialTransactionModal: React.FC<FinancialTransactionModalProps>
           events={showEvents.map(event => ({
             id: event.id,
             title: event.title,
-            artist_name: (event as any).artists?.stage_name || (event as any).artists?.name || null,
+            artist_name: (event as any).artists?.name || (event as any).artists?.name || null,
             artist_id: event.artist_id || null
           }))}
         />

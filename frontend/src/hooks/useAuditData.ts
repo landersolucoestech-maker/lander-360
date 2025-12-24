@@ -54,7 +54,7 @@ export const useAuditData = () => {
         if (!artist.manager_phone) missingFields.push("Telefone do Empresário/Responsável");
         if (!artist.manager_email) missingFields.push("E-mail do Empresário/Responsável");
       }
-      return { id: artist.id, name: artist.stage_name || artist.name, missingFields, data: artist };
+      return { id: artist.id, name: artist.name, missingFields, data: artist };
     });
   }, [artists]);
 

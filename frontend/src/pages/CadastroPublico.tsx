@@ -123,7 +123,7 @@ function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, 
           {selectedArtists.map((artist) => (
             <Badge key={artist.id} variant="secondary" className="flex items-center gap-1 py-1 px-3">
               <User className="h-3 w-3" />
-              <span>{artist.stage_name || artist.name}</span>
+              <span>{artist.name}</span>
               <button
                 type="button"
                 onClick={() => onRemove(artist.id)}
@@ -2030,7 +2030,7 @@ function PhonogramStep({
                   <div>
                     <p className="font-medium">{phonogram.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {phonogram.version} • Obra: {phonogram.work_title} • {phonogram.artists.map(a => a.stage_name || a.name).join(', ')}
+                      {phonogram.version} • Obra: {phonogram.work_title} • {phonogram.artists.map(a => a.name).join(', ')}
                     </p>
                   </div>
                   <Button 

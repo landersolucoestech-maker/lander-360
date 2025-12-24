@@ -238,7 +238,7 @@ export const SpotifyPitchGenerator = () => {
   };
 
   const buildPitchPrompt = () => {
-    const artistName = selectedArtist?.stage_name || selectedArtist?.name || '';
+    const artistName = selectedArtist?.name || selectedArtist?.name || '';
     const releaseName = selectedRelease?.title || '';
     const platformName = selectedPlatform?.label || 'streaming';
     
@@ -488,7 +488,7 @@ Gere APENAS o texto do pitching, sem explicações adicionais, cabeçalhos ou fo
                   <SelectContent>
                     {artists?.map((artist) => (
                       <SelectItem key={artist.id} value={artist.id}>
-                        {artist.stage_name || artist.name}
+                        {artist.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -95,7 +95,7 @@ const PortalArtista = () => {
                   Portal do Artista
                 </h1>
                 <p className="text-muted-foreground">
-                  Bem-vindo, {myArtist.stage_name || myArtist.name}
+                  Bem-vindo, {myArtist.name}
                 </p>
               </div>
               {myArtist.image_url && (

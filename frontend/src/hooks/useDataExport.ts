@@ -649,7 +649,7 @@ const transformDataForExport = (data: any[], entityType: EntityType, artistsMap?
     // Format contracts data
     if (entityType === 'contracts') {
       // Add artist name from related data or artistsMap
-      if (item.artists?.name || item.artists?.stage_name) {
+      if (item.artists?.name || item.artists?.name) {
         item.artist_name = item.artists.stage_name || item.artists.name;
       } else if (artistsMap && item.artist_id && artistsMap[item.artist_id]) {
         item.artist_name = artistsMap[item.artist_id];

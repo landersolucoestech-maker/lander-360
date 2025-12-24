@@ -158,7 +158,7 @@ export const ContentSuggestions = () => {
                 <SelectContent>
                   {artists?.map(artist => (
                     <SelectItem key={artist.id} value={artist.id}>
-                      {artist.stage_name || artist.name}
+                      {artist.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

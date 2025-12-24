@@ -810,7 +810,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
           if (matchedArtist) {
             const contractId = await AutoContractService.createEditionContract({
               artist_id: matchedArtist.id,
-              artist_name: matchedArtist.stage_name || matchedArtist.name,
+              artist_name: matchedArtist.name,
               music_title: data.title,
               participant_percentage: landerPercentage
             });
@@ -818,7 +818,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
             if (contractId) {
               toast({
                 title: "Contrato de Edição Criado",
-                description: `Contrato automático criado para ${matchedArtist.stage_name || matchedArtist.name} com ${landerPercentage}% de participação.`,
+                description: `Contrato automático criado para ${matchedArtist.name} com ${landerPercentage}% de participação.`,
               });
             }
           }
@@ -995,7 +995,7 @@ export function MusicRegistrationForm({ registration, onSuccess, onCancel }: Mus
                       <CommandGroup heading="Projetos Concluídos">
                         {completedProjects.map((project) => {
                           const artistData = artists.find(a => a.id === project.artist_id);
-                          const artistName = artistData?.stage_name || artistData?.name || '';
+                          const artistName = artistData?.name || artistData?.name || '';
                           return (
                             <CommandItem
                               key={project.id}

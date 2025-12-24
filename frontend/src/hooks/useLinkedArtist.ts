@@ -84,7 +84,7 @@ export function useArtistFilter(): ArtistFilterContext {
   return {
     isArtistUser,
     artistId: isArtistUser ? (linkedArtist?.id || null) : null,
-    artistName: linkedArtist?.stage_name || linkedArtist?.name || null,
+    artistName: linkedArtist?.name || linkedArtist?.name || null,
     isLoading: !isFullyLoaded || (isArtistUser && isLoadingArtist),
     shouldFilter: isArtistUser && !!linkedArtist?.id,
   };

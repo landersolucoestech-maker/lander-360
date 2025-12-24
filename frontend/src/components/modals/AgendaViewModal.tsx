@@ -90,7 +90,7 @@ export function AgendaViewModal({ open, onOpenChange, event }: AgendaViewModalPr
                     <Music className="h-4 w-4" /> Artista
                   </label>
                   <p className="font-medium">
-                    {event.artists?.stage_name || event.artists?.name || event.artist_name}
+                    {event.artists?.name || event.artists?.name || event.artist_name}
                   </p>
                 </div>
               )}

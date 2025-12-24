@@ -230,7 +230,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
     // Title
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Análise de Perfil - ${selectedArtist.stage_name || selectedArtist.name}`, margin, y);
+    doc.text(`Análise de Perfil - ${selectedArtist.name}`, margin, y);
     y += 12;
 
     doc.setFontSize(10);
@@ -279,7 +279,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
     addText('POTENCIAL DE CRESCIMENTO', 12, true);
     addText(analysis.growthPotential, 10);
 
-    const artistName = (selectedArtist.stage_name || selectedArtist.name).replace(/[^a-zA-Z0-9]/g, '_');
+    const artistName = (selectedArtist.name).replace(/[^a-zA-Z0-9]/g, '_');
     doc.save(`Analise_Perfil_${artistName}.pdf`);
 
     toast({
@@ -311,7 +311,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
               <SelectContent>
                 {artists.map((artist) => (
                   <SelectItem key={artist.id} value={artist.id}>
-                    {artist.stage_name || artist.name}
+                    {artist.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -334,7 +334,7 @@ Retorne APENAS o JSON, sem texto adicional.`;
                     </div>
                   )}
                   <div>
-                    <p className="font-medium">{selectedArtist.stage_name || selectedArtist.name}</p>
+                    <p className="font-medium">{selectedArtist.name}</p>
                     <p className="text-sm text-muted-foreground">{selectedArtist.genre || 'Gênero não informado'}</p>
                   </div>
                 </div>
