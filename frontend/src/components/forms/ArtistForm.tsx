@@ -175,7 +175,7 @@ export function ArtistForm({
       pix_key: '', // Loaded from artist_sensitive_data table (admin only)
       account_holder: '', // Loaded from artist_sensitive_data table (admin only)
       spotify_profile: artist?.spotify_url || '',
-      instagram: artist?.instagram || '',
+      instagram: artist?.instagram_url || artist?.instagram || '',
       youtube: artist?.youtube_url || '',
       tiktok: artist?.tiktok || '',
       soundcloud: artist?.soundcloud || '',
