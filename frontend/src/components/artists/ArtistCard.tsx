@@ -202,15 +202,10 @@ export function ArtistCard({
     return num.toString();
   };
 
-  // Get top tracks from cache, artist.spotifyData, or spotifyMetrics
-  const spotifyData = (artist as any).spotifyData || {};
-  const topTracks = cachedTopTracks.length > 0 
-    ? cachedTopTracks 
-    : (spotifyData?.top_tracks || (spotifyMetrics?.top_tracks as any[]) || []);
-  
   // Calculate total streams from top tracks (using popularity as estimate)
   // A API do Spotify não fornece streams diretamente, então usamos a popularidade como indicador
-  const totalStreams = topTracks.slice(0, 5).reduce((sum: number, track: any) => {
+  const topTracksFromMetrics = (spotifyMetrics?.top_tracks as any[]) || [];
+  const totalStreams = topTracksFromMetrics.slice(0, 5).reduce((sum: number, track: any) => {
     const popularity = track?.popularity || 0;
     // Estimativa: popularidade 100 = ~100M streams, escala logarítmica
     return sum + Math.round(popularity * popularity * 100);
