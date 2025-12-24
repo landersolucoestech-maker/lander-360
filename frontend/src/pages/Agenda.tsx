@@ -463,7 +463,7 @@ const Agenda = () => {
 
       <AgendaEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleSubmitEvent} event={selectedEvent} />
       <AgendaViewModal open={isViewModalOpen} onOpenChange={setIsViewModalOpen} event={eventToView} />
-      <DeleteConfirmationModal open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen} onConfirm={confirmDelete} title="Excluir Evento" description={`Tem certeza que deseja excluir o evento "${eventToDelete?.event_name}"? Esta ação não pode ser desfeita.`} />
+      <DeleteConfirmationModal open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen} onConfirm={confirmDelete} title="Excluir Evento" description={`Tem certeza que deseja excluir o evento "${eventToDelete?.title}"? Esta ação não pode ser desfeita.`} />
       <DeleteConfirmationModal open={isBulkDeleteModalOpen} onOpenChange={setIsBulkDeleteModalOpen} onConfirm={confirmBulkDelete} title="Excluir Eventos" description={`Tem certeza que deseja excluir ${selectedItems.length} eventos? Esta ação não pode ser desfeita.`} isLoading={isDeletingBulk} />
     </SidebarProvider>
   );
