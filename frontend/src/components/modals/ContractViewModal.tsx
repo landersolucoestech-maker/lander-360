@@ -185,13 +185,9 @@ export function ContractViewModal({ isOpen, onClose, contract }: ContractViewMod
                   <span className="text-sm font-medium">Período de Vigência</span>
                 </div>
                 <div className="font-medium">
-                  {(contractData.start_date || contract.effective_from) 
-                    ? format(new Date(contractData.start_date || contract.effective_from), "dd/MM/yyyy", { locale: ptBR }) 
-                    : "N/A"} 
+                  {formatDateBR(contractData.start_date || contract.effective_from)} 
                   {" até "} 
-                  {(contractData.end_date || contract.effective_to) 
-                    ? format(new Date(contractData.end_date || contract.effective_to), "dd/MM/yyyy", { locale: ptBR }) 
-                    : "N/A"}
+                  {formatDateBR(contractData.end_date || contract.effective_to)}
                 </div>
               </div>
             )}
