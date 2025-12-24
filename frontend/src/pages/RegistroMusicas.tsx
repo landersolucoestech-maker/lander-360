@@ -544,7 +544,7 @@ const RegistroMusicas = () => {
   // Export/Import handlers - Phonograms
   const handleExportPhonograms = () => {
     const artistsMap = artists.reduce((acc, artist) => {
-      acc[artist.id] = artist.stage_name || artist.name;
+      acc[artist.id] = artist.name || '';
       return acc;
     }, {} as Record<string, string>);
     
