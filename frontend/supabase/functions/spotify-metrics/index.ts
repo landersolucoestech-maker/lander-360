@@ -152,14 +152,13 @@ serve(async (req) => {
     let dbOperation = 'none';
     let dbError = null;
     
-    // 1. Salvar dados básicos na tabela spotify_metrics (sem top_tracks que não existe)
+    // 1. Salvar dados básicos na tabela spotify_metrics (sem colunas que não existem)
     const metricsData = {
       artist_id: artistId,
       spotify_artist_id: spotifyId,
       followers: result.followers,
       popularity: result.popularity,
       monthly_listeners: result.monthly_listeners,
-      total_streams: totalStreams,
       fetched_at: result.fetched_at,
     };
     
