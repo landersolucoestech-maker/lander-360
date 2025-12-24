@@ -203,17 +203,24 @@ export function ArtistCard({
     return num.toString();
   };
 
-  // Get total streams - use total_streams from metrics, or calculate from top_tracks
+  // Get spotify_data from artist (contains top_tracks and total_streams)
+  const spotifyData = (artist as any).spotify_data || {};
+  const topTracksFromArtist = spotifyData?.top_tracks || [];
   const topTracksFromMetrics = (spotifyMetrics?.top_tracks as any[]) || [];
-  const calculatedStreams = topTracksFromMetrics.slice(0, 5).reduce((sum: number, track: any) => {
+  
+  // Use data from artist.spotify_data first (most complete), then spotifyMetrics
+  const topTracks = topTracksFromArtist.length > 0 ? topTracksFromArtist : topTracksFromMetrics;
+  
+  // Get total streams - use from spotify_data, or calculate from top_tracks popularity
+  const calculatedStreams = topTracks.slice(0, 5).reduce((sum: number, track: any) => {
     const popularity = track?.popularity || 0;
     // Estimativa: popularidade 100 = ~100M streams, escala logarítmica
     return sum + Math.round(popularity * popularity * 100);
   }, 0);
   
-  // Use total_streams if available, otherwise use calculated value
-  const totalStreams = spotifyMetrics?.total_streams && spotifyMetrics.total_streams > 0 
-    ? spotifyMetrics.total_streams 
+  // Use total_streams from spotify_data if available, otherwise calculated value
+  const totalStreams = spotifyData?.total_streams && spotifyData.total_streams > 0 
+    ? spotifyData.total_streams 
     : calculatedStreams;
   
   return <>
