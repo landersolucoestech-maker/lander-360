@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 interface ArtistSearchResult {
   id: string;
   name: string;
-  stage_name: string;
+  full_name?: string;
 }
 
 interface ArtistSearchProps {
@@ -61,15 +61,15 @@ function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, 
         )
         .map(a => ({
           id: a.id,
-          name: a.full_name,
-          stage_name: a.artistic_name,
+          name: a.artistic_name,
+          full_name: a.full_name,
         }));
 
       // Depois busca no banco de dados
       const { data, error } = await supabase
         .from('artists')
-        .select('id, name, stage_name')
-        .or(`name.ilike.%${term}%,stage_name.ilike.%${term}%`)
+        .select('id, name, full_name')
+        .or(`name.ilike.%${term}%,full_name.ilike.%${term}%`)
         .limit(10);
 
       if (error) throw error;
