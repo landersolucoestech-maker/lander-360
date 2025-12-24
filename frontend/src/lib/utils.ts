@@ -51,13 +51,23 @@ export function toBrazilTime(date: Date | string | null | undefined): Date | nul
 
 /**
  * Formata uma data para o padrão brasileiro (dd/MM/yyyy)
- * Usa o fuso horário de Brasília (America/Sao_Paulo)
+ * Para objetos Date locais (como do calendário), usa formatação direta
+ * Para strings ISO, converte para Brasília
  */
 export function formatDateBR(date: Date | string | null | undefined): string {
   if (!date) return "N/A"
   try {
-    const dateObj = typeof date === "string" ? parseISO(date) : date
-    return formatInTimeZone(dateObj, BRAZIL_TIMEZONE, "dd/MM/yyyy", { locale: ptBR })
+    if (typeof date === "string") {
+      // String ISO - converte para Brasília
+      const dateObj = parseISO(date)
+      return formatInTimeZone(dateObj, BRAZIL_TIMEZONE, "dd/MM/yyyy", { locale: ptBR })
+    } else {
+      // Objeto Date local - formata diretamente sem conversão de timezone
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    }
   } catch {
     return "N/A"
   }
