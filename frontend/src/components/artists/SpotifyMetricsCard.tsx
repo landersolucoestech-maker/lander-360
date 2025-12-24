@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { RefreshCw, Music2, Users, TrendingUp, Play, ExternalLink, Pencil, Check, X } from 'lucide-react';
-import { useArtistSpotifyMetrics, useFetchSpotifyMetrics, useUpdateMonthlyListeners, TopTrack } from '@/hooks/useSpotifyMetrics';
+import { useArtistSpotifyMetrics, useFetchSpotifyMetrics, useUpdateMonthlyListeners, useSpotifyTopTracks, TopTrack } from '@/hooks/useSpotifyMetrics';
 import { formatDateTimeBR } from '@/lib/utils';
 
 interface SpotifyMetricsCardProps {
