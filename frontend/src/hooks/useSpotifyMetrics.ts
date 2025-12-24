@@ -118,6 +118,11 @@ export const useFetchSpotifyMetrics = () => {
         queryClient.invalidateQueries({ queryKey: ['spotify-metrics-history', variables.artistId] });
         queryClient.invalidateQueries({ queryKey: ['artists'] });
         
+        // Cache top_tracks in a separate query
+        if ((data as any)?.data?.top_tracks) {
+          queryClient.setQueryData(['spotify-top-tracks', variables.artistId], (data as any).data.top_tracks);
+        }
+        
         toast({
           title: 'Sucesso',
           description: 'Métricas do Spotify atualizadas com sucesso.',
