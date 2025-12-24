@@ -116,6 +116,7 @@ export const useFetchSpotifyMetrics = () => {
       if ((data as any)?.success !== false) {
         queryClient.invalidateQueries({ queryKey: ['spotify-metrics', variables.artistId] });
         queryClient.invalidateQueries({ queryKey: ['spotify-metrics-history', variables.artistId] });
+        queryClient.invalidateQueries({ queryKey: ['artists'] });
         
         toast({
           title: 'Sucesso',
