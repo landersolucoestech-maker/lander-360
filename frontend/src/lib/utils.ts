@@ -18,15 +18,22 @@ export function cn(...inputs: ClassValue[]) {
 export function parseDateFromDB(dateString: string | null | undefined): Date | undefined {
   if (!dateString) return undefined
   try {
-    // Se a string já contém horário (ISO completo), converte para Brasília
-    if (dateString.includes('T') || dateString.includes(' ')) {
-      const parsed = parseISO(dateString)
-      return toZonedTime(parsed, BRAZIL_TIMEZONE)
+    // Se a string já contém horário completo com timezone (ISO completo)
+    if (dateString.includes('T') && dateString.includes('Z')) {
+      return parseISO(dateString)
     }
-    // Se é apenas data (yyyy-MM-dd), cria a data diretamente
-    // Extrai ano, mês e dia para criar Date local
+    // Se a string contém apenas data e hora (sem timezone)
+    if (dateString.includes('T') || dateString.includes(' ')) {
+      // Trata como horário local
+      const [datePart, timePart] = dateString.includes('T') 
+        ? dateString.split('T') 
+        : dateString.split(' ')
+      const [year, month, day] = datePart.split('-').map(Number)
+      const [hours, minutes] = timePart ? timePart.split(':').map(Number) : [12, 0]
+      return new Date(year, month - 1, day, hours, minutes, 0)
+    }
+    // Se é apenas data (yyyy-MM-dd), cria a data às 12:00 no horário local
     const [year, month, day] = dateString.split('-').map(Number)
-    // Cria a data às 12:00 no horário local para evitar problemas de fuso
     return new Date(year, month - 1, day, 12, 0, 0)
   } catch {
     return undefined
