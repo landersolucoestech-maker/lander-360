@@ -406,7 +406,7 @@ const Agenda = () => {
                         </div>
                         {filteredEvents.map((event) => {
                           const artistData = (event as any).artists;
-                          const artistName = artistData?.stage_name || artistData?.name || '';
+                          const artistName = artistData?.name || '';
                           return (
                           <div key={event.id} className="flex flex-col sm:flex-row sm:items-start gap-3">
                             <Checkbox checked={selectedItems.includes(event.id)} onCheckedChange={(checked) => handleSelectItem(event.id, !!checked)} className="mt-4 sm:mt-6" />
