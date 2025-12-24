@@ -40,7 +40,7 @@ const Index = () => {
     // Primeiro tenta o nome do usuário logado
     if (user?.user_metadata?.full_name) return user.user_metadata.full_name;
     // Depois tenta nome artístico do artista vinculado
-    if (linkedArtist?.name) return linkedArtist.stage_name;
+    if (linkedArtist?.name) return linkedArtist.name;
     // Depois tenta nome real do artista vinculado
     if (linkedArtist?.name) return linkedArtist.name;
     // Fallback: primeira parte do email

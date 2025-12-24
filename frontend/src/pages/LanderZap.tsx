@@ -106,7 +106,7 @@ const LanderZap = () => {
     queryKey: ['landerzap-contacts'],
     queryFn: async () => {
       const [artistsRes, crmRes] = await Promise.all([
-        supabase.from('artists').select('id, name, stage_name, email, phone, image_url'),
+        supabase.from('artists').select('id, name, full_name, email, phone, image_url'),
         supabase.from('crm_contacts').select('id, name, email, phone, image_url')
       ]);
 

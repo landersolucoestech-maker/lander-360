@@ -355,7 +355,7 @@ const Artistas = () => {
     return {
       ...dbArtist,
       id: dbArtist.id,
-      name: dbArtist.name || dbArtist.stage_name,
+      name: dbArtist.name || dbArtist.full_name,
       genre: dbArtist.genre || 'Não informado',
       status: translateStatus(dbArtist.contract_status),
       email: dbArtist.email || 'Não informado',
