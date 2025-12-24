@@ -4,8 +4,8 @@ import { format, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatInTimeZone, toZonedTime } from "date-fns-tz"
 
-// Fuso horário padrão do sistema (EST - Eastern Standard Time)
-const BRAZIL_TIMEZONE = 'America/New_York'
+// Fuso horário padrão do sistema (Brasília)
+const BRAZIL_TIMEZONE = 'America/Sao_Paulo'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
