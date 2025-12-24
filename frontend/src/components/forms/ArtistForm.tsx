@@ -155,7 +155,7 @@ export function ArtistForm({
   const form = useForm<ArtistFormData>({
     resolver: zodResolver(artistSchema),
     defaultValues: {
-      artistic_name: artist?.name || artist?.stage_name || '',
+      artistic_name: artist?.name || '',
       genre: artist?.genre || '',
       music_language: '',
       artist_image: undefined,
