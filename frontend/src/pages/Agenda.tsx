@@ -39,7 +39,7 @@ interface AgendaEvent {
   event_type: 'sessoes_estudio' | 'ensaios' | 'sessoes_fotos' | 'shows' | 'entrevistas' | 'podcasts' | 'programas_tv' | 'radio' | 'producao_conteudo' | 'reunioes';
   status: 'agendado' | 'cancelado' | 'pendente' | 'concluido' | 'confirmado';
   artist_id?: string;
-  artists?: { id: string; name: string; stage_name?: string };
+  artists?: { id: string; name: string; full_name?: string };
   description?: string;
   observations?: string;
 }
