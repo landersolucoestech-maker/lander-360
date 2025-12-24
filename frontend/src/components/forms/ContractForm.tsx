@@ -57,7 +57,7 @@ interface ContractFormProps {
   onCancel?: () => void;
   initialData?: Partial<ContractFormData>;
   isLoading?: boolean;
-  artists?: Array<{ id: string; name: string; full_name?: string; stage_name?: string; cpf_cnpj?: string; rg?: string; full_address?: string; artist_types?: string[] }>;
+  artists?: Array<{ id: string; name: string; full_name?: string; full_name?: string; cpf_cnpj?: string; rg?: string; full_address?: string; artist_types?: string[] }>;
   companies?: Array<{ id: string; name: string }>;
   projects?: Array<{ id: string; name: string }>;
   contacts?: Array<{ id: string; name: string; company?: string | null; document?: string; address?: string; city?: string; state?: string; zip_code?: string; position?: string }>;

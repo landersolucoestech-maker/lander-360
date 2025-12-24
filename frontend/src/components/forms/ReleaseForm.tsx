@@ -319,7 +319,7 @@ export function ReleaseForm({ release, onSuccess, onCancel }: ReleaseFormProps) 
         form.setValue('release_type', audioData.release_type as 'single' | 'ep' | 'album');
       }
       
-      // Get artist from project's artist_id - use stage_name first, then name
+      // Get artist from project's artist_id - use full_name first, then name
       const projectArtist = artists.find(a => a.id === selectedProject.artist_id);
       if (projectArtist) {
         const artistDisplayName = projectArtist.name || '';

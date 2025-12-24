@@ -11,7 +11,7 @@ import { ArtistProfileModal } from "@/components/modals/ArtistProfileModal";
 interface FeaturedArtist {
   id: string;
   name: string;
-  stage_name: string | null;
+  full_name: string | null;
   image_url: string | null;
   genre: string | null;
   relevanceScore: number;

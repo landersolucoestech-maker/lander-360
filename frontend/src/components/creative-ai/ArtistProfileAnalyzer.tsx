@@ -74,7 +74,7 @@ export function ArtistProfileAnalyzer() {
     try {
       const artistData = {
         name: selectedArtist.name,
-        stageName: selectedArtist.stage_name,
+        fullName: selectedArtist.full_name,
         genre: selectedArtist.genre,
         bio: selectedArtist.bio,
         instagram: selectedArtist.instagram_url,

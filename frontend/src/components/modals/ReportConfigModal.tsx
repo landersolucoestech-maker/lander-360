@@ -388,8 +388,8 @@ export function ReportConfigModal({
       show: true,
       width: 200
     }, {
-      id: 'stage_name',
-      name: 'stage_name',
+      id: 'full_name',
+      name: 'full_name',
       label: 'Nome Artístico',
       type: 'text',
       show: true,
