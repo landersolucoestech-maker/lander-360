@@ -280,7 +280,7 @@ const Contratos = () => {
       const artistsMap: Record<string, string> = {};
       artists.forEach((artist: any) => {
         if (artist.name) artistsMap[artist.name.toLowerCase()] = artist.id;
-        if (artist.stage_name) artistsMap[artist.stage_name.toLowerCase()] = artist.id;
+        if (artist.full_name) artistsMap[artist.full_name.toLowerCase()] = artist.id;
       });
 
       let successCount = 0;
