@@ -17,6 +17,7 @@ export function SpotifyMetricsCard({ artistId, spotifyUrl }: SpotifyMetricsCardP
   const { data: metrics, isLoading } = useArtistSpotifyMetrics(artistId);
   const fetchMetrics = useFetchSpotifyMetrics();
   const updateMonthlyListeners = useUpdateMonthlyListeners();
+  const cachedTopTracks = useSpotifyTopTracks(artistId);
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [isEditingListeners, setIsEditingListeners] = useState(false);
   const [listenersValue, setListenersValue] = useState('');
