@@ -70,7 +70,7 @@ export const useCreativeIdeas = (filters?: {
     queryFn: async () => {
       let query = supabase
         .from('creative_ideas')
-        .select('*, artists(name, stage_name), music_registry(title), releases(title), marketing_campaigns(name)')
+        .select('*, artists(name, full_name), music_registry(title), releases(title), marketing_campaigns(name)')
         .order('created_at', { ascending: false });
 
       if (filters?.artistId) {

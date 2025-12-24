@@ -47,7 +47,7 @@ export const useSyncLicenses = () => {
         .from("sync_licenses")
         .select(`
           *,
-          artists(name, stage_name),
+          artists(name, full_name),
           music_registry(title),
           crm_contacts(name, company)
         `)

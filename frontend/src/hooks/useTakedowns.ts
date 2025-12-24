@@ -39,7 +39,7 @@ export const useTakedowns = () => {
         .from("takedowns")
         .select(`
           *,
-          artists(name, stage_name),
+          artists(name, full_name),
           releases(title),
           music_registry(title)
         `)

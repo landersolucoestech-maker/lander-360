@@ -33,7 +33,7 @@ export const useArtistGoals = (artistId?: string) => {
         .from("artist_goals")
         .select(`
           *,
-          artists(name, stage_name)
+          artists(name, full_name)
         `)
         .order("created_at", { ascending: false });
 
