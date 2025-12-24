@@ -13,19 +13,21 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Converte uma string de data do banco (yyyy-MM-dd) para um objeto Date
- * Adiciona horário ao meio-dia para evitar problemas de fuso horário
- * que causam a data voltar um dia (ex: 23/12 -> 22/12)
+ * Cria a data no fuso horário de Brasília para evitar problemas de conversão
  */
 export function parseDateFromDB(dateString: string | null | undefined): Date | undefined {
   if (!dateString) return undefined
   try {
-    // Se a string já contém horário (ISO completo), usa parseISO normal
+    // Se a string já contém horário (ISO completo), converte para Brasília
     if (dateString.includes('T') || dateString.includes(' ')) {
-      return parseISO(dateString)
+      const parsed = parseISO(dateString)
+      return toZonedTime(parsed, BRAZIL_TIMEZONE)
     }
-    // Se é apenas data (yyyy-MM-dd), adiciona horário ao meio-dia
-    // para evitar problemas de conversão de fuso horário
-    return parseISO(`${dateString}T12:00:00`)
+    // Se é apenas data (yyyy-MM-dd), cria a data diretamente
+    // Extrai ano, mês e dia para criar Date local
+    const [year, month, day] = dateString.split('-').map(Number)
+    // Cria a data às 12:00 no horário local para evitar problemas de fuso
+    return new Date(year, month - 1, day, 12, 0, 0)
   } catch {
     return undefined
   }
