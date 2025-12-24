@@ -125,7 +125,6 @@ const Agenda = () => {
         
       const eventData = {
         title: data.event_name,
-        event_name: data.event_name,
         start_date: startDateForDB,
         end_date: endDateForDB,
         start_time: data.start_time || null,
