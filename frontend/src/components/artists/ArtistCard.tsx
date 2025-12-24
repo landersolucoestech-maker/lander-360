@@ -565,34 +565,6 @@ export function ArtistCard({
                     </div>
                   </div>
                 )}
-                
-                {/* Top Tracks Section */}
-                {topTracks && topTracks.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaSpotify className="h-4 w-4 text-green-500" />
-                      <span className="text-xs font-semibold text-foreground">Top Tracks do Spotify</span>
-                    </div>
-                    <div className="space-y-1.5">
-                      {topTracks.slice(0, 5).map((track: any, index: number) => (
-                        <div key={track.id || index} className="flex items-center gap-2 bg-muted/30 rounded-md p-1.5">
-                          <span className="text-[10px] font-bold text-green-500 w-4">#{index + 1}</span>
-                          {track.album_image && (
-                            <img src={track.album_image} alt={track.name} className="w-8 h-8 rounded object-cover" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-medium text-foreground truncate">{track.name}</p>
-                            <p className="text-[9px] text-muted-foreground truncate">{track.album_name}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[10px] font-semibold text-green-500">{track.popularity}</p>
-                            <p className="text-[8px] text-muted-foreground">pop.</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
