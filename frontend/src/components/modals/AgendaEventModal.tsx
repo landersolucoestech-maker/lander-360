@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { AgendaEventForm } from '@/components/forms/AgendaEventForm';
 import { useArtists } from '@/hooks/useArtists';
+import { parseDateFromDB } from '@/lib/utils';
 
 interface AgendaEvent {
   id: string;
