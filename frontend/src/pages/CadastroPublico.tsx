@@ -822,8 +822,8 @@ function ArtistStep({
       const { data: artistData, error } = await supabase
         .from('artists')
         .insert({
-          stage_name: data.artistic_name,
-          name: data.full_name,
+          name: data.artistic_name,
+          full_name: data.full_name,
           genre: data.genre,
           email: data.email,
           phone: data.phone,
