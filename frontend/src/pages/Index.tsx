@@ -14,9 +14,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { 
   Users, Calendar, FileText, MapPin, Clock, TrendingUp, Headphones, Music, 
-  FolderOpen, DollarSign, Wallet, BarChart3, Disc, Upload, Play, Trophy
+  FolderOpen, DollarSign, Wallet, BarChart3, Disc, Upload, Play, Trophy, Info
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatDateBR } from "@/lib/utils";
 
 const Index = () => {
   console.log('[Index/Dashboard Page] Rendering...');
