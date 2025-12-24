@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Upload, X, FileText, Loader2, Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, formatDateForDB } from '@/lib/utils';
+import { cn, formatDateForDB, parseDateFromDB } from '@/lib/utils';
 import { Artist, ArtistInsert, ArtistUpdate } from '@/types/database';
 import { useCreateArtist, useUpdateArtist } from '@/hooks/useArtists';
 import { useToast } from '@/hooks/use-toast';
