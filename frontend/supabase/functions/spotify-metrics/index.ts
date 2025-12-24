@@ -230,7 +230,11 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         data: result, 
-        db: { operation: dbOperation, error: dbError?.message || null }
+        db: { 
+          operation: dbOperation, 
+          error: dbError?.message || null,
+          artistUpdate: artistUpdateError ? artistUpdateError.message : 'success'
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
