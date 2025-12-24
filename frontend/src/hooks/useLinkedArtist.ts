@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface LinkedArtist {
   id: string;
   name: string;
-  stage_name: string | null;
+  full_name: string | null;
   avatar_url: string | null;
 }
 
@@ -50,7 +50,7 @@ export function useLinkedArtist() {
       // Buscar dados do artista
       const { data: artistData, error: artistError } = await supabase
         .from('artists')
-        .select('id, name, stage_name, avatar_url')
+        .select('id, name, full_name, avatar_url')
         .eq('id', linkData.artist_id)
         .single();
 

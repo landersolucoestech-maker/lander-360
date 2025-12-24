@@ -65,7 +65,7 @@ const sendEventNotification = async (event: any, artistId: string) => {
     // Fetch artist data with manager and label info
     const { data: artist } = await supabase
       .from('artists')
-      .select('name, stage_name, phone, email, manager_name, manager_phone, manager_email, record_label_name, label_contact_name, label_contact_phone, label_contact_email')
+      .select('name, full_name, phone, email, manager_name, manager_phone, manager_email, record_label_name, label_contact_name, label_contact_phone, label_contact_email')
       .eq('id', artistId)
       .single();
 

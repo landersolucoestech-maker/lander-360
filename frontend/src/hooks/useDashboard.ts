@@ -168,7 +168,7 @@ export const useTodayEvents = () => {
       if (isDemo) {
         return events.map(e => ({
           ...e,
-          artists: { name: 'Marina Silva', stage_name: 'Marina' }
+          artists: { name: 'Marina Silva', full_name: 'Marina Silva' }
         }));
       }
       return DashboardService.getTodayEvents();
