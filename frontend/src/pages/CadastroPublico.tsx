@@ -78,7 +78,7 @@ function ArtistSearch({ selectedArtists, onSelect, onRemove, registeredArtists, 
       const dbResults = (data || []).map(a => ({
         id: a.id,
         name: a.name || '',
-        name: a.name || '',
+        full_name: a.full_name || '',
       }));
 
       const allResults = [...localResults];
