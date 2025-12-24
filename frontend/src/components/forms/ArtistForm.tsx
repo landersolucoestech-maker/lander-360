@@ -446,7 +446,7 @@ export function ArtistForm({
         phone: data.phone || null,
         email: data.email || null,
         spotify_url: data.spotify_profile || null,
-        instagram: data.instagram || null,
+        instagram_url: data.instagram || null,
         youtube_url: data.youtube || null,
         tiktok: data.tiktok || null,
         soundcloud: data.soundcloud || null,
