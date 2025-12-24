@@ -13,7 +13,7 @@ import { AgendaViewModal } from "@/components/modals/AgendaViewModal";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 import { useToast } from "@/hooks/use-toast";
 import { isSameDay } from "date-fns";
-import { formatDateFullBR } from "@/lib/utils";
+import { formatDateFullBR, formatDateForDB } from "@/lib/utils";
 import { useAgenda, useCreateAgendaEvent, useUpdateAgendaEvent, useDeleteAgendaEvent } from "@/hooks/useAgenda";
 import { useArtists } from "@/hooks/useArtists";
 import { useDataExport } from "@/hooks/useDataExport";
