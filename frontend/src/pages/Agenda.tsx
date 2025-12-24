@@ -426,7 +426,9 @@ const Agenda = () => {
                                     <div className="text-muted-foreground">Data</div>
                                     <div className="font-medium">{formatDateFullBR(new Date(event.start_date))}</div>
                                   </div>
-                                  {event.start_time && <div className="text-center"><div className="text-muted-foreground">Horário</div><div className="font-medium">{event.start_time}</div></div>}
+                                  {event.start_time && <div className="text-center"><div className="text-muted-foreground">Horário</div><div className="font-medium">{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</div></div>}
+                                  {(event.venue_name || event.location) && <div className="text-center max-w-[120px]"><div className="text-muted-foreground">Local</div><div className="font-medium truncate">{event.venue_name || event.location}</div></div>}
+                                  {event.artist_name && <div className="text-center max-w-[100px]"><div className="text-muted-foreground">Artista</div><div className="font-medium truncate">{event.artist_name}</div></div>}
                                 </div>
                                 <div className="flex gap-2">
                                   <Button variant="outline" size="sm" className="text-xs" onClick={() => handleViewEvent(event)}>Ver</Button>
