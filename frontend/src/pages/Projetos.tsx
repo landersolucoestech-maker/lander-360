@@ -120,7 +120,7 @@ const Projetos = () => {
   }, [projects]);
 
   // Extract unique values for filter dropdowns - Ordenados alfabeticamente
-  const uniqueArtists = [...new Set(artists.map(a => a.stage_name || a.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const uniqueArtists = [...new Set(artists.map(a => a.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   
   // Extrair gêneros de projetos e também de artistas para lista completa
   const uniqueGenres = useMemo(() => {
