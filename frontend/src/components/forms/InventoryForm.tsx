@@ -78,7 +78,7 @@ export function InventoryForm({ onSubmit, onCancel, isSubmitting = false, initia
         status: initialData.status || 'Disponível',
         purchaseLocation: initialData.purchase_location || '',
         invoiceNumber: initialData.invoice_number || '',
-        entryDate: initialData.entry_date ? new Date(initialData.entry_date) : new Date(),
+        entryDate: parseDateFromDB(initialData.entry_date) || new Date(),
         unitValue: initialData.unit_value ? String(initialData.unit_value) : '',
         observations: initialData.observations || '',
       });
