@@ -15,6 +15,7 @@ import { useArtistSocialMetrics, useFetchSocialMetrics } from "@/hooks/useSocial
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, Users, Headphones, BarChart3, RefreshCw, Loader2, Eye, Sparkles } from "lucide-react";
 import { FaInstagram, FaSpotify, FaYoutube, FaTiktok, FaSoundcloud, FaApple, FaDeezer } from "react-icons/fa";
+
 interface ArtistCardProps {
   artist: {
     id: number;
