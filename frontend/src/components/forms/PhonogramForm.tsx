@@ -598,7 +598,7 @@ export function PhonogramForm({
         // Para intérpretes, buscar dos performers dos projetos + artistas
         const projectPerformers = getFilteredPerformers(searchTerm);
         const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
-          name: a.stage_name || a.name || a.full_name,
+          name: a.name || a.full_name,
           projectName: 'Artista cadastrado',
           isArtist: true,
           isCrmContact: false,
@@ -614,7 +614,7 @@ export function PhonogramForm({
         // Para músicos acompanhantes, buscar dos producers dos projetos + artistas
         const projectProducers = getFilteredProducers(searchTerm);
         const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
-          name: a.stage_name || a.name || a.full_name,
+          name: a.name || a.full_name,
           projectName: 'Artista cadastrado',
           isArtist: true,
           isCrmContact: false,
@@ -629,7 +629,7 @@ export function PhonogramForm({
       } else {
         // Para produtores fonográficos, buscar de artistas (pessoa física) e contatos CRM (pessoa jurídica/física)
         const artistSuggestions = getFilteredArtists(searchTerm).map(a => ({
-          name: a.stage_name || a.name || a.full_name,
+          name: a.name || a.full_name,
           projectName: 'Pessoa Física - Artista',
           isArtist: true,
           isCrmContact: false,
