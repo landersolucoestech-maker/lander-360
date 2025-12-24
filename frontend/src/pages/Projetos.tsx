@@ -367,7 +367,7 @@ const Projetos = () => {
     // Create artists map for lookup
     const artistsMap: Record<string, string> = {};
     artists.forEach(a => {
-      artistsMap[a.id] = a.stage_name || a.name || '';
+      artistsMap[a.id] = a.name || '';
     });
 
     // Transform projects to include only form fields
