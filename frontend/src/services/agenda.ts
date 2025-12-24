@@ -6,7 +6,7 @@ export class AgendaService {
       .from('agenda_events')
       .select(`
         *,
-        artists:artist_id(id, name, stage_name)
+        artists:artist_id(id, name, full_name)
       `)
       .order('start_date', { ascending: true });
 
