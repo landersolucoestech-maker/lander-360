@@ -395,7 +395,10 @@ const Agenda = () => {
                           <Checkbox checked={selectedItems.length === filteredEvents.length && filteredEvents.length > 0} onCheckedChange={(checked) => handleSelectAll(!!checked)} />
                           <span className="text-sm font-medium text-muted-foreground">{selectedItems.length > 0 ? `${selectedItems.length} de ${filteredEvents.length} selecionados` : "Selecionar todos"}</span>
                         </div>
-                        {filteredEvents.map((event) => (
+                        {filteredEvents.map((event) => {
+                          const artistData = (event as any).artists;
+                          const artistName = artistData?.stage_name || artistData?.name || '';
+                          return (
                           <div key={event.id} className="flex flex-col sm:flex-row sm:items-start gap-3">
                             <Checkbox checked={selectedItems.includes(event.id)} onCheckedChange={(checked) => handleSelectItem(event.id, !!checked)} className="mt-4 sm:mt-6" />
                             <div className="flex-1 flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-3">
