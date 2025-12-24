@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { DateInput } from "@/components/ui/date-input";
 import { useEffect } from "react";
+import { parseDateFromDB } from "@/lib/utils";
 
 const inventorySchema = z.object({
   // Basic Information
