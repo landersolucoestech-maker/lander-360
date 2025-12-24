@@ -315,13 +315,13 @@ export function ArtistProfileModal({
           <div>
             <h3 className="text-lg font-semibold mb-4">Redes Sociais</h3>
             <div className="flex gap-4 flex-wrap">
-              {(artist.instagram || artist.instagram_url || artist.socialMedia?.instagram) && (
+              {(artist.instagram_url || artist.socialMedia?.instagram) && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="gap-2"
                   onClick={() => {
-                    const url = artist.instagram_url || artist.instagram || artist.socialMedia?.instagram;
+                    const url = artist.instagram_url || artist.socialMedia?.instagram;
                     const finalUrl = url?.startsWith('http') ? url : `https://instagram.com/${url?.replace('@', '')}`;
                     window.open(finalUrl, '_blank', 'noopener,noreferrer');
                   }}
