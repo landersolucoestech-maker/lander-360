@@ -30,7 +30,7 @@ export interface PaidCampaign {
   target_audience?: Record<string, any>;
   created_at: string;
   updated_at: string;
-  artists?: { name: string; stage_name?: string };
+  artists?: { name: string; full_name?: string };
   releases?: { title: string };
 }
 

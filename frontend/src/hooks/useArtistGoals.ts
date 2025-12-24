@@ -19,7 +19,7 @@ export interface ArtistGoal {
   priority: string;
   created_at: string;
   updated_at: string;
-  artists?: { name: string; stage_name?: string };
+  artists?: { name: string; full_name?: string };
 }
 
 export const useArtistGoals = (artistId?: string) => {

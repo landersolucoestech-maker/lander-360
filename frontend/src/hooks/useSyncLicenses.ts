@@ -31,7 +31,7 @@ export interface SyncLicense {
   brief_url?: string;
   created_at: string;
   updated_at: string;
-  artists?: { name: string; stage_name?: string };
+  artists?: { name: string; full_name?: string };
   music_registry?: { title: string };
   crm_contacts?: { name: string; company?: string };
 }
