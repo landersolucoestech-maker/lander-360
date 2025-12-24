@@ -163,7 +163,7 @@ export function ArtistForm({
       artist_types: (artist as any)?.artist_types || [],
       musician_roles: (artist as any)?.musician_roles || [],
       full_name: artist?.full_name || '',
-      birth_date: artist?.birth_date ? new Date(artist.birth_date) : undefined,
+      birth_date: parseDateFromDB(artist?.birth_date),
       cpf_cnpj: '', // Loaded from artist_sensitive_data table (admin only)
       rg: '', // Loaded from artist_sensitive_data table (admin only)
       full_address: '', // Loaded from artist_sensitive_data table (admin only)
